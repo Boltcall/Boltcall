@@ -57,7 +57,7 @@ const TalkToAgentPage: React.FC = () => {
       const { data: agents, error: agentErr } = await supabase
         .from('agents')
         .select('id, retell_agent_id, name, agent_type, workspace_id, created_at')
-        .eq('agent_type', 'inbound')
+        .or('agent_type.eq.inbound,agent_type.eq.ai_receptionist')
         .order('created_at', { ascending: false })
         .limit(1);
 

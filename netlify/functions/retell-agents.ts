@@ -620,7 +620,7 @@ export const handler: Handler = async (event) => {
                 description: body.agent_type === 'inbound'
                   ? 'Answers incoming calls — booking, FAQs, transfers'
                   : `Outbound agent — ${body.agent_type || 'speed to lead'}`,
-                agent_type: 'ai_receptionist',
+                agent_type: body.agent_type || 'inbound',
                 status: 'active',
                 voice_id: agent.voice_id || body.voice_id || null,
                 language: body.language || 'en',
