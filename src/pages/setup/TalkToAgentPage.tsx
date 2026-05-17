@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { authedFetch } from '../../lib/authedFetch';
 import { useAuth } from '../../contexts/AuthContext';
-import VoiceOrb, { type VoiceOrbState } from '../../components/setup/VoiceOrb';
+import { VoicePoweredOrb } from '../../components/ui/voice-powered-orb';
 
 type Phase = 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
 
@@ -15,11 +15,10 @@ const TalkToAgentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [phase, setPhase] = useState<Phase>('provisioning');
-  const [orbState, setOrbState] = useState<VoiceOrbState>('idle');
-  const [amplitude, setAmplitude] = useState(0);
   const [agentName, setAgentName] = useState('your agent');
   const [errorMessage, setErrorMessage] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
+  const [isLive, setIsLive] = useState(false);
 
   const clientRef = useRef<RetellWebClient | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -43,19 +42,6 @@ const TalkToAgentPage: React.FC = () => {
 
   useEffect(() => () => cleanup(), [cleanup]);
 
-  // Poll amplitude from analyzer at ~60fps
-  const startAmplitudeLoop = useCallback((client: RetellWebClient) => {
-    const tick = () => {
-      try {
-        const volume = client.analyzerComponent?.calculateVolume?.() ?? 0;
-        // calculateVolume() returns roughly 0–1 already, but it can spike — clamp + smooth
-        setAmplitude((prev) => prev * 0.55 + Math.min(volume, 1) * 0.45);
-      } catch { /* ignore */ }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-  }, []);
-
   const startCall = useCallback(async () => {
     if (!user?.id) {
       setPhase('error');
@@ -64,14 +50,13 @@ const TalkToAgentPage: React.FC = () => {
     }
 
     setPhase('provisioning');
-    setOrbState('idle');
     setErrorMessage('');
 
     try {
       // Find the inbound agent for this user — most recent
       const { data: agents, error: agentErr } = await supabase
         .from('agents')
-        .select('id, retell_agent_id, agent_name, agent_type, workspace_id, created_at')
+        .select('id, retell_agent_id, name, agent_type, workspace_id, created_at')
         .eq('agent_type', 'inbound')
         .order('created_at', { ascending: false })
         .limit(1);
@@ -82,7 +67,7 @@ const TalkToAgentPage: React.FC = () => {
         throw new Error('Your agent is still being prepared. Please try again in a moment.');
       }
 
-      if (agent.agent_name) setAgentName(agent.agent_name);
+      if (agent.name) setAgentName(agent.name);
 
       setPhase('connecting');
 
@@ -112,28 +97,23 @@ const TalkToAgentPage: React.FC = () => {
 
       client.on('call_started', () => {
         setPhase('live');
+        setIsLive(true);
         startedAtRef.current = Date.now();
         timerRef.current = setInterval(() => {
           setCallSeconds(Math.floor((Date.now() - startedAtRef.current) / 1000));
         }, 1000);
-        startAmplitudeLoop(client);
       });
-
-      client.on('agent_start_talking', () => setOrbState('agent-speaking'));
-      client.on('agent_stop_talking', () => setOrbState('user-speaking'));
 
       client.on('call_ended', () => {
         cleanup();
-        setOrbState('ended');
-        setAmplitude(0);
+        setIsLive(false);
         setPhase('ended');
       });
 
       client.on('error', (err: unknown) => {
         console.error('Retell call error:', err);
         cleanup();
-        setOrbState('error');
-        setAmplitude(0);
+        setIsLive(false);
         setPhase('error');
         setErrorMessage('Something went wrong during the call.');
       });
@@ -142,11 +122,10 @@ const TalkToAgentPage: React.FC = () => {
     } catch (err: unknown) {
       console.error('Talk-to-agent start failed:', err);
       cleanup();
-      setOrbState('error');
       setPhase('error');
       setErrorMessage(err instanceof Error ? err.message : 'Could not start the call.');
     }
-  }, [user?.id, startAmplitudeLoop, cleanup]);
+  }, [user?.id, cleanup]);
 
   // Auto-start on mount
   useEffect(() => {
@@ -214,7 +193,12 @@ const TalkToAgentPage: React.FC = () => {
         </AnimatePresence>
 
         {/* Orb */}
-        <VoiceOrb amplitude={amplitude} state={orbState} size={300} />
+        <div className="w-[300px] h-[300px]">
+          <VoicePoweredOrb
+            enableVoiceControl={isLive}
+            className="rounded-full overflow-hidden"
+          />
+        </div>
 
         {/* Live indicator + timer */}
         <AnimatePresence>
