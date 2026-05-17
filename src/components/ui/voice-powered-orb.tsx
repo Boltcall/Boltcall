@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, FC } from "react";
+import { useEffect, useRef } from "react";
+import type { FC } from "react";
 import { Renderer, Program, Mesh, Triangle, Vec3 } from "ogl";
+import type { OGLRenderingContext } from "ogl";
 import { cn } from "@/lib/utils";
 
 interface VoicePoweredOrbProps {
@@ -259,7 +261,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
     if (!container) return;
 
     let rendererInstance: Renderer | null = null;
-    let glContext: WebGLRenderingContext | WebGL2RenderingContext | null = null;
+    let gl: OGLRenderingContext | null = null;
     let rafId: number;
     let program: Program | null = null;
 
@@ -270,26 +272,22 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
         antialias: true,
         dpr: window.devicePixelRatio || 1,
       });
-      glContext = rendererInstance.gl;
-      glContext.clearColor(0, 0, 0, 0);
-      glContext.enable(glContext.BLEND);
-      glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
+      gl = rendererInstance.gl;
+      gl.clearColor(0, 0, 0, 0);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
       while (container.firstChild) container.removeChild(container.firstChild);
-      container.appendChild(glContext.canvas);
+      container.appendChild(gl.canvas);
 
-      const geometry = new Triangle(glContext);
-      program = new Program(glContext, {
+      const geometry = new Triangle(gl);
+      program = new Program(gl, {
         vertex: vert,
         fragment: frag,
         uniforms: {
           iTime: { value: 0 },
           iResolution: {
-            value: new Vec3(
-              glContext.canvas.width,
-              glContext.canvas.height,
-              glContext.canvas.width / glContext.canvas.height
-            ),
+            value: new Vec3(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height),
           },
           hue: { value: hue },
           hover: { value: 0 },
@@ -298,22 +296,22 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
         },
       });
 
-      const mesh = new Mesh(glContext, { geometry, program });
+      const mesh = new Mesh(gl, { geometry, program });
 
       const resize = () => {
-        if (!container || !rendererInstance || !glContext) return;
+        if (!container || !rendererInstance || !gl) return;
         const dpr = window.devicePixelRatio || 1;
         const width = container.clientWidth;
         const height = container.clientHeight;
         if (width === 0 || height === 0) return;
         rendererInstance.setSize(width * dpr, height * dpr);
-        glContext.canvas.style.width = width + "px";
-        glContext.canvas.style.height = height + "px";
+        gl.canvas.style.width = width + "px";
+        gl.canvas.style.height = height + "px";
         if (program) {
           program.uniforms.iResolution.value.set(
-            glContext.canvas.width,
-            glContext.canvas.height,
-            glContext.canvas.width / glContext.canvas.height
+            gl.canvas.width,
+            gl.canvas.height,
+            gl.canvas.width / gl.canvas.height
           );
         }
       };
@@ -335,7 +333,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
 
       const update = (t: number) => {
         rafId = requestAnimationFrame(update);
-        if (!program) return;
+        if (!program || !gl || !rendererInstance) return;
 
         const dt = (t - lastTime) * 0.001;
         lastTime = t;
@@ -356,11 +354,8 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
         }
 
         program.uniforms.rot.value = currentRot;
-
-        if (rendererInstance && glContext) {
-          glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
-          rendererInstance.render({ scene: mesh });
-        }
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        rendererInstance.render({ scene: mesh });
       };
 
       rafId = requestAnimationFrame(update);
@@ -368,15 +363,15 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       return () => {
         cancelAnimationFrame(rafId);
         window.removeEventListener("resize", resize);
-        if (container && glContext && glContext.canvas) {
+        if (container && gl) {
           try {
-            if (container.contains(glContext.canvas)) container.removeChild(glContext.canvas);
+            if (container.contains(gl.canvas)) container.removeChild(gl.canvas);
           } catch (error) {
             console.warn("Canvas cleanup error:", error);
           }
         }
         stopMicrophone();
-        if (glContext) glContext.getExtension("WEBGL_lose_context")?.loseContext();
+        if (gl) gl.getExtension("WEBGL_lose_context")?.loseContext();
       };
     } catch (error) {
       console.error("Error initializing Voice Powered Orb:", error);
