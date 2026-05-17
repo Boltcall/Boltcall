@@ -51,7 +51,22 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-dentists';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type": "Question", "name": "How does AI phone answering work for dental practices?", "acceptedAnswer": {"@type": "Answer", "text": "AI phone answering for dental practices uses voice recognition and natural language processing to answer patient calls, collect appointment preferences, check calendar availability, and book appointments instantly — all without a human receptionist. It operates 24/7, including evenings and weekends."}},
+        {"@type": "Question", "name": "Will AI phone answering integrate with my dental software?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Boltcall integrates with major dental practice management systems including Dentrix, Eaglesoft, Open Dental, and Curve Dental. It also works with Google Calendar and other scheduling platforms to check and book appointments in real time."}},
+        {"@type": "Question", "name": "Is AI phone answering HIPAA compliant for dental offices?", "acceptedAnswer": {"@type": "Answer", "text": "Boltcall's AI phone answering platform is HIPAA-compliant. All patient call data is encrypted in transit and at rest, access is role-based, and the platform supports BAA (Business Associate Agreement) execution for dental practices."}},
+        {"@type": "Question", "name": "How much does AI phone answering cost for a dental practice?", "acceptedAnswer": {"@type": "Answer", "text": "AI phone answering for dental practices costs $79–$179/month with Boltcall — compared to $3,200+ per month for a full-time front desk employee. Most dental practices recover the cost within the first week by capturing previously missed new-patient calls."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
     return () => {
+      document.getElementById('faq-schema-dentists')?.remove();
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
@@ -84,6 +99,13 @@ const AiPhoneAnsweringDentists: React.FC = () => {
 
       {/* Article body */}
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+        {/* AEO Answer Block */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-xl px-6 py-5 mb-4">
+          <p className="text-gray-800 leading-relaxed">
+            AI phone answering for dental practices is a 24/7 automated call handling system that answers patient calls, books appointments into your practice management software, and handles common inquiries — without front desk involvement. Dental offices using Boltcall report answering 100% of inbound calls and reducing missed-appointment revenue loss by over 60%.
+          </p>
+        </div>
 
         {/* Section 1 */}
         <section>
@@ -222,6 +244,36 @@ const AiPhoneAnsweringDentists: React.FC = () => {
           </div>
         </section>
 
+
+        {/* FAQ Section */}
+        <section>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6 divide-y divide-gray-100">
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering work for dental practices?</h3>
+              <p className="text-gray-700 leading-relaxed">AI phone answering uses voice recognition and NLP to answer patient calls, collect appointment preferences, check your calendar availability, and book instantly — 24/7, including evenings and weekends. The patient receives an SMS confirmation immediately.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Will AI phone answering work with my dental practice software?</h3>
+              <p className="text-gray-700 leading-relaxed">Yes. Boltcall integrates with Dentrix, Eaglesoft, Open Dental, Curve Dental, and Google Calendar. It checks real-time availability and books directly into your existing schedule without requiring staff involvement.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is AI phone answering HIPAA compliant for dental offices?</h3>
+              <p className="text-gray-700 leading-relaxed">Yes. Boltcall's platform is HIPAA-compliant with end-to-end encryption, role-based access controls, and Business Associate Agreement (BAA) support. Patient data is handled according to federal healthcare privacy standards.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does AI phone answering cost for a dental practice?</h3>
+              <p className="text-gray-700 leading-relaxed">Boltcall costs $79–$179/month — compared to $3,200+/month for a front desk employee. Most dental practices recover the full cost within the first week by capturing new-patient calls that previously went to voicemail.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What types of calls can AI handle for a dental office?</h3>
+              <p className="text-gray-700 leading-relaxed">AI handles appointment booking, cancellations, rescheduling, general hour and location inquiries, post-procedure follow-up calls, and new patient intake. Emergency calls are triaged and transferred to on-call staff immediately.</p>
+            </div>
+          </div>
+          <div className="mt-8 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
+            Related: <a href="/blog/ai-phone-answering-plumbers" className="text-blue-600 hover:underline">AI phone answering for plumbers</a> &middot; <a href="/blog/how-ai-receptionist-works" className="text-blue-600 hover:underline">How AI receptionists work</a> &middot; <a href="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">Is AI worth it?</a> &middot; <a href="/pricing" className="text-blue-600 hover:underline">View Boltcall pricing</a> &middot; <a href="/features/ai-receptionist" className="text-blue-600 hover:underline">AI receptionist features</a>
+          </div>
+        </section>
       </article>
 
 

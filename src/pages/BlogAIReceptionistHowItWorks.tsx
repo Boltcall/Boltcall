@@ -81,7 +81,22 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "How AI Receptionist Works", "item": "https://boltcall.org/blog/how-ai-receptionist-works"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type": "Question", "name": "How does an AI receptionist work?", "acceptedAnswer": {"@type": "Answer", "text": "An AI receptionist works by using speech recognition to convert spoken words to text, natural language processing to understand caller intent, and pre-configured business logic to respond — booking appointments, answering FAQs, or routing calls to a human. The full process completes in under 2 seconds."}},
+        {"@type": "Question", "name": "Can an AI receptionist book appointments?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. AI receptionists integrate directly with scheduling software like Google Calendar, Calendly, or practice management systems to book, reschedule, and cancel appointments in real time. Callers receive an instant SMS confirmation."}},
+        {"@type": "Question", "name": "What happens when an AI receptionist cannot answer a question?", "acceptedAnswer": {"@type": "Answer", "text": "When a caller's question falls outside the configured knowledge base, the AI receptionist transfers the call to a designated staff member or leaves a detailed voicemail with a full transcript."}},
+        {"@type": "Question", "name": "Is an AI receptionist as good as a human receptionist?", "acceptedAnswer": {"@type": "Answer", "text": "For routine calls — appointment booking, FAQs, and lead capture — AI receptionists match or exceed human performance in speed and consistency. They answer 100% of calls 24/7 and never miss a lead. For complex conversations, they route to a human."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
     return () => {
+      document.getElementById('faq-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
@@ -142,7 +157,7 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
           className="prose prose-lg max-w-none mb-12"
         >
           <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
-            You've heard about AI receptionists answering calls, booking appointments, and handling customer inquiries—but how do they actually work? This guide breaks down the technology and processes that power modern AI receptionist systems, from speech recognition to intelligent response generation.
+            An AI receptionist is a software system that automatically answers phone calls, understands spoken requests using natural language processing, books appointments in real time, and handles common customer inquiries — without a human operator. Boltcall's AI receptionist integrates with your existing calendar and CRM, operating 24/7 on autopilot.
           </p>
         </motion.div>
 
@@ -471,6 +486,41 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
             </div>
           </section>
         </motion.section>
+
+      {/* FAQ Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="my-12"
+      >
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+        <div className="space-y-6 divide-y divide-gray-100">
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI receptionist work?</h3>
+            <p className="text-gray-700">An AI receptionist uses speech recognition to capture what a caller says, NLP to understand intent, and pre-configured business logic to respond — booking appointments, answering questions, or routing to a human. The full cycle completes in under 2 seconds.</p>
+          </div>
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI receptionist book appointments?</h3>
+            <p className="text-gray-700">Yes. AI receptionists integrate with scheduling software like Google Calendar and Calendly to book, reschedule, and cancel appointments in real time. Callers receive an instant SMS confirmation — no human needed.</p>
+          </div>
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">What happens when an AI receptionist cannot answer a question?</h3>
+            <p className="text-gray-700">When a caller's question falls outside the configured knowledge base or requires human judgment, the AI transfers the call immediately to a designated staff member or leaves a detailed voicemail with a full call transcript.</p>
+          </div>
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist as good as a human?</h3>
+            <p className="text-gray-700">For high-volume, repetitive calls — appointment booking, FAQs, lead capture — AI outperforms humans in speed and consistency. It answers 100% of calls 24/7. For nuanced or emotionally sensitive conversations, human judgment still wins.</p>
+          </div>
+          <div className="pt-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does it take to set up an AI receptionist?</h3>
+            <p className="text-gray-700">Boltcall's AI receptionist takes under 30 minutes to configure. You provide business info, services, hours, and common FAQs — the AI is ready to answer calls the same day. See our <Link to="/blog/how-to-make-ai-receptionist" className="text-blue-600 hover:underline">step-by-step setup guide</Link>.</p>
+          </div>
+        </div>
+        <div className="mt-8 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
+          Related: <Link to="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">Is an AI receptionist worth it?</Link> &middot; <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">AI receptionist cost &amp; pricing</Link> &middot; <Link to="/blog/best-ai-receptionist-tools" className="text-blue-600 hover:underline">Best AI receptionist tools</Link> &middot; <Link to="/features/ai-receptionist" className="text-blue-600 hover:underline">Boltcall features</Link> &middot; <Link to="/pricing" className="text-blue-600 hover:underline">View pricing</Link>
+        </div>
+      </motion.section>
 
       {/* CTA Section */}
         <motion.section

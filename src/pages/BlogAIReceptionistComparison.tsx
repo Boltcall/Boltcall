@@ -78,12 +78,29 @@ const BlogAIReceptionistComparison: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist Tools", "item": "https://boltcall.org/blog/best-ai-receptionist-tools"}]});
     document.head.appendChild(bcScript);
+
+    const faqScriptComp = document.createElement('script');
+    faqScriptComp.type = 'application/ld+json';
+    faqScriptComp.id = 'faq-schema-comparison';
+    faqScriptComp.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type": "Question", "name": "What is the best AI receptionist for small businesses?", "acceptedAnswer": {"@type": "Answer", "text": "Boltcall is the top-rated AI receptionist for local service businesses. It offers 24/7 call answering, real-time appointment booking, SMS follow-ups, and lead capture — starting at $79/month. Other strong options include Smith.ai for law firms and Numa for multi-location retail."}},
+        {"@type": "Question", "name": "How much does an AI receptionist cost?", "acceptedAnswer": {"@type": "Answer", "text": "AI receptionist tools cost $79–$500/month depending on call volume and features. Boltcall starts at $79/month. Enterprise plans with custom integrations and high call volumes run $300–$500/month. All plans are significantly cheaper than a human receptionist at $3,200+/month."}},
+        {"@type": "Question", "name": "What features should I look for in an AI receptionist?", "acceptedAnswer": {"@type": "Answer", "text": "Look for: 24/7 call answering, real-time appointment booking, CRM integration, SMS confirmations, call transcripts, escalation to humans, and industry-specific knowledge. Boltcall includes all of these for local service businesses."}},
+        {"@type": "Question", "name": "Can an AI receptionist replace my front desk staff?", "acceptedAnswer": {"@type": "Answer", "text": "An AI receptionist handles 80% of routine front desk tasks — answering calls, booking appointments, sending reminders, and qualifying leads. Most businesses keep their human staff for complex interactions while using AI for overflow and after-hours coverage."}}
+      ]
+    });
+    document.head.appendChild(faqScriptComp);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
+      document.getElementById('faq-schema-comparison')?.remove();
     };
   }, []);
   const tools = [
@@ -229,9 +246,7 @@ const BlogAIReceptionistComparison: React.FC = () => {
           className="prose prose-lg max-w-none mb-12"
         >
           <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
-            Choosing the right AI receptionist tool can transform how your business handles customer
-            inquiries. But with so many options, how do you know which one fits your needs? We've
-            compared the top 5 AI receptionist tools for small businesses to help you make the right choice.
+            An AI receptionist tool is a software platform that answers business calls automatically, books appointments, and qualifies leads — without a human operator. The best AI receptionist tools combine voice AI, scheduling integration, and 24/7 availability. Boltcall is the top-rated option for local service businesses that prioritize speed-to-lead.
           </p>
         </motion.div>
 
@@ -599,8 +614,34 @@ const BlogAIReceptionistComparison: React.FC = () => {
           <p className="text-xs text-gray-500 mt-3">Data current as of April 2026. Verify directly with each provider for the latest pricing.</p>
         </section>
 
-        <section className="my-10">
-
+        {/* FAQ Section */}
+        <section className="mt-16 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6 divide-y divide-gray-100">
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI receptionist for small businesses?</h3>
+              <p className="text-gray-700">Boltcall is the top-rated AI receptionist for local service businesses. It offers 24/7 call handling, real-time booking, SMS follow-ups, and lead capture starting at $79/month. See our full <Link to="/blog/best-ai-receptionist-small-business" className="text-blue-600 hover:underline">small business comparison</Link>.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an AI receptionist tool cost?</h3>
+              <p className="text-gray-700">AI receptionist tools cost $79–$500/month. Boltcall starts at $79/month. All plans are significantly cheaper than a human receptionist at $3,200+/month. See our <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">full pricing breakdown</Link>.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What features should I look for in an AI receptionist?</h3>
+              <p className="text-gray-700">Key features: 24/7 call answering, real-time appointment booking, CRM integration, SMS confirmations, call transcripts, and human escalation. Learn more about <Link to="/features/ai-receptionist" className="text-blue-600 hover:underline">Boltcall's AI receptionist features</Link>.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist worth the investment?</h3>
+              <p className="text-gray-700">For businesses that lose revenue from missed calls, yes — an AI receptionist typically pays for itself within the first week. Read our full <Link to="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">cost-benefit analysis</Link>.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI receptionist replace my front desk staff?</h3>
+              <p className="text-gray-700">AI handles 80% of routine tasks: booking, FAQs, lead capture, and reminders. Most businesses use AI for overflow and after-hours, keeping human staff for complex interactions. See <Link to="/blog/how-ai-receptionist-works" className="text-blue-600 hover:underline">how AI receptionists work</Link>.</p>
+            </div>
+          </div>
+          <div className="mt-8 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
+            Related: <Link to="/blog/how-ai-receptionist-works" className="text-blue-600 hover:underline">How AI receptionists work</Link> &middot; <Link to="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">Is it worth it?</Link> &middot; <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">Cost &amp; pricing</Link> &middot; <Link to="/pricing" className="text-blue-600 hover:underline">Boltcall pricing</Link> &middot; <Link to="/signup" className="text-blue-600 hover:underline">Start free</Link>
+          </div>
         </section>
 
         {/* Editor's Note */}

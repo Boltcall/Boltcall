@@ -60,7 +60,29 @@ const BestAfterHoursAnsweringService: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const bcScript = document.createElement('script');
+    bcScript.type = 'application/ld+json';
+    bcScript.id = 'breadcrumb-jsonld-hours';
+    bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best After Hours Answering Service", "item": "https://boltcall.org/blog/best-after-hours-answering-service"}]});
+    document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-hours';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type": "Question", "name": "What is the best after hours answering service for small businesses?", "acceptedAnswer": {"@type": "Answer", "text": "The best after hours answering service for local businesses is an AI-powered solution like Boltcall. It offers 24/7 availability, answers in under 2 rings, costs 60-80% less than traditional human services, and handles unlimited concurrent calls without hold times."}},
+        {"@type": "Question", "name": "How much does an after hours answering service cost?", "acceptedAnswer": {"@type": "Answer", "text": "AI after hours answering services cost $79-$249/month. Traditional human answering services cost $800-$2,500/month. Boltcall starts at $79/month and includes unlimited call handling, appointment booking, and 24/7 coverage."}},
+        {"@type": "Question", "name": "Is an AI after hours answering service better than a human service?", "acceptedAnswer": {"@type": "Answer", "text": "For speed, cost, and availability, AI outperforms human after hours services. AI answers in 1-2 rings with no hold times, handles unlimited simultaneous calls, and costs a fraction of traditional services. For emotionally complex calls, a human touch can be valuable."}},
+        {"@type": "Question", "name": "Can an after hours answering service book appointments?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Boltcall's AI after hours service integrates with your scheduling software to book appointments in real time — even at 2 AM. Callers receive an instant SMS confirmation and your staff sees the booking the next morning."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
     return () => {
+      document.getElementById('faq-schema-hours')?.remove();
+      document.getElementById('breadcrumb-jsonld-hours')?.remove();
       document.getElementById('person-schema')?.remove();
       document.head.removeChild(script);
     };
@@ -556,6 +578,41 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                   <p className="text-lg text-gray-700 italic leading-relaxed">"More than 60% of business calls happen outside traditional business hours. Companies that provide 24/7 phone coverage capture up to 40% more leads than those that only answer during the day."</p>
                   <footer className="mt-3 text-sm font-semibold text-gray-600">— BIA/Kelsey, Local Commerce Monitor Research</footer>
                 </blockquote>
+
+                {/* FAQ Section */}
+                <motion.section
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="mt-16 mb-8"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+                  <div className="space-y-6 divide-y divide-gray-100">
+                    <div className="pt-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best after hours answering service for small businesses?</h3>
+                      <p className="text-gray-700">The best after hours answering service for local businesses is an AI-powered solution like Boltcall. It offers 24/7 availability, answers in under 2 rings, costs 60–80% less than traditional human services, and handles unlimited concurrent calls without hold times.</p>
+                    </div>
+                    <div className="pt-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an after hours answering service cost?</h3>
+                      <p className="text-gray-700">AI after hours answering services like Boltcall cost $79–$249/month. Traditional human answering services cost $800–$2,500/month. For most local businesses, AI is the more cost-effective option with better response times and 24/7 coverage. See our <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">full pricing guide</Link>.</p>
+                    </div>
+                    <div className="pt-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI after hours answering service better than a human service?</h3>
+                      <p className="text-gray-700">For speed, cost, and availability, AI outperforms human after hours services. AI answers in 1–2 rings with no hold times, handles unlimited simultaneous calls, and costs a fraction of human services. For emotionally complex calls, a human touch is still valuable.</p>
+                    </div>
+                    <div className="pt-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an after hours answering service book appointments?</h3>
+                      <p className="text-gray-700">Yes. Boltcall's AI after hours service integrates with your scheduling software to book appointments in real time — even at 2 AM. Callers receive an instant SMS confirmation and your staff sees the booking the next morning. Learn more about <Link to="/features/ai-receptionist" className="text-blue-600 hover:underline">appointment booking features</Link>.</p>
+                    </div>
+                    <div className="pt-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Which industries benefit most from after hours answering services?</h3>
+                      <p className="text-gray-700">Dental practices, HVAC companies, plumbers, law firms, and med spas see the strongest ROI. These businesses receive high-urgency calls after hours where the first business to respond wins the customer. Any local service business that generates revenue from inbound calls benefits from after hours coverage.</p>
+                    </div>
+                  </div>
+                  <div className="mt-8 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
+                    Related: <Link to="/blog/how-ai-receptionist-works" className="text-blue-600 hover:underline">How AI receptionists work</Link> &middot; <Link to="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">Is AI worth it?</Link> &middot; <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">Cost &amp; pricing</Link> &middot; <Link to="/pricing" className="text-blue-600 hover:underline">View pricing</Link> &middot; <Link to="/signup" className="text-blue-600 hover:underline">Start free</Link>
+                  </div>
+                </motion.section>
                 </article>
               </div>
             </div>

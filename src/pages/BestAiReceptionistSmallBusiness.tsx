@@ -64,10 +64,27 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist for Small Business", "item": "https://boltcall.org/blog/best-ai-receptionist-small-business"}]});
     document.head.appendChild(bcScript);
+
+    const faqScriptSmallBiz = document.createElement('script');
+    faqScriptSmallBiz.type = 'application/ld+json';
+    faqScriptSmallBiz.id = 'faq-schema-small-biz';
+    faqScriptSmallBiz.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type": "Question", "name": "What is the best AI receptionist for small businesses?", "acceptedAnswer": {"@type": "Answer", "text": "Boltcall is the best AI receptionist for local service small businesses. It answers calls 24/7, books appointments, captures leads, and sends SMS follow-ups — starting at $79/month with no long-term contract."}},
+        {"@type": "Question", "name": "How does an AI receptionist help a small business?", "acceptedAnswer": {"@type": "Answer", "text": "An AI receptionist helps small businesses by answering 100% of inbound calls, booking appointments automatically, qualifying leads, and sending appointment reminders — eliminating the revenue lost from missed calls while costing 90% less than a human receptionist."}},
+        {"@type": "Question", "name": "Is an AI receptionist easy to set up for a small business?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Boltcall's AI receptionist takes under 30 minutes to set up. You enter your business info, services, and hours. The AI is ready to answer calls the same day with no technical skills required."}},
+        {"@type": "Question", "name": "What types of small businesses use AI receptionists?", "acceptedAnswer": {"@type": "Answer", "text": "AI receptionists are used by dental offices, HVAC companies, law firms, med spas, plumbers, electricians, real estate agents, and any local service business that relies on inbound calls to generate revenue."}}
+      ]
+    });
+    document.head.appendChild(faqScriptSmallBiz);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
       document.head.removeChild(script);
+      document.getElementById('faq-schema-small-biz')?.remove();
     };
   }, []);
 
@@ -143,6 +160,10 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                 viewport={{ once: true }}
                 className="mb-12"
               >
+                <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium mb-6">
+                  An AI receptionist for small businesses is a 24/7 automated call-answering system that books appointments, captures leads, and handles common inquiries — at $79–$200/month versus $3,500+/month for a human receptionist. Boltcall is built specifically for local service businesses that can't afford to miss a single inbound call.
+                </p>
+
                 <p className="text-xl text-gray-700 leading-relaxed mb-6">
                   Small businesses lose an average of <strong>$75,000 annually</strong> from missed calls, according to recent industry research. While you're focused on serving customers, potential clients are calling competitors who answer their phones.
                 </p>
@@ -591,6 +612,38 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section className="bg-white py-16 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6 divide-y divide-gray-100">
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI receptionist for small businesses?</h3>
+              <p className="text-gray-700">Boltcall is the top-rated AI receptionist for local service businesses. It offers 24/7 call handling, real-time booking, SMS follow-ups, and lead capture starting at $79/month. See our full <Link to="/blog/best-ai-receptionist-tools" className="text-blue-600 hover:underline">AI receptionist tools comparison</Link>.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI receptionist help a small business?</h3>
+              <p className="text-gray-700">An AI receptionist answers 100% of inbound calls, books appointments automatically, qualifies leads, and sends reminders — eliminating revenue lost from missed calls while costing 90% less than a human receptionist.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist easy to set up for a small business?</h3>
+              <p className="text-gray-700">Yes. Boltcall's AI receptionist takes under 30 minutes to set up. You enter your business info, services, and hours. The AI is ready to answer calls the same day with no technical skills required. Learn more about <Link to="/features/ai-receptionist" className="text-blue-600 hover:underline">Boltcall's setup process</Link>.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What types of small businesses use AI receptionists?</h3>
+              <p className="text-gray-700">AI receptionists are used by dental offices, HVAC companies, law firms, med spas, plumbers, electricians, real estate agents, and any local service business that relies on inbound calls. Read our <Link to="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">cost-benefit analysis</Link>.</p>
+            </div>
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an AI receptionist cost for a small business?</h3>
+              <p className="text-gray-700">AI receptionists for small businesses cost $79–$200/month — a fraction of the $3,500+/month for a human receptionist. Boltcall starts at $79/month with no long-term contract. See full <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">pricing details</Link>.</p>
+            </div>
+          </div>
+          <div className="mt-8 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
+            Related: <Link to="/blog/best-ai-receptionist-tools" className="text-blue-600 hover:underline">Best AI receptionist tools</Link> &middot; <Link to="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">Is it worth it?</Link> &middot; <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">Cost &amp; pricing</Link> &middot; <Link to="/pricing" className="text-blue-600 hover:underline">Boltcall pricing</Link> &middot; <Link to="/signup" className="text-blue-600 hover:underline">Start free</Link>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </>
   );

@@ -57,7 +57,22 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-plumbers';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type": "Question", "name": "How does AI phone answering work for plumbers?", "acceptedAnswer": {"@type": "Answer", "text": "AI phone answering for plumbers automatically answers every inbound call 24/7, collects job details (address, issue type, urgency), books appointments or dispatches emergency calls, and sends the plumber a text summary — all without a human dispatcher."}},
+        {"@type": "Question", "name": "Can AI handle plumbing emergency calls after hours?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Boltcall's AI identifies emergency keywords (burst pipe, flooding, no hot water) and immediately routes the call or sends an urgent alert to the on-call plumber — typically within 20 seconds of the call ending."}},
+        {"@type": "Question", "name": "How much does AI phone answering cost for a plumbing business?", "acceptedAnswer": {"@type": "Answer", "text": "AI phone answering for plumbers costs $79–$179/month with Boltcall. That compares to $800–2,500/month for a traditional answering service or $3,200+/month for a full-time receptionist. Most plumbing businesses recover the cost with a single recovered emergency call."}},
+        {"@type": "Question", "name": "What is the best AI answering service for plumbers?", "acceptedAnswer": {"@type": "Answer", "text": "Boltcall is the top-rated AI answering service for plumbing businesses. It includes 24/7 call answering, emergency call routing, appointment booking, SMS follow-ups, and no-show reminders — all purpose-built for local service businesses."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
     return () => {
+      document.getElementById('faq-schema-plumbers')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
       document.head.removeChild(script);
@@ -530,6 +545,41 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
                     <li>• Requires reliable internet connection for consistent uptime</li>
                   </ul>
                 </div>
+              </div>
+            </motion.section>
+
+            {/* FAQ Section */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mt-12 mb-8"
+            >
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+              <div className="space-y-6 divide-y divide-gray-100">
+                <div className="pt-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering work for plumbers?</h3>
+                  <p className="text-gray-700">AI phone answering automatically answers every inbound call 24/7, collects job details (address, issue type, urgency), books appointments or dispatches emergency calls, and sends a text summary to the plumber — without a human dispatcher.</p>
+                </div>
+                <div className="pt-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI handle plumbing emergency calls after hours?</h3>
+                  <p className="text-gray-700">Yes. Boltcall's AI identifies emergency keywords (burst pipe, flooding, no hot water) and routes the call or sends an urgent alert to the on-call plumber within 20 seconds of the call ending. No missed emergencies.</p>
+                </div>
+                <div className="pt-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does AI phone answering cost for a plumbing business?</h3>
+                  <p className="text-gray-700">Boltcall costs $79–$179/month — versus $800–$2,500/month for a traditional answering service. Most plumbing businesses recover the cost with a single recovered emergency job. See our full <a href="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">pricing breakdown</a>.</p>
+                </div>
+                <div className="pt-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI answering service for plumbers?</h3>
+                  <p className="text-gray-700">Boltcall is built specifically for local service businesses including plumbers. It includes 24/7 call answering, emergency routing, appointment booking, SMS follow-ups, and no-show reminders. <a href="/signup" className="text-blue-600 hover:underline">Start free today.</a></p>
+                </div>
+                <div className="pt-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Will AI phone answering integrate with my plumbing dispatch software?</h3>
+                  <p className="text-gray-700">Boltcall integrates with Google Calendar and major dispatch platforms to book jobs directly into your schedule. Emergency calls trigger immediate SMS alerts to your phone with full call details. Learn more about <a href="/features/ai-receptionist" className="text-blue-600 hover:underline">Boltcall's integrations.</a></p>
+                </div>
+              </div>
+              <div className="mt-8 p-4 bg-blue-50 rounded-xl text-sm text-gray-700">
+                Related: <a href="/blog/ai-phone-answering-dentists" className="text-blue-600 hover:underline">AI phone answering for dentists</a> &middot; <a href="/blog/is-ai-receptionist-worth-it" className="text-blue-600 hover:underline">Is AI worth it?</a> &middot; <a href="/blog/how-ai-receptionist-works" className="text-blue-600 hover:underline">How AI receptionists work</a> &middot; <a href="/pricing" className="text-blue-600 hover:underline">View pricing</a>
               </div>
             </motion.section>
 
