@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { MessageCircle, Globe, Users, CheckCircle, ArrowRight } from 'lucide-react';
@@ -243,7 +243,7 @@ const WebsiteChatVoiceWidgetPage: React.FC = () => {
               <p className="text-blue-100 mb-6">
                 Engage every visitor and capture more leads with an intelligent website widget.
               </p>
-              <Link to="/signup">
+              <Link to="/setup">
                 <Button
                   variant="primary"
                   size="lg"

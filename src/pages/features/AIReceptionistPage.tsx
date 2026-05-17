@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { Phone, Users, Calendar, CheckCircle } from 'lucide-react';
@@ -804,7 +804,7 @@ const AIReceptionistPage: React.FC = () => {
             <h2 className="text-gray-900 font-medium mt-4 text-4xl">Fast. Simple. Grows with you.</h2>
             <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Get your AI receptionist running in 5 minutes — free. Connect it to your phone, website, and more.</p>
             <Link
-              to="/signup"
+              to="/setup"
               className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Start the free setup

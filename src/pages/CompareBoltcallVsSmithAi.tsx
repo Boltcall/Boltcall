@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -599,7 +599,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
                 Join hundreds of local businesses that chose Boltcall for flat-rate AI phone answering, lead automation, and a free website. Setup takes 24 hours. No contracts. No per-call fees.
               </p>
               <Link
-                to="/signup"
+                to="/setup"
                 className="inline-flex items-center bg-white text-blue-600 font-bold text-lg px-8 py-4 rounded-lg hover:bg-blue-50 transition-colors duration-200"
               >
                 Try Boltcall Free

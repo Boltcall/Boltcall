@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Check, Star } from 'lucide-react';
@@ -37,7 +37,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
   const handleCtaClick = () => {
     // Navigate to signup page
-    navigate('/signup');
+    navigate('/setup');
   };
 
 

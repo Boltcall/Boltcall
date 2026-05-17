@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -690,7 +690,7 @@ const AiReceptionistRoi: React.FC = () => {
                     captures every lead -- 24/7.
                   </p>
                   <a
-                    href="/signup"
+                    href="/setup"
                     className="inline-flex items-center gap-2 bg-white text-[#2563EB] font-semibold text-lg px-8 py-4 rounded-lg border-2 border-[#0B1220] shadow-[4px_4px_0px_0px_#0B1220] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
                   >
                     Get Started Free

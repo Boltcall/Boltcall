@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import { Phone, Zap, Users, TrendingUp, Globe, CheckCircle } from 'lucide-react';
@@ -283,7 +283,7 @@ const About: React.FC = () => {
             <h2 className="text-gray-900 font-medium mt-4 text-4xl">Ready to Get Started?</h2>
             <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Join thousands of businesses using Boltcall to transform their customer communication.</p>
             <Link
-              to="/signup"
+              to="/setup"
               className="inline-block mt-6"
             >
               <Button

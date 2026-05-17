@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { FileText, Users, Phone, Calendar, CheckCircle } from 'lucide-react';
@@ -645,7 +645,7 @@ const InstantFormReplyPage: React.FC = () => {
             <h2 className="text-gray-900 font-medium mt-4 text-4xl">Fast. Simple. Scalable.</h2>
             <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Launch an AI agent in 5 minutes at no cost. Connect it to all your business channels.</p>
             <Link
-              to="/signup"
+              to="/setup"
               className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Start the free setup

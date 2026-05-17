@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Menu, X, ChevronDown, Phone, Zap, MessageSquare, Bell, Target, Globe, RotateCw, Gauge, Calculator, Sparkles, Scale, BookOpen, Book, Mail, ArrowRight, Filter } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -574,7 +574,7 @@ const Header: React.FC = () => {
                   </Link>
                 </div>
                 <Link
-                  to="/signup"
+                  to="/setup"
                   className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-colors ${isOverBlueBackground ? 'bg-white text-brand-blue hover:bg-blue-50' : 'bg-brand-blue text-white hover:bg-brand-blueDark'}`}
                 >
                   {t('header.getStarted')}
@@ -701,7 +701,7 @@ const Header: React.FC = () => {
                       {t('header.login')}
                     </Link>
                     <Link
-                      to="/signup"
+                      to="/setup"
                       onClick={() => setIsMenuOpen(false)}
                       className="block w-full py-3 text-base font-bold rounded-lg bg-brand-blue text-white hover:bg-brand-blueDark transition-colors text-center"
                     >

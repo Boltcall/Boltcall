@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { RefreshCw, TrendingUp, Target, CheckCircle, ArrowRight } from 'lucide-react';
@@ -246,7 +246,7 @@ const AIFollowUpSystemPage: React.FC = () => {
               <p className="text-blue-100 mb-6">
                 Never lose a lead again with automated, intelligent follow-ups.
               </p>
-              <Link to="/signup">
+              <Link to="/setup">
                 <Button
                   variant="primary"
                   size="lg"

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -526,7 +526,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
                 Boltcall answers every call 24/7, books appointments, and captures leads automatically. Pure AI — no human receptionists, no per-call fees. Setup in 24 hours.
               </p>
               <Link
-                to="/signup"
+                to="/setup"
                 className="inline-flex items-center bg-white text-blue-600 font-bold text-lg px-8 py-4 rounded-lg hover:bg-blue-50 transition-colors"
               >
                 Start Free Today

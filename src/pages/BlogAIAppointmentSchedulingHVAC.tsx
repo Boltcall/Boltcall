@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -745,7 +745,7 @@ const BlogAIAppointmentSchedulingHVAC: React.FC = () => {
                     Set up AI appointment scheduling for your HVAC company in under 30 minutes. Free to start — no credit card required.
                   </p>
                   <Link
-                    to="/signup"
+                    to="/setup"
                     className="mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 shadow-sm active:shadow-none"
                   >
                     Start free — set up in 30 minutes

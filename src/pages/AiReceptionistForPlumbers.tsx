@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -684,7 +684,7 @@ const AiReceptionistForPlumbers: React.FC = () => {
                 Every missed call is a job your competitor gets. Boltcall's AI receptionist answers every call, qualifies emergencies, books appointments, and follows up with leads — 24/7, starting within 24 hours.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/signup" className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-blue-50 transition-colors">
+                <Link to="/setup" className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-blue-50 transition-colors">
                   Start Free Setup
                   <ArrowRight className="w-5 h-5" />
                 </Link>

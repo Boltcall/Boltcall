@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { RotateCw, TrendingUp, DollarSign, CheckCircle, ArrowRight } from 'lucide-react';
@@ -230,7 +230,7 @@ const LeadReactivationPage: React.FC = () => {
               <p className="text-blue-100 mb-6">
                 Turn your past leads into new customers with automated reactivation campaigns.
               </p>
-              <Link to="/signup">
+              <Link to="/setup">
                 <Button
                   variant="primary"
                   size="lg"

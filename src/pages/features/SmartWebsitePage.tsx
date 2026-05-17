@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { Sparkles, Globe, Zap, CheckCircle, ArrowRight, TrendingUp } from 'lucide-react';
@@ -248,7 +248,7 @@ const SmartWebsitePage: React.FC = () => {
               <p className="text-blue-100 mb-6">
                 Let AI optimize your website automatically and watch your conversions grow.
               </p>
-              <Link to="/signup">
+              <Link to="/setup">
                 <Button
                   variant="primary"
                   size="lg"

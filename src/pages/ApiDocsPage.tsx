@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -570,7 +570,7 @@ const ApiDocsPage: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  to="/signup"
+                  to="/setup"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   <Key className="w-4 h-4" />
@@ -1159,7 +1159,7 @@ console.log('Call started:', call.id);`}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
                 <Link
-                  to="/signup"
+                  to="/setup"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   Get API Key

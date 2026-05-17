@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -98,7 +98,7 @@ const PricingSection: React.FC = () => {
   ];
 
   const handlePlanSelect = () => {
-    navigate('/signup');
+    navigate('/setup');
   };
 
   const handleContactUs = () => {

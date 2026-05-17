@@ -1,4 +1,4 @@
-import React, { useState, Suspense } from 'react';
+﻿import React, { useState, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
 import { Phone, Calendar, MessageSquare, Users, Star, Megaphone } from 'lucide-react';
@@ -178,7 +178,7 @@ const Hero: React.FC = () => {
               transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.40 }}
             >
               <Link
-                to="/signup"
+                to="/setup"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
               >
                 {t('hero.startFree')}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -436,7 +436,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
               Try Boltcall free and see why local businesses choose transparent pricing, 24-hour setup, and a complete AI automation suite over quote-based alternatives.
             </p>
             <Link
-              to="/signup"
+              to="/setup"
               className="inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors shadow-lg"
             >
               Try Boltcall Free

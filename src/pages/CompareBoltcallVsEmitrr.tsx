@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -517,7 +517,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                   Get a free AI receptionist, chatbot, and website — set up in 24 hours. No contracts, no risk.
                 </p>
                 <Link
-                  to="/signup"
+                  to="/setup"
                   className="inline-flex items-center bg-white text-blue-600 font-bold py-4 px-8 rounded-lg text-lg hover:bg-blue-50 transition-colors shadow-lg"
                 >
                   Try Boltcall Free

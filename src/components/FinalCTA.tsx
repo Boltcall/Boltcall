@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Section from './ui/Section';
 import { Users, Phone, Calendar } from 'lucide-react';
@@ -36,7 +36,7 @@ const FinalCTA: React.FC<FinalCTAProps> = ({
   headline,
   description,
   buttonText,
-  buttonHref = '/signup',
+  buttonHref = '/setup',
   icons,
   presetKey,
 }) => {
