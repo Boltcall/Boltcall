@@ -13,6 +13,7 @@ import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
 import TableOfContents from '../components/TableOfContents';
 import { useTableOfContents } from '../hooks/useTableOfContents';
+import KeyTakeaways from '../components/blog/KeyTakeaways';
 
 const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
   const headings = useTableOfContents();
@@ -205,6 +206,14 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
                 Every day, the average small business misses 62% of its after-hours calls — and 85% of those callers never call back (BIA Advisory, 2024). That's not a phone problem. That's a revenue leak hiding in plain sight. An AI answering service plugs that leak for under $50 a month. This guide shows you exactly how it works, what it costs, and how to go live today.
               </p>
             </motion.div>
+
+            <KeyTakeaways items={[
+              'AI answering services handle calls, texts, and web leads 24/7 for a fraction of the cost of a human receptionist.',
+              'The average small business misses 62% of after-hours calls — AI closes that gap permanently.',
+              'Most platforms take under 30 minutes to set up and go live the same day.',
+              'AI answering costs $49–$299/month vs. $1,500–$3,000/month for part-time human staff.',
+              'Responding to a lead within 60 seconds increases conversion rates by 391% — AI makes that automatic.',
+            ]} />
 
             {/* ── SECTION 2: What Is an AI Answering Service? ── */}
             <motion.section

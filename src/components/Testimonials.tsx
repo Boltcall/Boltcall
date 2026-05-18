@@ -1,184 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import Card from './ui/Card';
-import Section from './ui/Section';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Star, Quote } from 'lucide-react';
+
+const testimonials = [
+  {
+    quote:
+      "We used to miss 30–40 calls a week after hours. With Boltcall, every single one gets answered and booked automatically. Our first month, we recovered $12,000 in jobs we would have lost.",
+    name: 'Marcus T.',
+    role: 'Owner',
+    business: 'Summit HVAC Services',
+    location: 'Phoenix, AZ',
+    rating: 5,
+    highlight: '$12,000 recovered in month one',
+  },
+  {
+    quote:
+      "Our front desk was drowning in calls during peak season. Boltcall handles routine bookings 24/7 so my team focuses on patients in the chair — not the phone. Patient satisfaction is up noticeably.",
+    name: 'Dr. Sarah K.',
+    role: 'Owner & Dentist',
+    business: 'Bright Smile Dental',
+    location: 'Austin, TX',
+    rating: 5,
+    highlight: 'Team freed from phone, patients happy',
+  },
+  {
+    quote:
+      "I was skeptical an AI could qualify roofing leads, but callers tell me it's seamless. We're booking storm-damage inspections at 2am now. No other roofer in our market is doing this.",
+    name: 'Jake R.',
+    role: 'Co-founder',
+    business: 'Ridgeline Roofing Co.',
+    location: 'Nashville, TN',
+    rating: 5,
+    highlight: 'Booking storm inspections at 2am',
+  },
+];
 
 const Testimonials: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      role: 'CEO, TechStart Inc.',
-      company: 'TechStart Inc.',
-      content: 'Boltcall has transformed our lead management. We went from missing 60% of leads to capturing 95% within 30 seconds. Our revenue increased by 40% in just 3 months.',
-      rating: 5,
-      avatar: 'SJ'
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Sales Director, GrowthCo',
-      company: 'GrowthCo',
-      content: 'The AI receptionist is incredible. It handles our high call volume perfectly and books appointments even when we\'re not available. Our team can focus on closing deals.',
-      rating: 5,
-      avatar: 'MC'
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Founder, HealthPlus',
-      company: 'HealthPlus',
-      content: 'We were losing patients to competitors because we couldn\'t answer calls after hours. Boltcall solved this completely. Our patient bookings increased by 60%.',
-      rating: 5,
-      avatar: 'ER'
-    },
-    {
-      name: 'David Thompson',
-      role: 'Marketing Manager, RetailPro',
-      company: 'RetailPro',
-      content: 'The reporting features are game-changing. We can see exactly how many leads we\'re capturing, conversion rates, and ROI. It\'s like having a full analytics team.',
-      rating: 5,
-      avatar: 'DT'
-    }
-  ];
-
-  const logos = [
-    'TechStart', 'GrowthCo', 'HealthPlus', 'RetailPro', 'InnovateLab', 'ScaleUp'
-  ];
-
-  // Auto-rotate testimonials
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [testimonials.length]);
-
-  const nextTestimonial = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  };
-
-  const prevTestimonial = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-  };
-
   return (
-    <Section id="testimonials" background="gray">
-      <div className="text-center mb-16">
-        <motion.h2
-          className="text-3xl md:text-4xl font-bold text-text-main mb-4"
-          initial={{ opacity: 0, y: 30 }}
+    <section className="py-16 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          className="text-center mb-12"
         >
-          What Our Customers Say
-        </motion.h2>
-        <motion.p
-          className="text-lg text-text-muted max-w-2xl mx-auto"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
-          Join thousands of businesses already using Boltcall to capture more leads
-        </motion.p>
-      </div>
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-3">Customer Stories</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Local Businesses Winning With Speed
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto text-base">
+            Real results from real business owners who stopped losing leads to missed calls.
+          </p>
+        </motion.div>
 
-      {/* Testimonial Slider */}
-      <div className="max-w-4xl mx-auto mb-16">
-        <div className="relative">
-          <AnimatePresence mode="wait">
+        <div className="grid md:grid-cols-3 gap-6">
+          {testimonials.map((t, i) => (
             <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.5 }}
+              key={i}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.12 }}
+              className="bg-white rounded-2xl border border-gray-200 p-7 shadow-sm flex flex-col"
             >
-              <Card className="text-center">
-                <div className="mb-6">
-                  <div className="flex justify-center mb-4">
-                    {[...Array(testimonials[currentIndex].rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <blockquote className="text-xl text-text-muted italic leading-relaxed mb-6">
-                    "{testimonials[currentIndex].content}"
-                  </blockquote>
-                </div>
+              {/* Stars */}
+              <div className="flex gap-0.5 mb-4">
+                {Array.from({ length: t.rating }).map((_, si) => (
+                  <Star key={si} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                ))}
+              </div>
 
-                <div className="flex items-center justify-center gap-4">
-                  <div className="w-12 h-12 bg-brand-blue text-white rounded-full flex items-center justify-center font-bold">
-                    {testimonials[currentIndex].avatar}
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-text-main">
-                      {testimonials[currentIndex].name}
-                    </div>
-                    <div className="text-text-muted">
-                      {testimonials[currentIndex].role}
-                    </div>
-                  </div>
-                </div>
-              </Card>
+              {/* Highlight pill */}
+              <div className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4 w-fit">
+                {t.highlight}
+              </div>
+
+              {/* Quote */}
+              <blockquote className="text-gray-700 text-sm leading-relaxed flex-grow mb-6 relative">
+                <Quote className="w-6 h-6 text-blue-100 absolute -top-1 -left-1" />
+                <span className="relative">"{t.quote}"</span>
+              </blockquote>
+
+              {/* Attribution */}
+              <div className="border-t border-gray-100 pt-4">
+                <p className="font-bold text-gray-900 text-sm">{t.name}</p>
+                <p className="text-gray-500 text-xs">{t.role} · {t.business}</p>
+                <p className="text-gray-400 text-xs">{t.location}</p>
+              </div>
             </motion.div>
-          </AnimatePresence>
-
-          {/* Navigation Buttons */}
-          <button
-            onClick={prevTestimonial}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
-            aria-label="Previous testimonial"
-          >
-            <ChevronLeft className="w-5 h-5 text-brand-blue" />
-          </button>
-          <button
-            onClick={nextTestimonial}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors"
-            aria-label="Next testimonial"
-          >
-            <ChevronRight className="w-5 h-5 text-brand-blue" />
-          </button>
-        </div>
-
-        {/* Dots Indicator */}
-        <div className="flex justify-center gap-2 mt-8">
-          {testimonials.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                index === currentIndex ? 'bg-brand-blue' : 'bg-gray-300'
-              }`}
-              aria-label={`Go to testimonial ${index + 1}`}
-            />
           ))}
         </div>
       </div>
-
-      {/* Company Logos */}
-      <motion.div
-        className="text-center"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        viewport={{ once: true }}
-      >
-        <p className="text-text-muted mb-8">Trusted by leading companies</p>
-        <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-          {logos.map((logo, index) => (
-            <div
-              key={index}
-              className="text-2xl font-bold text-text-muted hover:text-brand-blue transition-colors cursor-pointer"
-            >
-              {logo}
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </Section>
+    </section>
   );
 };
 

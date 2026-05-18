@@ -9,6 +9,7 @@ import BentoCard from '../components/ui/bento-card';
 // Lazy load below-the-fold components to reduce initial bundle
 const HowItWorks = lazy(() => import('../components/HowItWorks'));
 const FreeSetup = lazy(() => import('../components/FreeSetup'));
+const Testimonials = lazy(() => import('../components/Testimonials'));
 const Pricing = lazy(() => import('../components/Pricing'));
 const IntegrationHero = lazy(() => import('../components/ui/integration-hero'));
 const FAQ = lazy(() => import('../components/FAQ'));
@@ -176,6 +177,14 @@ const Home: React.FC = () => {
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>
                 <IntegrationHero />
+              </Suspense>
+            </LazySection>
+          </div>
+
+          <div className="relative md:-top-[255px] md:mt-24">
+            <LazySection rootMargin="400px" minHeight="320px">
+              <Suspense fallback={<div className="min-h-[320px]" />}>
+                <Testimonials />
               </Suspense>
             </LazySection>
           </div>

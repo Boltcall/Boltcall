@@ -91,6 +91,7 @@ const DPA = React.lazy(() => import('../pages/DPA'));
 const Contact = React.lazy(() => import('../pages/Contact'));
 const BookCall = React.lazy(() => import('../pages/BookCall'));
 const About = React.lazy(() => import('../pages/About'));
+const Newsletter = React.lazy(() => import('../pages/Newsletter'));
 const PricingPage = React.lazy(() => import('../pages/PricingPage'));
 const AiCoursePage = React.lazy(() => import('../pages/AiCoursePage'));
 const Documentation = React.lazy(() => import('../pages/Documentation'));
@@ -433,7 +434,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/api-documentation" element={<ApiDocsPage />} />
         <Route element={<BlogSchemaWrapper />}>
         <Route path="/blog" element={<BlogCenter />} />
-        <Route path="/newsletter" element={<Navigate to="/" replace />} />
+        <Route path="/newsletter" element={<Newsletter />} />
         <Route path="/blog/the-new-reality-for-local-businesses" element={<Blog />} />
         <Route path="/blog/why-speed-matters" element={<BlogSpeed />} />
         <Route path="/blog/why-website-speed-is-everything" element={<BlogSpeedWebsite />} />

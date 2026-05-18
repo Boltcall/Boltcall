@@ -9,6 +9,7 @@ import ReadingProgress from '../components/ReadingProgress';
 import TableOfContents from '../components/TableOfContents';
 import { useTableOfContents } from '../hooks/useTableOfContents';
 import Breadcrumbs from '../components/Breadcrumbs';
+import KeyTakeaways from '../components/blog/KeyTakeaways';
 
 const BlogAIReceptionistDentists: React.FC = () => {
   const headings = useTableOfContents();
@@ -147,6 +148,14 @@ const BlogAIReceptionistDentists: React.FC = () => {
                 makes sure your practice never loses a patient to a missed call again.
               </p>
             </motion.div>
+
+            <KeyTakeaways items={[
+              '1 in 3 dental calls goes unanswered — every missed call is a patient choosing the practice next door.',
+              'AI receptionists answer instantly 24/7, book appointments in real time, and send automated reminders to cut no-shows.',
+              'New patient acquisition costs $200–$400; answering that first call with AI pays for itself in one booking.',
+              'AI handles routine calls (scheduling, hours, insurance FAQs) while flagging dental emergencies for immediate human follow-up.',
+              'Dental practices using AI answering typically see a 25–40% increase in booked appointments within 60 days.',
+            ]} />
 
             {/* Table of Contents */}
             <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 mb-12">

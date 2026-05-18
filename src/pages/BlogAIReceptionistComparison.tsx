@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
+import KeyTakeaways from '../components/blog/KeyTakeaways';
 
 const BlogAIReceptionistComparison: React.FC = () => {
   useEffect(() => {
@@ -234,6 +235,14 @@ const BlogAIReceptionistComparison: React.FC = () => {
             compared the top 5 AI receptionist tools for small businesses to help you make the right choice.
           </p>
         </motion.div>
+
+        <KeyTakeaways items={[
+          'The best AI receptionist for small business answers calls 24/7, qualifies leads, and books appointments in a single conversation.',
+          'Cost varies from $50–$500/month — far cheaper than the $1,500–$3,000/month cost of a part-time human receptionist.',
+          'Top tools (Boltcall, Smith.ai, Numa) differ mainly in voice quality, booking depth, and CRM integrations.',
+          'For home service businesses, prioritize tools that handle after-hours calls and can schedule service windows automatically.',
+          'Setup time ranges from 20 minutes (Boltcall) to 1–2 weeks for enterprise platforms — match the tool to your timeline.',
+        ]} />
 
         {/* Comparison Table Overview */}
         <motion.section

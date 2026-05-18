@@ -11,6 +11,7 @@ import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
 import TableOfContents from '../components/TableOfContents';
 import { useTableOfContents } from '../hooks/useTableOfContents';
+import KeyTakeaways from '../components/blog/KeyTakeaways';
 
 const BestAIReceptionistHomeServices: React.FC = () => {
   const headings = useTableOfContents();
@@ -112,6 +113,14 @@ const BestAIReceptionistHomeServices: React.FC = () => {
                   Updated for 2026 buying criteria
                 </span>
               </div>
+
+              <KeyTakeaways items={[
+                'Home service businesses miss 40–60% of inbound leads — most of them go to the first competitor who picks up.',
+                'The best AI receptionist for home services handles calls 24/7, qualifies the job type, and books the appointment on the spot.',
+                'Look for platforms with natural voice AI (not robotic IVR), real-time calendar booking, and instant SMS follow-up.',
+                'Boltcall, Smith.ai, and Numa are the top options — each with different tradeoffs on price, setup time, and call handling depth.',
+                'For plumbers, HVAC, and roofing, after-hours coverage is the single biggest revenue unlock — 40%+ of job leads come in outside business hours.',
+              ]} />
 
               <motion.div
                 initial={{ opacity: 0, y: 12 }}

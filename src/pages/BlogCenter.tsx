@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, Clock } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, Star } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
@@ -16,7 +16,18 @@ interface BlogPost {
   date: string;
   readTime: string;
   category: string;
+  image?: string;
+  featured?: boolean;
 }
+
+const FILTER_TABS = [
+  { label: 'All', value: 'All' },
+  { label: 'AI Receptionist', value: 'AI Receptionist' },
+  { label: 'Speed to Lead', value: 'Speed to Lead' },
+  { label: 'Industry Guides', value: 'Industry Guide' },
+  { label: 'How-to', value: 'How-to' },
+  { label: 'Comparisons', value: 'Comparison' },
+];
 
 const blogPosts: BlogPost[] = [
   {
@@ -26,6 +37,8 @@ const blogPosts: BlogPost[] = [
     date: 'May 7, 2026',
     readTime: '10 min read',
     category: 'HVAC|Speed to Lead|Industry Guide',
+    image: '/images/blog/speed-pro.webp',
+    featured: true,
   },
   {
     title: 'AI Appointment Scheduling for HVAC Companies: The 2026 Guide',
@@ -34,6 +47,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 6, 2026',
     readTime: '10 min read',
     category: 'HVAC|Scheduling|How-to',
+    image: '/images/blog/speed.webp',
   },
   {
     title: 'How a Roofing Company Can Stop Losing Leads From Missed Calls',
@@ -42,6 +56,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 5, 2026',
     readTime: '10 min read',
     category: 'Roofing|Speed to Lead|Industry Guide',
+    image: '/images/blog/ai-services.webp',
   },
   {
     title: 'Best AI Answering Service for Dental and Medical Practices (2026)',
@@ -50,6 +65,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 4, 2026',
     readTime: '10 min read',
     category: 'Dental|Medical|Industry Guide',
+    image: '/images/blog/ai-receptionist.webp',
   },
   {
     title: 'How Home Service Companies Follow Up With <span className="text-blue-600">Google Ads</span> Leads',
@@ -58,6 +74,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 3, 2026',
     readTime: '10 min read',
     category: 'Home Services|Google Ads|Speed to Lead',
+    image: '/images/blog/speed.webp',
   },
   {
     title: 'AI Receptionist for Dentists: Stop Losing Patients to Missed Calls',
@@ -66,6 +83,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 1, 2026',
     readTime: '9 min read',
     category: 'Dental|AI Receptionist|Industry Guide',
+    image: '/images/blog/ai-receptionist.webp',
   },
   {
     title: 'AI Receptionist for <span className="text-blue-600">Real Estate Agents</span>: Convert Inbound Leads in Under 60 Seconds',
@@ -74,6 +92,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 30, 2026',
     readTime: '9 min read',
     category: 'Real Estate|AI Receptionist|Speed to Lead',
+    image: '/images/blog/ai-services-pro.webp',
   },
   {
     title: 'AI Receptionist for Med Spas: Never Miss a Booking Again',
@@ -82,6 +101,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 29, 2026',
     readTime: '10 min read',
     category: 'Med Spa|AI Receptionist|Industry Guide',
+    image: '/images/blog/ai-receptionist.webp',
   },
   {
     title: 'WhatsApp Appointment Booking for Plumbers: The Complete 2026 Guide',
@@ -98,6 +118,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 17, 2026',
     readTime: '9 min read',
     category: 'After-Hours|Speed to Lead',
+    image: '/images/blog/after-hours-01.jpg',
   },
   {
     title: 'Never Miss a <span className="text-blue-600">Call After Business Hours</span>',
@@ -106,6 +127,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 12, 2026',
     readTime: '11 min read',
     category: 'After-Hours|AI Receptionist',
+    image: '/images/blog/after-hours-02.jpg',
   },
 
   {
@@ -444,6 +466,17 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
 ];
 
 const BlogCenter: React.FC = () => {
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const filteredPosts = useMemo(() => {
+    if (activeCategory === 'All') return blogPosts;
+    return blogPosts.filter(post =>
+      post.category.split('|').some(cat =>
+        cat.trim().toLowerCase().includes(activeCategory.toLowerCase())
+      )
+    );
+  }, [activeCategory]);
+
   useEffect(() => {
     document.title = 'AI Receptionist Insights & Guides | Boltcall';
     updateMetaDescription('Expert guides on AI receptionists, speed-to-lead, missed call recovery, and 24/7 call answering for local businesses. Learn and grow.');
@@ -528,42 +561,86 @@ const BlogCenter: React.FC = () => {
         </div>
       </section>
 
+      {/* Category Filter Tabs */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-2">
+        <div className="flex flex-wrap gap-2">
+          {FILTER_TABS.map(tab => (
+            <button
+              key={tab.value}
+              onClick={() => setActiveCategory(tab.value)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${
+                activeCategory === tab.value
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Blog Posts Grid */}
       <section id="blog-posts" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        {blogPosts.length > 0 ? (
+        {filteredPosts.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
-            {blogPosts.map((post, index) => (
+            {filteredPosts.map((post, index) => (
               <motion.article
                 key={post.slug}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group h-full flex flex-col"
+                transition={{ duration: 0.4, delay: Math.min(index * 0.06, 0.4) }}
+                className={`bg-white rounded-xl border shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group h-full flex flex-col ${
+                  post.featured ? 'border-blue-300 ring-1 ring-blue-200' : 'border-gray-200'
+                }`}
               >
                 <Link to={post.slug} className="block flex-grow flex flex-col">
+                  {/* Featured image */}
+                  {post.image ? (
+                    <div className="relative overflow-hidden h-44 flex-shrink-0">
+                      <img
+                        src={post.image}
+                        alt=""
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      {post.featured && (
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
+                          <Star className="w-3 h-3" strokeWidth={2.5} />
+                          Featured
+                        </div>
+                      )}
+                    </div>
+                  ) : post.featured ? (
+                    <div className="relative h-14 bg-gradient-to-r from-blue-600 to-blue-500 flex-shrink-0 flex items-center px-5 gap-2">
+                      <Star className="w-4 h-4 text-white" strokeWidth={2.5} />
+                      <span className="text-white text-xs font-bold uppercase tracking-wider">Featured</span>
+                    </div>
+                  ) : null}
+
                   <div className="p-6 flex flex-col flex-grow">
-                    {/* Category Badge */}
-                    <div className="inline-flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full mb-4 w-fit">
-                      <span className="font-semibold">{post.category}</span>
+                    {/* Primary Category Badge */}
+                    <div className="inline-flex items-center gap-2 text-xs text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full mb-3 w-fit font-semibold uppercase tracking-wide">
+                      {post.category.split('|')[0].trim()}
                     </div>
 
                     {/* Title */}
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors" dangerouslySetInnerHTML={{ __html: post.title }} />
+                    <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors leading-snug" dangerouslySetInnerHTML={{ __html: post.title }} />
 
                     {/* Excerpt */}
-                    <p className="text-gray-600 mb-6 flex-grow line-clamp-3">
+                    <p className="text-gray-500 text-sm mb-4 flex-grow line-clamp-3 leading-relaxed">
                       {post.excerpt}
                     </p>
 
                     {/* Meta Info */}
-                    <div className="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-100 mt-auto">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
+                    <div className="flex items-center justify-between text-xs text-gray-400 pt-4 border-t border-gray-100 mt-auto">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5" />
                           <span>{post.date}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5" />
                           <span>{post.readTime}</span>
                         </div>
                       </div>
@@ -576,7 +653,7 @@ const BlogCenter: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-16">
-            <p className="text-gray-600 text-lg">No blog posts available yet. Check back soon!</p>
+            <p className="text-gray-600 text-lg">No posts match this filter. <button onClick={() => setActiveCategory('All')} className="text-blue-600 underline">View all posts</button></p>
           </div>
         )}
       </section>

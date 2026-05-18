@@ -11,6 +11,7 @@ import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
 import TableOfContents from '../components/TableOfContents';
 import { useTableOfContents } from '../hooks/useTableOfContents';
+import KeyTakeaways from '../components/blog/KeyTakeaways';
 
 const AIVsHumanReceptionistBlog: React.FC = () => {
   const { activeSection, sectionsRef } = useTableOfContents();
@@ -146,6 +147,14 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                 <p className="text-lg text-gray-700 mb-8">
                   At Boltcall, we've helped hundreds of local businesses navigate this decision. Whether you're a dental practice managing appointment scheduling or a plumbing company handling emergency calls, the right receptionist solution can transform your customer experience and bottom line.
                 </p>
+
+                <KeyTakeaways items={[
+                  'Human receptionists cost $40,000–$50,000/year all-in; AI receptionists cost $500–$3,600/year.',
+                  'AI answers every call 24/7 including nights and weekends — a human can only cover business hours.',
+                  'Speed matters most: the business that responds within 60 seconds wins 391% more conversions.',
+                  'AI excels at bookings, FAQs, and lead capture; humans are better for complex or emotional situations.',
+                  'Most businesses benefit from AI for routine calls with a human fallback for escalations.',
+                ]} />
 
                 {/* Cost Comparison Section */}
                 <motion.section

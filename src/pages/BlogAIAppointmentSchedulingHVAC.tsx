@@ -13,6 +13,7 @@ import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
 import TableOfContents from '../components/TableOfContents';
 import { useTableOfContents } from '../hooks/useTableOfContents';
+import KeyTakeaways from '../components/blog/KeyTakeaways';
 
 const BlogAIAppointmentSchedulingHVAC: React.FC = () => {
   const headings = useTableOfContents();
@@ -216,6 +217,14 @@ const BlogAIAppointmentSchedulingHVAC: React.FC = () => {
                 It is 9pm on the hottest day of the year. A homeowner's AC just died. They call three HVAC companies back-to-back. The first one to answer books the job. The other two don't find out they lost it until the morning. If your company isn't the first to answer — and the first to schedule — you are working harder than you need to while handing revenue to the competitor who automated their phones. This guide shows you exactly how AI appointment scheduling for HVAC works, what it costs, and how to set it up today.
               </p>
             </motion.div>
+
+            <KeyTakeaways items={[
+              'HVAC companies that answer first win the job — AI scheduling ensures you\'re always first to respond, even at 9pm.',
+              'AI appointment scheduling handles inbound calls, books service windows, and sends reminders automatically, 24/7.',
+              'Peak season surges (summer AC, winter heat) are handled seamlessly — AI scales to unlimited simultaneous calls.',
+              'Setup takes less than 24 hours and integrates with Google Calendar, ServiceTitan, and most HVAC CRMs.',
+              'Average HVAC companies using AI scheduling see a 30–45% reduction in missed leads within the first 30 days.',
+            ]} />
 
             {/* Section 1: What Is It */}
             <motion.section
