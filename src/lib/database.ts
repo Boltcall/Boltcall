@@ -54,16 +54,23 @@ export async function createWorkspace(data: WorkspaceData): Promise<CreatedWorks
 
     if (error) {
       console.error('Error creating workspace:', error);
-      
-      // Handle specific error cases
+
       if (error.code === '23505') { // Unique constraint violation
         if (error.message.includes('workspaces_slug_key')) {
           throw new Error('A workspace with this identifier already exists. Please try again.');
         } else if (error.message.includes('unique_user_business_name')) {
           throw new Error('You already have a business with this name. Please choose a different name.');
+        } else {
+          // user_id unique constraint — user already has a workspace, return it
+          const { data: existing } = await supabase
+            .from('workspaces')
+            .select('*')
+            .eq('user_id', data.user_id)
+            .single();
+          if (existing) return existing;
         }
       }
-      
+
       throw new Error(`Failed to create workspace: ${error.message}`);
     }
 
@@ -87,6 +94,17 @@ export async function createBusinessProfile(data: BusinessProfileData): Promise<
 
     if (error) {
       console.error('Error creating business profile:', error);
+
+      if (error.code === '23505') {
+        // Profile already exists for this user/workspace — return the existing one
+        const { data: existing } = await supabase
+          .from('business_profiles')
+          .select('*')
+          .eq('user_id', data.user_id)
+          .single();
+        if (existing) return existing;
+      }
+
       throw new Error(`Failed to create business profile: ${error.message}`);
     }
 
