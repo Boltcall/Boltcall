@@ -37,7 +37,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 7, 2026',
     readTime: '10 min read',
     category: 'HVAC|Speed to Lead|Industry Guide',
-    image: '/images/blog/speed-pro.webp',
+    image: '/images/blog/hvac-ai-lead-response.png',
     featured: true,
   },
   {
@@ -47,7 +47,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 6, 2026',
     readTime: '10 min read',
     category: 'HVAC|Scheduling|How-to',
-    image: '/images/blog/speed.webp',
+    image: '/images/blog/ai-scheduling-hvac.png',
   },
   {
     title: 'How a Roofing Company Can Stop Losing Leads From Missed Calls',
@@ -56,7 +56,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 5, 2026',
     readTime: '10 min read',
     category: 'Roofing|Speed to Lead|Industry Guide',
-    image: '/images/blog/ai-services.webp',
+    image: '/images/blog/roofing-missed-calls.png',
   },
   {
     title: 'Best AI Answering Service for Dental and Medical Practices (2026)',
@@ -65,7 +65,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 4, 2026',
     readTime: '10 min read',
     category: 'Dental|Medical|Industry Guide',
-    image: '/images/blog/ai-receptionist.webp',
+    image: '/images/blog/ai-dental-medical.png',
   },
   {
     title: 'How Home Service Companies Follow Up With <span className="text-blue-600">Google Ads</span> Leads',
@@ -74,7 +74,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 3, 2026',
     readTime: '10 min read',
     category: 'Home Services|Google Ads|Speed to Lead',
-    image: '/images/blog/speed.webp',
+    image: '/images/blog/home-service-google-ads.png',
   },
   {
     title: 'AI Receptionist for Dentists: Stop Losing Patients to Missed Calls',
@@ -83,7 +83,7 @@ const blogPosts: BlogPost[] = [
     date: 'May 1, 2026',
     readTime: '9 min read',
     category: 'Dental|AI Receptionist|Industry Guide',
-    image: '/images/blog/ai-receptionist.webp',
+    image: '/images/blog/ai-receptionist-dentists.png',
   },
   {
     title: 'AI Receptionist for <span className="text-blue-600">Real Estate Agents</span>: Convert Inbound Leads in Under 60 Seconds',
@@ -92,7 +92,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 30, 2026',
     readTime: '9 min read',
     category: 'Real Estate|AI Receptionist|Speed to Lead',
-    image: '/images/blog/ai-services-pro.webp',
+    image: '/images/blog/ai-receptionist-real-estate.png',
   },
   {
     title: 'AI Receptionist for Med Spas: Never Miss a Booking Again',
@@ -101,7 +101,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 29, 2026',
     readTime: '10 min read',
     category: 'Med Spa|AI Receptionist|Industry Guide',
-    image: '/images/blog/ai-receptionist.webp',
+    image: '/images/blog/ai-receptionist-med-spa.png',
   },
   {
     title: 'WhatsApp Appointment Booking for Plumbers: The Complete 2026 Guide',
@@ -110,6 +110,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 21, 2026',
     readTime: '11 min read',
     category: 'Plumbing|WhatsApp|How-to',
+    image: '/images/blog/whatsapp-plumbing.png',
   },
   {
     title: 'After-Hours Leads Are <span className="text-blue-600">Killing</span> Your Home Service Business',
@@ -118,7 +119,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 17, 2026',
     readTime: '9 min read',
     category: 'After-Hours|Speed to Lead',
-    image: '/images/blog/after-hours-01.jpg',
+    image: '/images/blog/after-hours-leads.png',
   },
   {
     title: 'Never Miss a <span className="text-blue-600">Call After Business Hours</span>',
@@ -127,7 +128,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 12, 2026',
     readTime: '11 min read',
     category: 'After-Hours|AI Receptionist',
-    image: '/images/blog/after-hours-02.jpg',
+    image: '/images/blog/never-miss-after-hours.png',
   },
 
   {
@@ -137,6 +138,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 9, 2026',
     readTime: '10 min read',
     category: 'Home Services|Industry Guide',
+    image: '/images/blog/ai-receptionist-home-services.png',
   },
   {
     title: 'How to Set Up 24/7 Call Answering for a Small Business (No Staff)',
@@ -145,6 +147,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 9, 2026',
     readTime: '9 min read',
     category: 'AI Agent|Small Business|How-to',
+    image: '/images/blog/ai-agent-small-business.png',
   },
   {
     title: 'AI Receptionist for Contractors: Never Miss a Job Lead Again',
@@ -153,6 +156,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 23, 2026',
     readTime: '8 min read',
     category: 'AI Receptionist|Local Business|Industry Guide',
+    image: '/images/blog/ai-receptionist-contractors.png',
   },
   {
     title: 'Boltcall vs Podium: Honest Comparison for Local Businesses (2026)',
@@ -161,6 +165,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 21, 2026',
     readTime: '10 min read',
     category: 'Comparison',
+    image: '/images/blog/comparison-generic.png',
   },
   {
     title: 'Boltcall vs GoHighLevel: Simple AI vs Complex CRM (2026)',
@@ -169,6 +174,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 21, 2026',
     readTime: '10 min read',
     category: 'Comparison',
+    image: '/images/blog/comparison-generic.png',
   },
   {
     title: 'Boltcall vs Birdeye: AI Receptionist vs Reputation Management (2026)',
@@ -177,6 +183,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 21, 2026',
     readTime: '10 min read',
     category: 'Comparison',
+    image: '/images/blog/comparison-generic.png',
   },
   {
     title: 'Boltcall vs Emitrr: Full AI Suite vs SMS-First Platform (2026)',
@@ -185,6 +192,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 21, 2026',
     readTime: '10 min read',
     category: 'Comparison',
+    image: '/images/blog/comparison-generic.png',
   },
   {
     title: 'Boltcall vs Calomation: AI Receptionist Platforms Compared (2026)',
@@ -193,6 +201,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 21, 2026',
     readTime: '10 min read',
     category: 'Comparison',
+    image: '/images/blog/comparison-generic.png',
   },
   {
     title: 'Boltcall vs Smith.ai: AI Receptionist Compared for Small Business (2026)',
@@ -201,6 +210,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 23, 2026',
     readTime: '10 min read',
     category: 'Comparison',
+    image: '/images/blog/comparison-generic.png',
   },
   {
     title: 'AI Receptionist for Plumbers: Answer Every Call 24/7 (2026 Guide)',
@@ -209,6 +219,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 23, 2026',
     readTime: '12 min read',
     category: 'Industry Guide',
+    image: '/images/blog/whatsapp-plumbing.png',
   },
   {
     title: 'AI Chatbot vs Live Chat vs Phone Answering: Which Works Best for Local Businesses',
@@ -217,6 +228,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 21, 2026',
     readTime: '8 min read',
     category: 'AI Receptionist|Local Business',
+    image: '/images/blog/ai-chatbot-vs-live-chat.png',
   },
   {
     title: 'Best After Hours Answering Service for Local Businesses: AI vs Traditional',
@@ -225,6 +237,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 20, 2026',
     readTime: '8 min read',
     category: 'AI Receptionist|Local Business',
+    image: '/images/blog/never-miss-after-hours.png',
   },
   {
     title: 'AI Phone Answering for Dentists: Never Miss Another Patient Call',
@@ -233,6 +246,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 19, 2026',
     readTime: '8 min read',
     category: 'AI Receptionist',
+    image: '/images/blog/ai-receptionist-dentists.png',
   },
   {
     title: 'What Is an AI Receptionist? Complete Guide for Local Businesses',
@@ -241,6 +255,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 18, 2026',
     readTime: '8 min read',
     category: 'AI Receptionist',
+    image: '/images/blog/what-is-ai-receptionist.png',
   },
   {
     title: 'Google Reviews Automation for Local Businesses: AI Tools That Actually Work',
@@ -249,6 +264,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 17, 2026',
     readTime: '8 min read',
     category: 'Local Business',
+    image: '/images/blog/google-reviews-automation.png',
   },
   {
     title: 'Is an AI Receptionist Worth It? ROI & Cost-Benefit Analysis for Local Businesses',
@@ -257,6 +273,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 16, 2026',
     readTime: '8 min read',
     category: 'AI Receptionist',
+    image: '/images/blog/ai-receptionist-worth-it.png',
   },
   {
     title: 'AI Phone Answering for Plumbers: Never Miss a Job Lead Again',
@@ -265,6 +282,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 15, 2026',
     readTime: '8 min read',
     category: 'Industry Guide',
+    image: '/images/blog/whatsapp-plumbing.png',
   },
   {
     title: 'Best AI Receptionist for Small Business: Features, Pricing & Comparison',
@@ -273,6 +291,7 @@ const blogPosts: BlogPost[] = [
     date: 'March 14, 2026',
     readTime: '8 min read',
     category: 'AI Receptionist',
+    image: '/images/blog/ai-answering-small-business.png',
   },
   {
     title: 'AI Answering Service for Small Business: The 2026 Complete Guide',
@@ -281,6 +300,7 @@ const blogPosts: BlogPost[] = [
     date: 'April 9, 2026',
     readTime: '9 min read',
     category: 'AI Phone Answering',
+    image: '/images/blog/ai-answering-small-business.png',
   },
   {
     title: 'How AI Receptionists Work: A Complete Technical Guide for Local Businesses',
