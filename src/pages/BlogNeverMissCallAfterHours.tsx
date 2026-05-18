@@ -57,9 +57,25 @@ const BlogNeverMissCallAfterHours: React.FC = () => {
     });
     document.head.appendChild(bcScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How much does an after-hours answering service cost?", "acceptedAnswer": { "@type": "Answer", "text": "Traditional live answering services typically cost $200–$500/month for basic after-hours coverage. AI-based solutions like Boltcall start significantly lower — around $99–$179/month — and include capabilities that live services don't offer, like instant SMS follow-up, appointment booking, and lead qualification." } },
+        { "@type": "Question", "name": "Is an after-hours answering service better than voicemail?", "acceptedAnswer": { "@type": "Answer", "text": "Yes — significantly. Voicemail has a check-rate problem: 80% of callers don't leave messages, and those who do often wait hours for a callback. An answering service captures the caller in real time, sends an immediate acknowledgment, and routes urgent calls appropriately." } },
+        { "@type": "Question", "name": "Will callers know they're speaking to an AI?", "acceptedAnswer": { "@type": "Answer", "text": "With modern AI voice technology, most callers cannot tell the difference in a standard after-hours interaction. The AI speaks naturally and responds in context. The AI should always identify itself as an automated assistant if directly asked." } },
+        { "@type": "Question", "name": "How quickly can I set up after-hours AI call handling?", "acceptedAnswer": { "@type": "Answer", "text": "With Boltcall, setup takes less than 24 hours. You provide your business details, services, and routing rules, and the AI is trained and live on your phone number the same day. There's no hardware to install and no staff to train." } }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('article-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema')?.remove();
     };
   }, []);
 

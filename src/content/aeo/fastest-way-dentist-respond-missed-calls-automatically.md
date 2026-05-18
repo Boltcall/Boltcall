@@ -3,7 +3,7 @@ title: "What is the fastest way for a dentist to respond to missed calls automat
 query: "what is the fastest way for a dentist to respond to missed calls automatically"
 slug: "fastest-way-dentist-respond-missed-calls-automatically"
 date: "2026-05-01"
-status: ready
+status: published
 ---
 
 # What is the fastest way for a dentist to respond to missed calls automatically?

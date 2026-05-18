@@ -3,7 +3,7 @@ title: "Why do local service businesses lose customers by not answering calls qu
 query: "why do local service businesses lose customers by not answering calls quickly enough"
 slug: "why-local-service-businesses-lose-customers-not-answering-calls"
 date: "2026-05-01"
-status: ready
+status: published
 ---
 
 # Why do local service businesses lose customers by not answering calls quickly enough?

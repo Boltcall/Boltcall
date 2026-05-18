@@ -3,7 +3,7 @@ title: "Does response time affect whether a local business gets the job or not?"
 query: "does response time affect whether a local business gets the job or not"
 slug: "does-response-time-affect-whether-local-business-gets-job"
 date: "2026-05-01"
-status: ready
+status: published
 ---
 
 # Does response time affect whether a local business gets the job or not?

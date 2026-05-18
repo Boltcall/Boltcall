@@ -26,6 +26,9 @@ const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
 const BlogNeverMissCallAfterHours = React.lazy(() => import('../pages/BlogNeverMissCallAfterHours'));
+const BlogResponseTimeAffectsJob = React.lazy(() => import('../pages/BlogResponseTimeAffectsJob'));
+const BlogFastestWayDentistRespondMissedCalls = React.lazy(() => import('../pages/BlogFastestWayDentistRespondMissedCalls'));
+const BlogWhyLocalBusinessesLoseCustomers = React.lazy(() => import('../pages/BlogWhyLocalBusinessesLoseCustomers'));
 const BlogWhatsAppAppointmentBookingPlumbers = React.lazy(() => import('../pages/BlogWhatsAppAppointmentBookingPlumbers'));
 const BlogAIReceptionistDentists = React.lazy(() => import('../pages/BlogAIReceptionistDentists'));
 const BlogAIReceptionistLawFirms = React.lazy(() => import('../pages/BlogAIReceptionistLawFirms'));
@@ -569,6 +572,9 @@ const NavigationWrapper: React.FC = () => {
           <Route path="/blog/ai-receptionist-vet-faq" element={<FAQAIReceptionistVet />} />
           <Route path="/blog/how-to-set-up-ai-phone-answering-vet-clinic" element={<HowToAIPhoneAnsweringVetClinic />} />
                 <Route path="/blog/never-miss-a-call-after-business-hours" element={<BlogNeverMissCallAfterHours />} />
+                <Route path="/blog/does-response-time-affect-whether-local-business-gets-job" element={<BlogResponseTimeAffectsJob />} />
+                <Route path="/blog/fastest-way-dentist-respond-missed-calls-automatically" element={<BlogFastestWayDentistRespondMissedCalls />} />
+                <Route path="/blog/why-local-service-businesses-lose-customers-not-answering-calls" element={<BlogWhyLocalBusinessesLoseCustomers />} />
                 <Route path="/blog/whatsapp-appointment-booking-plumbers" element={<BlogWhatsAppAppointmentBookingPlumbers />} />
                 <Route path="/blog/ai-receptionist-for-dentists" element={<BlogAIReceptionistDentists />} />
                 <Route path="/blog/ai-receptionist-for-law-firms" element={<BlogAIReceptionistLawFirms />} />

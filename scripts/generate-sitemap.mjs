@@ -124,6 +124,9 @@ const ROUTES = [
   { path: "/blog/best-ai-answering-service-dental-medical-practice", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/after-hours-lead-response-home-services",           priority: "0.8", changefreq: "weekly" },
   { path: "/blog/never-miss-a-call-after-business-hours",            priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/does-response-time-affect-whether-local-business-gets-job", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/fastest-way-dentist-respond-missed-calls-automatically",    priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/why-local-service-businesses-lose-customers-not-answering-calls", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/whatsapp-appointment-booking-plumbers",             priority: "0.8", changefreq: "weekly" },
 
   // Blog FAQ / Industry AEO How-To

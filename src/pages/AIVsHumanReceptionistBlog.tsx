@@ -66,9 +66,26 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI vs Human Receptionist", "item": "https://boltcall.org/blog/ai-vs-human-receptionist"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Is an AI receptionist better than a human receptionist?", "acceptedAnswer": { "@type": "Answer", "text": "For most local service businesses, an AI receptionist outperforms a human on availability (24/7 vs. 40 hrs/week), cost ($99–$179/month vs. $3,200–$4,500/month), and response speed (under 3 seconds vs. 4–6 rings). Human receptionists may be better for high-touch industries requiring complex emotional judgment or nuanced client management." } },
+        { "@type": "Question", "name": "How much does an AI receptionist cost compared to a human?", "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist typically costs $79–$249/month (flat monthly fee). A human receptionist costs $3,200–$4,500/month in salary and benefits, plus hiring and training costs. Over a year, the difference is $948–$2,988 for AI versus $38,400–$54,000 for a human — a savings of 95%+" } },
+        { "@type": "Question", "name": "Can an AI receptionist book appointments?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. AI receptionists like Boltcall integrate with scheduling systems (Jobber, ServiceTitan, Calendly, Dentrix, Cal.com) and book appointments in real time during the call — no callback required. The customer confirms a slot before hanging up." } },
+        { "@type": "Question", "name": "Will customers know they're talking to an AI?", "acceptedAnswer": { "@type": "Answer", "text": "Modern AI receptionists sound natural and most callers cannot tell the difference in standard scheduling interactions. The AI should identify itself as automated when directly asked. Many businesses find that customers care less about AI vs. human and more about getting a fast, helpful response." } }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -659,6 +676,26 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            {[
+              { q: 'Is an AI receptionist better than a human receptionist?', a: 'For most local service businesses, an AI receptionist outperforms a human on availability (24/7 vs. 40 hrs/week), cost ($99–$179/month vs. $3,200–$4,500/month), and response speed (under 3 seconds vs. 4–6 rings). Human receptionists may be better for high-touch industries requiring complex emotional judgment or nuanced client management.' },
+              { q: 'How much does an AI receptionist cost compared to a human?', a: 'An AI receptionist typically costs $79–$249/month (flat monthly fee). A human receptionist costs $3,200–$4,500/month in salary and benefits, plus hiring and training costs. Over a year, the difference is $948–$2,988 for AI versus $38,400–$54,000 for a human — a savings of 95%+.' },
+              { q: 'Can an AI receptionist book appointments?', a: 'Yes. AI receptionists like Boltcall integrate with scheduling systems (Jobber, ServiceTitan, Calendly, Dentrix, Cal.com) and book appointments in real time during the call — no callback required. The customer confirms a slot before hanging up.' },
+              { q: 'Will customers know they\'re talking to an AI?', a: 'Modern AI receptionists sound natural and most callers cannot tell the difference in standard scheduling interactions. The AI should identify itself as automated when directly asked. Many businesses find that customers care less about AI vs. human and more about getting a fast, helpful response.' },
+            ].map(({ q, a }) => (
+              <div key={q} className="border border-gray-200 rounded-xl p-6">
+                <h3 className="font-bold text-gray-900 mb-3">{q}</h3>
+                <p className="text-gray-700 leading-relaxed">{a}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

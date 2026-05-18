@@ -1,1 +1,6 @@
 commit	page	score_before	score_after	status	description
+583715b	/blog/does-response-time-affect-whether-local-business-gets-job	0	85	keep	New AEO page — Article+FAQPage+BreadcrumbList schema, AEO answer block, 5+ question H3s, 1500+ words, 5+ internal links, CTA to /signup
+583715b	/blog/fastest-way-dentist-respond-missed-calls-automatically	0	85	keep	New AEO page — Article+FAQPage+BreadcrumbList schema, AEO answer block, 5+ question H3s, 1500+ words, 5+ internal links, CTA to /signup
+583715b	/blog/why-local-service-businesses-lose-customers-not-answering-calls	0	85	keep	New AEO page — Article+FAQPage+BreadcrumbList schema, AEO answer block, 5+ question H3s, 1500+ words, 5+ internal links, CTA to /signup
+583715b	/blog/ai-vs-human-receptionist	55	72	keep	SEO: added FAQPage JSON-LD schema + rendered FAQ section with 4 question H3s (was missing both)
+583715b	/blog/never-miss-a-call-after-business-hours	62	74	keep	SEO: added FAQPage JSON-LD schema (FAQ content already existed, schema was missing)
