@@ -113,3 +113,18 @@ tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
 - Design polish, visual audit → invoke gstack:design-review
 - Save progress, checkpoint session → invoke gstack:context-save
 - Post-deploy verification → invoke gstack:post-deploy
+
+## Coding Behavior (Karpathy Guidelines)
+
+### Think Before Coding
+- State assumptions explicitly before implementing. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick silently.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+### Goal-Driven Execution
+For multi-step tasks, state a brief plan with verifiable success criteria before starting:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+```
+Transform vague tasks: "fix the bug" → "write a test that reproduces it, then make it pass".
