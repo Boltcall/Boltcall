@@ -64,9 +64,27 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist for Small Business", "item": "https://boltcall.org/blog/best-ai-receptionist-small-business"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is the best AI receptionist for small business?", "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is the best AI receptionist for small businesses that need speed-to-lead. It responds to every inbound call, text, and web form in under 60 seconds, 24/7, and books appointments directly to your calendar starting at $99/month." } },
+        { "@type": "Question", "name": "How much does an AI receptionist cost for a small business?", "acceptedAnswer": { "@type": "Answer", "text": "AI receptionist pricing for small businesses typically ranges from $99 to $389 per month on a flat-fee model. Boltcall offers plans starting at $99/month with no per-minute fees, making it predictable and affordable compared to human answering services." } },
+        { "@type": "Question", "name": "Can an AI receptionist book appointments?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. A modern AI receptionist like Boltcall connects directly to your scheduling system and books appointments in real time during the call — without requiring any staff involvement." } },
+        { "@type": "Question", "name": "Is an AI receptionist better than a human answering service?", "acceptedAnswer": { "@type": "Answer", "text": "For speed and 24/7 availability, yes. An AI receptionist answers in under 3 seconds, never takes a break, and costs far less than a human answering service. Human answering services still have advantages for complex, highly nuanced conversations." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);

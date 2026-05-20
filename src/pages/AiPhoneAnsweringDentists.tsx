@@ -51,10 +51,27 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How does AI phone answering work for dental practices?", "acceptedAnswer": { "@type": "Answer", "text": "An AI phone answering system connects to your dental practice's phone line and answers every inbound call instantly — 24/7. It greets patients naturally, handles appointment requests, answers common questions about insurance and hours, and books directly into your scheduling system (Dentrix, Open Dental, Eaglesoft) without staff involvement." } },
+        { "@type": "Question", "name": "What percentage of dental practice calls go unanswered?", "acceptedAnswer": { "@type": "Answer", "text": "Industry data shows that 1 in 3 calls to the average dental practice goes unanswered during peak hours. Front desk staff are occupied with in-office patients, and those unanswered calls — often from new patients — are the highest-value calls the practice receives." } },
+        { "@type": "Question", "name": "What is the cost of a missed new patient call for a dental office?", "acceptedAnswer": { "@type": "Answer", "text": "Each missed new patient call is estimated at $800 to $1,200 in lifetime patient value. A dental practice missing 30 to 50 new patient calls per month is losing $24,000 to $60,000 in annual revenue." } },
+        { "@type": "Question", "name": "Does AI phone answering for dentists integrate with Dentrix?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's AI receptionist integrates with Dentrix, Open Dental, Eaglesoft, Curve, and other dental practice management systems to check real-time availability and confirm appointments directly during the call." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
+      document.getElementById('faq-schema')?.remove();
     };
   }, []);
 

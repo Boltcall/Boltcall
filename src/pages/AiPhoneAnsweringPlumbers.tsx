@@ -57,9 +57,27 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How does AI phone answering work for plumbers?", "acceptedAnswer": { "@type": "Answer", "text": "An AI phone answering system connects to your plumbing business's main line and answers every inbound call instantly — including after hours and during active service jobs. It greets callers, handles appointment booking, collects job details, and escalates emergencies with a text alert to the owner." } },
+        { "@type": "Question", "name": "What happens when a plumber misses a call from a customer?", "acceptedAnswer": { "@type": "Answer", "text": "When a plumber misses a call, the customer immediately calls the next plumber on their list. Over 80% of callers who do not reach a live person will not leave a voicemail — they move on within seconds. An AI receptionist eliminates this by answering every call within one ring." } },
+        { "@type": "Question", "name": "Can AI book plumbing appointments automatically?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's AI receptionist integrates with scheduling platforms like Jobber, Housecall Pro, and ServiceTitan to check real-time availability and book appointments directly during the call — without any dispatcher involvement." } },
+        { "@type": "Question", "name": "How much revenue do plumbers lose from missed calls?", "acceptedAnswer": { "@type": "Answer", "text": "At five missed emergency calls per week at an average job value of $450, that is $2,250 per week or over $100,000 per year in lost revenue. Plus the lifetime value of each missed customer — typically $2,000 to $5,000 — never materializes." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
