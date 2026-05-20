@@ -129,6 +129,14 @@ const ROUTES = [
   // Blog FAQ / Industry AEO How-To
   { path: "/blog/how-to-set-up-ai-phone-answering-vet-clinic",       priority: "0.8", changefreq: "weekly" },
 
+  // AEO answer pages — speed-to-lead queries
+  { path: "/blog/does-response-time-affect-whether-local-business-gets-job", priority: "0.9", changefreq: "monthly" },
+  { path: "/blog/fastest-way-dentist-respond-missed-calls-automatically",    priority: "0.9", changefreq: "monthly" },
+  { path: "/blog/why-local-service-businesses-lose-customers-not-answering-calls", priority: "0.9", changefreq: "monthly" },
+  { path: "/blog/best-way-hvac-company-never-miss-service-call",             priority: "0.9", changefreq: "monthly" },
+  { path: "/blog/how-fast-local-business-respond-online-lead",               priority: "0.9", changefreq: "monthly" },
+  { path: "/blog/what-happens-when-plumber-misses-urgent-call",              priority: "0.9", changefreq: "monthly" },
+
   // Comparisons Hub
   { path: "/comparisons",                                        priority: "0.8", changefreq: "monthly" },
   { path: "/comparisons/receptionist-vs-boltcall",              priority: "0.8", changefreq: "monthly" },

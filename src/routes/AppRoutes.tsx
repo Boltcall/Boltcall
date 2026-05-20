@@ -226,6 +226,12 @@ const BestAIAnsweringServiceDentalMedical = React.lazy(() => import('../pages/Be
 const BlogAfterHoursLeadResponse = React.lazy(() => import('../pages/BlogAfterHoursLeadResponse'));
 const BlogAIReceptionistMedSpa = React.lazy(() => import('../pages/BlogAIReceptionistMedSpa'));
 const BlogSolarAILeadResponse = React.lazy(() => import('../pages/BlogSolarAILeadResponse'));
+const BlogDoesResponseTimeAffectJob = React.lazy(() => import('../pages/BlogDoesResponseTimeAffectJob'));
+const BlogFastestWayDentistRespondMissedCalls = React.lazy(() => import('../pages/BlogFastestWayDentistRespondMissedCalls'));
+const BlogWhyLocalBusinessesLoseCustomers = React.lazy(() => import('../pages/BlogWhyLocalBusinessesLoseCustomers'));
+const BlogHVACNeverMissServiceCall = React.lazy(() => import('../pages/BlogHVACNeverMissServiceCall'));
+const BlogHowFastLocalBusinessRespondOnlineLead = React.lazy(() => import('../pages/BlogHowFastLocalBusinessRespondOnlineLead'));
+const BlogWhatHappensPlumberMissesCall = React.lazy(() => import('../pages/BlogWhatHappensPlumberMissesCall'));
 
 // ── Lazy loads — Comparisons ─────────────────────────────────────────────
 const Comparisons = React.lazy(() => import('../pages/Comparisons'));
@@ -491,6 +497,12 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/after-hours-lead-response-home-services" element={<BlogAfterHoursLeadResponse />} />
         <Route path="/blog/ai-receptionist-med-spas" element={<BlogAIReceptionistMedSpa />} />
         <Route path="/blog/solar-ai-lead-response" element={<BlogSolarAILeadResponse />} />
+        <Route path="/blog/does-response-time-affect-whether-local-business-gets-job" element={<BlogDoesResponseTimeAffectJob />} />
+        <Route path="/blog/fastest-way-dentist-respond-missed-calls-automatically" element={<BlogFastestWayDentistRespondMissedCalls />} />
+        <Route path="/blog/why-local-service-businesses-lose-customers-not-answering-calls" element={<BlogWhyLocalBusinessesLoseCustomers />} />
+        <Route path="/blog/best-way-hvac-company-never-miss-service-call" element={<BlogHVACNeverMissServiceCall />} />
+        <Route path="/blog/how-fast-local-business-respond-online-lead" element={<BlogHowFastLocalBusinessRespondOnlineLead />} />
+        <Route path="/blog/what-happens-when-plumber-misses-urgent-call" element={<BlogWhatHappensPlumberMissesCall />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />
         <Route path="/comparisons/call-centers-vs-boltcall" element={<TraditionalCallCentersVsBoltcall />} />
