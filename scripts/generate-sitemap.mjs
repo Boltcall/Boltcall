@@ -139,11 +139,17 @@ const ROUTES = [
   { path: "/compare/boltcall-vs-smith-ai",                      priority: "0.8", changefreq: "monthly" },
 ];
 
+// Canonicalize: ensure trailing slash on every path so sitemap URLs match
+// the live URL Netlify serves (non-slash → 301 → slash). Without this the
+// sitemap fights the canonical and Google logs dozens of "Page with redirect"
+// entries, wasting crawl budget.
+const canonicalPath = (p) => (p === "/" ? "/" : p.replace(/\/?$/, "/"));
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${ROUTES.map(
   (r) => `  <url>
-    <loc>${BASE_URL}${r.path}</loc>
+    <loc>${BASE_URL}${canonicalPath(r.path)}</loc>
     <lastmod>${TODAY}</lastmod>
     <changefreq>${r.changefreq}</changefreq>
     <priority>${r.priority}</priority>
