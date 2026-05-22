@@ -359,14 +359,6 @@ const blogPosts: BlogPost[] = [
     category: 'Lead Generation',
   },
   {
-    title: 'Why <span class="text-blue-600">Website Speed</span> Is Everything',
-    slug: '/blog/why-website-speed-is-everything',
-    excerpt: '53% of users abandon sites that take longer than 3 seconds to load. Discover why website speed is critical and how it impacts your bottom line.',
-    date: 'January 25, 2025',
-    readTime: '7 min read',
-    category: 'Website Performance',
-  },
-  {
     title: 'Why <span class="text-blue-600">SEO</span> Can\'t Be Ignored',
     slug: '/blog/complete-guide-to-seo',
     excerpt: '75% of users never go beyond the first page of search results. Discover why SEO is critical for your business and how to get started with a free SEO audit.',
@@ -397,14 +389,6 @@ const blogPosts: BlogPost[] = [
     date: 'February 20, 2025',
     readTime: '10 min read',
     category: 'Technical Guide',
-  },
-  {
-    title: 'Will <span class="text-blue-600">Receptionists</span> Be Replaced by AI? The Future of Front Desk Work',
-    slug: '/blog/will-receptionists-be-replaced-by-ai',
-    excerpt: 'It\'s the question on every receptionist\'s mind: Will AI replace my job? While AI receptionists are transforming how businesses handle calls, they\'re not eliminating human receptionists entirely—they\'re changing the role.',
-    date: 'February 25, 2025',
-    readTime: '9 min read',
-    category: 'Industry Analysis',
   },
   {
     title: 'How to Set Up <span class="text-blue-600">Instant Lead Reply</span> in Your Website/Ads with Boltcall',

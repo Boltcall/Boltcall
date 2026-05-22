@@ -174,7 +174,6 @@ const SpeedTestOffer = React.lazy(() => import('../pages/speed-test/SpeedTestOff
 const BlogCenter = React.lazy(() => import('../pages/BlogCenter'));
 const Blog = React.lazy(() => import('../pages/Blog'));
 const BlogSpeed = React.lazy(() => import('../pages/BlogSpeed'));
-const BlogSpeedWebsite = React.lazy(() => import('../pages/BlogSpeedWebsite'));
 const BlogSEO = React.lazy(() => import('../pages/BlogSEO'));
 const BlogAIGuide = React.lazy(() => import('../pages/BlogAIGuide'));
 const BlogAIGuideStep1 = React.lazy(() => import('../pages/BlogAIGuideStep1'));
@@ -185,7 +184,6 @@ const BlogAIReceptionistHowItWorks = React.lazy(() => import('../pages/BlogAIRec
 const BlogAIAnsweringServiceSmallBusiness = React.lazy(() => import('../pages/BlogAIAnsweringServiceSmallBusiness'));
 const BlogIsAIReceptionistWorthIt = React.lazy(() => import('../pages/BlogIsAIReceptionistWorthIt'));
 const BlogHowToMakeAIReceptionist = React.lazy(() => import('../pages/BlogHowToMakeAIReceptionist'));
-const BlogWillReceptionistsBeReplacedByAI = React.lazy(() => import('../pages/BlogWillReceptionistsBeReplacedByAI'));
 const BlogWhatDoesInstantLeadReplyMean = React.lazy(() => import('../pages/BlogWhatDoesInstantLeadReplyMean'));
 const BlogHVACAILeadResponse = React.lazy(() => import('../pages/BlogHVACAILeadResponse'));
 const BlogDentalAILeadResponse = React.lazy(() => import('../pages/BlogDentalAILeadResponse'));
@@ -437,7 +435,6 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/newsletter" element={<Newsletter />} />
         <Route path="/blog/the-new-reality-for-local-businesses" element={<Blog />} />
         <Route path="/blog/why-speed-matters" element={<BlogSpeed />} />
-        <Route path="/blog/why-website-speed-is-everything" element={<BlogSpeedWebsite />} />
         <Route path="/blog/complete-guide-to-seo" element={<BlogSEO />} />
         <Route path="/ai-guide-for-businesses" element={<BlogAIGuide />} />
         <Route path="/ai-guide-for-businesses/level-1-understanding-ai" element={<BlogAIGuideStep1 />} />
@@ -448,7 +445,6 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/ai-answering-service-small-business" element={<BlogAIAnsweringServiceSmallBusiness />} />
         <Route path="/blog/is-ai-receptionist-worth-it" element={<BlogIsAIReceptionistWorthIt />} />
         <Route path="/blog/how-to-make-ai-receptionist" element={<BlogHowToMakeAIReceptionist />} />
-        <Route path="/blog/will-receptionists-be-replaced-by-ai" element={<BlogWillReceptionistsBeReplacedByAI />} />
         <Route path="/blog/instant-lead-reply-guide" element={<BlogWhatDoesInstantLeadReplyMean />} />
         <Route path="/blog/hvac-ai-lead-response" element={<BlogHVACAILeadResponse />} />
         <Route path="/blog/dental-ai-lead-response" element={<BlogDentalAILeadResponse />} />
