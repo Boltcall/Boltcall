@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { Check, Zap, Database, Image, Globe, Server, Star, Phone, User, Mail } from 'lucide-react';
@@ -14,6 +14,20 @@ const SpeedTestOffer: React.FC = () => {
     phone: '',
     email: '',
   });
+
+  // This page is a funnel step shown after the speed test — it reads state
+  // from useSpeedTestStore and is meaningless out of context. Not an SEO page.
+  useEffect(() => {
+    let tag = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.name = 'robots';
+      document.head.appendChild(tag);
+    }
+    const previous = tag.content;
+    tag.content = 'noindex, nofollow';
+    return () => { tag!.content = previous || ''; };
+  }, []);
 
   React.useEffect(() => {
     document.title = 'Website Speed Optimization Offer - Improve Performance';

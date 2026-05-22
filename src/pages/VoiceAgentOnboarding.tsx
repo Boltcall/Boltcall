@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, Bot, Building2, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Zap, Shield, MessageSquare } from 'lucide-react';
 import { FUNCTIONS_BASE } from '../lib/api';
 import { authedFetch } from '../lib/authedFetch';
+
+// Voice-agent setup is a multi-step wizard that creates billable Retell and
+// Twilio resources behind authenticated fetches. It is NOT an SEO landing
+// page — it is a private user-action flow. Tell crawlers not to index it.
+function useNoindex() {
+  useEffect(() => {
+    let tag = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.name = 'robots';
+      document.head.appendChild(tag);
+    }
+    const previous = tag.content;
+    tag.content = 'noindex, nofollow';
+    return () => { tag!.content = previous || ''; };
+  }, []);
+}
 
 type FormData = {
   name: string;
@@ -51,6 +68,7 @@ const initialForm: FormData = {
 };
 
 export default function VoiceAgentOnboarding() {
+  useNoindex();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(initialForm);
   const [status, setStatus] = useState<'idle' | 'submitting' | 'provisioning' | 'done' | 'error'>('idle');

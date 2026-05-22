@@ -38,9 +38,9 @@ const ROUTES = [
   { path: "/speed-to-lead",            priority: "0.9", changefreq: "monthly" },
   { path: "/speed-to-lead/statistics", priority: "0.8", changefreq: "monthly" },
 
-  // Speed Test Funnel
+  // Speed Test Funnel — /speed-test/offer is a funnel step, noindex'd at the
+  // page level. Don't list it in the sitemap.
   { path: "/speed-test",                                         priority: "0.8", changefreq: "weekly"  },
-  { path: "/speed-test/offer",                                   priority: "0.7", changefreq: "monthly" },
 
   // Lead Magnets & Audits
   { path: "/lead-magnet",                                        priority: "0.8", changefreq: "weekly"  },
@@ -58,7 +58,8 @@ const ROUTES = [
   { path: "/ai-visibility-check",                                priority: "0.8", changefreq: "monthly" },
   { path: "/ai-readiness-scorecard",                             priority: "0.8", changefreq: "monthly" },
   { path: "/ai-receptionist-roi",                                priority: "0.8", changefreq: "monthly" },
-  { path: "/voice-agent-setup",                                  priority: "0.7", changefreq: "monthly" },
+  // /voice-agent-setup is a private multi-step wizard creating billable
+  // Retell + Twilio resources — noindex'd at the page level, not for SEO.
   { path: "/solar",                                               priority: "0.9", changefreq: "monthly" },
   { path: "/solar-speed-playbook",                               priority: "0.8", changefreq: "monthly" },
   { path: "/solar-benchmark",                                    priority: "0.8", changefreq: "monthly" },
