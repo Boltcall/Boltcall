@@ -57,9 +57,55 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'How much does a plumber lose per year from missed calls?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'A plumbing business that misses 20–30% of inbound calls can lose $30,000–$80,000 per year in uncaptured jobs. Emergency plumbing calls average $400–$600 per job, and a single missed emergency during off-hours is a lost customer who will not call back.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an AI answer after-hours plumbing calls?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "Yes — AI phone answering systems like Boltcall operate 24/7, including nights, weekends, and holidays. When an emergency call comes in at 2 AM, the AI answers immediately, qualifies the urgency, and books the appointment or routes it to your on-call technician.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does AI phone answering work with plumbing scheduling software?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Boltcall integrates with popular plumbing dispatch and scheduling tools including Jobber, Housecall Pro, ServiceTitan, and calendar platforms. It books directly into your system without requiring manual follow-up.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Will customers know they are talking to an AI?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Modern AI voice agents sound natural and conversational. You can configure the AI to identify itself as your virtual receptionist. Most callers care more about getting a fast, helpful response than about whether it came from a person or an AI.',
+          },
+        },
+      ],
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-plumbers';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema-plumbers')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -537,6 +583,38 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
         </div>
       </div>
 
+
+      {/* FAQ Section */}
+      <section className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              {
+                q: 'How much does a plumber lose per year from missed calls?',
+                a: 'A plumbing business that misses 20–30% of inbound calls can lose $30,000–$80,000 per year in uncaptured jobs. Emergency plumbing calls average $400–$600 per job, and a single missed emergency during off-hours is a lost customer who will not call back.',
+              },
+              {
+                q: 'Can an AI answer after-hours plumbing calls?',
+                a: 'Yes — AI phone answering systems like Boltcall operate 24/7, including nights, weekends, and holidays. When an emergency call comes in at 2 AM, the AI answers immediately, qualifies the urgency, and books the appointment or routes it to your on-call technician.',
+              },
+              {
+                q: 'Does AI phone answering work with plumbing scheduling software?',
+                a: 'Yes. Boltcall integrates with popular plumbing dispatch and scheduling tools including Jobber, Housecall Pro, and ServiceTitan. It books directly into your system without requiring manual follow-up.',
+              },
+              {
+                q: 'Will customers know they are talking to an AI?',
+                a: 'Modern AI voice agents sound natural and conversational. You can configure the AI to identify itself as your virtual receptionist. Most callers care more about getting a fast, helpful response than about whether it came from a person or an AI.',
+              },
+            ].map((item) => (
+              <div key={item.q} className="border border-gray-200 rounded-xl overflow-hidden">
+                <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200">{item.q}</h3>
+                <p className="text-gray-700 px-6 py-4 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* What This Includes */}
       <section className="bg-white py-12 border-t border-gray-100">

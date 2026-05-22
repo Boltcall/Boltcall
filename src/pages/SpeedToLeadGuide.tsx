@@ -77,9 +77,55 @@ const SpeedToLeadGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Speed to Lead Guide", "item": "https://boltcall.org/speed-to-lead-guide"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is speed to lead for local businesses?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Speed to lead is the time between when a potential customer makes contact (call, form, text) and when your business responds. For local service businesses, responding within 1 minute makes you 391% more likely to convert that lead versus responding in 5 minutes.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How fast should a local business respond to a new lead?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Research shows the optimal response window is under 60 seconds. After 5 minutes, conversion rates drop by more than 80%. After 10 minutes, you are 10x less likely to even reach the prospect. The industry average response time is 47 hours — a massive opportunity for any business that responds faster.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How can a local business improve its speed to lead?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'The most effective fix is automating the first response layer with AI. Boltcall responds to every inbound call, form, or SMS in under 60 seconds — 24/7 — without requiring a human to be available. Businesses using Boltcall respond in 11 seconds on average.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does speed to lead really affect conversion rates?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes — it is the single most impactful variable in lead conversion for local service businesses. An MIT Sloan study found that calling a lead within 1 minute makes you 391% more likely to convert versus calling at 5 minutes. The effect is consistent across plumbing, HVAC, dental, legal, and all local service categories.',
+          },
+        },
+      ],
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-speed';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema-speed')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
     };
@@ -694,6 +740,38 @@ const SpeedToLeadGuide: React.FC = () => {
             </table>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">Source: Lead Response Management / Harvard Business Review study of 100,000+ B2C leads across service industries.</p>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 id="faq" className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              {
+                q: 'What is speed to lead for local businesses?',
+                a: 'Speed to lead is the time between when a potential customer makes contact (call, form, text) and when your business responds. For local service businesses, responding within 1 minute makes you 391% more likely to convert that lead versus responding in 5 minutes.',
+              },
+              {
+                q: 'How fast should a local business respond to a new lead?',
+                a: 'Research shows the optimal response window is under 60 seconds. After 5 minutes, conversion rates drop by more than 80%. After 10 minutes, you are 10x less likely to even reach the prospect. The industry average response time is 47 hours — a massive opportunity for any business that responds faster.',
+              },
+              {
+                q: 'How can a local business improve its speed to lead?',
+                a: 'The most effective fix is automating the first response layer with AI. Boltcall responds to every inbound call, form, or SMS in under 60 seconds — 24/7 — without requiring a human to be available. Businesses using Boltcall respond in 11 seconds on average.',
+              },
+              {
+                q: 'Does speed to lead really affect conversion rates?',
+                a: 'Yes — it is the single most impactful variable in lead conversion for local service businesses. An MIT Sloan study found that calling a lead within 1 minute makes you 391% more likely to convert versus calling at 5 minutes. The effect is consistent across plumbing, HVAC, dental, legal, and all local service categories.',
+              },
+            ].map((item) => (
+              <div key={item.q} className="border border-gray-200 rounded-xl overflow-hidden">
+                <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200">{item.q}</h3>
+                <p className="text-gray-700 px-6 py-4 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

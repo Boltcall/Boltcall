@@ -67,9 +67,55 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI vs Human Receptionist", "item": "https://boltcall.org/blog/ai-vs-human-receptionist"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Is an AI receptionist better than a human receptionist?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'For availability, cost, and speed, AI receptionists outperform humans significantly: they answer in under 2 seconds, operate 24/7, cost 90–97% less, and never miss a call. For complex relationship management and nuanced judgment calls, a human is still better — most businesses use AI for coverage and humans for quality.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Will an AI receptionist frustrate my customers?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Modern AI receptionists like Boltcall are conversational and natural-sounding. Customers who get an instant response from an AI are consistently more satisfied than customers who are sent to voicemail or put on hold. 78% of service calls that are missed never result in a callback.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does an AI receptionist compare in cost to a human?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'A human receptionist costs $2,500–$4,000/month including salary, taxes, and benefits. An AI receptionist like Boltcall costs $79–$249/month with no per-call fees — roughly 90–97% less, with 24/7 coverage included.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'When should a local business choose a human receptionist over AI?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Human receptionists are better for high-complexity, relationship-driven interactions — law firms handling sensitive cases, medical offices requiring empathetic triage, or businesses where callers expect extended personalized conversations. For routine bookings, after-hours coverage, and overflow volume, AI is faster and more cost-effective.',
+          },
+        },
+      ],
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-aivshuman';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema-aivshuman')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -668,6 +714,38 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 id="faq" className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              {
+                q: 'Is an AI receptionist better than a human receptionist?',
+                a: 'For availability, cost, and speed, AI receptionists outperform humans significantly: they answer in under 2 seconds, operate 24/7, cost 90–97% less, and never miss a call. For complex relationship management and nuanced judgment calls, a human is still better — most businesses use AI for coverage and humans for quality.',
+              },
+              {
+                q: 'Will an AI receptionist frustrate my customers?',
+                a: 'Modern AI receptionists like Boltcall are conversational and natural-sounding. Customers who get an instant response from an AI are consistently more satisfied than customers who are sent to voicemail or put on hold. 78% of service calls that are missed never result in a callback.',
+              },
+              {
+                q: 'How does an AI receptionist compare in cost to a human?',
+                a: 'A human receptionist costs $2,500–$4,000/month including salary, taxes, and benefits. An AI receptionist like Boltcall costs $79–$249/month with no per-call fees — roughly 90–97% less, with 24/7 coverage included.',
+              },
+              {
+                q: 'When should a local business choose a human receptionist over AI?',
+                a: 'Human receptionists are better for high-complexity, relationship-driven interactions — law firms handling sensitive cases, medical offices requiring empathetic triage, or businesses where callers expect extended personalized conversations. For routine bookings, after-hours coverage, and overflow volume, AI is faster and more cost-effective.',
+              },
+            ].map((item) => (
+              <div key={item.q} className="border border-gray-200 rounded-xl overflow-hidden">
+                <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200">{item.q}</h3>
+                <p className="text-gray-700 px-6 py-4 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

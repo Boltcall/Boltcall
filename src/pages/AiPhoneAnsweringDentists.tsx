@@ -51,10 +51,55 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'How many calls does the average dental practice miss?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Studies show that 62% of calls to dental offices go unanswered during business hours, and nearly 100% after 5 PM. Front desk staff occupied with in-office patients cannot simultaneously manage phone volume — AI answering eliminates this gap entirely.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an AI receptionist book dental appointments directly?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Boltcall integrates with Dentrix, Open Dental, Eaglesoft, and Curve to book appointments in real time. When a patient calls after hours, the AI checks live availability, confirms the slot, and sends an SMS confirmation — no staff involvement required.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How much revenue does a dental practice lose from missed calls?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Each missed new patient call costs a dental practice an estimated $800–$1,200 in lifetime patient value. A practice missing 30–50 new patient calls per month loses $24,000–$60,000 in annual revenue — not from poor service, but from unanswered phones.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Will patients know they are speaking to an AI at my dental practice?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Modern AI voice agents are natural-sounding and can be configured to introduce themselves as your virtual receptionist. Patients who get an instant answer consistently report better satisfaction than those who reach voicemail — regardless of whether the voice was human or AI.',
+          },
+        },
+      ],
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-dentists';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
+      document.getElementById('faq-schema-dentists')?.remove();
     };
   }, []);
 
@@ -224,6 +269,38 @@ const AiPhoneAnsweringDentists: React.FC = () => {
 
       </article>
 
+
+      {/* FAQ Section */}
+      <section className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              {
+                q: 'How many calls does the average dental practice miss?',
+                a: 'Studies show that 62% of calls to dental offices go unanswered during business hours, and nearly 100% after 5 PM. Front desk staff occupied with in-office patients cannot simultaneously manage phone volume — AI answering eliminates this gap entirely.',
+              },
+              {
+                q: 'Can an AI receptionist book dental appointments directly?',
+                a: 'Yes. Boltcall integrates with Dentrix, Open Dental, Eaglesoft, and Curve to book appointments in real time. When a patient calls after hours, the AI checks live availability, confirms the slot, and sends an SMS confirmation — no staff involvement required.',
+              },
+              {
+                q: 'How much revenue does a dental practice lose from missed calls?',
+                a: 'Each missed new patient call costs a dental practice an estimated $800–$1,200 in lifetime patient value. A practice missing 30–50 new patient calls per month loses $24,000–$60,000 in annual revenue — not from poor service, but from unanswered phones.',
+              },
+              {
+                q: 'Will patients know they are speaking to an AI at my dental practice?',
+                a: 'Modern AI voice agents are natural-sounding and can be configured to introduce themselves as your virtual receptionist. Patients who get an instant answer consistently report better satisfaction than those who reach voicemail — regardless of whether the voice was human or AI.',
+              },
+            ].map((item) => (
+              <div key={item.q} className="border border-gray-200 rounded-xl overflow-hidden">
+                <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200">{item.q}</h3>
+                <p className="text-gray-700 px-6 py-4 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Trust + Social Proof */}
       <section className="py-10 bg-gray-50 border-t border-gray-100">

@@ -15,8 +15,8 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
   const headings = useTableOfContents();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Is AI Receptionist Worth It? Cost-Benefit Analysis';
-    updateMetaDescription('Is an AI receptionist worth it? Complete cost-benefit analysis comparing AI vs traditional receptionist services. Read now.');
+    document.title = 'Is an AI Receptionist Worth It? Cost & ROI | Boltcall';
+    updateMetaDescription('Is an AI receptionist worth it? Complete cost-benefit analysis with ROI data. Learn how Boltcall pays for itself in days. Start free today.');
     
     // Add Article schema markup
     const articleSchema = {
@@ -68,9 +68,55 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Is AI Receptionist Worth It", "item": "https://boltcall.org/blog/is-ai-receptionist-worth-it"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Is an AI receptionist worth it for a small business?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes — for most local service businesses that receive 20+ calls per month, an AI receptionist pays for itself with just 1–3 captured bookings. At $79–$179/month, Boltcall costs 90–97% less than a human receptionist while providing 24/7 coverage and sub-2-second response times.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How much does an AI receptionist cost compared to a human receptionist?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'A human receptionist costs $2,500–$4,000/month including benefits and payroll taxes. AI receptionist services like Boltcall cost $79–$249/month — roughly 90–97% less — with no sick days, no turnover, and 24/7 availability.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What is the ROI of an AI receptionist?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'For a business that receives 40 calls/month and misses 30% of them, recovering even 5 missed bookings at $400 average job value equals $2,000/month in recovered revenue against a $99–$179/month AI cost. Most businesses see 10x–100x ROI within the first 30 days.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Will an AI receptionist actually book appointments, or just take messages?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "A modern AI receptionist like Boltcall books appointments directly — it connects to your calendar, checks real availability, confirms the slot, and sends the customer a confirmation text. It doesn't just take messages.",
+          },
+        },
+      ],
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -590,6 +636,36 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* FAQ Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+          <div className="space-y-4">
+            {[
+              {
+                q: 'Is an AI receptionist worth it for a small business?',
+                a: 'Yes — for most local service businesses that receive 20+ calls per month, an AI receptionist pays for itself with just 1–3 captured bookings. At $79–$179/month, Boltcall costs 90–97% less than a human receptionist while providing 24/7 coverage and sub-2-second response times.',
+              },
+              {
+                q: 'How much does an AI receptionist cost compared to a human receptionist?',
+                a: 'A human receptionist costs $2,500–$4,000/month including benefits and payroll taxes. AI receptionist services like Boltcall cost $79–$249/month — roughly 90–97% less — with no sick days, no turnover, and 24/7 availability.',
+              },
+              {
+                q: 'What is the ROI of an AI receptionist?',
+                a: 'For a business receiving 40 calls/month and missing 30% of them, recovering 5 missed bookings at $400 average job value equals $2,000/month in recovered revenue against a $99–$179/month AI cost. Most businesses see 10x–100x ROI within the first 30 days.',
+              },
+              {
+                q: 'Will an AI receptionist actually book appointments, or just take messages?',
+                a: "A modern AI receptionist like Boltcall books appointments directly — it connects to your calendar, checks real availability, confirms the slot, and sends the customer a confirmation. It doesn't just take messages.",
+              },
+            ].map((item) => (
+              <div key={item.q} className="border border-gray-200 rounded-xl overflow-hidden">
+                <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200">{item.q}</h3>
+                <p className="text-gray-700 px-6 py-4 leading-relaxed">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Related Reading */}
         <div className="bg-gray-50 rounded-xl p-6 mb-12">
