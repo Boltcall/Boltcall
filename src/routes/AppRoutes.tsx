@@ -107,7 +107,9 @@ const Giveaway = React.lazy(() => import('../pages/Giveaway'));
 const FreeWebsitePage = React.lazy(() => import('../pages/FreeWebsitePage'));
 
 // ── Lazy loads — Lead magnets ────────────────────────────────────────────
-const LeadMagnetPage = React.lazy(() => import('../pages/LeadMagnetPage'));
+// LeadMagnetPage is the reusable template used by the named children (e.g.
+// LeadMagnetClaudeCodeOvernightKitPage), not mounted directly as a route.
+const LeadMagnetHub = React.lazy(() => import('../pages/LeadMagnetHub'));
 const LeadMagnetThankYouPage = React.lazy(() => import('../pages/LeadMagnetThankYouPage'));
 const LeadMagnetClaudeCodeOvernightKitPage = React.lazy(() => import('../pages/LeadMagnetClaudeCodeOvernightKitPage'));
 const LeadMagnetAIReceptionistBuyersGuide = React.lazy(() => import('../pages/LeadMagnetAIReceptionistBuyersGuide'));
@@ -416,7 +418,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/payment/pro" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
         <Route path="/payment/elite-starter" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
         <Route path="/giveaway" element={<Giveaway />} />
-        <Route path="/lead-magnet" element={<LeadMagnetPage />} />
+        <Route path="/lead-magnet" element={<LeadMagnetHub />} />
         <Route path="/lead-magnet/thank-you" element={<LeadMagnetThankYouPage />} />
         <Route path="/lead-magnet/claude-code-overnight-kit" element={<LeadMagnetClaudeCodeOvernightKitPage />} />
         <Route path="/lead-magnet/ai-receptionist-buyers-guide" element={<LeadMagnetAIReceptionistBuyersGuide />} />
