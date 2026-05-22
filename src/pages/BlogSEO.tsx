@@ -282,7 +282,7 @@ const BlogSEO: React.FC = () => {
                   to crawl. This includes:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4 text-gray-700">
-                  <li><Link to="/blog/why-website-speed-is-everything" className="text-blue-600 hover:text-blue-800 underline">Page load speed optimization</Link></li>
+                  <li><Link to="/blog/why-speed-matters" className="text-blue-600 hover:text-blue-800 underline">Page load speed optimization</Link></li>
                   <li>Mobile responsiveness</li>
                   <li>Proper site structure and navigation</li>
                   <li>Secure HTTPS connection</li>
@@ -401,7 +401,7 @@ const BlogSEO: React.FC = () => {
               <h3 className="font-bold text-gray-900 mb-1">Speed to Lead: The Local Business Guide</h3>
               <p className="text-sm text-gray-600">Why responding to leads in under 5 minutes is the highest-ROI growth lever you can pull.</p>
             </Link>
-            <Link to="/blog/why-website-speed-is-everything" className="block p-5 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition">
+            <Link to="/blog/why-speed-matters" className="block p-5 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition">
               <h3 className="font-bold text-gray-900 mb-1">Why Website Speed Is Everything</h3>
               <p className="text-sm text-gray-600">How page load time directly impacts your search rankings, bounce rate, and revenue.</p>
             </Link>

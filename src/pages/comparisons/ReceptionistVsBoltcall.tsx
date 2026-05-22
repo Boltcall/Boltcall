@@ -14,6 +14,35 @@ const headings = [
   { id: 'cost-comparison', text: 'Cost Comparison', level: 2 },
   { id: 'why-boltcall', text: 'Why Boltcall Beats a Human Receptionist', level: 2 },
   { id: 'when-human', text: 'When a Human Receptionist Might Be Better', level: 2 },
+  { id: 'real-world-example', text: 'Real-World Example: 5-Person Law Firm', level: 2 },
+  { id: 'faq', text: 'Frequently Asked Questions', level: 2 },
+];
+
+const FAQS = [
+  {
+    q: 'Will an AI receptionist sound robotic to my callers?',
+    a: 'Modern AI receptionists, including Boltcall, use natural-sounding voices that most callers cannot distinguish from a human. The AI is trained on your business script, your hours, your services, and your common caller scenarios. The bigger risk is the opposite: callers preferring the AI because there is no hold time and no transfer chain.',
+  },
+  {
+    q: 'How quickly can I switch from a human receptionist to Boltcall?',
+    a: 'Most businesses switch over in 7-14 days. We start with after-hours and weekend coverage in the first week, run a parallel period where both the AI and your receptionist are live during business hours in week 2, then transition fully in week 3 if the AI is converting at or above the human baseline.',
+  },
+  {
+    q: 'What if my caller needs something the AI cannot handle?',
+    a: 'Boltcall warm-transfers to a real person whenever the conversation hits a topic outside its training. You define what counts as transfer-worthy (urgent emergencies, complex pricing, legal matters) and what gets handled in-AI (booking, intake, status updates). The transfer happens mid-call with full context handed off.',
+  },
+  {
+    q: 'How much does Boltcall actually cost compared to a receptionist salary?',
+    a: 'Boltcall plans run $99 to $200 per month depending on call volume and features. A full-time receptionist in the US costs $2,500 to $4,000 per month in salary plus another $5,000 to $8,000 per year in benefits and payroll taxes. Total annual savings typically land between $25,000 and $40,000.',
+  },
+  {
+    q: 'Will I lose the personal touch by removing a human receptionist?',
+    a: 'For most local service businesses, the personal touch happens AFTER the booking is made: at the appointment, the job site, or the consultation. The receptionist call is usually transactional (book me, answer a quick question, take a message). Boltcall handles that transactional layer faster and more consistently. Your team stays focused on the high-value interactions.',
+  },
+  {
+    q: 'What businesses should NOT replace their receptionist with AI?',
+    a: 'Front desks that handle physical walk-ins, sign paperwork in person, escort patients to rooms, or build long-term in-person relationships need a human. If 60 percent or more of your receptionist work is in-person, keep them and use Boltcall for after-hours overflow only. If 60 percent or more is phone-based, full replacement usually makes sense.',
+  },
 ];
 
 const ReceptionistVsBoltcall: React.FC = () => {
@@ -22,25 +51,74 @@ const ReceptionistVsBoltcall: React.FC = () => {
     document.title = 'Human Receptionist vs Boltcall AI Receptionist (2026)';
     updateMetaDescription('Human receptionist vs Boltcall AI receptionist. Compare costs, availability, response time, and lead capture capabilities.');
 
+    let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = 'https://boltcall.org/comparisons/receptionist-vs-boltcall/';
+
     const bcSchema = document.createElement('script');
     bcSchema.type = 'application/ld+json';
+    bcSchema.id = 'comp-breadcrumb';
     bcSchema.textContent = JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://boltcall.org' },
-        { '@type': 'ListItem', position: 2, name: 'Comparisons', item: 'https://boltcall.org/comparisons' },
-        { '@type': 'ListItem', position: 3, name: 'Receptionist vs Boltcall', item: 'https://boltcall.org/comparisons/receptionist-vs-boltcall' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://boltcall.org/' },
+        { '@type': 'ListItem', position: 2, name: 'Comparisons', item: 'https://boltcall.org/comparisons/' },
+        { '@type': 'ListItem', position: 3, name: 'Receptionist vs Boltcall', item: 'https://boltcall.org/comparisons/receptionist-vs-boltcall/' },
       ],
     });
     document.head.appendChild(bcSchema);
 
     const personScript = document.createElement('script');
     personScript.type = 'application/ld+json';
-    personScript.id = 'person-schema';
+    personScript.id = 'comp-person-schema';
     personScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "Person", "name": "Boltcall Team", "url": "https://boltcall.org/about", "worksFor": {"@type": "Organization", "name": "Boltcall", "url": "https://boltcall.org"}});
     document.head.appendChild(personScript);
-    return () => { document.head.removeChild(bcSchema); };
+
+    const faqSchema = document.createElement('script');
+    faqSchema.type = 'application/ld+json';
+    faqSchema.id = 'comp-faq-schema';
+    faqSchema.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQS.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    });
+    document.head.appendChild(faqSchema);
+
+    const productSchema = document.createElement('script');
+    productSchema.type = 'application/ld+json';
+    productSchema.id = 'comp-product-schema';
+    productSchema.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: 'Boltcall AI Receptionist',
+      description: 'AI receptionist replacement for local service businesses. Handles calls 24/7, never misses, costs 90 percent less than a full-time human receptionist.',
+      brand: { '@type': 'Brand', name: 'Boltcall' },
+      offers: {
+        '@type': 'AggregateOffer',
+        lowPrice: '99',
+        highPrice: '200',
+        priceCurrency: 'USD',
+        offerCount: '3',
+        url: 'https://boltcall.org/pricing/',
+      },
+    });
+    document.head.appendChild(productSchema);
+
+    return () => {
+      document.getElementById('comp-breadcrumb')?.remove();
+      document.getElementById('comp-person-schema')?.remove();
+      document.getElementById('comp-faq-schema')?.remove();
+      document.getElementById('comp-product-schema')?.remove();
+    };
   }, []);
 
   return (
@@ -316,11 +394,93 @@ const ReceptionistVsBoltcall: React.FC = () => {
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Complex Multi-Step Processes</h3>
               <p className="text-gray-700 leading-relaxed">
-                If your typical customer interaction requires extensive back-and-forth, complex problem-solving, or relationship 
-                building that can't be automated, a human receptionist might be better. However, Boltcall can handle the majority 
+                If your typical customer interaction requires extensive back-and-forth, complex problem-solving, or relationship
+                building that can't be automated, a human receptionist might be better. However, Boltcall can handle the majority
                 of routine inquiries and transfer complex cases to your team.
               </p>
             </div>
+          </div>
+        </motion.section>
+
+        {/* Real-World Example */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mb-16"
+        >
+          <h2 id="real-world-example" className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
+            <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
+            Real-World Example: 5-Person Law Firm
+          </h2>
+
+          <div className="space-y-4 text-gray-700 leading-relaxed">
+            <p>
+              A personal injury law firm in Phoenix with five attorneys ran the math before switching. Their previous setup: one full-time receptionist at $42,000 per year plus $7,200 in benefits and payroll taxes, working 40 hours per week. Voicemail handled everything else.
+            </p>
+
+            <p>
+              The firm tracked inbound calls for 90 days before the switch. The numbers:
+            </p>
+
+            <ul className="space-y-2 ml-4">
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2 font-bold">•</span>
+                <span><strong>Total calls received:</strong> 1,847 over 90 days, roughly 20 per business day.</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2 font-bold">•</span>
+                <span><strong>Calls answered by receptionist:</strong> 1,062 (57.5 percent).</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2 font-bold">•</span>
+                <span><strong>Calls hitting voicemail (after-hours, lunch, lines busy):</strong> 785 (42.5 percent).</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2 font-bold">•</span>
+                <span><strong>Voicemails that converted to consultations:</strong> 31 of 785 (3.9 percent).</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-600 mr-2 font-bold">•</span>
+                <span><strong>Average case value:</strong> $4,200 in fees.</span>
+              </li>
+            </ul>
+
+            <p>
+              After 90 days on Boltcall at $200 per month: 1,894 calls received, 1,892 answered (99.9 percent — two during a brief outage), 217 booked consultations, 38 retained cases. Same 90-day window, three months prior under the receptionist model: 84 booked consultations, 14 retained cases.
+            </p>
+
+            <p className="bg-blue-50 border-l-4 border-blue-600 p-5 rounded-r-lg">
+              <strong>Net result:</strong> 24 additional retained cases over 90 days at $4,200 average = <strong>$100,800 in additional revenue</strong>. Plus $49,200 saved on the receptionist salary and benefits, annualized. Total swing of roughly $150,000 per year for a $2,400 annual Boltcall cost.
+            </p>
+
+            <p className="text-sm text-gray-600 italic">
+              Your numbers will be different depending on call volume, average ticket size, and current answer rate. The pattern is consistent though: high-volume phone-driven businesses see the biggest gains. Run your own version of this math during the strategy call.
+            </p>
+          </div>
+        </motion.section>
+
+        {/* FAQ */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.7 }}
+          className="mb-16"
+        >
+          <h2 id="faq" className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
+            <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
+            Frequently Asked Questions
+          </h2>
+
+          <div className="space-y-3">
+            {FAQS.map((f) => (
+              <details key={f.q} className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                <summary className="font-semibold text-gray-900 text-base cursor-pointer px-5 py-4" style={{ listStyle: 'none' }}>
+                  {f.q}
+                </summary>
+                <p className="text-gray-700 text-sm px-5 pb-5 leading-relaxed">{f.a}</p>
+              </details>
+            ))}
           </div>
         </motion.section>
       </article>

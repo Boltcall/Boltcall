@@ -42,6 +42,33 @@
   status = 301
   force = true
 
+# SEO: collapse cannibalizing blog duplicates onto stronger survivor pages.
+# Both source URLs were "Crawled - currently not indexed" in GSC because they
+# near-duplicate the targets. 301 transfers ranking equity to the survivor.
+[[redirects]]
+  from = "/blog/why-website-speed-is-everything"
+  to = "/blog/why-speed-matters/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog/why-website-speed-is-everything/"
+  to = "/blog/why-speed-matters/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog/will-receptionists-be-replaced-by-ai"
+  to = "/blog/is-ai-receptionist-worth-it/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog/will-receptionists-be-replaced-by-ai/"
+  to = "/blog/is-ai-receptionist-worth-it/"
+  status = 301
+  force = true
+
 # Pretty lead webhook URL: POST /l/{user_id} → lead-webhook function
 [[redirects]]
   from = "/l/:userId"
