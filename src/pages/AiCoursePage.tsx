@@ -26,6 +26,29 @@ const WHO_ITS_FOR = [
   { label: 'Any local business', emoji: '📍' },
 ];
 
+const FAQS = [
+  {
+    q: 'Is the course really free? What is the catch?',
+    a: 'The course is 100 percent free with no credit card or trial expiration. The catch — if it counts as one — is that we are Boltcall, an AI receptionist platform, and the course often references how our customers use AI for lead response. You will never receive automated sales calls. You can unsubscribe from any email in one click.',
+  },
+  {
+    q: 'How much time will I actually spend on this each day?',
+    a: 'Each email takes about 10 minutes to read and one specific action to implement. Some days the action is 5 minutes (set up a Google review request). Others might be 30 minutes (write your first AI agent prompt). The average across 7 days is around 90 minutes of actual hands-on work.',
+  },
+  {
+    q: 'Do I need any technical skills or existing AI tools?',
+    a: 'No. The course is written for owners and operators, not engineers. Every recommended tool has a free tier we walk you through. If a step requires a paid tool, we say so upfront and give you a free alternative.',
+  },
+  {
+    q: 'I run a tiny business — is this still useful for me?',
+    a: 'Yes. The course is most valuable for businesses doing 20 or more inbound leads per month. If you are below that, focus on Days 1, 5, and 7 (foundations, reviews, and the 30-day roadmap) and skip the AI receptionist deep-dive on Day 3. The lessons still apply at any size.',
+  },
+  {
+    q: 'What happens after Day 7?',
+    a: 'After Day 7 you stay on the Boltcall list for one occasional email per week, no more. Each one is a practical AI tactic for local service businesses. You can unsubscribe at any time from any email.',
+  },
+];
+
 type FormStatus = 'idle' | 'loading' | 'success' | 'error';
 
 function CourseOptInForm({ id }: { id: string }) {
@@ -122,8 +145,18 @@ const AiCoursePage: React.FC = () => {
       'Free 7-day email course for local business owners. Learn how to use AI to respond faster, book more jobs, and grow — no tech skills needed.'
     );
 
+    // Trailing-slash canonical — matches Netlify's redirect target.
+    let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = 'https://boltcall.org/ai-course/';
+
     const courseScript = document.createElement('script');
     courseScript.type = 'application/ld+json';
+    courseScript.id = 'aicourse-course-schema';
     courseScript.textContent = JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Course',
@@ -131,23 +164,65 @@ const AiCoursePage: React.FC = () => {
       description:
         'Free 7-day email course for local business owners who want to use AI to respond faster, book more jobs, and grow — no tech skills required.',
       provider: { '@type': 'Organization', name: 'Boltcall', url: 'https://boltcall.org' },
-      hasCourseInstance: { '@type': 'CourseInstance', courseMode: 'online', courseWorkload: 'PT10M' },
+      hasCourseInstance: {
+        '@type': 'CourseInstance',
+        courseMode: 'online',
+        courseWorkload: 'PT70M',
+        instructor: { '@type': 'Organization', name: 'Boltcall' },
+      },
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD', availability: 'https://schema.org/InStock' },
+      audience: { '@type': 'EducationalAudience', educationalRole: 'Local service business owner' },
+      teaches: days.map(d => d.title),
     });
     document.head.appendChild(courseScript);
 
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';
+    bcScript.id = 'aicourse-breadcrumb';
     bcScript.textContent = JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://boltcall.org' },
-        { '@type': 'ListItem', position: 2, name: 'Free AI Course', item: 'https://boltcall.org/ai-course' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://boltcall.org/' },
+        { '@type': 'ListItem', position: 2, name: 'Free AI Course', item: 'https://boltcall.org/ai-course/' },
       ],
     });
     document.head.appendChild(bcScript);
 
-    return () => { courseScript.remove(); bcScript.remove(); };
+    // FAQPage for AEO citation eligibility.
+    const faqSchema = document.createElement('script');
+    faqSchema.type = 'application/ld+json';
+    faqSchema.id = 'aicourse-faq-schema';
+    faqSchema.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQS.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    });
+    document.head.appendChild(faqSchema);
+
+    // Speakable flags the hero subhead (.speakable-intro) for voice search.
+    const speakableSchema = document.createElement('script');
+    speakableSchema.type = 'application/ld+json';
+    speakableSchema.id = 'aicourse-speakable';
+    speakableSchema.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: document.title,
+      url: 'https://boltcall.org/ai-course/',
+      speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.speakable-intro'] },
+    });
+    document.head.appendChild(speakableSchema);
+
+    return () => {
+      document.getElementById('aicourse-course-schema')?.remove();
+      document.getElementById('aicourse-breadcrumb')?.remove();
+      document.getElementById('aicourse-faq-schema')?.remove();
+      document.getElementById('aicourse-speakable')?.remove();
+    };
   }, []);
 
   return (
@@ -248,6 +323,26 @@ const AiCoursePage: React.FC = () => {
                 <span className="text-2xl">{emoji}</span>
                 <span className="text-gray-700 font-medium text-sm">{label}</span>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">Frequently asked</h2>
+          <p className="text-gray-600 text-center mb-10">
+            Quick answers about the course, what it covers, and what happens after Day 7.
+          </p>
+          <div className="space-y-3">
+            {FAQS.map((f) => (
+              <details key={f.q} className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                <summary className="cursor-pointer list-none text-base font-semibold text-gray-900" style={{ listStyle: 'none' }}>
+                  {f.q}
+                </summary>
+                <p className="mt-4 text-sm leading-relaxed text-gray-700">{f.a}</p>
+              </details>
             ))}
           </div>
         </div>

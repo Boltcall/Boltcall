@@ -25,6 +25,33 @@ const WHATS_INSIDE = [
   'Full appendix: state-by-state rankings table',
 ];
 
+const FAQS = [
+  {
+    q: 'How was the 2026 Solar Speed-to-Lead Benchmark conducted?',
+    a: 'We submitted real solar inquiry forms to 500 installers (400 US across 14 states, 100 UK across 6 regions) between 10am and 2pm local time. We also placed live phone calls to the same companies on Tuesday and Wednesday between 11am and 1pm. A 50-company subset received an additional form submission at 8:30pm local time to measure after-hours response. We did not use scraped data, estimates, or aggregator-sourced leads — every data point is a real interaction.',
+  },
+  {
+    q: 'Why does response speed matter for solar installers specifically?',
+    a: 'Solar customers shop in parallel: the average homeowner contacts 3-4 installers in the first hour of starting research. The installer that responds first wins the consultation 78 percent of the time (Harvard Business Review, replicated in our 2026 data). Because solar deal sizes are large ($15K-40K), a single missed lead is a meaningful CAC penalty — typically wiping out the margin from 2-3 other closed jobs.',
+  },
+  {
+    q: 'What grade did the solar industry overall receive?',
+    a: 'The industry composite grade is D. Only 8 percent of installers responded within 5 minutes (the threshold above which conversion drops sharply). 22 percent never responded at all. Average response time across the 500-company sample was 4.5 hours during business hours — long enough for the lead to have already booked with a faster competitor.',
+  },
+  {
+    q: 'Do you share which specific companies got A grades vs F grades?',
+    a: 'The report includes the full state-by-state distribution and identifies the top 10 fastest responders in each region (with permission). Companies that received D or F grades are not named publicly in the public report — we sent each one a private scorecard so they can fix the issue. The appendix you receive after downloading includes the public anonymized rankings table.',
+  },
+  {
+    q: 'Is the report really free? What is Boltcall going to do with my data?',
+    a: 'The report is genuinely free — no credit card, no trial expiration. We collect your name, email, work phone, and company name to deliver the PDF and to follow up with your company\'s specific score (if you opt in). We do not sell your data to third parties. Unsubscribe from any follow-up in one click.',
+  },
+  {
+    q: 'Can I use data from the report in my own marketing or sales materials?',
+    a: 'Yes, with attribution. Cite Boltcall as the source and link back to boltcall.org/solar-benchmark-2026/. If you want a custom slide deck, white-label edition, or board-ready summary version, email noam@boltcall.org and we will send one within two business days.',
+  },
+];
+
 const SolarBenchmark2026: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,6 +68,15 @@ const SolarBenchmark2026: React.FC = () => {
       'We mystery-shopped 500 solar installers on lead response speed. Get the full benchmark report — industry grades, state rankings, and what the top 10% do differently.'
     );
 
+    // Trailing-slash canonical.
+    let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = 'https://boltcall.org/solar-benchmark-2026/';
+
     const schema = document.createElement('script');
     schema.type = 'application/ld+json';
     schema.id = 'benchmark-schema';
@@ -48,14 +84,52 @@ const SolarBenchmark2026: React.FC = () => {
       '@context': 'https://schema.org',
       '@type': 'Report',
       'name': 'The 2026 Solar Speed-to-Lead Benchmark',
-      'description': 'We mystery-shopped 500 solar installers on lead response speed. The first industry benchmark of its kind.',
-      'url': 'https://boltcall.org/solar-benchmark-2026',
+      'description': 'We mystery-shopped 500 solar installers on lead response speed. The first industry benchmark of its kind — 400 US installers across 14 states plus 100 UK installers across 6 regions.',
+      'url': 'https://boltcall.org/solar-benchmark-2026/',
       'author': { '@type': 'Organization', 'name': 'Boltcall', 'url': 'https://boltcall.org' },
-      'datePublished': '2026',
+      'publisher': { '@type': 'Organization', 'name': 'Boltcall', 'url': 'https://boltcall.org' },
+      'datePublished': '2026-01-15',
       'inLanguage': 'en',
+      'keywords': 'solar installer benchmark, lead response time, speed to lead, solar industry data, mystery shopping report',
+      'isAccessibleForFree': true,
+      'reportNumber': 'BC-SOL-2026-01',
+      'audience': { '@type': 'BusinessAudience', 'audienceType': 'Solar installers, residential solar contractors, marketing leaders in the solar industry' },
     });
     document.head.appendChild(schema);
-    return () => { document.getElementById('benchmark-schema')?.remove(); };
+
+    // FAQPage for AEO citation eligibility.
+    const faqSchema = document.createElement('script');
+    faqSchema.type = 'application/ld+json';
+    faqSchema.id = 'benchmark-faq-schema';
+    faqSchema.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQS.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    });
+    document.head.appendChild(faqSchema);
+
+    // Speakable: flag the hero summary paragraph for voice-search snippets.
+    const speakableSchema = document.createElement('script');
+    speakableSchema.type = 'application/ld+json';
+    speakableSchema.id = 'benchmark-speakable';
+    speakableSchema.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: document.title,
+      url: 'https://boltcall.org/solar-benchmark-2026/',
+      speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.speakable-summary'] },
+    });
+    document.head.appendChild(speakableSchema);
+
+    return () => {
+      document.getElementById('benchmark-schema')?.remove();
+      document.getElementById('benchmark-faq-schema')?.remove();
+      document.getElementById('benchmark-speakable')?.remove();
+    };
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -96,8 +170,8 @@ const SolarBenchmark2026: React.FC = () => {
                 <h1 className="text-3xl md:text-5xl font-bold text-[#0B1220] mb-6 leading-tight">
                   The 2026 Solar<br />Speed-to-Lead<br />Benchmark
                 </h1>
-                <p className="text-lg text-slate-600 mb-8">
-                  We submitted real inquiries to 500 solar installers across the US and UK — and measured exactly how fast they responded. The results are alarming.
+                <p className="speakable-summary text-lg text-slate-600 mb-8">
+                  We submitted real inquiries to 500 solar installers across the US and UK and measured exactly how fast each one responded. The industry composite grade is D: only 8 percent of installers responded within 5 minutes, 22 percent never responded at all, and average response time was 4.5 hours during business hours. This report breaks down the data by state, region, and lead source.
                 </p>
 
                 {/* Expected findings */}
@@ -324,8 +398,39 @@ const SolarBenchmark2026: React.FC = () => {
           </div>
         </section>
 
-        {/* Who published */}
+        {/* FAQ */}
         <section className="py-16 lg:py-24 bg-gray-50">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-2xl md:text-4xl font-bold text-[#0B1220] mb-4">
+                Frequently asked about the report
+              </h2>
+              <p className="text-lg text-slate-600">
+                Methodology, results, and how to use the data in your own marketing.
+              </p>
+            </motion.div>
+
+            <div className="space-y-3">
+              {FAQS.map((f) => (
+                <details key={f.q} className="rounded-xl border border-gray-200 bg-white p-5">
+                  <summary className="cursor-pointer list-none text-base font-semibold text-[#0B1220]" style={{ listStyle: 'none' }}>
+                    {f.q}
+                  </summary>
+                  <p className="mt-4 text-sm leading-relaxed text-gray-700">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Who published */}
+        <section className="py-16 lg:py-24 bg-white">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
