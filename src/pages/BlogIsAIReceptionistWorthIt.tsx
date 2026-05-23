@@ -68,9 +68,47 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Is AI Receptionist Worth It", "item": "https://boltcall.org/blog/is-ai-receptionist-worth-it"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist worth the cost for a small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — for most small businesses an AI receptionist pays for itself with a single captured lead. At $99–$299/month, it costs 85–95% less than a human receptionist while providing 24/7 availability. Businesses report recovering their monthly cost within the first week of use." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the ROI of an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The ROI of an AI receptionist is typically 10–50x the monthly cost. A plumber, dentist, or HVAC technician captures $200–$2,000 per booked appointment. Capturing just 2–3 additional leads per month that previously went to voicemail covers the entire annual cost of the service." }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the downsides of using an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The main downsides are: (1) some customers strongly prefer speaking to a human, (2) complex queries outside the knowledge base require escalation, (3) initial configuration takes 1–4 hours to set up properly, and (4) the knowledge base must be kept current as services and pricing change." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I know if my business needs an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Your business likely needs an AI receptionist if you miss calls regularly, receive after-hours inquiries, struggle to respond to leads within 5 minutes, or spend significant staff time answering repetitive questions. Any local service business losing leads to voicemail will see immediate ROI." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I try an AI receptionist for free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall offers a free setup where you can configure your AI receptionist and test it before committing to a paid plan. No credit card is required to start, and you can be live answering calls within 30 minutes." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -134,6 +172,13 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
             Every business owner faces the same question: Should I invest in an AI receptionist? With costs ranging from $99 to $500+ per month, it's a decision that requires careful analysis. This guide breaks down the real costs, benefits, and ROI to help you determine if an AI receptionist is worth it for your business.
           </p>
         </motion.div>
+
+        {/* AEO Answer Block */}
+        <div className="bg-blue-50 border-l-4 border-blue-600 p-6 mb-10 rounded-r-lg">
+          <p className="text-blue-900 text-lg leading-relaxed">
+            <strong>Quick Answer:</strong> An AI receptionist is worth it for most local service businesses. It is a software system that answers calls 24/7, books appointments, and qualifies leads automatically — costing 85–95% less than a human receptionist while capturing after-hours revenue that would otherwise be lost to voicemail.
+          </p>
+        </div>
 
         {/* Cost Comparison */}
         <motion.div
@@ -606,6 +651,35 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
           <TableOfContents headings={headings} />
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-5">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist worth the cost for a small business?</h3>
+              <p className="text-gray-700">Yes — for most small businesses an AI receptionist pays for itself with a single captured lead. At $99–$299/month, it costs 85–95% less than a human receptionist while providing 24/7 availability. Businesses typically recover their monthly cost within the first week of use.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the ROI of an AI receptionist?</h3>
+              <p className="text-gray-700">The ROI of an AI receptionist is typically 10–50x the monthly cost. A plumber, dentist, or HVAC technician captures $200–$2,000 per booked appointment. Capturing just 2–3 additional leads per month that previously went to voicemail covers the entire annual cost of service.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What are the downsides of using an AI receptionist?</h3>
+              <p className="text-gray-700">The main downsides are: (1) some customers strongly prefer speaking to a human, (2) complex queries outside the knowledge base require escalation, (3) initial configuration takes 1–4 hours, and (4) the knowledge base must be kept current as services and pricing change.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How do I know if my business needs an AI receptionist?</h3>
+              <p className="text-gray-700">Your business likely needs an AI receptionist if you miss calls regularly, receive after-hours inquiries, struggle to respond within 5 minutes, or spend significant staff time answering repetitive questions. Any local service business losing leads to voicemail will see immediate ROI.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can I try an AI receptionist for free?</h3>
+              <p className="text-gray-700">Yes. <Link to="/setup" className="text-blue-600 hover:underline">Boltcall offers a free setup</Link> where you can configure your AI receptionist and test it before committing to a paid plan. No credit card required — be live answering calls within 30 minutes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ROI Comparison Table */}
       <section className="bg-white py-12 border-t border-gray-100">

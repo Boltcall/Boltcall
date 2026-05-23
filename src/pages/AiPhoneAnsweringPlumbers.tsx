@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Wrench, Phone, DollarSign, CheckCircle } from 'lucide-react';
 import Header from '../components/Header';
@@ -57,9 +58,46 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does AI phone answering help plumbers get more jobs?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering ensures every call is answered in under 3 rings, 24/7 — including nights, weekends, and holidays when most plumbing emergencies occur. It captures caller details, qualifies the job, and books appointments automatically, so plumbers never lose a lead to a missed call or voicemail." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does an AI phone answering service cost for a plumbing business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for plumbers starts at $99/month with Boltcall, compared to $800–$2,500/month for traditional answering services. Most plumbing businesses recover the full monthly cost with a single captured emergency call." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI handle plumbing emergency calls?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. AI phone answering systems trained for plumbing businesses recognize emergency keywords like 'burst pipe,' 'flooding,' 'sewage backup,' and 'no hot water.' They collect the address and contact info, then immediately notify the on-call plumber via SMS while keeping the customer calm." }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take to set up AI phone answering for a plumbing company?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for plumbers typically takes 24 hours or less to set up using industry templates. Boltcall includes pre-built plumbing scripts covering common services, pricing FAQs, emergency protocols, and booking flows so you can be live the same day." }
+        },
+        {
+          "@type": "Question",
+          "name": "Will customers know they are talking to an AI?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Modern AI phone answering uses natural-sounding voices with human-like pacing. Most callers do not identify it as AI during standard service calls. You can disclose AI use in your greeting if preferred. Emergency and complex calls are escalated to a real person automatically." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -416,6 +454,16 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
               <p className="text-lg text-gray-700 italic leading-relaxed">"Customers today expect near-instant response. In trades like plumbing, if you don't answer within the first two or three tries, you've already lost the job to the competitor who did."</p>
               <footer className="mt-3 text-sm font-semibold text-gray-600">— Tom Howard, Co-founder, Nexstar Network (Trades Business Coaching)</footer>
             </blockquote>
+
+            {/* CTA */}
+            <div className="bg-blue-600 rounded-xl p-8 text-center text-white my-10">
+              <h2 className="text-2xl font-bold mb-3">Start Answering Every Plumbing Call — 24/7</h2>
+              <p className="text-blue-100 mb-6">Get your AI phone answering system live within 24 hours. No long-term contracts.</p>
+              <Link to="/setup" className="inline-block bg-white text-blue-700 font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors">
+                Start Free Setup
+              </Link>
+            </div>
+
             {/* Cost Comparison */}
             <motion.section 
               initial={{ opacity: 0, y: 20 }}
@@ -557,6 +605,35 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
                 <div className="text-xs text-gray-500">{item.desc}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-5">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering help plumbers get more jobs?</h3>
+              <p className="text-gray-700">AI phone answering ensures every call is answered in under 3 rings, 24/7 — including nights and weekends when most plumbing emergencies occur. It captures caller details, qualifies the job, and books appointments automatically so plumbers never lose a lead to a missed call or voicemail.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What does AI phone answering cost for a plumbing business?</h3>
+              <p className="text-gray-700">AI phone answering for plumbers starts at $99/month with Boltcall, compared to $800–$2,500/month for traditional answering services. Most plumbing businesses recover the full monthly cost with a single captured emergency call.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI handle plumbing emergency calls?</h3>
+              <p className="text-gray-700">Yes. AI systems trained for plumbing recognize emergency keywords like "burst pipe," "flooding," and "no hot water." They collect the address and contact info, then immediately notify the on-call plumber via SMS while keeping the customer informed.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does it take to set up AI phone answering for a plumbing company?</h3>
+              <p className="text-gray-700">Setup takes 24 hours or less using industry templates. <Link to="/setup" className="text-blue-600 hover:underline">Boltcall includes pre-built plumbing scripts</Link> covering common services, emergency protocols, and booking flows so you can be live the same day.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Will customers know they are talking to an AI?</h3>
+              <p className="text-gray-700">Modern AI phone answering uses natural-sounding voices with human-like pacing. Most callers do not identify it as AI during standard service calls. Emergency and complex calls are escalated to a real person automatically. See <Link to="/blog/how-ai-receptionist-works" className="text-blue-600 hover:underline">how AI receptionists work</Link> for more details.</p>
+            </div>
           </div>
         </div>
       </section>

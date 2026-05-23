@@ -81,9 +81,46 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "How AI Receptionist Works", "item": "https://boltcall.org/blog/how-ai-receptionist-works"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does an AI receptionist answer phone calls?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist answers calls by using speech recognition to transcribe the caller's words in real time, then natural language processing (NLP) to understand the intent. It responds with a synthesized voice, handles questions using a business knowledge base, and books appointments by connecting to your calendar — all within a single conversation." }
+        },
+        {
+          "@type": "Question",
+          "name": "What technology powers AI receptionists?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists are powered by large language models (LLMs) for conversation intelligence, automatic speech recognition (ASR) for transcription, text-to-speech (TTS) for natural voice output, and calendar APIs for real-time booking. Platforms like Boltcall combine all these into a single turnkey system for local businesses." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI receptionist handle emergency calls?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. AI receptionists detect urgency signals in caller language (words like 'emergency,' 'flooding,' 'pain') and trigger escalation protocols — immediately texting or calling the on-call staff member while continuing to assist the caller and gather details." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does an AI receptionist sound natural?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Modern AI receptionists use neural text-to-speech with natural pacing, filler words, and human-like intonation. Most callers cannot distinguish them from a human in standard call scenarios. Boltcall uses enterprise-grade voice synthesis for professional-sounding conversations." }
+        },
+        {
+          "@type": "Question",
+          "name": "How accurate are AI receptionists at understanding callers?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Leading AI receptionist platforms achieve 95%+ intent recognition accuracy in controlled conditions. Accuracy is highest for structured tasks like appointment booking, service inquiries, and FAQ answers. Complex or highly nuanced calls are escalated to a human automatically." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -509,6 +546,35 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
           <TableOfContents headings={headings} />
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-5">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI receptionist answer phone calls?</h3>
+              <p className="text-gray-700">An AI receptionist answers calls by using speech recognition to transcribe the caller's words in real time, then natural language processing to understand intent. It responds with a synthesized voice, handles questions from your knowledge base, and books appointments by connecting to your calendar — all in one conversation.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What technology powers AI receptionists?</h3>
+              <p className="text-gray-700">AI receptionists are powered by large language models (LLMs) for conversation intelligence, automatic speech recognition for transcription, neural text-to-speech for natural voice output, and calendar APIs for real-time booking. Platforms like Boltcall combine all these into a single turnkey system.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI receptionist handle emergency calls?</h3>
+              <p className="text-gray-700">Yes. AI receptionists detect urgency signals in caller language — words like "emergency," "flooding," or "urgent" — and trigger escalation protocols: immediately texting or calling the on-call staff member while collecting details from the caller.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does an AI receptionist sound natural?</h3>
+              <p className="text-gray-700">Modern AI receptionists use neural text-to-speech with human-like pacing and intonation. Most callers cannot distinguish them from a human in standard call scenarios. Boltcall uses enterprise-grade voice synthesis tuned for professional business conversations.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How accurate are AI receptionists at understanding callers?</h3>
+              <p className="text-gray-700">Leading AI receptionist platforms achieve 95%+ intent recognition accuracy for structured tasks like appointment booking, service inquiries, and FAQ answers. Complex calls are automatically escalated to a human agent to ensure nothing is missed.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* How AI Receptionist Works Step-by-Step Table */}
       <section className="bg-white py-12 border-t border-gray-100">

@@ -68,9 +68,47 @@ const BlogSEO: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Complete Guide to SEO", "item": "https://boltcall.org/blog/complete-guide-to-seo"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How can local businesses improve their Google ranking?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Local businesses can improve their Google ranking by: (1) optimizing their Google Business Profile with accurate hours, photos, and regular posts, (2) building local citations in directories like Yelp and Bing Places, (3) earning 5-star reviews consistently, (4) publishing locally-relevant content, and (5) ensuring their website is mobile-friendly with fast load times." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is local SEO and how does it work?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Local SEO is the process of optimizing your online presence to attract customers in your geographic area. It works by matching search intent (\"plumber near me\") with locally relevant results based on your Google Business Profile, website relevance, and review signals. Boltcall helps local businesses capture more of these leads by ensuring every call from local search converts." }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does SEO take to work for a local business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Local SEO typically shows measurable results within 3–6 months for competitive markets and 1–3 months for less competitive local areas. Google Business Profile optimizations (reviews, posts, photos) can show results within 2–4 weeks. Speed of results depends on competition, existing authority, and consistency of effort." }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the most important SEO ranking factors for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The top local SEO ranking factors are: (1) Google Business Profile completeness and activity, (2) quantity and quality of online reviews, (3) NAP consistency (Name, Address, Phone) across all directories, (4) proximity to the searcher, (5) on-page SEO with local keywords, and (6) website speed and mobile optimization." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do reviews affect local SEO rankings?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Reviews are a top-3 local SEO ranking factor. More positive reviews with high star ratings directly improve local pack rankings. Review velocity (getting new reviews regularly) signals an active, trustworthy business. Businesses with 50+ Google reviews rank significantly higher than those with fewer than 10 reviews in competitive local markets." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -536,6 +574,35 @@ const BlogSEO: React.FC = () => {
           <TableOfContents headings={headings} />
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Local SEO</h2>
+          <div className="space-y-5">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How can local businesses improve their Google ranking?</h3>
+              <p className="text-gray-700">Local businesses can improve their Google ranking by optimizing their Google Business Profile, building local citations, earning 5-star reviews consistently, publishing locally-relevant content, and ensuring their website is mobile-friendly with fast load times. <Link to="/blog/ai-vs-human-receptionist" className="text-blue-600 hover:underline">Speed to lead</Link> also plays a role — Google tracks engagement signals.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is local SEO and how does it work?</h3>
+              <p className="text-gray-700">Local SEO is the process of optimizing your online presence to attract customers in your geographic area. It works by matching search intent ("plumber near me") with locally relevant results based on your Google Business Profile, website relevance, and review signals.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does SEO take to work for a local business?</h3>
+              <p className="text-gray-700">Local SEO typically shows measurable results within 3–6 months for competitive markets and 1–3 months for less competitive areas. Google Business Profile optimizations can show results within 2–4 weeks. Speed of results depends on competition and consistency of effort.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What are the most important SEO ranking factors for local businesses?</h3>
+              <p className="text-gray-700">The top local SEO ranking factors are: (1) Google Business Profile completeness and activity, (2) quantity and quality of reviews, (3) NAP consistency across all directories, (4) proximity to the searcher, (5) on-page SEO with local keywords, and (6) website speed and mobile optimization.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How do reviews affect local SEO rankings?</h3>
+              <p className="text-gray-700">Reviews are a top-3 local SEO ranking factor. More positive reviews with high ratings directly improve local pack rankings. Review velocity (getting new reviews regularly) signals an active, trustworthy business. Businesses with 50+ Google reviews rank significantly higher than those with fewer than 10 in competitive markets.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* SEO Strategy Comparison Table */}
       <section className="bg-white py-12 border-t border-gray-100">

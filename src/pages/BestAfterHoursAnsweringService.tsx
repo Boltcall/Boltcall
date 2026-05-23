@@ -60,8 +60,61 @@ const BestAfterHoursAnsweringService: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is the best after hours answering service for small businesses?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AI-powered answering services like Boltcall are the best after hours option for small businesses. They answer calls 24/7, cost 60–80% less than traditional answering services, and can handle unlimited simultaneous calls with instant response times.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How much does an after hours answering service cost?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Traditional after hours answering services cost $800–$2,500 per month. AI-powered services like Boltcall start at $99–$389 per month with no per-minute fees, making them 60–80% cheaper while offering superior performance.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Do AI after hours answering services handle emergencies?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Modern AI after hours services include emergency escalation protocols. They identify urgent calls (water leaks, dental pain, HVAC failures) and immediately notify the appropriate on-call staff via phone, text, or email while continuing to assist the caller.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How quickly can I set up an AI after hours answering service?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AI after hours answering services typically set up in 24 hours or less, compared to 2–4 weeks for traditional services. Platforms like Boltcall offer industry-specific templates that get local businesses answering calls the same day.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Which industries benefit most from after hours answering services?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Plumbers, HVAC companies, dentists, and law firms benefit most because 60–78% of their emergency calls happen outside business hours. These industries see the strongest ROI — often recouping their monthly cost within the first week of captured leads.'
+          }
+        }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -556,6 +609,47 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                   <p className="text-lg text-gray-700 italic leading-relaxed">"More than 60% of business calls happen outside traditional business hours. Companies that provide 24/7 phone coverage capture up to 40% more leads than those that only answer during the day."</p>
                   <footer className="mt-3 text-sm font-semibold text-gray-600">— BIA/Kelsey, Local Commerce Monitor Research</footer>
                 </blockquote>
+
+                  {/* FAQ Section */}
+                  <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="mb-12"
+                  >
+                    <h2 id="faq" className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+                    <div className="space-y-6">
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">What is the best after hours answering service for small businesses?</h3>
+                        <p className="text-gray-700">AI-powered answering services like Boltcall are the best after hours option for small businesses. They answer calls 24/7, cost 60–80% less than traditional answering services, and handle unlimited simultaneous calls with instant response times — making them the clear choice for local service businesses.</p>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">How much does an after hours answering service cost?</h3>
+                        <p className="text-gray-700">Traditional after hours answering services cost $800–$2,500 per month. AI-powered services like Boltcall start at $99–$389 per month with no per-minute fees — 60–80% cheaper while offering superior 24/7 coverage and unlimited concurrent call capacity.</p>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Do AI after hours answering services handle emergencies?</h3>
+                        <p className="text-gray-700">Yes. Modern AI after hours services detect urgency signals — words like "flooding," "dental pain," "no heat" — and trigger emergency escalation protocols. They immediately notify on-call staff via text or call while continuing to collect details from the caller.</p>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can I set up an AI after hours answering service?</h3>
+                        <p className="text-gray-700">AI after hours services set up in 24 hours or less using industry templates, compared to 2–4 weeks for traditional services. Boltcall includes pre-built scripts for plumbing, HVAC, dental, and legal businesses so you can be live the same day you sign up.</p>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Which industries benefit most from after hours answering services?</h3>
+                        <p className="text-gray-700">Plumbers, HVAC companies, dentists, and law firms benefit most — 60–78% of their emergency calls happen outside business hours. These industries typically recover their full monthly service cost within the first week of captured after-hours leads.</p>
+                      </div>
+                    </div>
+                  </motion.section>
+
+                  {/* CTA */}
+                  <div className="bg-blue-600 rounded-xl p-8 text-center text-white mb-8">
+                    <h2 className="text-2xl font-bold mb-3">Stop Losing After-Hours Leads</h2>
+                    <p className="text-blue-100 mb-6">Boltcall answers every call 24/7 — setup takes under 30 minutes.</p>
+                    <Link to="/setup" className="inline-block bg-white text-blue-700 font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors">
+                      Start Free Setup
+                    </Link>
+                  </div>
                 </article>
               </div>
             </div>

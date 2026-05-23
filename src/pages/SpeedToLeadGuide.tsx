@@ -77,9 +77,46 @@ const SpeedToLeadGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Speed to Lead Guide", "item": "https://boltcall.org/speed-to-lead-guide"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is speed to lead and why does it matter for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Speed to lead is the time between a prospect submitting an inquiry and receiving your first response. Studies show businesses that respond within 5 minutes are 100x more likely to contact a lead than those that wait 30 minutes. For local service businesses, being first to respond wins the job — especially for competitive categories like plumbing, HVAC, and dental." }
+        },
+        {
+          "@type": "Question",
+          "name": "How fast should a local business respond to leads?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Local businesses should respond to inbound leads within 5 minutes for maximum conversion rates. Research from Harvard Business Review found that responding within 1 hour makes you 7x more likely to qualify the lead compared to waiting 2+ hours. AI-powered systems like Boltcall respond instantly — in under 30 seconds." }
+        },
+        {
+          "@type": "Question",
+          "name": "How can a local business improve its speed to lead?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The most effective ways to improve speed to lead are: (1) AI phone answering that picks up every call instantly, (2) automated SMS follow-up within 60 seconds of a missed call, (3) immediate email/SMS response to form submissions, and (4) 24/7 availability so no lead goes unanswered outside business hours." }
+        },
+        {
+          "@type": "Question",
+          "name": "What percentage of leads go to the first business to respond?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Research consistently shows that 35–50% of sales go to the vendor who responds first. In local service categories where customers are in urgent need (plumbing emergencies, dental pain, HVAC failures), the first-response win rate is even higher — often 60–70% of the time." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does speed to lead matter for phone calls or just online leads?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Speed to lead applies to both. For phone calls, if no one answers within 4 rings, 60% of callers hang up and call a competitor. For online form submissions, responding via SMS or call within 5 minutes increases conversion by up to 400%. Both channels require instant response systems to maximize revenue." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
     };
@@ -694,6 +731,35 @@ const SpeedToLeadGuide: React.FC = () => {
             </table>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">Source: Lead Response Management / Harvard Business Review study of 100,000+ B2C leads across service industries.</p>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions About Speed to Lead</h2>
+          <div className="space-y-5">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is speed to lead and why does it matter for local businesses?</h3>
+              <p className="text-gray-700">Speed to lead is the time between a prospect submitting an inquiry and receiving your first response. Businesses that respond within 5 minutes are 100x more likely to contact a lead than those that wait 30 minutes. For local service businesses, being first to respond wins the job.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How fast should a local business respond to leads?</h3>
+              <p className="text-gray-700">Local businesses should respond to inbound leads within 5 minutes for maximum conversion rates. Research shows responding within 1 hour makes you 7x more likely to qualify the lead compared to waiting 2+ hours. AI-powered systems like Boltcall respond instantly — in under 30 seconds.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How can a local business improve its speed to lead?</h3>
+              <p className="text-gray-700">The most effective improvements are: (1) AI phone answering that picks up every call instantly, (2) automated SMS follow-up within 60 seconds of a missed call, (3) immediate response to form submissions, and (4) 24/7 availability so no lead goes unanswered after hours. <Link to="/setup" className="text-blue-600 hover:underline">Start for free with Boltcall.</Link></p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What percentage of leads go to the first business to respond?</h3>
+              <p className="text-gray-700">Research consistently shows 35–50% of sales go to the vendor who responds first. In local service categories involving urgent needs (plumbing emergencies, dental pain, HVAC failures), the first-response win rate is even higher — often 60–70%.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does speed to lead matter for phone calls or just online leads?</h3>
+              <p className="text-gray-700">Speed to lead applies to both. For phone calls, if no one answers within 4 rings, 60% of callers hang up and call a competitor. For online form submissions, responding within 5 minutes increases conversion by up to 400%. Both channels require instant-response systems to maximize revenue.</p>
+            </div>
+          </div>
         </div>
       </section>
 

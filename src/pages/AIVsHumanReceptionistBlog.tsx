@@ -67,9 +67,47 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI vs Human Receptionist", "item": "https://boltcall.org/blog/ai-vs-human-receptionist"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist better than a human receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "For most local service businesses, an AI receptionist delivers superior performance on key metrics: it answers calls 24/7, responds in under 3 seconds, costs 85–95% less, and scales to unlimited simultaneous calls. Human receptionists are still better for complex relationship management and highly nuanced situations requiring emotional intelligence." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does a human receptionist cost vs an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A full-time human receptionist costs $28,000–$45,000/year in salary plus benefits, covering only business hours. An AI receptionist like Boltcall costs $99–$299/month ($1,188–$3,588/year) and provides 24/7 coverage — representing 85–95% cost savings with better availability." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI receptionists handle complex customer interactions?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists handle 90–95% of routine calls independently — appointment booking, FAQs, lead qualification, and scheduling. Complex situations requiring judgment, empathy, or negotiation are automatically escalated to a human. This hybrid approach gives you the efficiency of AI with human backup when needed." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do customers prefer talking to a human or an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Customer preference varies. Most callers care more about speed and resolution than who answers. Studies show 78% of customers will leave a voicemail or call a competitor if a human doesn't answer within 4 rings — making fast AI answering preferable to a missed call or hold queue." }
+        },
+        {
+          "@type": "Question",
+          "name": "What types of businesses benefit most from AI receptionists?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Local service businesses with high call volume and clear booking workflows benefit most: dental practices, HVAC companies, plumbers, law firms, and med spas. These businesses see the strongest ROI because AI handles appointment bookings and lead qualification around the clock at a fraction of human cost." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -668,6 +706,35 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-5">
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist better than a human receptionist?</h3>
+              <p className="text-gray-700">For most local service businesses, AI delivers superior performance: it answers 24/7, responds in under 3 seconds, costs 85–95% less, and handles unlimited simultaneous calls. Human receptionists excel in complex relationship management and highly nuanced situations requiring emotional intelligence.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does a human receptionist cost vs an AI receptionist?</h3>
+              <p className="text-gray-700">A full-time human receptionist costs $28,000–$45,000/year plus benefits, covering only business hours. An AI receptionist like Boltcall costs $99–$299/month ($1,188–$3,588/year) with 24/7 coverage — representing 85–95% cost savings with better availability.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI receptionists handle complex customer interactions?</h3>
+              <p className="text-gray-700">AI receptionists handle 90–95% of routine calls independently — booking, FAQs, lead qualification. Complex situations requiring judgment or empathy are automatically escalated to a human. This hybrid approach gives you the efficiency of AI with human backup when needed.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Do customers prefer talking to a human or an AI receptionist?</h3>
+              <p className="text-gray-700">Most callers care more about speed and resolution than who answers. Research shows 78% of customers will call a competitor if they can't reach you within 4 rings — making fast AI answering preferable to a missed call, voicemail, or hold queue.</p>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What types of businesses benefit most from AI receptionists?</h3>
+              <p className="text-gray-700">Local service businesses with high call volume see the strongest ROI: dental practices, HVAC companies, plumbers, law firms, and med spas. These businesses benefit most because AI handles appointment bookings and lead qualification around the clock at a fraction of human cost. <Link to="/pricing" className="text-blue-600 hover:underline">See Boltcall pricing.</Link></p>
+            </div>
           </div>
         </div>
       </section>
