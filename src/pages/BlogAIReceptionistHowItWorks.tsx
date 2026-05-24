@@ -15,8 +15,8 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
   const headings = useTableOfContents();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'How Does an AI Receptionist Work? Technical Guide';
-    updateMetaDescription('How does an AI receptionist work? Complete technical guide explaining natural language processing and automation. Learn more.');
+    document.title = 'How Does an AI Receptionist Work? Complete Guide | Boltcall';
+    updateMetaDescription('How does an AI receptionist work? Complete guide to natural language processing, call handling, and appointment automation. Try Boltcall free — set up in 30 minutes.');
     
     // Add Article schema markup
     const articleSchema = {
@@ -81,9 +81,63 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "How AI Receptionist Works", "item": "https://boltcall.org/blog/how-ai-receptionist-works"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is an AI receptionist and how does it work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'An AI receptionist is an automated virtual assistant that answers phone calls, handles customer inquiries, and books appointments using natural language processing and machine learning. When a call comes in, the AI converts speech to text, understands the caller\'s intent, generates a natural response, and executes actions like calendar bookings — all in real-time without human intervention.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How long does it take to set up an AI receptionist?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Most AI receptionists like Boltcall take 30 minutes or less to set up. You provide your business information, service menu, and calendar access, and the AI is trained automatically. Enterprise platforms with deep CRM integrations may take 1–5 days. No technical expertise is required for most modern AI receptionist tools.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an AI receptionist book appointments automatically?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. AI receptionists integrate directly with calendar systems (Google Calendar, Calendly, Cal.com, ServiceTitan, Dentrix, and others) to check real-time availability and book appointments during the phone call — without any human involvement. The caller receives an SMS confirmation immediately after the call.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Does an AI receptionist sound robotic to callers?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Modern AI receptionists use advanced text-to-speech technology that sounds natural and human-like. Most callers cannot distinguish between a well-configured AI receptionist and a human. The key is proper voice selection, natural pacing, and training the AI on industry-specific vocabulary relevant to your business.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How much does an AI receptionist cost compared to a human receptionist?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AI receptionists typically cost $99–$499 per month, compared to $3,000–$4,500 per month for a full-time human receptionist (salary, benefits, training, and turnover costs). Boltcall starts at $99/month with no per-minute fees and covers unlimited calls 24/7.'
+          }
+        }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-how-it-works';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema-how-it-works')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -470,6 +524,48 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
               </div>
             </div>
           </section>
+        </motion.section>
+
+        {/* FAQ Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.57 }}
+          className="mb-16"
+        >
+          <h2 id="faq" className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-5">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">What is an AI receptionist and how does it work?</h3>
+              <p className="text-gray-700 leading-relaxed">
+                An AI receptionist is an automated system that answers phone calls, handles customer inquiries, and books appointments using natural language processing. When a call comes in, it converts speech to text in real-time, understands the caller's intent, generates a natural response, and executes actions like calendar bookings — without human involvement. <Link to="/blog/ai-vs-human-receptionist" className="text-blue-600 hover:underline">See how it compares to a human receptionist.</Link>
+              </p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">How long does it take to set up an AI receptionist?</h3>
+              <p className="text-gray-700 leading-relaxed">
+                Most AI receptionists like Boltcall take 30 minutes or less to configure. You provide your business info, services, and calendar access — the AI trains automatically. <Link to="/pricing" className="text-blue-600 hover:underline">See pricing and get started free.</Link>
+              </p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can an AI receptionist book appointments automatically?</h3>
+              <p className="text-gray-700 leading-relaxed">
+                Yes. AI receptionists integrate with Google Calendar, Cal.com, ServiceTitan, Dentrix, and others — booking appointments mid-call without any human involvement. Callers get an SMS confirmation immediately. <Link to="/features/ai-receptionist" className="text-blue-600 hover:underline">See how Boltcall's booking integration works.</Link>
+              </p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Does an AI receptionist sound robotic to callers?</h3>
+              <p className="text-gray-700 leading-relaxed">
+                Modern AI receptionists use advanced text-to-speech that sounds natural and human-like. Most callers cannot distinguish between a well-configured AI and a human. The key is proper voice selection, natural pacing, and industry-specific vocabulary training relevant to your business.
+              </p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">How much does an AI receptionist cost compared to a human?</h3>
+              <p className="text-gray-700 leading-relaxed">
+                AI receptionists cost $99–$499/month. A human receptionist costs $3,000–$4,500/month in salary, benefits, and turnover. Boltcall starts at $99/month with no per-minute fees, covering unlimited calls 24/7. <Link to="/blog/ai-receptionist-cost-pricing" className="text-blue-600 hover:underline">Read the full cost comparison guide.</Link>
+              </p>
+            </div>
+          </div>
         </motion.section>
 
       {/* CTA Section */}

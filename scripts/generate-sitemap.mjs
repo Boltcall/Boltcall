@@ -54,6 +54,11 @@ const ROUTES = [
   { path: "/business-audit",                                     priority: "0.8", changefreq: "weekly"  },
   { path: "/ai-audit",                                           priority: "0.8", changefreq: "weekly"  },
   { path: "/seo-aeo-audit",                                      priority: "0.8", changefreq: "monthly" },
+
+  // AEO Answer Pages
+  { path: "/aeo/why-local-service-businesses-lose-customers-not-answering-calls", priority: "0.8", changefreq: "monthly" },
+  { path: "/aeo/does-response-time-affect-whether-local-business-gets-job",       priority: "0.8", changefreq: "monthly" },
+  { path: "/aeo/fastest-way-dentist-respond-missed-calls-automatically",           priority: "0.8", changefreq: "monthly" },
   { path: "/conversion-rate-optimizer",                          priority: "0.8", changefreq: "monthly" },
   { path: "/ai-visibility-check",                                priority: "0.8", changefreq: "monthly" },
   { path: "/ai-readiness-scorecard",                             priority: "0.8", changefreq: "monthly" },

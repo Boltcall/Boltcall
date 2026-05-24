@@ -16,7 +16,75 @@ const BestAfterHoursAnsweringService: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = 'Best After Hours Answering Service for Local Businesses: AI vs Traditional | Boltcall';
-    updateMetaDescription('Compare the best after hours answering services for local businesses. AI receptionists outperform traditional services with 24/7 coverage and lower costs.');
+    updateMetaDescription('Compare the best after hours answering services for local businesses. Get started free with Boltcall — AI receptionists that outperform traditional services at 60% lower cost.');
+
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is the best after hours answering service for local businesses?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'The best after hours answering service for local businesses is an AI-powered solution like Boltcall. It offers 24/7 availability, instant response in under 2 rings, and costs 60–80% less than traditional human answering services, while handling unlimited concurrent calls and booking appointments automatically.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How much does an after hours answering service cost?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Traditional human answering services cost $800–$2,500 per month. AI-powered after hours services like Boltcall cost $389–$799 per month with no per-minute fees. The average local business saves $500–$1,500 per month by switching to AI.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an AI answering service handle emergency calls after hours?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Modern AI answering services are trained to recognize emergency situations — burst pipes, AC failures, tooth pain, and similar urgent requests. When an emergency is detected, the AI immediately escalates to the appropriate on-call staff member via SMS or phone within seconds of the call ending.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How long does it take to set up an after hours AI receptionist?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Most AI after hours answering services take 24 hours or less to deploy. Traditional human answering services typically require 2–4 weeks for onboarding and training. Boltcall can be fully configured and live within one business day.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'What industries benefit most from after hours answering services?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Industries with high after-hours demand benefit most: HVAC (60% of emergency calls come after 6 PM), plumbing, dental practices, law firms handling personal injury intake, and home services. Any business where a missed call represents $200+ in potential revenue should have 24/7 coverage.'
+          }
+        }
+      ]
+    };
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.textContent = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
+    const bcSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://boltcall.org' },
+        { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://boltcall.org/blog' },
+        { '@type': 'ListItem', position: 3, name: 'Best After Hours Answering Service', item: 'https://boltcall.org/blog/best-after-hours-answering-service' }
+      ]
+    };
+    const bcScript = document.createElement('script');
+    bcScript.type = 'application/ld+json';
+    bcScript.id = 'breadcrumb-schema';
+    bcScript.textContent = JSON.stringify(bcSchema);
+    document.head.appendChild(bcScript);
 
     const schema = {
       '@context': 'https://schema.org',
@@ -62,6 +130,8 @@ const BestAfterHoursAnsweringService: React.FC = () => {
 
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
+      document.getElementById('breadcrumb-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -556,6 +626,69 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                   <p className="text-lg text-gray-700 italic leading-relaxed">"More than 60% of business calls happen outside traditional business hours. Companies that provide 24/7 phone coverage capture up to 40% more leads than those that only answer during the day."</p>
                   <footer className="mt-3 text-sm font-semibold text-gray-600">— BIA/Kelsey, Local Commerce Monitor Research</footer>
                 </blockquote>
+
+                {/* FAQ Section */}
+                <motion.section
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="mb-12"
+                >
+                  <h2 id="faq" className="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+                  <div className="space-y-6">
+                    <div className="border border-gray-200 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">What is an after hours answering service for local businesses?</h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        An after hours answering service is an automated or human-staffed solution that handles inbound calls, books appointments, and captures lead information when your office is closed. AI-powered services like Boltcall are available 24/7, answer in under 2 rings, and cost 60–80% less than traditional human answering services.
+                      </p>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">How much does an after hours answering service cost?</h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        Traditional human answering services typically cost $800–$2,500 per month with additional per-minute fees. AI-powered services like <Link to="/pricing" className="text-blue-600 hover:underline">Boltcall start at $389/month</Link> with no per-minute charges — flat pricing that covers unlimited calls. Most businesses save $500–$1,500/month by switching to AI.
+                      </p>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Can an AI answering service handle emergency calls after hours?</h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        Yes. Modern AI answering services recognize emergency situations — burst pipes, AC failures, dental pain — and immediately escalate to on-call staff. The AI collects the caller's name, address, and issue details, then sends a structured summary to the right person within seconds of the call ending. <Link to="/features/ai-receptionist" className="text-blue-600 hover:underline">See how Boltcall handles emergency routing.</Link>
+                      </p>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">How long does it take to set up an after hours AI receptionist?</h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        Most AI after hours services deploy in 24 hours or less — compared to 2–4 weeks for traditional human answering services. Boltcall can be fully configured and live within one business day. Setup includes connecting your calendar, customizing call scripts, and training the AI on your specific services and pricing.
+                      </p>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">What industries benefit most from after hours answering services?</h3>
+                      <p className="text-gray-700 leading-relaxed">
+                        HVAC, plumbing, dental, law firms, and home services see the strongest ROI because emergency demand peaks after 6 PM. For more detail on specific industries, see our guides on <Link to="/blog/ai-phone-answering-dentists" className="text-blue-600 hover:underline">AI answering for dental practices</Link> and <Link to="/blog/ai-phone-answering-plumbers" className="text-blue-600 hover:underline">AI answering for plumbers</Link>. Any business where a missed call is worth $200+ in lifetime value should have 24/7 coverage.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white text-center">
+                    <h3 className="text-xl font-bold mb-3">Start Answering Every After-Hours Call</h3>
+                    <p className="text-blue-100 mb-6 max-w-lg mx-auto">
+                      Boltcall deploys in 24 hours. No per-minute fees. No setup costs. Get started free and capture every lead — even at 2 AM.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Link
+                        to="/pricing"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-colors"
+                      >
+                        See Pricing
+                      </Link>
+                      <Link
+                        to="/blog/ai-vs-human-receptionist"
+                        className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-colors"
+                      >
+                        AI vs Human Receptionist
+                      </Link>
+                    </div>
+                  </div>
+                </motion.section>
                 </article>
               </div>
             </div>

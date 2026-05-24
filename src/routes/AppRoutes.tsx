@@ -26,6 +26,9 @@ const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
 const BlogNeverMissCallAfterHours = React.lazy(() => import('../pages/BlogNeverMissCallAfterHours'));
+const AeoWhyLocalBusinessesLoseCustomers = React.lazy(() => import('../pages/AeoWhyLocalBusinessesLoseCustomers'));
+const AeoResponseTimeLocalBusiness = React.lazy(() => import('../pages/AeoResponseTimeLocalBusiness'));
+const AeoFastestWayDentistRespondMissedCalls = React.lazy(() => import('../pages/AeoFastestWayDentistRespondMissedCalls'));
 const BlogWhatsAppAppointmentBookingPlumbers = React.lazy(() => import('../pages/BlogWhatsAppAppointmentBookingPlumbers'));
 const BlogAIReceptionistDentists = React.lazy(() => import('../pages/BlogAIReceptionistDentists'));
 const BlogAIReceptionistLawFirms = React.lazy(() => import('../pages/BlogAIReceptionistLawFirms'));
@@ -506,6 +509,11 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/compare/boltcall-vs-smith-ai" element={<CompareBoltcallVsSmithAi />} />
         <Route path="/compare/podium-alternatives" element={<PodiumAlternatives />} />
         <Route path="/ai-agent-comparison" element={<TraditionalCallCentersVsBoltcall />} />
+        {/* AEO answer pages */}
+        <Route path="/aeo/why-local-service-businesses-lose-customers-not-answering-calls" element={<AeoWhyLocalBusinessesLoseCustomers />} />
+        <Route path="/aeo/does-response-time-affect-whether-local-business-gets-job" element={<AeoResponseTimeLocalBusiness />} />
+        <Route path="/aeo/fastest-way-dentist-respond-missed-calls-automatically" element={<AeoFastestWayDentistRespondMissedCalls />} />
+
         <Route path="/ai-revenue-audit" element={<AIRevenueAudit />} />
         <Route path="/ai-revenue-calculator" element={<Navigate to="/ai-revenue-audit" replace />} />
         <Route path="/ai-revenue-calculator/results" element={<AIRevenueResults />} />
