@@ -26,6 +26,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 
 import { useNavigate } from 'react-router-dom';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
+import { getStoredAttributionUid } from '../hooks/useAttributionCapture';
 
 
 
@@ -317,6 +318,8 @@ const SEOAuditPDF: React.FC = () => {
           url: formattedUrl,
 
           email: email.trim(),
+
+          ref: getStoredAttributionUid(),
 
         }),
 

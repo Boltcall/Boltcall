@@ -183,6 +183,22 @@ export const handler: Handler = async (event) => {
       const appointmentId = appt.id;
       const messagesToInsert: any[] = [];
 
+      // ─── Silent self-serve attribution (Boltcall outbound campaigns) ─────
+      // Match by attendee email against any outbound_touch_attribution row
+      // for which we have a lead_email but no booking yet. If we get a hit,
+      // stamp booking_at and mark as silent self-serve (will be flipped off
+      // by instantly-webhook if a reply event subsequently arrives).
+      if (attendeeEmail) {
+        supabase
+          .from('outbound_touch_attribution')
+          .update({ booking_at: startTime || new Date().toISOString(), silent_self_serve: true })
+          .eq('lead_email', attendeeEmail)
+          .is('booking_at', null)
+          .then(({ error }) => {
+            if (error) console.warn('[appointment-handler] attribution update failed:', error.message);
+          });
+      }
+
       // Fire appointment_booked webhook
       fireWebhooks(userId, 'appointment_booked', {
         id: appointmentId,
