@@ -208,6 +208,19 @@ const CompareBoltcallVsLindy: React.FC = () => {
               </p>
             </motion.section>
 
+            <section className="mb-12 border-t border-gray-200 pt-10">
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Related comparisons</h2>
+              <p className="text-gray-700 mb-4">Other AI call answering and speed-to-lead platforms compared honestly:</p>
+              <ul className="grid sm:grid-cols-2 gap-2 text-blue-700">
+                <li>• <Link className="hover:underline" to="/compare/boltcall-vs-goodcall">Boltcall vs GoodCall</Link></li>
+                <li>• <Link className="hover:underline" to="/compare/boltcall-vs-callin">Boltcall vs Callin.io</Link></li>
+                <li>• <Link className="hover:underline" to="/compare/boltcall-vs-convin">Boltcall vs Convin.ai</Link></li>
+                <li>• <Link className="hover:underline" to="/compare/boltcall-vs-soundhound">Boltcall vs SoundHound AI</Link></li>
+                <li>• <Link className="hover:underline" to="/compare/boltcall-vs-smith-ai">Boltcall vs Smith.ai</Link></li>
+                <li>• <Link className="hover:underline" to="/compare/boltcall-vs-podium">Boltcall vs Podium</Link></li>
+              </ul>
+            </section>
+
             <FinalCTA {...COMPARISON_CTA} />
           </div>
         </div>
