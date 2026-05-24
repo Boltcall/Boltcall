@@ -212,6 +212,53 @@ const AeoGlobalIntro: React.FC = () => {
     };
   }, [path, shouldShow]);
 
+  // Global WebSite + SearchAction schema — injected on every route.
+  // Signals to Google and AI Mode that boltcall.org has internal search.
+  // Triggers Google sitelinks search box + helps AI engines surface
+  // search-driven citations.
+  useEffect(() => {
+    const websiteSchemaId = 'aeo-global-website-schema';
+    const existing = document.getElementById(websiteSchemaId);
+    if (existing) existing.remove();
+
+    const websiteSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Boltcall',
+      url: 'https://boltcall.org',
+      inLanguage: 'en-US',
+      description:
+        'Speed-to-lead AI receptionist for local service businesses — answers every call 24/7, books appointments instantly, captures leads automatically.',
+      publisher: {
+        '@type': 'Organization',
+        name: 'Boltcall',
+        url: 'https://boltcall.org',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://boltcall.org/logo.png',
+        },
+      },
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: 'https://boltcall.org/blog?q={search_term_string}',
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    };
+
+    const script = document.createElement('script');
+    script.id = websiteSchemaId;
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(websiteSchema);
+    document.head.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [path]);
+
   useEffect(() => {
     if (!serviceSchemaRoutes.has(path)) {
       return;

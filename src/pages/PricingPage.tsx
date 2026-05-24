@@ -3,6 +3,12 @@ import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
 import { usePricingVisitorTrack } from '../hooks/usePricingVisitorTrack';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
+import {
+  SITE_DATE_PUBLISHED,
+  SITE_DATE_MODIFIED,
+  SITE_AGGREGATE_RATING,
+  DEFAULT_PUBLISHER,
+} from '../lib/seoConstants';
 import GiveawayBar from '../components/GiveawayBar';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -68,6 +74,15 @@ const PricingPage: React.FC = () => {
       "description": "AI receptionist that answers calls 24/7, books appointments, captures leads, and sends follow-up texts for local service businesses.",
       "url": "https://boltcall.org/pricing",
       "brand": { "@type": "Brand", "name": "Boltcall" },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": SITE_AGGREGATE_RATING.ratingValue,
+        "reviewCount": SITE_AGGREGATE_RATING.reviewCount,
+        "bestRating": SITE_AGGREGATE_RATING.bestRating,
+        "worstRating": SITE_AGGREGATE_RATING.worstRating
+      },
+      "datePublished": SITE_DATE_PUBLISHED,
+      "dateModified": SITE_DATE_MODIFIED,
       "offers": [
         {
           "@type": "Offer",
@@ -153,13 +168,12 @@ const PricingPage: React.FC = () => {
       "name": "Boltcall Pricing — AI Receptionist Plans",
       "url": "https://boltcall.org/pricing",
       "description": "Compare Boltcall pricing plans. AI receptionist starting at $549/month. Free setup included.",
-      "datePublished": "2024-01-01",
-      "dateModified": "2026-05-06",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Boltcall",
-        "url": "https://boltcall.org",
-        "logo": { "@type": "ImageObject", "url": "https://boltcall.org/logo.png" }
+      "datePublished": SITE_DATE_PUBLISHED,
+      "dateModified": SITE_DATE_MODIFIED,
+      "publisher": DEFAULT_PUBLISHER,
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://boltcall.org/og-image.jpg"
       }
     }
   ]);
