@@ -10,8 +10,10 @@ import FinalCTA, { COMPARISON_CTA } from '../components/FinalCTA';
 import GiveawayBar from '../components/GiveawayBar';
 import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { SITE_DATE_MODIFIED } from '../lib/seoConstants';
 
 const PUBLISH_DATE = '2026-05-06';
+const MODIFIED_DATE = SITE_DATE_MODIFIED;
 const TITLE = '5 Best Podium Alternatives for Local Businesses (2026)';
 const DESCRIPTION = 'Five Podium alternatives compared honestly. Pricing, response speed, AI features, and best-fit use cases for local service businesses in 2026.';
 
@@ -156,7 +158,7 @@ const PodiumAlternatives: React.FC = () => {
         logo: { '@type': 'ImageObject', url: 'https://boltcall.org/boltcall_full_logo.png' },
       },
       datePublished: PUBLISH_DATE,
-      dateModified: PUBLISH_DATE,
+      dateModified: MODIFIED_DATE,
       mainEntityOfPage: {
         '@type': 'WebPage',
         '@id': 'https://boltcall.org/compare/podium-alternatives',
@@ -274,7 +276,7 @@ const PodiumAlternatives: React.FC = () => {
             Five real Podium alternatives, ranked by lead-conversion focus, response speed, and pricing transparency. Each entry has honest strengths and weaknesses so you can match the tool to your bottleneck.
           </p>
           <p className="text-sm text-slate-500 mt-4">
-            Last updated {PUBLISH_DATE}. Pricing and feature data confirmed from each vendor's website. Boltcall publishes this list and is included as the #1 pick. We disclose the bias and let the criteria speak.
+            Last updated {MODIFIED_DATE}. Pricing and feature data confirmed from each vendor's website. Boltcall publishes this list and is included as the #1 pick. We disclose the bias and let the criteria speak.
           </p>
         </div>
 

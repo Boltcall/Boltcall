@@ -12,6 +12,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import LazySection from '../components/LazySection';
 import BentoCard from '../components/ui/bento-card';
+import AnswerBlock from '../components/seo/AnswerBlock';
 
 // Lazy load below-the-fold components to reduce initial bundle
 const HowItWorks = lazy(() => import('../components/HowItWorks'));
@@ -173,8 +174,19 @@ const Home: React.FC = () => {
         <main className="pb-0">
           <Hero />
 
+          {/* Direct-answer block — AIO/AI Mode citation chunk (May 2026 update response) */}
+          <section className="relative z-[2] bg-white px-4 sm:px-8 lg:px-16 -mt-[120px] sm:-mt-[160px]">
+            <AnswerBlock
+              query="What is Boltcall"
+              definition="Boltcall is a speed-to-lead AI receptionist platform that answers every inbound call in under 11 seconds, replies to web-form leads instantly by SMS, and books appointments directly into your calendar — 24/7, without a human receptionist."
+              stat="Plans start at $549/month for unlimited AI call answering, automated reminders that cut no-shows by 40%, and post-job Google review requests; the average customer recovers the subscription cost in the first week from one captured after-hours lead."
+              outcome="Local service businesses using Boltcall stop losing 30–40% of inbound leads that previously went to voicemail and win the race-to-respond against slower competitors."
+              cta="Book a 15-minute setup call at boltcall.org/book-a-call."
+            />
+          </section>
+
           {/* Boltcall Platform Preview — interactive dark bento card */}
-          <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[200px]">
+          <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[60px]">
             <BentoCard />
           </section>
 

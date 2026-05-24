@@ -10,8 +10,10 @@ import FinalCTA, { COMPARISON_CTA } from '../components/FinalCTA';
 import GiveawayBar from '../components/GiveawayBar';
 import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { SITE_DATE_MODIFIED } from '../lib/seoConstants';
 
 const PUBLISH_DATE = '2026-05-06';
+const MODIFIED_DATE = SITE_DATE_MODIFIED;
 const TITLE = 'Boltcall vs Podium: Speed-to-Lead vs Comms Hub (2026)';
 const DESCRIPTION = 'Boltcall vs Podium compared honestly. Speed-to-lead specialist vs all-in-one communication hub. See which fits your local business in 2026.';
 
@@ -36,7 +38,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
         logo: { '@type': 'ImageObject', url: 'https://boltcall.org/boltcall_full_logo.png' },
       },
       datePublished: PUBLISH_DATE,
-      dateModified: PUBLISH_DATE,
+      dateModified: MODIFIED_DATE,
       mainEntityOfPage: {
         '@type': 'WebPage',
         '@id': 'https://boltcall.org/compare/boltcall-vs-podium',
@@ -167,7 +169,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="speakable-intro bg-blue-50 border-l-4 border-blue-600 p-6 mb-10 rounded-r-lg">
             <p className="text-lg text-[#0B1220]">
-              <strong>Quick answer:</strong> If your top problem is leads slipping through the cracks, choose Boltcall. It is built around one job, turn a new lead into a booked appointment in 11 seconds with zero manual effort. If you want a single dashboard for messaging, reviews, payments, and AI calls across multiple locations, Podium is the more complete suite.
+              <strong>Boltcall vs Podium quick answer:</strong> Boltcall is a speed-to-lead AI receptionist purpose-built to turn an inbound call or web lead into a booked appointment in under 11 seconds; Podium is a 15-year-old multi-channel communication suite (messaging, reviews, payments) that bolted on AI calling more recently. Boltcall starts at $549/month with no per-call or per-message fees; Podium's AI-included tier typically lands between $500 and $900/month in real-world quotes once you add the AI Employee voice add-on, plus per-message and per-location fees. Choose Boltcall if your top problem is missed-lead recovery and response speed; choose Podium if you want a single dashboard for messaging, reviews, payments, and multi-location AI calls.
             </p>
           </div>
 
@@ -234,7 +236,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
               </div>
 
               <p className="text-sm text-slate-500">
-                Feature data sourced from go.podium.com and Boltcall product pages, current as of {PUBLISH_DATE}. Podium pricing varies by location count and negotiation.
+                Feature data sourced from go.podium.com and Boltcall product pages, current as of {MODIFIED_DATE}. Podium pricing varies by location count and negotiation.
               </p>
             </motion.section>
 
@@ -313,7 +315,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
 
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                 <p className="text-sm text-amber-900">
-                  <strong>Note on Podium pricing:</strong> $399 Essentials is publicly listed but does not include AI Employee voice. Real-world Podium quotes for local businesses with AI typically land in the $500 to $900/mo range, plus per-message and per-location fees. Confirm directly with Podium for your scenario. Pricing accurate as of {PUBLISH_DATE}.
+                  <strong>Note on Podium pricing:</strong> $399 Essentials is publicly listed but does not include AI Employee voice. Real-world Podium quotes for local businesses with AI typically land in the $500 to $900/mo range, plus per-message and per-location fees. Confirm directly with Podium for your scenario. Pricing accurate as of {MODIFIED_DATE}.
                 </p>
               </div>
             </motion.section>

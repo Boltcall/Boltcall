@@ -13,6 +13,7 @@ import GiveawayBar from '../components/GiveawayBar';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Pricing from '../components/Pricing';
+import AnswerBlock from '../components/seo/AnswerBlock';
 import { DollarSign, CheckCircle, Zap, Phone, Calendar, Star } from 'lucide-react';
 
 const PricingPage: React.FC = () => {
@@ -184,6 +185,16 @@ const PricingPage: React.FC = () => {
       <Header />
       <main className="pt-20">
         <h1 className="speakable-intro sr-only">Boltcall AI Receptionist Pricing Plans</h1>
+
+        {/* Direct-answer block — AIO/AI Mode citation chunk (May 2026 update response) */}
+        <AnswerBlock
+          query="How much does Boltcall cost"
+          definition="Boltcall pricing has three tiers: Starter at $549/month (24/7 AI call answering, missed-call text-back, instant lead reply, calendar booking), Pro at $897/month (everything in Starter plus full lead follow-up sequences, SMS conversations, custom AI voice, website widget), and Ultimate at $4,997/month (everything in Pro plus multi-location support, a dedicated account manager, and AI audits)."
+          stat="All plans include free setup, no per-minute or per-call fees, no long-term contracts, and a 30-day money-back guarantee."
+          outcome="Most local service businesses recover the full subscription cost within the first week, because a single after-hours emergency call or recovered missed lead is typically worth $300–$1,500 in job revenue."
+          cta="Compare plans below or start free at boltcall.org/setup."
+        />
+
         <Pricing />
 
         {/* Why Boltcall Pays For Itself */}
