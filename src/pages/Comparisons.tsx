@@ -86,6 +86,46 @@ const Comparisons: React.FC = () => {
       category: 'Roundup',
       date: 'May 6, 2026',
       readTime: '9 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">GoodCall</span>',
+      description: 'Flat all-in-one speed-to-lead vs per-unique-caller AI phone agent. Pricing math at three call volumes plus honest "where each one wins" verdict.',
+      href: '/compare/boltcall-vs-goodcall',
+      category: 'AI Receptionist',
+      date: 'May 24, 2026',
+      readTime: '9 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">Callin.io</span>',
+      description: 'Managed turnkey speed-to-lead vs DIY minutes-metered AI calling at $30/mo. Which fits your local service business in 2026?',
+      href: '/compare/boltcall-vs-callin',
+      category: 'AI Calling',
+      date: 'May 24, 2026',
+      readTime: '9 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">Lindy</span>',
+      description: 'Purpose-built receptionist vs general AI agent platform with voice billed at $0.19/minute. The honest read on which one belongs in a local-service stack.',
+      href: '/compare/boltcall-vs-lindy',
+      category: 'AI Agent Platform',
+      date: 'May 24, 2026',
+      readTime: '8 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">Convin.ai</span>',
+      description: 'Speed-to-lead receptionist vs contact-center QA / agent coaching. Different products entirely — here is when each one wins.',
+      href: '/compare/boltcall-vs-convin',
+      category: 'Contact Center',
+      date: 'May 24, 2026',
+      readTime: '7 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">SoundHound AI</span>',
+      description: 'SMB speed-to-lead vs enterprise conversational AI (Amelia, drive-thru, automotive). Why local businesses pick Boltcall — and why SoundHound is not for them.',
+      href: '/compare/boltcall-vs-soundhound',
+      category: 'Enterprise Voice AI',
+      date: 'May 24, 2026',
+      readTime: '7 min read'
     }
   ];
 
