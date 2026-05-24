@@ -226,6 +226,7 @@ const BestAIAnsweringServiceDentalMedical = React.lazy(() => import('../pages/Be
 const BlogAfterHoursLeadResponse = React.lazy(() => import('../pages/BlogAfterHoursLeadResponse'));
 const BlogAIReceptionistMedSpa = React.lazy(() => import('../pages/BlogAIReceptionistMedSpa'));
 const BlogSolarAILeadResponse = React.lazy(() => import('../pages/BlogSolarAILeadResponse'));
+const BlogSpeedToLeadLawFirms = React.lazy(() => import('../pages/BlogSpeedToLeadLawFirms'));
 
 // ── Lazy loads — Comparisons ─────────────────────────────────────────────
 const Comparisons = React.lazy(() => import('../pages/Comparisons'));
@@ -571,6 +572,7 @@ const NavigationWrapper: React.FC = () => {
                 <Route path="/blog/whatsapp-appointment-booking-plumbers" element={<BlogWhatsAppAppointmentBookingPlumbers />} />
                 <Route path="/blog/ai-receptionist-for-dentists" element={<BlogAIReceptionistDentists />} />
                 <Route path="/blog/ai-receptionist-for-law-firms" element={<BlogAIReceptionistLawFirms />} />
+                <Route path="/blog/speed-to-lead-for-law-firms" element={<BlogSpeedToLeadLawFirms />} />
         </Route>
         {/* Industry-specific calculators */}
         <Route path="/tools/dentist-chair-calculator" element={<DentistChairCalculator />} />

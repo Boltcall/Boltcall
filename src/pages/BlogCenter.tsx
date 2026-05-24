@@ -31,6 +31,16 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Speed to Lead for Law Firms: <span className="text-blue-600">Win More Cases</span> With Faster Intake',
+    slug: '/blog/speed-to-lead-for-law-firms',
+    excerpt: 'Law firms that respond first win 78% of cases. Learn the speed-to-lead system that cuts legal intake response time to under 60 seconds and books more consultations 24/7.',
+    date: 'May 24, 2026',
+    readTime: '9 min read',
+    category: 'Law Firms|Speed to Lead|Industry Guide',
+    image: '/images/blog/speed-to-lead-law-firms.png',
+    featured: false,
+  },
+  {
     title: 'How HVAC Companies Book More Service Calls with <span className="text-blue-600">AI Lead Response</span>',
     slug: '/blog/hvac-ai-lead-response',
     excerpt: 'How HVAC companies use AI lead response to book more service calls. Speed-to-lead strategies that top HVAC businesses use to win every job during peak season.',
