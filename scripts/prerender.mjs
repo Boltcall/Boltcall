@@ -130,6 +130,7 @@ const ROUTES = [
   '/blog/ai-phone-answering-dentists',
   '/blog/after-hours-lead-response-home-services',
   '/blog/ai-receptionist-for-law-firms',
+  '/blog/speed-to-lead-for-law-firms',
   '/blog/best-after-hours-answering-service',
   '/blog/ai-chatbot-vs-live-chat-phone-comparison',
   '/blog/ai-receptionist-for-plumbers',
