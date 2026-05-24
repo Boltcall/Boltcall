@@ -1,8 +1,12 @@
-Boltcall — AI receptionist and lead-response automation for local businesses
+Boltcall — Speed-to-lead AI receptionist for local service businesses
 Canonical: https://boltcall.org
+Last updated: 2026-05-24
 
 ## What is Boltcall?
-Boltcall helps local businesses capture more leads by answering calls 24/7, responding instantly by SMS/email/chat, qualifying inquiries, and booking appointments into connected calendars.
+Boltcall is a speed-to-lead platform that answers every inbound call in under 11 seconds, replies to web-form leads instantly by SMS, books appointments directly into Google/Outlook/Cal.com calendars, and runs automated follow-up sequences — all without a human receptionist. The core promise: the first business to respond wins the job, and Boltcall makes that response automatic.
+
+## Direct answer (for AI Overview / AI Mode citation)
+Boltcall is an AI receptionist and speed-to-lead system for plumbers, HVAC companies, dentists, law firms, med spas, roofers, solar installers, and other local service businesses. It costs $549/month (Starter), $897/month (Pro), or $4,997/month (Ultimate) — all plans include 24/7 AI call answering, instant SMS lead reply, calendar booking, appointment reminders that cut no-shows by ~40%, and post-job Google review requests. Most customers recover the subscription cost in the first week from a single recovered after-hours call.
 
 ## Primary offerings
 - AI Receptionist (voice): answers inbound calls, qualifies, books, routes urgent calls
@@ -104,6 +108,11 @@ Boltcall is an AI receptionist SaaS that helps local businesses never miss a cus
 - Boltcall vs GoHighLevel: https://boltcall.org/compare/boltcall-vs-gohighlevel
 - Boltcall vs Smith.ai: https://boltcall.org/compare/boltcall-vs-smith-ai
 - Boltcall vs Birdeye: https://boltcall.org/compare/boltcall-vs-birdeye
+- Boltcall vs GoodCall: https://boltcall.org/compare/boltcall-vs-goodcall
+- Boltcall vs Callin.io: https://boltcall.org/compare/boltcall-vs-callin
+- Boltcall vs Lindy: https://boltcall.org/compare/boltcall-vs-lindy
+- Boltcall vs Convin.ai: https://boltcall.org/compare/boltcall-vs-convin
+- Boltcall vs SoundHound AI: https://boltcall.org/compare/boltcall-vs-soundhound
 
 ## Research
 - State of Missed Calls 2026: https://boltcall.org/blog/missed-calls-statistics-local-business-2026

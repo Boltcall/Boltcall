@@ -1,10 +1,18 @@
 import React, { useEffect, lazy, Suspense } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
+import {
+  SITE_DATE_PUBLISHED,
+  SITE_DATE_MODIFIED,
+  SITE_AGGREGATE_RATING,
+  SITE_AUDIENCE,
+  ORG_LOGO_URL,
+} from '../lib/seoConstants';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import LazySection from '../components/LazySection';
 import BentoCard from '../components/ui/bento-card';
+import AnswerBlock from '../components/seo/AnswerBlock';
 
 // Lazy load below-the-fold components to reduce initial bundle
 const HowItWorks = lazy(() => import('../components/HowItWorks'));
@@ -119,18 +127,42 @@ const Home: React.FC = () => {
       "@type": "SoftwareApplication",
       "name": "Boltcall",
       "applicationCategory": "BusinessApplication",
+      "applicationSubCategory": "Speed-to-Lead / AI Receptionist",
       "operatingSystem": "Web",
       "url": "https://boltcall.org",
+      "inLanguage": "en-US",
       "description": "AI receptionist that answers calls 24/7, books appointments, captures leads, and sends follow-up texts for local service businesses.",
+      "image": ORG_LOGO_URL,
       "offers": {
         "@type": "Offer",
         "price": "549",
         "priceCurrency": "USD",
         "priceValidUntil": "2027-01-01",
-        "url": "https://boltcall.org/pricing"
+        "url": "https://boltcall.org/pricing",
+        "availability": "https://schema.org/InStock"
       },
-      "datePublished": "2024-01-01",
-      "dateModified": "2026-05-06"
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": SITE_AGGREGATE_RATING.ratingValue,
+        "reviewCount": SITE_AGGREGATE_RATING.reviewCount,
+        "bestRating": SITE_AGGREGATE_RATING.bestRating,
+        "worstRating": SITE_AGGREGATE_RATING.worstRating
+      },
+      "audience": {
+        "@type": "BusinessAudience",
+        "audienceType": Array.from(SITE_AUDIENCE).join(', ')
+      },
+      "featureList": [
+        "24/7 AI call answering",
+        "Instant lead reply (under 11 seconds)",
+        "Appointment booking into Google/Outlook/Cal.com",
+        "Missed call text-back",
+        "SMS follow-up sequences",
+        "Multilingual support (English + Spanish)",
+        "CRM integration (Clio, MyCase, Jobber, ServiceTitan, HouseCallPro)"
+      ],
+      "datePublished": SITE_DATE_PUBLISHED,
+      "dateModified": SITE_DATE_MODIFIED
     }
   ]);
 
@@ -142,8 +174,19 @@ const Home: React.FC = () => {
         <main className="pb-0">
           <Hero />
 
+          {/* Direct-answer block — AIO/AI Mode citation chunk (May 2026 update response) */}
+          <section className="relative z-[2] bg-white px-4 sm:px-8 lg:px-16 -mt-[120px] sm:-mt-[160px]">
+            <AnswerBlock
+              query="What is Boltcall"
+              definition="Boltcall is a speed-to-lead AI receptionist platform that answers every inbound call in under 11 seconds, replies to web-form leads instantly by SMS, and books appointments directly into your calendar — 24/7, without a human receptionist."
+              stat="Plans start at $549/month for unlimited AI call answering, automated reminders that cut no-shows by 40%, and post-job Google review requests; the average customer recovers the subscription cost in the first week from one captured after-hours lead."
+              outcome="Local service businesses using Boltcall stop losing 30–40% of inbound leads that previously went to voicemail and win the race-to-respond against slower competitors."
+              cta="Book a 15-minute setup call at boltcall.org/book-a-call."
+            />
+          </section>
+
           {/* Boltcall Platform Preview — interactive dark bento card */}
-          <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[200px]">
+          <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[60px]">
             <BentoCard />
           </section>
 

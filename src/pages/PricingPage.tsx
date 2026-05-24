@@ -3,10 +3,17 @@ import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
 import { usePricingVisitorTrack } from '../hooks/usePricingVisitorTrack';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
+import {
+  SITE_DATE_PUBLISHED,
+  SITE_DATE_MODIFIED,
+  SITE_AGGREGATE_RATING,
+  DEFAULT_PUBLISHER,
+} from '../lib/seoConstants';
 import GiveawayBar from '../components/GiveawayBar';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Pricing from '../components/Pricing';
+import AnswerBlock from '../components/seo/AnswerBlock';
 import { DollarSign, CheckCircle, Zap, Phone, Calendar, Star } from 'lucide-react';
 
 const PricingPage: React.FC = () => {
@@ -68,6 +75,15 @@ const PricingPage: React.FC = () => {
       "description": "AI receptionist that answers calls 24/7, books appointments, captures leads, and sends follow-up texts for local service businesses.",
       "url": "https://boltcall.org/pricing",
       "brand": { "@type": "Brand", "name": "Boltcall" },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": SITE_AGGREGATE_RATING.ratingValue,
+        "reviewCount": SITE_AGGREGATE_RATING.reviewCount,
+        "bestRating": SITE_AGGREGATE_RATING.bestRating,
+        "worstRating": SITE_AGGREGATE_RATING.worstRating
+      },
+      "datePublished": SITE_DATE_PUBLISHED,
+      "dateModified": SITE_DATE_MODIFIED,
       "offers": [
         {
           "@type": "Offer",
@@ -153,13 +169,12 @@ const PricingPage: React.FC = () => {
       "name": "Boltcall Pricing — AI Receptionist Plans",
       "url": "https://boltcall.org/pricing",
       "description": "Compare Boltcall pricing plans. AI receptionist starting at $549/month. Free setup included.",
-      "datePublished": "2024-01-01",
-      "dateModified": "2026-05-06",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Boltcall",
-        "url": "https://boltcall.org",
-        "logo": { "@type": "ImageObject", "url": "https://boltcall.org/logo.png" }
+      "datePublished": SITE_DATE_PUBLISHED,
+      "dateModified": SITE_DATE_MODIFIED,
+      "publisher": DEFAULT_PUBLISHER,
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://boltcall.org/og-image.jpg"
       }
     }
   ]);
@@ -170,6 +185,16 @@ const PricingPage: React.FC = () => {
       <Header />
       <main className="pt-20">
         <h1 className="speakable-intro sr-only">Boltcall AI Receptionist Pricing Plans</h1>
+
+        {/* Direct-answer block — AIO/AI Mode citation chunk (May 2026 update response) */}
+        <AnswerBlock
+          query="How much does Boltcall cost"
+          definition="Boltcall pricing has three tiers: Starter at $549/month (24/7 AI call answering, missed-call text-back, instant lead reply, calendar booking), Pro at $897/month (everything in Starter plus full lead follow-up sequences, SMS conversations, custom AI voice, website widget), and Ultimate at $4,997/month (everything in Pro plus multi-location support, a dedicated account manager, and AI audits)."
+          stat="All plans include free setup, no per-minute or per-call fees, no long-term contracts, and a 30-day money-back guarantee."
+          outcome="Most local service businesses recover the full subscription cost within the first week, because a single after-hours emergency call or recovered missed lead is typically worth $300–$1,500 in job revenue."
+          cta="Compare plans below or start free at boltcall.org/setup."
+        />
+
         <Pricing />
 
         {/* Why Boltcall Pays For Itself */}

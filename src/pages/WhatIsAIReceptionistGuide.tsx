@@ -38,7 +38,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
         }
       },
       "datePublished": "2026-01-15",
-      "dateModified": "2026-05-06",
+      "dateModified": "2026-05-24",
       "image": {
         "@type": "ImageObject",
         "url": "https://boltcall.org/og-image.jpg",

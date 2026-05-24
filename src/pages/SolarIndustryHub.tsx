@@ -5,6 +5,7 @@ import { ArrowRight, Clock, Phone, Calendar, Shield, Brain, Bell, CheckCircle, X
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FinalCTA, { BLOG_CTA } from '../components/FinalCTA';
+import AnswerBlock from '../components/seo/AnswerBlock';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 
 const updateMetaDescription = (desc: string) => {
@@ -217,7 +218,7 @@ const SolarIndustryHub = () => {
       name: 'AI Receptionist for Solar Installers | Boltcall',
       url: 'https://boltcall.org/solar',
       description: 'Boltcall answers every solar lead in under 11 seconds, 24/7. Qualifies homeowners, books site surveys, and handles objections automatically for solar companies doing 20–60 jobs/month.',
-      dateModified: '2026-05-06',
+      dateModified: '2026-05-24',
     },
   ]);
 
@@ -263,6 +264,17 @@ const SolarIndustryHub = () => {
                   </a>
                 </div>
               </motion.div>
+
+              {/* Direct-answer block — AIO/AI Mode citation chunk (May 2026 update response) */}
+              <div className="mt-10">
+                <AnswerBlock
+                  query="What is an AI receptionist for solar installers"
+                  definition="An AI receptionist for solar installers is a speed-to-lead phone and SMS system that answers every inbound homeowner inquiry in under 11 seconds, qualifies the lead on home ownership, roof condition, and monthly electric bill, and books a site survey directly into the rep's calendar — 24/7, without the rep stopping a rooftop install to pick up the phone."
+                  stat="78% of solar buyers go with the first company that responds, and a 10-second response converts 381% better than a 30-minute callback; Boltcall delivers that response automatically for $549–$897/month with no per-lead fees."
+                  outcome="Solar companies doing 20–60 jobs/month typically recover the subscription cost from a single recovered $15,000–$45,000 install in the first 14 days."
+                  cta="See the full Solar Speed Playbook below."
+                />
+              </div>
             </div>
           </div>
         </section>

@@ -37,7 +37,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
         }
       },
       "datePublished": "2026-03-23",
-      "dateModified": "2026-05-06",
+      "dateModified": "2026-05-24",
       "image": {
         "@type": "ImageObject",
         "url": "https://boltcall.org/og-image.jpg",
