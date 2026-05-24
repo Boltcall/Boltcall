@@ -108,6 +108,11 @@ Boltcall is an AI receptionist SaaS that helps local businesses never miss a cus
 - Boltcall vs GoHighLevel: https://boltcall.org/compare/boltcall-vs-gohighlevel
 - Boltcall vs Smith.ai: https://boltcall.org/compare/boltcall-vs-smith-ai
 - Boltcall vs Birdeye: https://boltcall.org/compare/boltcall-vs-birdeye
+- Boltcall vs GoodCall: https://boltcall.org/compare/boltcall-vs-goodcall
+- Boltcall vs Callin.io: https://boltcall.org/compare/boltcall-vs-callin
+- Boltcall vs Lindy: https://boltcall.org/compare/boltcall-vs-lindy
+- Boltcall vs Convin.ai: https://boltcall.org/compare/boltcall-vs-convin
+- Boltcall vs SoundHound AI: https://boltcall.org/compare/boltcall-vs-soundhound
 
 ## Research
 - State of Missed Calls 2026: https://boltcall.org/blog/missed-calls-statistics-local-business-2026
