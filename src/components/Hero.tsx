@@ -191,23 +191,6 @@ const Hero: React.FC = () => {
               </button>
             </motion.div>
 
-            {/* Speed Test micro-CTA */}
-            <motion.p
-              className="text-sm text-text-muted"
-              animate={{ opacity: 1, y: 0 }}
-              initial={{ opacity: 0, y: 12 }}
-              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.55 }}
-            >
-              Or{' '}
-              <Link
-                to="/speed-test"
-                className="text-blue-600 font-semibold underline underline-offset-2 hover:text-blue-700 transition-colors"
-              >
-                test how fast your business responds to leads
-              </Link>
-              {' '}— free, takes 60 seconds.
-            </motion.p>
-
           </div>
         </div>
 
