@@ -93,6 +93,7 @@ const BookCall = React.lazy(() => import('../pages/BookCall'));
 const About = React.lazy(() => import('../pages/About'));
 const Newsletter = React.lazy(() => import('../pages/Newsletter'));
 const PricingPage = React.lazy(() => import('../pages/PricingPage'));
+const PersonalInjury = React.lazy(() => import('../pages/PersonalInjury'));
 const AiCoursePage = React.lazy(() => import('../pages/AiCoursePage'));
 const Documentation = React.lazy(() => import('../pages/Documentation'));
 const ApiDocsPage = React.lazy(() => import('../pages/ApiDocsPage'));
@@ -435,6 +436,7 @@ const NavigationWrapper: React.FC = () => {
         {/* /gift-cards removed — not needed pre-revenue */}
         {/* /smart-website removed — duplicate of free-website concept */}
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/personal-injury" element={<PersonalInjury />} />
         <Route path="/ai-course" element={<AiCoursePage />} />
         <Route path="/documentation" element={<Documentation />} />
         <Route path="/api-documentation" element={<ApiDocsPage />} />
