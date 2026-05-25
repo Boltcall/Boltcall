@@ -18,7 +18,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, '..', 'dist');
-const PORT = 45678;
+let port = Number(process.env.PRERENDER_PORT) || 0;
 
 // All public routes to prerender (no dashboard, auth, or dynamic routes)
 const ROUTES = [
@@ -195,7 +195,7 @@ const ROUTES = [
 function startServer() {
   return new Promise((resolve) => {
     const server = createServer(async (req, res) => {
-      const url = new URL(req.url, `http://localhost:${PORT}`);
+      const url = new URL(req.url, `http://localhost:${port}`);
       let filePath = join(DIST, url.pathname);
 
       // Try exact file, then /index.html, then fall back to root index.html (SPA)
@@ -213,7 +213,13 @@ function startServer() {
       res.writeHead(404);
       res.end('Not found');
     });
-    server.listen(PORT, () => resolve(server));
+    server.listen(port, () => {
+      const address = server.address();
+      if (address && typeof address === 'object') {
+        port = address.port;
+      }
+      resolve(server);
+    });
   });
 }
 
@@ -284,7 +290,7 @@ async function prerender() {
         localStorage.setItem('i18nextLng', 'en');
       });
 
-      await page.goto(`http://localhost:${PORT}${route}`, {
+      await page.goto(`http://localhost:${port}${route}`, {
         waitUntil: 'networkidle0',
         timeout: 15000,
       });
@@ -345,7 +351,7 @@ async function prerender() {
           Object.defineProperty(navigator, 'languages', { get: () => ['en'] });
           localStorage.setItem('i18nextLng', 'en');
         });
-        await page.goto(`http://localhost:${PORT}${route}`, { waitUntil: 'networkidle0', timeout: 20000 });
+        await page.goto(`http://localhost:${port}${route}`, { waitUntil: 'networkidle0', timeout: 20000 });
         await page.waitForSelector('#root > *', { timeout: 15000 });
         await page.evaluate((r) => {
           document.documentElement.lang = 'en';
