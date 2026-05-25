@@ -1,1 +1,8 @@
 commit	page	score_before	score_after	status	description
+6410e26	/blog/never-miss-a-call-after-business-hours	79	86	keep	Add FAQPage JSON-LD schema with 4 Q&A pairs; page already had question H3s
+6410e26	/blog/is-ai-receptionist-worth-it	79	86	keep	Add FAQPage schema + FAQ section with 4 question H3s before CTA
+6410e26	/blog/why-speed-matters	79	86	keep	Add FAQPage schema + FAQ section with 4 question H3s + related articles
+6410e26	/blog/ai-receptionist-real-estate-agents	55	78	keep	Fix title (add Boltcall), fix meta (add boltcall+CTA), add AEO answer block, add FAQ section + FAQPage schema
+6410e26	/blog/does-response-time-affect-local-business-job-conversion	0	88	keep	New AEO page: full FAQPage schema, AEO answer block, 4 question H3s, 1500+ words
+6410e26	/blog/why-local-businesses-lose-customers-not-answering-calls	0	88	keep	New AEO page: full FAQPage schema, AEO answer block, 4 question H3s, 1500+ words
+6410e26	/blog/fastest-way-dentist-respond-missed-calls-automatically	0	88	keep	New AEO page: full FAQPage schema, AEO answer block, 4 question H3s, 1500+ words

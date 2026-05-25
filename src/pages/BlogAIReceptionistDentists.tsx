@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Phone } from 'lucide-react';
 import Header from '../components/Header';
@@ -521,6 +522,23 @@ const BlogAIReceptionistDentists: React.FC = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Related Articles */}
+            <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-16">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Related Articles</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Link to="/blog/fastest-way-dentist-respond-missed-calls-automatically" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                  <span className="text-sm text-blue-600 font-medium">Dental AI</span>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Fastest Way for a Dentist to Respond to Missed Calls Automatically</h3>
+                  <p className="text-gray-600 mt-2 text-sm">AI phone agents and automated SMS that eliminate missed patient calls — explained step by step.</p>
+                </Link>
+                <Link to="/blog/does-response-time-affect-local-business-job-conversion" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                  <span className="text-sm text-blue-600 font-medium">Speed to Lead</span>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Does Response Time Affect Whether a Local Business Gets the Job?</h3>
+                  <p className="text-gray-600 mt-2 text-sm">MIT Sloan data on how response windows determine which dental practice gets the new patient.</p>
+                </Link>
+              </div>
+            </motion.section>
 
           </article>
 

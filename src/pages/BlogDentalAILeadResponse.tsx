@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Phone } from 'lucide-react';
 import Header from '../components/Header';
@@ -591,6 +592,23 @@ const BlogDentalAILeadResponse: React.FC = () => {
                 </div>
               </div>
             </motion.div>
+
+            {/* Related Articles */}
+            <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-16">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Related Articles</h2>
+              <div className="grid md:grid-cols-2 gap-6">
+                <Link to="/blog/fastest-way-dentist-respond-missed-calls-automatically" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                  <span className="text-sm text-blue-600 font-medium">Dental AI</span>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Fastest Way for a Dentist to Respond to Missed Calls Automatically</h3>
+                  <p className="text-gray-600 mt-2 text-sm">AI phone agents, automated SMS follow-up, and Dentrix/Open Dental integrations explained.</p>
+                </Link>
+                <Link to="/blog/why-local-businesses-lose-customers-not-answering-calls" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                  <span className="text-sm text-blue-600 font-medium">Lead Response</span>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Why Local Businesses Lose Customers by Not Answering Quickly Enough</h3>
+                  <p className="text-gray-600 mt-2 text-sm">The urgency dynamic and the compounding lifetime value cost of every slow response.</p>
+                </Link>
+              </div>
+            </motion.section>
 
           </article>
 

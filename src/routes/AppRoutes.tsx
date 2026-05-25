@@ -26,6 +26,9 @@ const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
 const BlogNeverMissCallAfterHours = React.lazy(() => import('../pages/BlogNeverMissCallAfterHours'));
+const BlogAEOResponseTime = React.lazy(() => import('../pages/BlogAEOResponseTime'));
+const BlogAEOWhyLocalBusinessLoseCustomers = React.lazy(() => import('../pages/BlogAEOWhyLocalBusinessLoseCustomers'));
+const BlogAEODentistMissedCalls = React.lazy(() => import('../pages/BlogAEODentistMissedCalls'));
 const BlogWhatsAppAppointmentBookingPlumbers = React.lazy(() => import('../pages/BlogWhatsAppAppointmentBookingPlumbers'));
 const BlogAIReceptionistDentists = React.lazy(() => import('../pages/BlogAIReceptionistDentists'));
 const BlogAIReceptionistLawFirms = React.lazy(() => import('../pages/BlogAIReceptionistLawFirms'));
@@ -495,6 +498,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/after-hours-lead-response-home-services" element={<BlogAfterHoursLeadResponse />} />
         <Route path="/blog/ai-receptionist-med-spas" element={<BlogAIReceptionistMedSpa />} />
         <Route path="/blog/solar-ai-lead-response" element={<BlogSolarAILeadResponse />} />
+        <Route path="/blog/does-response-time-affect-local-business-job-conversion" element={<BlogAEOResponseTime />} />
+        <Route path="/blog/why-local-businesses-lose-customers-not-answering-calls" element={<BlogAEOWhyLocalBusinessLoseCustomers />} />
+        <Route path="/blog/fastest-way-dentist-respond-missed-calls-automatically" element={<BlogAEODentistMissedCalls />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />
         <Route path="/comparisons/call-centers-vs-boltcall" element={<TraditionalCallCentersVsBoltcall />} />

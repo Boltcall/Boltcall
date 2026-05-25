@@ -69,9 +69,41 @@ const BlogSpeed: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much does response time affect lead conversion rates?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Responding within the first minute increases lead conversion by 391% compared to waiting 5 minutes. After 10 minutes, you are 10 times less likely to even connect with the lead. For local service businesses, most customers call 3–4 businesses simultaneously and commit within minutes of the first response." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the 391% advantage in speed-to-lead research?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The 391% figure comes from a Lead Response Management study tracking 100,000+ inbound leads. It means businesses that respond within 60 seconds are 391% more likely to convert a lead than those responding after 5 minutes — representing the full active buying intent window." }
+        },
+        {
+          "@type": "Question",
+          "name": "How can a local business respond to leads in under 60 seconds?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The only reliable way is automation. AI-powered platforms like Boltcall respond to inbound calls, web form submissions, and missed calls in under 30 seconds — 24/7, without any human involvement. The AI qualifies the lead and books the appointment automatically." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does a slow response time really cost local businesses customers?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — the average US local service business responds to inbound leads in 47 hours. By then, the customer has already booked with a competitor who answered within minutes. Speed-to-lead is the single biggest determinant of whether an inbound lead converts." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -573,6 +605,29 @@ const BlogSpeed: React.FC = () => {
           </div>
         </motion.section>
 
+        {/* FAQ Section */}
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">How much does response time affect lead conversion rates?</h3>
+              <p className="text-gray-700 leading-relaxed">Responding within the first minute increases lead conversion by 391% compared to waiting 5 minutes, according to research published in Harvard Business Review. After 10 minutes, you are 10 times less likely to even connect with the lead. For local service businesses, the window is even tighter — most customers call 3–4 businesses simultaneously and commit within minutes.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">What is the "391% advantage" in speed-to-lead research?</h3>
+              <p className="text-gray-700 leading-relaxed">The 391% figure comes from a Lead Response Management study tracking 100,000+ inbound leads across service industries. It means businesses that respond within 60 seconds are 391% more likely to convert a lead than businesses that respond after 5 minutes. This advantage represents the full active buying intent window — after which the customer has already committed to a competitor.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">How can a local business respond to leads in under 60 seconds?</h3>
+              <p className="text-gray-700 leading-relaxed">The only reliable way is automation. AI-powered platforms like Boltcall respond to inbound calls, web form submissions, and missed calls in under 30 seconds — 24/7, without any human involvement. The AI qualifies the lead, answers common questions, and books the appointment, all before a human could even see the notification.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">Does a slow response time really cost local businesses customers?</h3>
+              <p className="text-gray-700 leading-relaxed">Yes — and the data is unambiguous. The average US local service business responds to inbound leads in 47 hours. By then, the customer has already booked with a competitor who answered within minutes. Speed-to-lead isn't a nice-to-have — it is the single biggest determinant of whether an inbound lead converts, more important than price, reviews, or reputation.</p>
+            </div>
+          </div>
+        </motion.section>
+
         {/* ROI Calculation Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -605,8 +660,25 @@ const BlogSpeed: React.FC = () => {
             </p>
           </div>
         </motion.section>
+
+        {/* Related Articles */}
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Related Articles</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Link to="/blog/does-response-time-affect-local-business-job-conversion" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+              <span className="text-sm text-blue-600 font-medium">Speed to Lead</span>
+              <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Does Response Time Affect Whether a Local Business Gets the Job?</h3>
+              <p className="text-gray-600 mt-2 text-sm">Direct answer to the most common question local businesses have about lead response speed.</p>
+            </Link>
+            <Link to="/blog/why-local-businesses-lose-customers-not-answering-calls" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+              <span className="text-sm text-blue-600 font-medium">Lead Response</span>
+              <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Why Local Businesses Lose Customers by Not Answering Quickly Enough</h3>
+              <p className="text-gray-600 mt-2 text-sm">The urgency dynamic and compounding lifetime value cost of every slow response.</p>
+            </Link>
+          </div>
+        </motion.section>
           </article>
-          
+
           {/* Table of Contents */}
           <TableOfContents headings={headings} />
         </div>

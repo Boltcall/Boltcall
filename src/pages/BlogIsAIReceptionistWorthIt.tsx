@@ -68,9 +68,41 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Is AI Receptionist Worth It", "item": "https://boltcall.org/blog/is-ai-receptionist-worth-it"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist worth it for a small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — for most local service businesses, an AI receptionist pays for itself within the first month. The typical small business misses 20–40% of inbound calls. At an average job value of $300–$800, capturing even two or three additional jobs per month covers the cost of a Boltcall AI receptionist many times over." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does an AI receptionist save compared to hiring a human receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A full-time human receptionist costs $35,000–$55,000 per year including salary, benefits, and overhead. An AI receptionist from Boltcall costs $99–$179/month and provides 24/7 coverage. The savings are typically $30,000–$50,000 annually for equivalent coverage." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the typical ROI of an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall customers typically see 20x–100x ROI in the first year. Capturing 5 additional jobs per month at $500 average generates $30,000/year in recovered revenue against a $1,200/year software cost. Most businesses recoup their annual investment within the first booked job." }
+        },
+        {
+          "@type": "Question",
+          "name": "How quickly does an AI receptionist pay for itself?",
+          "acceptedAnswer": { "@type": "Answer", "text": "For most local service businesses, within the first 1–2 booked jobs. If your average job is worth $400 and the AI captures one additional job in the first week, it has already paid for itself for the entire month." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -559,6 +591,29 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
           </section>
         </motion.div>
 
+        {/* FAQ Section */}
+        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-16">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">Is an AI receptionist worth it for a small business?</h3>
+              <p className="text-gray-700 leading-relaxed">Yes — for most local service businesses, an AI receptionist pays for itself within the first month. The typical small business misses 20–40% of inbound calls. At an average job value of $300–$800, capturing even two or three additional jobs per month covers the cost of a Boltcall AI receptionist many times over.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">How much does an AI receptionist save compared to hiring a human receptionist?</h3>
+              <p className="text-gray-700 leading-relaxed">A full-time human receptionist costs $35,000–$55,000 per year including salary, benefits, and overhead. An AI receptionist from Boltcall costs $99–$179/month ($1,188–$2,148/year) and provides 24/7 coverage — something a single human cannot match. The savings are typically $30,000–$50,000 annually for equivalent coverage.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">What is the typical ROI of an AI receptionist?</h3>
+              <p className="text-gray-700 leading-relaxed">Boltcall customers typically see 20x–100x ROI in the first year. If capturing 5 additional jobs per month at $500 average generates $2,500/month in recovered revenue, that's $30,000/year against a $1,200/year software cost. Most businesses recoup their annual investment within the first booked job.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="font-bold text-gray-900 mb-3">How quickly does an AI receptionist pay for itself?</h3>
+              <p className="text-gray-700 leading-relaxed">For most local service businesses, within the first 1–2 booked jobs. If your average job is worth $400 and the AI captures one additional job in the first week, it has already paid for itself for the entire month. The ROI compounds as the AI handles after-hours calls that would otherwise be lost forever.</p>
+            </div>
+          </div>
+        </motion.section>
+
         {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -598,6 +653,8 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
             <li><Link to="/blog/best-ai-receptionist-small-business" className="text-blue-600 hover:text-blue-700 underline">Best AI Receptionist for Small Business: Comparison</Link></li>
             <li><Link to="/pricing" className="text-blue-600 hover:text-blue-700 underline">See Boltcall Pricing Plans</Link></li>
             <li><Link to="/comparisons/answering-services-vs-boltcall" className="text-blue-600 hover:text-blue-700 underline">Answering Services vs. Boltcall</Link></li>
+            <li><Link to="/blog/does-response-time-affect-local-business-job-conversion" className="text-blue-600 hover:text-blue-700 underline">Does Response Time Affect Whether a Local Business Gets the Job?</Link></li>
+            <li><Link to="/blog/why-local-businesses-lose-customers-not-answering-calls" className="text-blue-600 hover:text-blue-700 underline">Why Local Businesses Lose Customers by Not Answering Quickly Enough</Link></li>
           </ul>
         </div>
           </article>

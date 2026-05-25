@@ -14,8 +14,8 @@ const BlogAIReceptionistRealEstate: React.FC = () => {
   const headings = useTableOfContents();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'AI Receptionist for Real Estate Agents: Convert Inbound Leads in Under 60 Seconds';
-    updateMetaDescription('How real estate agents and brokerages use AI receptionists to qualify, route, and book inbound leads in under 60 seconds — without losing the personal touch that closes deals.');
+    document.title = 'AI Receptionist for Real Estate Agents | Boltcall';
+    updateMetaDescription('Learn how Boltcall\'s AI receptionist helps real estate agents qualify and book inbound leads in under 60 seconds — get more showings without missing another Zillow inquiry.');
 
     const articleSchema = {
       "@context": "https://schema.org",
@@ -72,9 +72,41 @@ const BlogAIReceptionistRealEstate: React.FC = () => {
     });
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is an AI receptionist for real estate agents?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist for real estate agents is a voice and SMS automation system that responds to every inbound lead — calls, Zillow inquiries, web forms — in under 60 seconds. It qualifies buyers and sellers, books showings directly into your calendar, and routes hot leads to you with full context, so no lead waits more than a minute for a response." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does an AI receptionist book showings automatically?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The AI connects to your calendar (Google Calendar, Cal.com, or CRM-native booking) and checks real-time availability. When a buyer calls or messages, the AI qualifies them — price range, timeline, zip codes — then books a showing slot directly, sends SMS confirmation to both parties, and logs the interaction in your CRM with full notes." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does an AI receptionist work with real estate CRMs like Follow Up Boss and kvCORE?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall integrates with Follow Up Boss via native API, kvCORE and BoomTown via webhook, and Sierra Interactive and HubSpot via native connectors. Every AI-qualified lead flows into your CRM with full transcript, tags, and lead source attribution — no manual data entry." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does an AI receptionist cost for a real estate agent?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall plans start at $99–$249/month — a flat rate with no per-call or per-minute fees. For most agents, one additional closed transaction per quarter more than covers the annual cost. The ROI math is simple: one extra commission pays for the system for the year." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -131,6 +163,10 @@ const BlogAIReceptionistRealEstate: React.FC = () => {
               <p className="text-xl text-gray-700 leading-relaxed font-medium">
                 A buyer scrolls Zillow at 9:42 PM, sees a listing she loves, and taps "Contact Agent." She also taps two more agents on the next two listings. The agent who answers her in 30 seconds books the showing. The other two will get a callback at 9 AM tomorrow and find out the showing is already on someone else's calendar. AI receptionists are how real estate agents stay first in line, every time.
               </p>
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-xl mt-6">
+                <p className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">What is an AI receptionist for real estate agents?</p>
+                <p className="text-gray-800 leading-relaxed">An AI receptionist for real estate agents is a voice and SMS automation system that responds to every inbound lead in under 60 seconds — qualifying buyers, booking showings, and routing hot leads — so agents are always first to respond, regardless of what time a Zillow inquiry arrives.</p>
+              </div>
             </motion.div>
 
             <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 mb-12">
@@ -373,6 +409,29 @@ const BlogAIReceptionistRealEstate: React.FC = () => {
                 <p>
                   Real estate is the speed-to-lead category. The agent who answers first wins the buyer relationship for the entire search, not just the first showing. An AI receptionist makes "first" the default, every time, on every channel, around the clock.
                 </p>
+              </div>
+            </motion.section>
+
+            {/* FAQ Section */}
+            <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-16">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+              <div className="space-y-6">
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-3">What is an AI receptionist for real estate agents?</h3>
+                  <p className="text-gray-700 leading-relaxed">An AI receptionist for real estate is a voice and SMS automation system that responds to every inbound lead — calls, Zillow inquiries, web forms — in under 60 seconds. It qualifies buyers and sellers, books showings directly into your calendar, and routes hot leads with full context, so no lead waits more than a minute for a response.</p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-3">How does an AI receptionist book showings automatically?</h3>
+                  <p className="text-gray-700 leading-relaxed">The AI connects to your calendar (Google Calendar, Cal.com, or CRM-native booking) and checks real-time availability. When a buyer calls, the AI qualifies them — price range, timeline, zip codes — then books a showing slot directly, sends SMS confirmation to both parties, and logs the interaction in your CRM with full notes.</p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-3">Does an AI receptionist work with real estate CRMs like Follow Up Boss?</h3>
+                  <p className="text-gray-700 leading-relaxed">Yes. Boltcall integrates with Follow Up Boss via native API, kvCORE and BoomTown via webhook, and Sierra Interactive via native connectors. Every AI-qualified lead flows into your CRM with full transcript, tags, and lead source attribution — no manual data entry.</p>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-3">How much does a real estate AI receptionist cost?</h3>
+                  <p className="text-gray-700 leading-relaxed">Boltcall plans start at $99–$249/month — a flat rate with no per-call fees. For most agents, one additional closed transaction per quarter more than covers the annual cost. The ROI math is simple: one extra commission pays for the system for the year.</p>
+                </div>
               </div>
             </motion.section>
 

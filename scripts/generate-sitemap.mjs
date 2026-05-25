@@ -125,6 +125,11 @@ const ROUTES = [
   { path: "/blog/never-miss-a-call-after-business-hours",            priority: "0.8", changefreq: "weekly" },
   { path: "/blog/whatsapp-appointment-booking-plumbers",             priority: "0.8", changefreq: "weekly" },
 
+  // AEO Answer Pages
+  { path: "/blog/does-response-time-affect-local-business-job-conversion", priority: "0.9", changefreq: "weekly" },
+  { path: "/blog/why-local-businesses-lose-customers-not-answering-calls",  priority: "0.9", changefreq: "weekly" },
+  { path: "/blog/fastest-way-dentist-respond-missed-calls-automatically",   priority: "0.9", changefreq: "weekly" },
+
   // Blog FAQ / Industry AEO How-To
   { path: "/blog/how-to-set-up-ai-phone-answering-vet-clinic",       priority: "0.8", changefreq: "weekly" },
 

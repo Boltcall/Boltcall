@@ -57,9 +57,41 @@ const BlogNeverMissCallAfterHours: React.FC = () => {
     });
     document.head.appendChild(bcScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much does an after-hours answering service cost?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Traditional live answering services cost $200–$500/month for basic after-hours coverage. AI-based solutions like Boltcall start at $99–$179/month and include instant SMS follow-up, appointment booking, and lead qualification — capabilities live services don't offer." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is an after-hours answering service better than voicemail?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — significantly. 80% of callers don't leave voicemails and most don't call back. An AI answering service captures callers in real time, sends immediate acknowledgment, and routes urgent calls appropriately. Voicemail is passive; a proper answering system is active." }
+        },
+        {
+          "@type": "Question",
+          "name": "Will callers know they're speaking to an AI after hours?",
+          "acceptedAnswer": { "@type": "Answer", "text": "With modern AI voice technology, most callers cannot tell the difference in a standard after-hours interaction. The AI speaks naturally and responds in context — not from a rigid script. The AI should always identify itself as automated if directly asked." }
+        },
+        {
+          "@type": "Question",
+          "name": "How quickly can I set up after-hours AI call handling?",
+          "acceptedAnswer": { "@type": "Answer", "text": "With Boltcall, setup takes less than 24 hours. You provide your business details, services, and routing rules, and the AI goes live on your phone number the same day. No hardware required — it runs in the cloud on your existing business number." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('article-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema')?.remove();
     };
   }, []);
 
@@ -321,6 +353,16 @@ const BlogNeverMissCallAfterHours: React.FC = () => {
                   <span className="text-sm text-blue-600 font-medium">Speed to Lead</span>
                   <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">The 391% Advantage: Why Responding to Leads in 60 Seconds Matters</h3>
                   <p className="text-gray-600 mt-2 text-sm">The data behind speed-to-lead — and what it means for every call you miss after hours.</p>
+                </Link>
+                <Link to="/blog/does-response-time-affect-local-business-job-conversion" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                  <span className="text-sm text-blue-600 font-medium">Lead Conversion</span>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Does Response Time Affect Whether a Local Business Gets the Job?</h3>
+                  <p className="text-gray-600 mt-2 text-sm">The MIT Sloan data on response windows and what it means for every minute you delay.</p>
+                </Link>
+                <Link to="/blog/why-local-businesses-lose-customers-not-answering-calls" className="group p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all">
+                  <span className="text-sm text-blue-600 font-medium">Lead Response</span>
+                  <h3 className="text-lg font-semibold text-gray-900 mt-2 group-hover:text-blue-600 transition-colors">Why Local Businesses Lose Customers by Not Answering Quickly Enough</h3>
+                  <p className="text-gray-600 mt-2 text-sm">The urgency dynamic behind customer decisions and the real cost of slow response.</p>
                 </Link>
               </div>
             </motion.section>
