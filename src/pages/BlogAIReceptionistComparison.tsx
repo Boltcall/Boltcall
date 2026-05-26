@@ -13,8 +13,8 @@ import KeyTakeaways from '../components/blog/KeyTakeaways';
 const BlogAIReceptionistComparison: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Best AI Receptionist Tools for Small Businesses';
-    updateMetaDescription('Compare best AI receptionist tools for small businesses. See features, pricing, and find the right solution for you. View now.');
+    document.title = 'Best AI Receptionist Tools for Small Business | Boltcall';
+    updateMetaDescription('Compare the best AI receptionist tools for small businesses. See features, pricing, and get the right solution for your business. Try Boltcall free.');
     
     // Add Article schema markup
     const articleSchema = {
@@ -79,9 +79,27 @@ const BlogAIReceptionistComparison: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist Tools", "item": "https://boltcall.org/blog/best-ai-receptionist-tools"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is the best AI receptionist for small businesses?", "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is the best AI receptionist for local service businesses that need instant setup and a complete solution — calls, SMS, forms, and follow-ups. Smith.ai is best for law firms needing hybrid human + AI coverage. The right choice depends on your call volume and booking needs." } },
+        { "@type": "Question", "name": "How do AI receptionist tools compare in price?", "acceptedAnswer": { "@type": "Answer", "text": "AI receptionist tools range from $79/month (Boltcall) to $500+/month for enterprise platforms. Most charge flat monthly fees; some like Smith.ai charge per-call or per-minute. Flat-fee plans are better for high-volume businesses." } },
+        { "@type": "Question", "name": "What features should I look for in an AI receptionist?", "acceptedAnswer": { "@type": "Answer", "text": "Look for 24/7 availability, appointment booking integration, SMS follow-up, call recording, and a setup time under 1 day. For local service businesses, prioritize tools that handle after-hours calls and can qualify leads in real time." } },
+        { "@type": "Question", "name": "How long does it take to set up an AI receptionist?", "acceptedAnswer": { "@type": "Answer", "text": "Setup time varies from 20 minutes (Boltcall) to 1–2 weeks for enterprise platforms like Numa. Most small service businesses can be live with Boltcall within one business day using pre-built industry templates." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -229,6 +247,9 @@ const BlogAIReceptionistComparison: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="prose prose-lg max-w-none mb-12"
         >
+          <p className="text-base bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 text-blue-900 font-medium leading-relaxed">
+            AI receptionist tools are software platforms that answer business phone calls, qualify leads, and book appointments automatically using voice AI. The best tools for small businesses are those that set up in under 24 hours, handle after-hours calls, and integrate with your existing calendar — without per-minute fees or IT support requirements.
+          </p>
           <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
             Choosing the right AI receptionist tool can transform how your business handles customer
             inquiries. But with so many options, how do you know which one fits your needs? We've
@@ -652,6 +673,31 @@ const BlogAIReceptionistComparison: React.FC = () => {
           </div>
         </motion.div>
       </article>
+
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI receptionist for small businesses?</h3>
+              <p className="text-gray-600">Boltcall is the best AI receptionist for local service businesses that need a complete, fast-setup solution — handling calls, SMS, forms, and follow-ups in one platform. Smith.ai is best for law firms needing hybrid human + AI coverage. The right choice depends on your call volume, booking needs, and setup timeline.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How do AI receptionist tools compare in pricing?</h3>
+              <p className="text-gray-600">AI receptionist tools range from $79/month (Boltcall flat-fee) to $500+/month for enterprise platforms. Some like Smith.ai charge per-call or per-minute, which adds up fast at high volume. For businesses handling 50+ calls per month, flat-fee plans like Boltcall deliver significantly better economics.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What features should I look for in an AI receptionist?</h3>
+              <p className="text-gray-600">Look for 24/7 availability, real-time appointment booking, SMS follow-up automation, call recording, and a setup time under 24 hours. For local service businesses, prioritize tools that handle after-hours calls, qualify leads in real time, and integrate with your existing calendar without IT support.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does it take to set up an AI receptionist?</h3>
+              <p className="text-gray-600">Setup time varies from 20 minutes (Boltcall with pre-built industry templates) to 1–2 weeks for enterprise platforms like Numa. For most local service businesses, Boltcall can be live the same day — you forward your number, configure your services, and the AI handles everything else.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

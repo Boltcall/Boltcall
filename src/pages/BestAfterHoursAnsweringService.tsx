@@ -4,8 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Phone, Users, Zap, DollarSign, CheckCircle, AlertTriangle } from 'lucide-react';
 import Header from '../components/Header';
-// Footer intentionally imported for future use when page is completed
-// import Footer from '../components/Footer';
+import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -15,8 +14,8 @@ const BestAfterHoursAnsweringService: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Best After Hours Answering Service for Local Businesses: AI vs Traditional | Boltcall';
-    updateMetaDescription('Compare the best after hours answering services for local businesses. AI receptionists outperform traditional services with 24/7 coverage and lower costs.');
+    document.title = 'Best After-Hours Answering Service for Local Business | Boltcall';
+    updateMetaDescription('Compare the best after-hours answering services. Boltcall AI answers calls 24/7 at a fraction of traditional service costs. Get started free today.');
 
     const schema = {
       '@context': 'https://schema.org',
@@ -60,8 +59,25 @@ const BestAfterHoursAnsweringService: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is the best after-hours answering service for local businesses?", "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is the best after-hours answering service for local service businesses. It answers every call 24/7 including evenings, weekends, and holidays, qualifies leads, and books appointments — all automatically without a live operator." } },
+        { "@type": "Question", "name": "How does an AI after-hours answering service work?", "acceptedAnswer": { "@type": "Answer", "text": "An AI after-hours answering service is a software system that answers incoming calls using natural language voice AI. When your business closes, the AI takes over — greeting callers, capturing their needs, booking service appointments, and sending follow-up confirmation messages." } },
+        { "@type": "Question", "name": "How much does an after-hours answering service cost?", "acceptedAnswer": { "@type": "Answer", "text": "Traditional live answering services cost $1–$2 per minute or $200–$800/month. Boltcall AI after-hours coverage starts at $79/month for unlimited calls — typically 80–90% cheaper than live operators with 24/7 availability." } },
+        { "@type": "Question", "name": "Can an AI handle after-hours emergency calls as well as a human?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's AI is trained to recognize urgency signals in calls (flooding, no heat, emergency dental pain) and can escalate to the on-call technician via SMS or route the caller to an emergency line instantly." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -562,6 +578,32 @@ const BestAfterHoursAnsweringService: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best after-hours answering service for local businesses?</h3>
+              <p className="text-gray-600">Boltcall is the best after-hours answering service for local service businesses. It answers every call 24/7 including evenings, weekends, and holidays, qualifies leads, books service appointments, and sends confirmation messages — all automatically without a live operator or per-minute billing.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI after-hours answering service work?</h3>
+              <p className="text-gray-600">An AI after-hours answering service is a software system that uses voice AI to answer incoming calls when your business is closed. It greets callers naturally, captures their service needs, books appointments in your calendar, and sends follow-up confirmation messages — all without a human operator on duty.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an after-hours answering service cost?</h3>
+              <p className="text-gray-600">Traditional live answering services cost $1–$2 per minute or $200–$800/month. Boltcall AI after-hours coverage starts at $79/month for unlimited calls — typically 80–90% cheaper than live operators with 24/7 availability and no hold times or busy signals.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI handle after-hours emergency calls effectively?</h3>
+              <p className="text-gray-600">Yes. Boltcall's AI recognizes urgency signals in calls — flooding, no heat, emergency dental pain — and can escalate instantly to the on-call technician via SMS or route the caller to an emergency line. It handles the triage so your staff only gets woken up for genuine emergencies.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </>
   );
 };

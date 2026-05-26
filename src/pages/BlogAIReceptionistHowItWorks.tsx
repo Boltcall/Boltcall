@@ -15,8 +15,8 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
   const headings = useTableOfContents();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'How Does an AI Receptionist Work? Technical Guide';
-    updateMetaDescription('How does an AI receptionist work? Complete technical guide explaining natural language processing and automation. Learn more.');
+    document.title = 'How Does an AI Receptionist Work? | Boltcall';
+    updateMetaDescription('How does an AI receptionist work? Learn how Boltcall answers calls, qualifies leads, and books appointments automatically. Start free today.');
     
     // Add Article schema markup
     const articleSchema = {
@@ -81,9 +81,27 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "How AI Receptionist Works", "item": "https://boltcall.org/blog/how-ai-receptionist-works"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How does an AI receptionist answer calls?", "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist uses natural language processing (NLP) to understand caller speech in real time, then generates contextually appropriate responses using large language models. It handles call flows — greeting, qualifying, booking — without human intervention." } },
+        { "@type": "Question", "name": "What technology powers an AI receptionist?", "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists are built on speech-to-text (STT) engines, large language models (LLMs), and text-to-speech (TTS) systems. Boltcall combines these with business logic layers for booking, CRM sync, and follow-up SMS automation." } },
+        { "@type": "Question", "name": "How does an AI receptionist book appointments?", "acceptedAnswer": { "@type": "Answer", "text": "The AI receptionist connects to your calendar or scheduling system, checks real-time availability, and books appointments within the same call. Boltcall integrates with Google Calendar, Calendly, and most major booking platforms." } },
+        { "@type": "Question", "name": "Is an AI receptionist accurate at understanding callers?", "acceptedAnswer": { "@type": "Answer", "text": "Modern AI receptionists achieve 95%+ accuracy on common service-business call types. Boltcall is trained on local service business conversations — HVAC, plumbing, dental, legal — so it handles industry-specific terminology correctly." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -141,6 +159,9 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="prose prose-lg max-w-none mb-12"
         >
+          <p className="text-base bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 text-blue-900 font-medium leading-relaxed">
+            An AI receptionist is a software system that uses voice AI and natural language processing to answer calls, understand caller intent, and respond conversationally in real time. It refers to a new category of business automation that combines speech recognition, large language models, and calendar integrations to handle the full reception workflow without a human operator.
+          </p>
           <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
             You've heard about AI receptionists answering calls, booking appointments, and handling customer inquiries—but how do they actually work? This guide breaks down the technology and processes that power modern AI receptionist systems, from speech recognition to intelligent response generation.
           </p>
@@ -545,6 +566,31 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI receptionist answer calls?</h3>
+              <p className="text-gray-600">An AI receptionist uses natural language processing (NLP) to understand caller speech in real time, then generates contextually appropriate responses using large language models. It handles the entire call flow — greeting, qualifying, and booking — without human intervention, achieving 95%+ accuracy on typical service business calls.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What technology powers an AI receptionist?</h3>
+              <p className="text-gray-600">AI receptionists are built on three core technologies: speech-to-text (STT) engines that transcribe caller audio, large language models (LLMs) that generate responses, and text-to-speech (TTS) systems that deliver natural-sounding replies. Boltcall combines these with business logic layers for booking, CRM sync, and automated follow-up.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI receptionist book appointments automatically?</h3>
+              <p className="text-gray-600">The AI connects to your calendar or scheduling system, checks real-time availability, and offers the caller open time slots — all within the same call. Boltcall integrates with Google Calendar, Calendly, and most major booking platforms. The caller receives an instant SMS confirmation after booking.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist accurate enough for a real business?</h3>
+              <p className="text-gray-600">Modern AI receptionists achieve 95%+ accuracy on common service-business call types. Boltcall is specifically trained on local service business conversations — HVAC, plumbing, dental, legal — so it handles industry-specific terminology and common caller scenarios correctly from day one.</p>
+            </div>
           </div>
         </div>
       </section>

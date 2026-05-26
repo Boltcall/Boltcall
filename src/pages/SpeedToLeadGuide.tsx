@@ -17,8 +17,8 @@ const SpeedToLeadGuide: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Speed to Lead for Local Businesses: Why Response Time Beats Every Marketing Tactic | Boltcall';
-    updateMetaDescription('Learn why speed to lead local business strategies outperform all other tactics. Get proven response time frameworks for 400% more conversions.');
+    document.title = 'Speed to Lead for Local Businesses | Boltcall';
+    updateMetaDescription('Speed to lead is the #1 driver of local business conversions. Get proven response frameworks and learn how Boltcall delivers instant lead response.');
 
     // JSON-LD Schema
     const schema = {
@@ -77,9 +77,27 @@ const SpeedToLeadGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Speed to Lead Guide", "item": "https://boltcall.org/speed-to-lead-guide"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is speed to lead and why does it matter for local businesses?", "acceptedAnswer": { "@type": "Answer", "text": "Speed to lead refers to how quickly a business responds to a new inbound lead. It matters because studies show that businesses responding within 5 minutes are 100x more likely to connect with a lead than those responding after 30 minutes. For local service businesses, the first to respond wins the job." } },
+        { "@type": "Question", "name": "How fast should a local business respond to leads?", "acceptedAnswer": { "@type": "Answer", "text": "Local service businesses should respond to leads within 1–5 minutes. Response times under 1 minute have the highest conversion rates. Boltcall responds to every call and form lead instantly — 24/7 including weekends and after hours." } },
+        { "@type": "Question", "name": "How does slow lead response hurt conversion rates?", "acceptedAnswer": { "@type": "Answer", "text": "Every minute of delay reduces conversion probability by 10%. Leads contacted after 5 minutes are 10x less likely to convert than those contacted immediately. After 30 minutes, most leads have already called a competitor." } },
+        { "@type": "Question", "name": "What is the best tool to improve speed to lead for local businesses?", "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is designed specifically for speed to lead — it answers every inbound call instantly, responds to web form submissions via SMS within seconds, and follows up missed calls automatically. Setup takes under 30 minutes." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
     };
@@ -152,7 +170,7 @@ const SpeedToLeadGuide: React.FC = () => {
             >
               <h2 className="text-lg font-semibold text-blue-900 mb-3">Quick Answer</h2>
               <p className="speakable-intro text-blue-800">
-                Speed to lead local business strategies deliver 400% higher conversion rates than slow responders. Businesses responding within 5 minutes convert 9x more leads than those responding after 30 minutes, making response time the highest-impact metric for local business growth.
+                Speed to lead refers to how quickly a business responds to a new inbound lead. It is a critical performance metric for local service businesses — research shows that businesses responding within 5 minutes are 100x more likely to connect with a lead than those responding after 30 minutes, making response time the single highest-impact factor in local business conversion.
               </p>
             </motion.div>
 
@@ -717,6 +735,31 @@ const SpeedToLeadGuide: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is speed to lead and why does it matter for local businesses?</h3>
+              <p className="text-gray-600">Speed to lead refers to how quickly a business responds to a new inbound lead. It matters because businesses responding within 5 minutes are 100x more likely to connect with a lead than those responding after 30 minutes. For local service businesses competing on inbound calls and form leads, the first to respond wins the job.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How fast should a local service business respond to new leads?</h3>
+              <p className="text-gray-600">Local service businesses should respond to leads within 1–5 minutes. Response times under 1 minute have the highest conversion rates. Boltcall responds to every inbound call and form lead instantly — 24/7 including weekends and after hours — so no lead is ever left waiting.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does slow lead response hurt conversion rates?</h3>
+              <p className="text-gray-600">Every minute of delay reduces conversion probability by approximately 10%. Leads contacted after 5 minutes are 10x less likely to convert than those contacted immediately. After 30 minutes, most leads have already booked with a competitor — making response time the single biggest conversion lever for local businesses.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best tool to improve speed to lead for a local business?</h3>
+              <p className="text-gray-600">Boltcall is designed specifically for speed to lead — it answers every inbound call instantly, responds to web form submissions via SMS within seconds, and follows up missed calls automatically. Most local service businesses see a 30–50% lift in lead conversion within the first week of going live.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

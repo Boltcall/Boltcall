@@ -15,7 +15,7 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'AI Phone Answering for Plumbers: Never Miss a Job Lead Again | Boltcall';
+    document.title = 'AI Phone Answering for Plumbers | Boltcall';
     updateMetaDescription('Discover how AI phone answering systems help plumbers capture every lead 24/7. Stop losing $50K+ annually to missed calls. Get setup in 24 hours.');
 
     const script = document.createElement('script');
@@ -57,9 +57,26 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How does AI phone answering work for plumbing businesses?", "acceptedAnswer": { "@type": "Answer", "text": "An AI phone answering system for plumbers is a voice AI that answers every incoming call, captures the job details, qualifies the lead, and books service appointments — 24/7, including after hours when most plumbing emergencies happen and competitors are sending calls to voicemail." } },
+        { "@type": "Question", "name": "Can an AI handle plumbing emergency calls at 2am?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's plumbing AI is on 24/7, including overnight and weekends. It identifies emergency signals — burst pipe, active flooding, no hot water — and can immediately alert your on-call plumber via SMS while keeping the customer calm and collecting job details." } },
+        { "@type": "Question", "name": "How much does AI phone answering cost for a plumbing company?", "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for plumbing businesses starts at $79/month with Boltcall. Most plumbing companies recover the cost in the first week by capturing just one or two emergency jobs that would otherwise go to a competitor. There are no per-call fees or setup costs." } },
+        { "@type": "Question", "name": "What information does the AI collect from plumbing callers?", "acceptedAnswer": { "@type": "Answer", "text": "Boltcall's plumbing AI collects caller name, address, issue description, urgency level, and preferred service time — then books directly into your calendar and sends the lead summary to your team via SMS or email. Your techs arrive with full job context." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -581,6 +598,31 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering work for plumbing businesses?</h3>
+              <p className="text-gray-600">An AI phone answering system for plumbers is a voice AI that answers every incoming call, captures job details, qualifies the lead, and books service appointments — 24/7, including after hours when most plumbing emergencies happen. While your competitors send calls to voicemail, Boltcall answers instantly and locks in the job.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI handle plumbing emergency calls at 2am?</h3>
+              <p className="text-gray-600">Yes. Boltcall is on 24/7, including overnight and weekends. It identifies emergency signals — burst pipe, active flooding, no hot water — and immediately alerts your on-call plumber via SMS while keeping the customer calm and collecting full job details. No missed emergencies, ever.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does AI phone answering cost for a plumbing company?</h3>
+              <p className="text-gray-600">AI phone answering for plumbing businesses starts at $79/month with Boltcall. Most plumbing companies recover the cost in the first week by capturing just one or two emergency jobs that would otherwise go to a competitor. There are no per-call fees, no setup costs, and no long-term contracts.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What information does the AI collect from plumbing callers?</h3>
+              <p className="text-gray-600">Boltcall's plumbing AI collects caller name, service address, issue description, urgency level, and preferred service window — then books directly into your calendar and sends the full lead summary to your team via SMS or email. Your techs arrive prepared with full job context.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

@@ -68,9 +68,27 @@ const BlogSEO: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Complete Guide to SEO", "item": "https://boltcall.org/blog/complete-guide-to-seo"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "What is SEO and why does it matter for local businesses?", "acceptedAnswer": { "@type": "Answer", "text": "SEO (Search Engine Optimization) refers to the process of improving a website's visibility in search engine results. For local businesses, it means appearing when nearby customers search for your services — like 'plumber near me' or 'best dentist in [city]'. Local SEO is often the highest-ROI marketing channel for service businesses." } },
+        { "@type": "Question", "name": "How long does SEO take to show results for a local business?", "acceptedAnswer": { "@type": "Answer", "text": "Local SEO typically shows meaningful results in 3–6 months for competitive markets and 6–12 months for broad keyword rankings. Google Business Profile optimization and local citation building can show results faster — often within 4–8 weeks." } },
+        { "@type": "Question", "name": "What are the most important SEO factors for local service businesses?", "acceptedAnswer": { "@type": "Answer", "text": "The top local SEO factors are: Google Business Profile completeness, consistent NAP citations, 5-star review volume and recency, mobile-optimized website, local keyword content, and backlinks from local directories. Boltcall automatically collects Google reviews after every appointment, which directly boosts local rankings." } },
+        { "@type": "Question", "name": "How does AI improve SEO for local businesses?", "acceptedAnswer": { "@type": "Answer", "text": "AI tools help local businesses improve SEO by automating review collection, generating consistent local content, optimizing Google Business Profiles, and ensuring every customer interaction is captured. Boltcall integrates AI lead handling with automatic Google review requests after each completed job." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -125,9 +143,12 @@ const BlogSEO: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="prose prose-lg max-w-none mb-12"
         >
+          <p className="text-base bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 text-blue-900 font-medium leading-relaxed">
+            SEO (Search Engine Optimization) refers to the practice of improving a website's visibility in search engines like Google. For local service businesses, it means appearing at the top when customers nearby search for your services. It is a long-term marketing strategy that compounds over time — every ranking improvement means more calls, more leads, and more revenue without paying per click.
+          </p>
           <p className="text-xl text-gray-700 leading-relaxed font-medium">
-            Your potential customers are searching for your services right now. The question is: 
-            will they find you or your competitor? SEO isn't just about ranking higher—it's about 
+            Your potential customers are searching for your services right now. The question is:
+            will they find you or your competitor? SEO isn't just about ranking higher—it's about
             being visible when it matters most. Here's why it's critical for your business.
           </p>
         </motion.div>
@@ -569,6 +590,31 @@ const BlogSEO: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is SEO and why does it matter for local businesses?</h3>
+              <p className="text-gray-600">SEO (Search Engine Optimization) refers to the process of improving a website's visibility in search engine results. For local businesses, it means appearing when nearby customers search for your services — like "plumber near me" or "best dentist in [city]". Local SEO is typically the highest-ROI marketing channel for service businesses.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does SEO take to show results for a local business?</h3>
+              <p className="text-gray-600">Local SEO typically shows meaningful results in 3–6 months for competitive markets and 6–12 months for broad keyword rankings. Google Business Profile optimization and local citation building often produce faster results — commonly within 4–8 weeks of consistent effort.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What are the most important SEO factors for local service businesses?</h3>
+              <p className="text-gray-600">The top local SEO factors are: a fully optimized Google Business Profile, consistent NAP citations across directories, recent 5-star review volume, a mobile-optimized website, local keyword content, and backlinks from local publications. Boltcall automatically collects Google reviews after every appointment, directly boosting local rankings.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI help improve SEO for a local service business?</h3>
+              <p className="text-gray-600">AI tools help local businesses improve SEO by automating review collection (a key ranking factor), generating consistent local content, and ensuring every customer interaction converts. Boltcall combines AI lead handling with automatic Google review requests after each completed appointment — turning every job into a ranking signal.</p>
+            </div>
           </div>
         </div>
       </section>

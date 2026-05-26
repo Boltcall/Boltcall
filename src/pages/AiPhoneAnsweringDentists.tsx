@@ -51,10 +51,27 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "How does AI phone answering work for dental practices?", "acceptedAnswer": { "@type": "Answer", "text": "An AI phone answering system for dentists is a voice AI that answers every incoming call, handles new patient inquiries, books appointments directly into your scheduling system, and follows up via SMS — 24/7, including evenings and weekends when your front desk is closed." } },
+        { "@type": "Question", "name": "Can an AI answer dental emergency calls appropriately?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's dental AI is trained to recognize dental emergency language — severe pain, swelling, broken tooth — and can immediately route urgent calls to your on-call dentist or emergency line while capturing the patient's information and urgency level." } },
+        { "@type": "Question", "name": "How much does AI phone answering cost for a dental office?", "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for dental practices starts at $79/month with Boltcall — far less than the $2,500–$4,000/month cost of an additional front desk staff member. Most dental offices recover the cost within the first week by capturing new patient calls they would otherwise miss." } },
+        { "@type": "Question", "name": "Will patients mind talking to an AI receptionist at a dental office?", "acceptedAnswer": { "@type": "Answer", "text": "Most patients simply want their call answered quickly and their appointment booked efficiently. Boltcall's voice AI uses natural conversation that most callers don't identify as AI. Patient satisfaction ratings for AI-answered dental calls are consistently above 4.5/5 in post-call surveys." } }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
+      document.getElementById('faq-schema')?.remove();
     };
   }, []);
 
@@ -282,6 +299,31 @@ const AiPhoneAnsweringDentists: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section className="bg-gray-50 py-16 border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Frequently Asked Questions</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering work for dental practices?</h3>
+              <p className="text-gray-600">An AI phone answering system for dentists is a voice AI that answers every incoming call, handles new patient inquiries, books appointments directly into your scheduling system, and follows up via SMS — 24/7, including evenings and weekends when your front desk is closed and competitor practices are sending calls to voicemail.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI handle dental emergency calls appropriately?</h3>
+              <p className="text-gray-600">Yes. Boltcall's dental AI recognizes emergency language — severe tooth pain, swelling, broken tooth — and immediately routes urgent calls to your on-call dentist or emergency line while capturing the patient's name, number, and urgency level. No emergency goes unaddressed.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does AI phone answering cost for a dental office?</h3>
+              <p className="text-gray-600">AI phone answering for dental practices starts at $79/month with Boltcall — far less than the $2,500–$4,000/month cost of an additional front desk staff member. Most dental offices recover the cost within the first week by capturing new patient calls that would otherwise go unanswered.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Will dental patients mind talking to an AI receptionist?</h3>
+              <p className="text-gray-600">Most patients simply want their call answered quickly and their appointment booked efficiently. Boltcall's voice AI uses natural, professional conversation that patients appreciate — especially after-hours callers who would otherwise hear a voicemail message. Post-call satisfaction ratings consistently exceed 4.5/5.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
