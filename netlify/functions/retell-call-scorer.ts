@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
+import { inferVertical } from './_shared/vertical-utils';
 
 /**
  * retell-call-scorer
@@ -18,33 +19,6 @@ const HEADERS = {
 
 // Minimum call duration to score (avoid test calls, hang-ups before agent spoke)
 const MIN_DURATION_S = 8;
-
-// Vertical keyword map — mirrors matchCategories in generate-agent-prompt.ts
-// (just the primary category key per vertical for identification)
-const VERTICAL_KEYWORDS: Array<{ vertical: string; keywords: string[] }> = [
-  { vertical: 'plumber', keywords: ['plumber', 'plumbing', 'drain', 'pipe', 'sewer', 'water heater', 'faucet', 'clog', 'leak', 'repiping'] },
-  { vertical: 'dental', keywords: ['dental', 'dentist', 'orthodont', 'tooth', 'teeth'] },
-  { vertical: 'hvac', keywords: ['hvac', 'heating', 'cooling', 'air condition', 'furnace', 'boiler', 'heat pump'] },
-  { vertical: 'legal', keywords: ['law', 'legal', 'attorney', 'lawyer', 'solicitor', 'personal injury', 'criminal', 'family law'] },
-  { vertical: 'medspa', keywords: ['med spa', 'medspa', 'aesthetic', 'botox', 'filler', 'laser', 'skin care', 'cosmetic', 'wellness', 'salon', 'spa', 'massage'] },
-  { vertical: 'restaurant', keywords: ['restaurant', 'cafe', 'bistro', 'diner', 'catering', 'food'] },
-  { vertical: 'real_estate', keywords: ['real estate', 'property', 'realtor', 'mortgage'] },
-  { vertical: 'medical', keywords: ['medical', 'doctor', 'clinic', 'physician', 'therapy', 'chiropract', 'vet'] },
-  { vertical: 'auto', keywords: ['auto', 'car', 'mechanic', 'garage', 'body shop', 'tyre', 'tire'] },
-  { vertical: 'fitness', keywords: ['fitness', 'gym', 'personal train', 'yoga', 'pilates', 'crossfit'] },
-  { vertical: 'solar', keywords: ['solar', 'renewable', 'solar energy', 'solar panel', 'clean energy'] },
-  { vertical: 'roofing', keywords: ['roof', 'roofing', 'roofer', 'gutter', 'siding', 'shingle'] },
-  { vertical: 'pest_control', keywords: ['pest', 'exterminator', 'termite', 'rodent', 'fumigation'] },
-  { vertical: 'electrical', keywords: ['electric', 'electrician', 'electrical', 'wiring', 'circuit', 'generator'] },
-];
-
-function inferVertical(text: string): string {
-  const lower = text.toLowerCase();
-  for (const { vertical, keywords } of VERTICAL_KEYWORDS) {
-    if (keywords.some(kw => lower.includes(kw))) return vertical;
-  }
-  return 'general';
-}
 
 // Excluded call patterns — don't score these
 function shouldExclude(call: any, durationS: number): { exclude: boolean; reason?: string } {
@@ -216,6 +190,25 @@ export const handler: Handler = async (event) => {
   if (callErr) {
     console.error('[retell-call-scorer] Failed to upsert retell_calls:', callErr);
     return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'DB write failed' }) };
+  }
+
+  // Stamp prompt_version_id if a shadow version is active for this vertical
+  const { data: shadowVersion } = await supabase
+    .from('retell_prompt_versions')
+    .select('id')
+    .eq('vertical', vertical)
+    .eq('status', 'shadowing')
+    .limit(1)
+    .maybeSingle();
+
+  if (shadowVersion?.id) {
+    supabase
+      .from('retell_calls')
+      .update({ prompt_version_id: shadowVersion.id })
+      .eq('call_id', callId)
+      .then(({ error }) => {
+        if (error) console.error('[retell-call-scorer] prompt_version_id stamp failed:', error);
+      });
   }
 
   // Skip scoring if no meaningful transcript
