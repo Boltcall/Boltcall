@@ -81,9 +81,57 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "How AI Receptionist Works", "item": "https://boltcall.org/blog/how-ai-receptionist-works"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does an AI receptionist work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An AI receptionist uses natural language processing (NLP) to understand caller intent, then follows pre-configured conversation flows to book appointments, answer questions, and capture lead information. It integrates with your calendar and CRM to sync data in real time—no human staff required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens when an AI receptionist can't answer a question?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "When an AI receptionist encounters a question outside its knowledge base, it either escalates to a human via call transfer, takes a message, or schedules a callback. Boltcall's AI handles 80%+ of routine calls and routes edge cases to the right person automatically."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take to set up an AI receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Setting up an AI receptionist with Boltcall takes 30 minutes or less. You configure your business hours, services, calendar integration, and greeting script through a guided wizard. The AI is trained on your business information and ready to answer calls the same day."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does an AI receptionist work for after-hours calls?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. AI receptionists are designed for 24/7 operation and are particularly valuable for after-hours calls. Studies show 40%+ of service calls come outside business hours. Boltcall's AI answers, qualifies, and books callers even at 2 AM—turning missed calls into booked appointments."
+          }
+        }
+      ]
+    };
+
+    document.getElementById('faq-jsonld')?.remove();
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -545,6 +593,31 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI receptionist work?</h3>
+              <p className="text-gray-600">An AI receptionist uses natural language processing (NLP) to understand caller intent, then follows pre-configured conversation flows to book appointments, answer questions, and capture lead information. It integrates with your calendar and CRM to sync data in real time—no human staff required.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What happens when an AI receptionist can't answer a question?</h3>
+              <p className="text-gray-600">When an AI receptionist encounters a question outside its knowledge base, it either escalates to a human via call transfer, takes a message, or schedules a callback. Boltcall's AI handles 80%+ of routine calls and routes edge cases to the right person automatically.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does it take to set up an AI receptionist?</h3>
+              <p className="text-gray-600">Setting up an AI receptionist with Boltcall takes 30 minutes or less. You configure your business hours, services, calendar integration, and greeting script through a guided wizard. The AI is trained on your business information and ready to answer calls the same day.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does an AI receptionist work for after-hours calls?</h3>
+              <p className="text-gray-600">Yes. AI receptionists are designed for 24/7 operation and are particularly valuable for after-hours calls. Studies show 40%+ of service calls come outside business hours. Boltcall's AI answers, qualifies, and books callers even at 2 AM—turning missed calls into booked appointments.</p>
+            </div>
           </div>
         </div>
       </section>

@@ -57,9 +57,54 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can AI handle emergency plumbing calls?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. AI phone systems for plumbers handle emergency call triage 24/7, gathering the caller's issue, address, and urgency level before dispatching or routing to an on-call plumber. This ensures no emergency call goes unanswered—even at 3 AM—while filtering non-emergencies to the next business day."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does AI phone answering help plumbing businesses get more jobs?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI phone answering ensures every inbound call is answered immediately, even during busy jobs or after hours. Research shows plumbing customers call an average of 3 companies and hire the first one to respond. By answering 100% of calls instantly, Boltcall helps plumbers capture jobs competitors miss."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What plumbing calls can an AI receptionist handle?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI receptionists for plumbers handle appointment scheduling for non-emergency work, service area and pricing questions, emergency triage and dispatch routing, job status updates, and follow-up texts. They integrate with scheduling software to book jobs directly without back-and-forth calls."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does AI phone answering work for solo plumbers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Especially for solo plumbers. When you're on a job and can't answer your phone, AI ensures the next caller doesn't hang up and call a competitor. Boltcall's AI answers, qualifies the job, and schedules a callback or appointment—all while you're working. Most solo plumbers see 20–40% more booked jobs."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -581,6 +626,31 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI handle emergency plumbing calls?</h3>
+              <p className="text-gray-600">Yes. AI phone systems for plumbers handle emergency call triage 24/7, gathering the caller's issue, address, and urgency level before dispatching or routing to an on-call plumber. This ensures no emergency call goes unanswered—even at 3 AM—while filtering non-emergencies to the next business day.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering help plumbing businesses get more jobs?</h3>
+              <p className="text-gray-600">AI phone answering ensures every inbound call is answered immediately, even during busy jobs or after hours. Research shows plumbing customers call an average of 3 companies and hire the first one to respond. By answering 100% of calls instantly, Boltcall helps plumbers capture jobs competitors miss.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What plumbing calls can an AI receptionist handle?</h3>
+              <p className="text-gray-600">AI receptionists for plumbers handle appointment scheduling for non-emergency work, service area and pricing questions, emergency triage and dispatch routing, job status updates, and follow-up texts. They integrate with scheduling software to book jobs directly without back-and-forth calls.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does AI phone answering work for solo plumbers?</h3>
+              <p className="text-gray-600">Especially for solo plumbers. When you're on a job and can't answer your phone, AI ensures the next caller doesn't hang up and call a competitor. Boltcall's AI answers, qualifies the job, and schedules a callback or appointment—all while you're working. Most solo plumbers see 20–40% more booked jobs.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

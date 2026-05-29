@@ -79,9 +79,57 @@ const BlogAIReceptionistComparison: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist Tools", "item": "https://boltcall.org/blog/best-ai-receptionist-tools"}]});
     document.head.appendChild(bcScript);
+
+    const existingFaqScript = document.getElementById('faq-jsonld');
+    if (existingFaqScript) existingFaqScript.remove();
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best AI receptionist for small businesses?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Boltcall is the top AI receptionist for small businesses, offering 24/7 call answering, instant lead response, and automated appointment booking starting at $79/month. Other options include Smith.ai, Ruby, and Dialpad, but Boltcall leads on speed-to-lead and local service business features."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I choose an AI receptionist service?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Evaluate AI receptionists on four factors: call answer rate (should be 99%+), response speed (under 5 seconds), integration with your calendar, and pricing. Look for services that offer after-hours coverage, CRM integration, and automated follow-up—not just basic call answering."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does an AI receptionist actually do?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "An AI receptionist answers incoming calls 24/7, qualifies leads, books appointments directly into your calendar, sends follow-up texts, and handles common customer questions. Unlike voicemail, callers get an immediate response and can schedule with no human staff required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are AI receptionists worth the cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. AI receptionists typically cost $79–$299/month versus $3,000–$5,000+/month for a human. Research shows responding to leads within 5 minutes increases conversion by 100x—something only AI can guarantee at scale. Most businesses recoup the cost within the first booked appointment."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -652,6 +700,31 @@ const BlogAIReceptionistComparison: React.FC = () => {
           </div>
         </motion.div>
       </article>
+
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI receptionist for small businesses?</h3>
+              <p className="text-gray-600">Boltcall is the top AI receptionist for small businesses, offering 24/7 call answering, instant lead response, and automated appointment booking starting at $79/month. Other options include Smith.ai, Ruby, and Dialpad, but Boltcall leads on speed-to-lead and local service business features.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How do I choose an AI receptionist service?</h3>
+              <p className="text-gray-600">Evaluate AI receptionists on four factors: call answer rate (should be 99%+), response speed (under 5 seconds), integration with your calendar, and pricing. Look for services that offer after-hours coverage, CRM integration, and automated follow-up—not just basic call answering.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What does an AI receptionist actually do?</h3>
+              <p className="text-gray-600">An AI receptionist answers incoming calls 24/7, qualifies leads, books appointments directly into your calendar, sends follow-up texts, and handles common customer questions. Unlike voicemail, callers get an immediate response and can schedule with no human staff required.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Are AI receptionists worth the cost?</h3>
+              <p className="text-gray-600">Yes. AI receptionists typically cost $79–$299/month versus $3,000–$5,000+/month for a human. Research shows responding to leads within 5 minutes increases conversion by 100x—something only AI can guarantee at scale. Most businesses recoup the cost within the first booked appointment.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

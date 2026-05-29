@@ -68,9 +68,59 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Is AI Receptionist Worth It", "item": "https://boltcall.org/blog/is-ai-receptionist-worth-it"}]});
     document.head.appendChild(bcScript);
+
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist worth the investment for a small business?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. An AI receptionist costs $79–$299/month but can prevent losing leads worth $500–$5,000 each. Studies show 78% of customers buy from the first business to respond—and AI guarantees sub-5-second responses 24/7. For most local service businesses, the ROI is positive within 30 days."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What ROI can I expect from an AI receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most businesses see 3–10x ROI from an AI receptionist. If your average job is worth $500 and AI books just one extra appointment per month that would have gone to voicemail, it pays for itself. Businesses with high call volume typically save $2,000–$4,000/month in labor costs alone."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What types of businesses benefit most from AI receptionists?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Local service businesses with high inbound call volume benefit most: dental and medical offices, HVAC and plumbing companies, law firms, real estate agencies, and med spas. Any business where a missed call equals a missed booking will see immediate ROI from an AI receptionist."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I try an AI receptionist before committing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Boltcall offers a free setup with no credit card required, so you can test it on real calls before committing. Most businesses activate their AI receptionist in under 30 minutes and see their first booked appointment the same day."
+          }
+        }
+      ]
+    };
+
+    const existingFaqScript = document.getElementById('faq-jsonld');
+    if (existingFaqScript) existingFaqScript.remove();
+
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-jsonld';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -643,6 +693,31 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
             </table>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">Revenue recovered estimate assumes 30% of missed calls convert to booked jobs at average job values.</p>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist worth the investment for a small business?</h3>
+              <p className="text-gray-600">Yes. An AI receptionist costs $79–$299/month but can prevent losing leads worth $500–$5,000 each. Studies show 78% of customers buy from the first business to respond—and AI guarantees sub-5-second responses 24/7. For most local service businesses, the ROI is positive within 30 days.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What ROI can I expect from an AI receptionist?</h3>
+              <p className="text-gray-600">Most businesses see 3–10x ROI from an AI receptionist. If your average job is worth $500 and AI books just one extra appointment per month that would have gone to voicemail, it pays for itself. Businesses with high call volume typically save $2,000–$4,000/month in labor costs alone.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What types of businesses benefit most from AI receptionists?</h3>
+              <p className="text-gray-600">Local service businesses with high inbound call volume benefit most: dental and medical offices, HVAC and plumbing companies, law firms, real estate agencies, and med spas. Any business where a missed call equals a missed booking will see immediate ROI from an AI receptionist.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can I try an AI receptionist before committing?</h3>
+              <p className="text-gray-600">Yes. Boltcall offers a free setup with no credit card required, so you can test it on real calls before committing. Most businesses activate their AI receptionist in under 30 minutes and see their first booked appointment the same day.</p>
+            </div>
+          </div>
         </div>
       </section>
 

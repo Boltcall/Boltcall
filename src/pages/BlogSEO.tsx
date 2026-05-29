@@ -68,9 +68,57 @@ const BlogSEO: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Complete Guide to SEO", "item": "https://boltcall.org/blog/complete-guide-to-seo"}]});
     document.head.appendChild(bcScript);
+
+    // Add FAQPage schema markup
+    document.getElementById('faq-jsonld')?.remove();
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is SEO and why does it matter for local businesses?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "SEO (Search Engine Optimization) is the practice of improving a website's visibility in search engine results. For local businesses, SEO means appearing when customers search for your services nearby. 46% of all Google searches have local intent, making SEO the highest-ROI marketing channel for local service businesses."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does SEO take to show results?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most businesses see measurable SEO improvements within 3–6 months of consistent optimization. Technical fixes and on-page improvements can show results in 4–8 weeks. Building authority through content and backlinks typically takes 6–12 months for competitive keywords."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the most important SEO ranking factors?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The top SEO ranking factors are: (1) page content quality and relevance, (2) technical health (speed, mobile-friendliness, Core Web Vitals), (3) backlink authority, (4) user experience signals, and (5) local signals like Google Business Profile for local searches."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does SEO cost for a small business?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "DIY SEO costs mainly time (10–20 hours/month). Professional SEO services range from $500–$3,000/month for local businesses. Tools like Google Search Console, Google Analytics, and Ahrefs (free tier) cover most basics. ROI from SEO compounds over time, making it more cost-effective than paid ads long-term."
+          }
+        }
+      ]
+    };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -569,6 +617,31 @@ const BlogSEO: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is SEO and why does it matter for local businesses?</h3>
+              <p className="text-gray-600">SEO (Search Engine Optimization) is the practice of improving a website's visibility in search engine results. For local businesses, SEO means appearing when customers search for your services nearby. 46% of all Google searches have local intent, making SEO the highest-ROI marketing channel for local service businesses.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does SEO take to show results?</h3>
+              <p className="text-gray-600">Most businesses see measurable SEO improvements within 3–6 months of consistent optimization. Technical fixes and on-page improvements can show results in 4–8 weeks. Building authority through content and backlinks typically takes 6–12 months for competitive keywords.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What are the most important SEO ranking factors?</h3>
+              <p className="text-gray-600">The top SEO ranking factors are: (1) page content quality and relevance, (2) technical health (speed, mobile-friendliness, Core Web Vitals), (3) backlink authority, (4) user experience signals, and (5) local signals like Google Business Profile for local searches.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does SEO cost for a small business?</h3>
+              <p className="text-gray-600">DIY SEO costs mainly time (10–20 hours/month). Professional SEO services range from $500–$3,000/month for local businesses. Tools like Google Search Console, Google Analytics, and Ahrefs (free tier) cover most basics. ROI from SEO compounds over time, making it more cost-effective than paid ads long-term.</p>
+            </div>
           </div>
         </div>
       </section>

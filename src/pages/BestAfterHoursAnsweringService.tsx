@@ -60,8 +60,71 @@ const BestAfterHoursAnsweringService: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is the best after-hours answering service for small businesses?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "Boltcall is the top after-hours answering service for local businesses, combining AI voice with automated appointment booking and lead capture. Unlike traditional answering services that relay messages, Boltcall's AI books callers directly into your calendar—available from $79/month with no per-minute fees."
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How does an after-hours answering service work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "After-hours answering services handle calls outside your business hours—evenings, weekends, and holidays. AI-based services like Boltcall use voice AI to answer, qualify, and schedule callers without human agents. Traditional live-agent services relay messages but can't book appointments."
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How much does an after-hours answering service cost?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'After-hours answering services range from $79/month (AI-based, unlimited calls) to $200–$500+/month for live-agent services with per-minute billing. AI services are typically 70–90% cheaper and available 24/7 without overtime charges. Most small businesses choose AI for cost and speed of response.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'Is an after-hours answering service worth it for local businesses?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Over 40% of service business calls come in after hours. Without after-hours coverage, most of those callers will call a competitor. An after-hours service that captures and books those leads pays for itself many times over—typically recovering 10–20 leads per month that would otherwise be lost.'
+          }
+        }
+      ]
+    };
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.textContent = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://boltcall.org' },
+        { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://boltcall.org/blog' },
+        { '@type': 'ListItem', position: 3, name: 'Best After-Hours Answering Service', item: 'https://boltcall.org/blog/best-after-hours-answering-service' }
+      ]
+    };
+
+    const breadcrumbScript = document.createElement('script');
+    breadcrumbScript.type = 'application/ld+json';
+    breadcrumbScript.id = 'breadcrumb-jsonld';
+    breadcrumbScript.textContent = JSON.stringify(breadcrumbSchema);
+    document.head.appendChild(breadcrumbScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
+      document.getElementById('breadcrumb-jsonld')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -562,6 +625,31 @@ const BestAfterHoursAnsweringService: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best after-hours answering service for small businesses?</h3>
+              <p className="text-gray-600">Boltcall is the top after-hours answering service for local businesses, combining AI voice with automated appointment booking and lead capture. Unlike traditional answering services that relay messages, Boltcall's AI books callers directly into your calendar—available from $79/month with no per-minute fees.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an after-hours answering service work?</h3>
+              <p className="text-gray-600">After-hours answering services handle calls outside your business hours—evenings, weekends, and holidays. AI-based services like Boltcall use voice AI to answer, qualify, and schedule callers without human agents. Traditional live-agent services relay messages but can't book appointments.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an after-hours answering service cost?</h3>
+              <p className="text-gray-600">After-hours answering services range from $79/month (AI-based, unlimited calls) to $200–$500+/month for live-agent services with per-minute billing. AI services are typically 70–90% cheaper and available 24/7 without overtime charges. Most small businesses choose AI for cost and speed of response.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an after-hours answering service worth it for local businesses?</h3>
+              <p className="text-gray-600">Yes. Over 40% of service business calls come in after hours. Without after-hours coverage, most of those callers will call a competitor. An after-hours service that captures and books those leads pays for itself many times over—typically recovering 10–20 leads per month that would otherwise be lost.</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 };

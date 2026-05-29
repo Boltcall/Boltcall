@@ -51,7 +51,51 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Does AI phone answering work for dental offices?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. AI phone answering is purpose-built for dental offices handling appointment scheduling, recall reminders, insurance verification questions, and emergency triage. Dental practices report 40–60% reduction in front desk call volume and near-zero missed calls with AI phone answering systems like Boltcall.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can AI book dental appointments automatically?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. AI phone systems integrate directly with dental practice management software (Dentrix, Eaglesoft, Open Dental) to book appointments in real time. Patients can schedule, reschedule, or confirm appointments over the phone without speaking to a human staff member—available 24/7.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What dental calls can an AI handle?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AI phone systems handle 80%+ of dental calls: appointment booking and reminders, directions and hours, insurance questions, treatment cost inquiries, and after-hours emergencies (with triage and on-call routing). Complex cases and billing disputes are routed to staff.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How much does AI phone answering cost for a dental practice?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'AI phone answering for dental offices costs $79–$299/month—a fraction of the $3,000–$4,000/month cost of a dedicated phone staff member. Most dental practices with 10+ calls per day see positive ROI within the first month through reduced labor costs and improved patient capture.',
+          },
+        },
+      ],
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
+      document.getElementById('faq-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
@@ -282,6 +326,31 @@ const AiPhoneAnsweringDentists: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does AI phone answering work for dental offices?</h3>
+              <p className="text-gray-600">Yes. AI phone answering is purpose-built for dental offices handling appointment scheduling, recall reminders, insurance verification questions, and emergency triage. Dental practices report 40–60% reduction in front desk call volume and near-zero missed calls with AI phone answering systems like Boltcall.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI book dental appointments automatically?</h3>
+              <p className="text-gray-600">Yes. AI phone systems integrate directly with dental practice management software (Dentrix, Eaglesoft, Open Dental) to book appointments in real time. Patients can schedule, reschedule, or confirm appointments over the phone without speaking to a human staff member—available 24/7.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What dental calls can an AI handle?</h3>
+              <p className="text-gray-600">AI phone systems handle 80%+ of dental calls: appointment booking and reminders, directions and hours, insurance questions, treatment cost inquiries, and after-hours emergencies (with triage and on-call routing). Complex cases and billing disputes are routed to staff.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does AI phone answering cost for a dental practice?</h3>
+              <p className="text-gray-600">AI phone answering for dental offices costs $79–$299/month—a fraction of the $3,000–$4,000/month cost of a dedicated phone staff member. Most dental practices with 10+ calls per day see positive ROI within the first month through reduced labor costs and improved patient capture.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

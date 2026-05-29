@@ -77,9 +77,54 @@ const SpeedToLeadGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Speed to Lead Guide", "item": "https://boltcall.org/speed-to-lead-guide"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is speed to lead and why does it matter?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Speed to lead is the time between a prospect submitting an inquiry and your business responding. Research from Harvard Business Review shows responding within 5 minutes makes you 100x more likely to qualify the lead versus responding after 30 minutes. For local businesses, speed to lead is the single biggest factor in converting inbound leads."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How fast should you respond to a new lead?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You should respond to new leads within 5 minutes—ideally under 60 seconds. MIT research shows lead conversion rates drop 80% when response time exceeds 5 minutes. The first business to respond wins the job in 78% of cases for local service businesses."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can a small business improve its speed to lead?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The fastest way to improve speed to lead is using an AI receptionist that responds instantly 24/7. Other improvements include automated text/email responses, CRM lead routing, and dedicated follow-up staff. AI is the only solution that guarantees sub-5-second response times without increasing headcount."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does speed to lead apply to after-hours inquiries?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, especially for after-hours inquiries. Over 40% of service business leads come in outside business hours. An automated response that confirms receipt and books a callback within seconds prevents leads from calling competitors the next morning. Boltcall handles after-hours leads automatically, 24/7."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
     };
@@ -717,6 +762,31 @@ const SpeedToLeadGuide: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section id="faq" className="bg-white py-12 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is speed to lead and why does it matter?</h3>
+              <p className="text-gray-600">Speed to lead is the time between a prospect submitting an inquiry and your business responding. Research from Harvard Business Review shows responding within 5 minutes makes you 100x more likely to qualify the lead versus responding after 30 minutes. For local businesses, speed to lead is the single biggest factor in converting inbound leads.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How fast should you respond to a new lead?</h3>
+              <p className="text-gray-600">You should respond to new leads within 5 minutes—ideally under 60 seconds. MIT research shows lead conversion rates drop 80% when response time exceeds 5 minutes. The first business to respond wins the job in 78% of cases for local service businesses.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How can a small business improve its speed to lead?</h3>
+              <p className="text-gray-600">The fastest way to improve speed to lead is using an AI receptionist that responds instantly 24/7. Other improvements include automated text/email responses, CRM lead routing, and dedicated follow-up staff. AI is the only solution that guarantees sub-5-second response times without increasing headcount.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does speed to lead apply to after-hours inquiries?</h3>
+              <p className="text-gray-600">Yes, especially for after-hours inquiries. Over 40% of service business leads come in outside business hours. An automated response that confirms receipt and books a callback within seconds prevents leads from calling competitors the next morning. Boltcall handles after-hours leads automatically, 24/7.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
