@@ -1,0 +1,159 @@
+{
+  "name": "Agency OS — friday-auto-report",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6,7,8 * * 5"
+            }
+          ]
+        }
+      },
+      "id": "cron-friday-hourly-06-08",
+      "name": "Cron — Friday 06-08 UTC (hourly)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Determine target UTC hour window for 'local 07:00 Friday' per client timezone.\n// Clients in UTC+1 fire at UTC 06:00, UTC+2 at UTC 05:00, UTC-5 at UTC 12:00.\n// This workflow runs at UTC 06, 07, 08 and each pass filters only the clients\n// whose local time is currently between 07:00 and 08:00 Friday.\n// The Netlify function handles the final timezone-aware check as the source of truth.\nconst nowUtc = new Date();\nreturn [{\n  json: {\n    utc_hour: nowUtc.getUTCHours(),\n    utc_minute: nowUtc.getUTCMinutes(),\n    fire_time: nowUtc.toISOString()\n  }\n}];\n"
+      },
+      "id": "resolve-utc-hour",
+      "name": "Resolve UTC Hour Window",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_clients?status=eq.live&select=id,business_name,vertical,timezone",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "query-live-clients",
+      "name": "Supabase — Live Clients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter clients whose local time falls in the target window (07:00-07:59 local).\n// Timezone offset is derived from the IANA tz string.\n// The Netlify function does the authoritative check; this filter prevents\n// redundant calls for clearly out-of-window clients.\nconst utcHour = $('Resolve UTC Hour Window').first().json.utc_hour;\nconst clients = $input.all().map(i => i.json);\n\nconst inWindow = clients.filter(client => {\n  try {\n    const tz = client.timezone || 'UTC';\n    // Use Intl to get local hour for this client\n    const localHourStr = new Intl.DateTimeFormat('en-US', {\n      timeZone: tz,\n      hour: 'numeric',\n      hour12: false\n    }).format(new Date());\n    const localHour = parseInt(localHourStr, 10);\n    return localHour === 7; // 07:00-07:59 local = target window\n  } catch {\n    return utcHour === 7; // fallback: include if UTC 07:00\n  }\n});\n\nconsole.log(`Friday report: ${inWindow.length}/${clients.length} clients in 07:xx window at UTC ${utcHour}:00`);\nreturn inWindow.map(c => ({ json: c }));\n"
+      },
+      "id": "filter-by-local-timezone",
+      "name": "Filter by Client Local Timezone",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-clients",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-reporting-scribe",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $json.id }}\",\n  \"vertical\": \"{{ $json.vertical }}\",\n  \"mode\": \"weekly_auto_ship\",\n  \"auto_ship\": true,\n  \"fire_time_utc\": \"{{ $('Resolve UTC Hour Window').first().json.fire_time }}\"\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "post-reporting-scribe",
+      "name": "HTTP — POST agency-reporting-scribe",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first()?.json ?? {};\nconsole.log(`Friday report shipped for client ${result.client_id}: status=${result.status}`);\nreturn [{ json: { client_id: result.client_id, status: result.status ?? 'done' } }];\n"
+      },
+      "id": "log-result",
+      "name": "Log Report Ship Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    }
+  ],
+  "connections": {
+    "Cron — Friday 06-08 UTC (hourly)": {
+      "main": [
+        [{ "node": "Resolve UTC Hour Window", "type": "main", "index": 0 }]
+      ]
+    },
+    "Resolve UTC Hour Window": {
+      "main": [
+        [{ "node": "Supabase — Live Clients", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Live Clients": {
+      "main": [
+        [{ "node": "Filter by Client Local Timezone", "type": "main", "index": 0 }]
+      ]
+    },
+    "Filter by Client Local Timezone": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [{ "node": "HTTP — POST agency-reporting-scribe", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-reporting-scribe": {
+      "main": [
+        [{ "node": "Log Report Ship Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Report Ship Result": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-2", "cron"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

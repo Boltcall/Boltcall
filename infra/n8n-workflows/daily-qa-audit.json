@@ -1,0 +1,129 @@
+{
+  "name": "Agency OS — daily-qa-audit",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-daily-0200",
+      "name": "Cron — Daily 02:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_clients?status=eq.live&select=id,business_name,vertical",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "query-live-clients",
+      "name": "Supabase — Live Clients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-clients",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-qa-auditor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $json.id }}\",\n  \"vertical\": \"{{ $json.vertical }}\",\n  \"sample_rate\": 0.2,\n  \"window_hours\": 24,\n  \"mode\": \"daily_audit\"\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "post-qa-auditor",
+      "name": "HTTP — POST agency-qa-auditor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first()?.json ?? {};\nconsole.log(`QA audit for client ${result.client_id}: scored=${result.calls_scored} avg=${result.avg_score} window=24h`);\nreturn [{\n  json: {\n    client_id: result.client_id,\n    calls_scored: result.calls_scored ?? 0,\n    avg_score: result.avg_score ?? null,\n    below_threshold: result.below_threshold ?? false\n  }\n}];\n"
+      },
+      "id": "log-result",
+      "name": "Log QA Audit Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Cron — Daily 02:00 UTC": {
+      "main": [
+        [{ "node": "Supabase — Live Clients", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Live Clients": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [{ "node": "HTTP — POST agency-qa-auditor", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-qa-auditor": {
+      "main": [
+        [{ "node": "Log QA Audit Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log QA Audit Result": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-2", "cron"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

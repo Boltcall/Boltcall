@@ -1,0 +1,102 @@
+{
+  "name": "Agency OS — intake-call-completed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agency-retell-webhook",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-retell-in",
+      "name": "Retell Webhook IN",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "agency-retell-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate Retell webhook signature\n// Retell sends X-Retell-Signature: sha256=<hmac>\nconst crypto = require('crypto');\nconst secret = $env.RETELL_API_KEY;\nconst sigHeader = $input.first().headers['x-retell-signature'] ?? '';\nconst rawBody = JSON.stringify($input.first().body);\n\n// HMAC-SHA256 validation\nconst expected = 'sha256=' + crypto.createHmac('sha256', secret).update(rawBody).digest('hex');\nif (sigHeader && sigHeader !== expected) {\n  throw new Error('Retell signature mismatch — possible replay attack');\n}\n\nconst payload = $input.first().body;\n\n// Only handle on-call-ended events\nif (payload.event !== 'call_ended') {\n  return [{ json: { skip: true, reason: `Event ${payload.event} not call_ended` } }];\n}\n\nconst call = payload.call ?? {};\nconst callId = call.call_id ?? payload.call_id;\nconst agentId = call.agent_id ?? null;\n\n// Determine client_id from agent metadata\nconst clientId = call.metadata?.client_id ?? null;\n\nif (!clientId) {\n  return [{ json: { skip: true, reason: 'No client_id in call metadata — not an agency intake call' } }];\n}\n\nreturn [{\n  json: {\n    skip: false,\n    call_id: callId,\n    agent_id: agentId,\n    client_id: clientId,\n    duration_seconds: call.duration_ms ? Math.round(call.duration_ms / 1000) : 0,\n    ended_reason: call.ended_reason ?? 'unknown',\n    recording_url: call.recording_url ?? null,\n    transcript_available: !!call.transcript\n  }\n}];\n"
+      },
+      "id": "validate-retell-signature",
+      "name": "Validate Retell Signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "skip-check",
+      "name": "Skip Non-Intake Events",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-intake-officer",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"webhook\",\n  \"call_id\": \"{{ $json.call_id }}\",\n  \"client_id\": \"{{ $json.client_id }}\",\n  \"agent_id\": \"{{ $json.agent_id }}\",\n  \"duration_seconds\": {{ $json.duration_seconds }},\n  \"ended_reason\": \"{{ $json.ended_reason }}\",\n  \"recording_url\": \"{{ $json.recording_url }}\",\n  \"trigger_transcript_fetch\": true\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "post-intake-officer",
+      "name": "HTTP — POST agency-intake-officer (mode=webhook)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 220]
+    }
+  ],
+  "connections": {
+    "Retell Webhook IN": {
+      "main": [
+        [{ "node": "Validate Retell Signature", "type": "main", "index": 0 }]
+      ]
+    },
+    "Validate Retell Signature": {
+      "main": [
+        [{ "node": "Skip Non-Intake Events", "type": "main", "index": 0 }]
+      ]
+    },
+    "Skip Non-Intake Events": {
+      "main": [
+        [],
+        [{ "node": "HTTP — POST agency-intake-officer (mode=webhook)", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-1"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

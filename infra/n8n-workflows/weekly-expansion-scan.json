@@ -1,0 +1,164 @@
+{
+  "name": "Agency OS — weekly-expansion-scan",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 6 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "cron-monday-0630",
+      "name": "Cron — Monday 06:30 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-expansion-spotter",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"weekly_scan\",\n  \"fire_time_utc\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "post-expansion-spotter",
+      "name": "HTTP — POST agency-expansion-spotter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first()?.json ?? {};\nconst candidateCount = result.candidates_identified ?? 0;\nconsole.log(`Expansion scan complete: ${candidateCount} SaaS users identified as agency upgrade candidates`);\nreturn [{ json: { ...result, scan_complete: true } }];\n"
+      },
+      "id": "log-expansion-result",
+      "name": "Log Expansion Scan Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.candidates_identified ?? 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "candidate-gate",
+      "name": "Has Expansion Candidates?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-expansion-spotter",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"queue_outreach_drafts\",\n  \"candidate_ids\": {{ JSON.stringify($json.candidate_ids ?? []) }}\n}",
+        "options": {}
+      },
+      "id": "queue-outreach-drafts",
+      "name": "HTTP — Queue Upgrade Outreach Drafts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-delivery-monitor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"telegram_notify\",\n  \"severity\": \"info\",\n  \"message\": \"Expansion scan: {{ $json.candidates_identified }} SaaS users flagged as agency upgrade candidates. Outreach drafts queued.\"\n}",
+        "options": {}
+      },
+      "id": "notify-telegram-expansion",
+      "name": "Atlas — Telegram Expansion Candidates",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 220]
+    }
+  ],
+  "connections": {
+    "Cron — Monday 06:30 UTC": {
+      "main": [
+        [{ "node": "HTTP — POST agency-expansion-spotter", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-expansion-spotter": {
+      "main": [
+        [{ "node": "Log Expansion Scan Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Expansion Scan Result": {
+      "main": [
+        [{ "node": "Has Expansion Candidates?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Expansion Candidates?": {
+      "main": [
+        [{ "node": "HTTP — Queue Upgrade Outreach Drafts", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "HTTP — Queue Upgrade Outreach Drafts": {
+      "main": [
+        [{ "node": "Atlas — Telegram Expansion Candidates", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-3", "cron"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}
