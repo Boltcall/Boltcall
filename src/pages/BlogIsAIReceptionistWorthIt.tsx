@@ -15,8 +15,8 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
   const headings = useTableOfContents();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Is AI Receptionist Worth It? Cost-Benefit Analysis';
-    updateMetaDescription('Is an AI receptionist worth it? Complete cost-benefit analysis comparing AI vs traditional receptionist services. Read now.');
+    document.title = 'Is an AI Receptionist Worth It? Analysis | Boltcall';
+    updateMetaDescription('Is an AI receptionist worth it? Boltcall complete cost-benefit analysis comparing AI vs traditional receptionist services. Get the numbers now.');
     
     // Add Article schema markup
     const articleSchema = {
@@ -646,6 +646,28 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Is an AI Receptionist Worth It? — Frequently Asked Questions</h2>
+        <dl className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What is the ROI of an AI receptionist for a local business?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Most Boltcall customers see positive ROI within the first month. A plumbing business receiving 30 calls per day and missing 8 calls (typical without AI) recovers $2,400–$8,000/month in captured jobs — well above the $549/month platform cost. The ROI depends on your average job value and how many calls you currently miss.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How quickly do businesses see results with an AI receptionist?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Most Boltcall customers see measurable results within the first 30 days — specifically, more booked appointments and fewer missed calls. The speed-to-lead improvement is immediate from day one, since every call is answered from the first minute the system goes live. Booking rate improvements compound over 60–90 days as the AI learns your business patterns.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What types of businesses benefit most from an AI receptionist?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Businesses with high inbound call volume, after-hours inquiries, and appointment-based services see the highest ROI. This includes HVAC companies, plumbers, dentists, law firms, med spas, roofing contractors, and solar installers. The key factor is call volume: businesses receiving 10+ calls per day with any missed calls are strong candidates.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What are the risks of using an AI receptionist?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">The main risks are: (1) callers with complex emotional needs who prefer a human, (2) misconfigured AI that misunderstands your services, and (3) over-reliance without monitoring. Boltcall mitigates these with human escalation routing, a customizable knowledge base, and call recording/review tools so you can refine responses over time.</p>
+          </div>
+        </dl>
+      </section>
       <Footer />
     </div>
   );

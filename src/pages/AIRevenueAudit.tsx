@@ -148,7 +148,7 @@ const AIRevenueAudit: React.FC = () => {
 
   useEffect(() => {
     document.title = 'AI Revenue Audit Calculator - Calculate Earnings | Boltcall';
-    updateMetaDescription('AI revenue audit calculator: calculate your potential earnings with AI receptionist. Free revenue analysis tool. Try now.');
+    updateMetaDescription('Boltcall AI revenue audit: calculate how much revenue you are losing from missed calls and slow lead response. Free analysis tool. Try now.');
 
     // Add canonical link
     let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
@@ -606,7 +606,7 @@ const AIRevenueAudit: React.FC = () => {
               <StepperPanel>
                 <StepperContent value={1}>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Lead Friction</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">How much lead friction is costing your business?</h3>
                     <div className="space-y-6">
                       <div>
                         <label className="block text-lg font-semibold text-gray-900 mb-3">
@@ -642,7 +642,7 @@ const AIRevenueAudit: React.FC = () => {
 
                 <StepperContent value={2}>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Time Leakage</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Where is time leakage hurting your revenue?</h3>
                     <div className="space-y-6">
                       <div>
                         <label className="block text-lg font-semibold text-gray-900 mb-3">
@@ -678,7 +678,7 @@ const AIRevenueAudit: React.FC = () => {
 
                 <StepperContent value={3}>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-6">Financial Data</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6">What financial data powers your revenue estimate?</h3>
                     <div className="space-y-5">
                         <div>
                         <label className="block text-lg font-semibold text-gray-900 mb-3">
@@ -1016,6 +1016,29 @@ const AIRevenueAudit: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+        <dl className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How much revenue do local businesses lose from missed calls?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Most local service businesses miss 20–40% of inbound calls, especially after hours. With an average job value of $300–$2,000, even 5 missed calls per week translates to $78,000–$520,000 in lost annual revenue. Boltcall's AI receptionist eliminates this by answering every call 24/7.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What is speed-to-lead and why does it affect revenue?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Speed-to-lead is how quickly a business responds to a new inquiry. Research shows 78% of customers choose the first business to respond — businesses that respond in under 60 seconds convert leads 391% more often than those responding after an hour. Boltcall's AI responds to every lead in under 11 seconds, 24/7.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How accurate is the AI revenue audit calculator?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">The calculator uses your actual business inputs — monthly lead volume, average job value, and current booking rate — combined with industry benchmarks from thousands of local service businesses. Results are estimates based on documented patterns in lead loss; actual recovery will vary by industry, market, and implementation quality.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Can Boltcall really recover that much revenue?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Boltcall customers report 30–60% increases in booked appointments within the first 60 days, primarily by capturing leads that previously went to voicemail or were lost to slow response. An HVAC company adding $8,200/month or a dental practice recovering $10,540/month are typical outcomes, not outliers — they reflect the standard gap between current and AI-optimized lead capture rates.</p>
+          </div>
+        </dl>
+      </section>
+
       <Footer />
     </div>
   );

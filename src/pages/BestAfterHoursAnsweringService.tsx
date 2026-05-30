@@ -15,8 +15,8 @@ const BestAfterHoursAnsweringService: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Best After Hours Answering Service for Local Businesses: AI vs Traditional | Boltcall';
-    updateMetaDescription('Compare the best after hours answering services for local businesses. AI receptionists outperform traditional services with 24/7 coverage and lower costs.');
+    document.title = 'Best After Hours Answering Service | Boltcall';
+    updateMetaDescription('Compare the best after hours answering services. Boltcall AI receptionist outperforms traditional services with 24/7 coverage and lower costs. Get started.');
 
     const schema = {
       '@context': 'https://schema.org',
@@ -562,6 +562,29 @@ const BestAfterHoursAnsweringService: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions About After Hours Answering</h2>
+        <dl className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What is the best after hours answering service for small businesses?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">The best after hours answering service for small businesses is one that responds instantly, books appointments, and costs less than a part-time receptionist. Boltcall's AI receptionist answers every call 24/7 — including nights, weekends, and holidays — for a flat monthly fee with no hold times or call queues.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How much does an after hours answering service cost?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Traditional after hours answering services charge $1.25–$1.75 per minute, which can cost $800–$2,000/month for a busy local business. AI-powered alternatives like Boltcall start at $549/month for unlimited after-hours call answering with full appointment booking — at a fraction of the per-minute cost.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Can an AI answering service book appointments after hours?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Yes. Boltcall's AI answering service integrates with Google Calendar, Outlook, and Cal.com to book appointments automatically — even at 2am. When a caller requests an appointment outside business hours, the AI checks your real-time availability and confirms the booking instantly, sending the customer a confirmation text.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Why do local businesses lose leads after hours?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">60% of local service calls happen outside typical business hours. Without after hours coverage, these calls go to voicemail — and 80% of callers hang up without leaving a message. The first business to respond wins the customer, and businesses using Boltcall's 24/7 AI answering report capturing 40% more leads compared to voicemail-only coverage.</p>
+          </div>
+        </dl>
+      </section>
     </>
   );
 };

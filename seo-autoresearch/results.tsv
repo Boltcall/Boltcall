@@ -1,1 +1,14 @@
 commit	page	score_before	score_after	status	description
+0ccd90e	/	66	89	keep	homepage: added AEO answer block, question H2s, FAQ H3 section, BreadcrumbList schema, fixed meta
+0ccd90e	/blog/complete-guide-to-ai-for-local-businesses	66	89	keep	fixed by homepage AEO (fallback page)
+0ccd90e	/blog/google-reviews-automation-local-business	66	89	keep	fixed by homepage AEO (fallback page)
+0ccd90e	/seo-audit	76	90	keep	title + meta Boltcall, question H2, FAQ H3 section
+0ccd90e	/ai-revenue-audit	79	94	keep	meta Boltcall, H3 questions, FAQ H3 section
+0ccd90e	/blog/best-ai-receptionist-tools	78	100	keep	title + meta, AEO block, FAQ H3 section with 5 questions
+0ccd90e	/features/instant-form-reply	82	92	keep	title + meta, AEO block
+0ccd90e	/about	83	90	keep	FAQ H3 section
+0ccd90e	/blog/ai-receptionist-cost-pricing	84	96	keep	title + meta, FAQ H3 section
+0ccd90e	/blog/best-after-hours-answering-service	84	96	keep	title + meta, FAQ H3 section
+0ccd90e	/blog/ai-vs-human-receptionist	86	98	keep	meta, FAQ H3 section
+0ccd90e	/blog/how-ai-receptionist-works	85	97	keep	title + meta, FAQ H3 section
+0ccd90e	/blog/is-ai-receptionist-worth-it	85	98	keep	title + meta, FAQ H3 section

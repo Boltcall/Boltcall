@@ -34,7 +34,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     document.title = 'AI Receptionist: 24/7 Booking & Lead Capture | Boltcall';
-    updateMetaDescription('Never miss a call or lead. AI receptionist answers 24/7, books appointments instantly, captures leads automatically. Start free today.');
+    updateMetaDescription('Never miss a call or lead. Boltcall AI receptionist answers 24/7, books appointments instantly, captures leads automatically. Start free today.');
 
     const speakableSchema = {
       "@context": "https://schema.org",
@@ -97,6 +97,18 @@ const Home: React.FC = () => {
             "@type": "Answer",
             "text": "Boltcall's speed-to-lead system automatically responds to every new lead within seconds — answering calls, replying to web form submissions, and sending follow-up texts without any human action required. Research shows the first business to respond wins the customer 78% of the time. Boltcall makes that response automatic and instant, even at 2am on weekends."
           }
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://boltcall.org/"
         }
       ]
     },
@@ -175,6 +187,50 @@ const Home: React.FC = () => {
           {/* Boltcall Platform Preview — interactive dark bento card */}
           <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[60px]">
             <BentoCard />
+          </section>
+
+          {/* AEO/SEO — inline, not lazy-loaded so prerenderer and AI crawlers capture it */}
+          <section id="what-is-boltcall" className="bg-white py-16 px-4 sm:px-8 lg:px-16">
+            <div className="max-w-4xl mx-auto">
+              {/* AEO answer block — 40-60 word definition for AI citation */}
+              <p className="text-lg text-gray-700 leading-relaxed mb-10 speakable-intro">
+                Boltcall is a speed-to-lead platform that is a fully automated AI receptionist for local service businesses. It answers every call 24/7, books appointments instantly, and responds to online leads in under 11 seconds — so the first business to respond wins the job, every time.
+              </p>
+
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">How does an AI receptionist work?</h2>
+              <p className="text-gray-600 mb-8">
+                An AI receptionist answers inbound calls using conversational voice AI, collects caller information, qualifies the lead, and books appointments directly into your calendar — all without a human on your team. Boltcall's AI receptionist connects to Google Calendar, Outlook, and Cal.com and handles calls 24 hours a day, 7 days a week, including holidays. The system texts the caller a confirmation and alerts your team instantly, so no lead ever falls through the cracks.
+              </p>
+
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Why do local businesses lose leads?</h2>
+              <p className="text-gray-600 mb-10">
+                Research shows 78% of customers choose the first business to respond. Most local businesses miss that window because calls go to voicemail, web forms sit unanswered for hours, and after-hours inquiries are ignored entirely. Boltcall eliminates this problem by responding to every lead within seconds — calls, texts, and form submissions — automatically and around the clock. Businesses using Boltcall report 40% more booked appointments and dramatically fewer missed opportunities.
+              </p>
+
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently asked questions</h2>
+              <dl className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">What is Boltcall?</h3>
+                  <p className="text-gray-600">Boltcall is a fully automated AI receptionist and speed-to-lead platform for local service businesses. It uses AI — not human receptionists — to answer every call 24/7, book appointments instantly, capture leads, and send follow-up text messages automatically.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Is Boltcall an AI or a human answering service?</h3>
+                  <p className="text-gray-600">Boltcall is a fully automated AI service. There are no human receptionists involved. The platform uses conversational AI to answer calls, qualify leads, and book appointments automatically — 24 hours a day, 7 days a week, with no staffing costs or hold times.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">How much does Boltcall cost?</h3>
+                  <p className="text-gray-600">Boltcall starts at $549 per month for the Starter plan. The Pro plan is $897 per month. All plans include unlimited AI call answering, appointment booking, lead capture, and follow-up texts with no per-call fees. Enterprise pricing is available for multi-location businesses.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">What types of businesses use Boltcall?</h3>
+                  <p className="text-gray-600">Boltcall serves local service businesses including HVAC companies, plumbers, dentists, law firms, med spas, roofing contractors, and solar installers. Any business that receives phone inquiries and needs to respond quickly benefits from Boltcall's speed-to-lead automation.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">How does the speed-to-lead system work?</h3>
+                  <p className="text-gray-600">Boltcall's speed-to-lead system automatically responds to every new lead within seconds — answering calls, replying to web form submissions, and sending follow-up texts without any human action required. Research shows the first business to respond wins the customer 78% of the time. Boltcall makes that response automatic and instant, even at 2am on weekends.</p>
+                </div>
+              </dl>
+            </div>
           </section>
 
           {/* HowItWorks — first below-fold section, preload aggressively */}

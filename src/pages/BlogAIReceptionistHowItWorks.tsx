@@ -15,8 +15,8 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
   const headings = useTableOfContents();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'How Does an AI Receptionist Work? Technical Guide';
-    updateMetaDescription('How does an AI receptionist work? Complete technical guide explaining natural language processing and automation. Learn more.');
+    document.title = 'How Does an AI Receptionist Work? | Boltcall Guide';
+    updateMetaDescription('How does an AI receptionist work? Boltcall complete technical guide explains voice AI, NLP, and automation. Learn how to get started today.');
     
     // Add Article schema markup
     const articleSchema = {
@@ -549,6 +549,28 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">How AI Receptionist Technology Works — FAQs</h2>
+        <dl className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How does an AI receptionist answer calls?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">An AI receptionist answers calls using voice AI and natural language processing (NLP) to understand the caller's intent, respond conversationally, collect lead information, and book appointments. Boltcall's AI connects to your phone number via call forwarding and handles each call with a custom-trained voice persona that matches your business.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What happens when a customer calls your AI receptionist?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">When a caller reaches Boltcall's AI, the system greets them by business name, identifies their need (appointment, quote, emergency, etc.), asks qualifying questions, checks calendar availability, and books the appointment — all within a single 2–3 minute conversation. A summary and the caller's contact info are sent to your team instantly.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Can an AI receptionist understand complex requests?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Yes. Modern AI receptionists use large language models (LLMs) trained on millions of business conversations. Boltcall's AI handles multi-step requests, understands industry-specific terminology, manages appointment changes, and responds in both English and Spanish — handling 95%+ of common inbound call scenarios without human intervention.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How does AI receptionist software integrate with my calendar?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Boltcall integrates directly with Google Calendar, Microsoft Outlook, and Cal.com via API. When the AI books an appointment, it checks real-time availability, creates the calendar event, and sends the customer a confirmation text — all within the call. No manual data entry or callback required from your team.</p>
+          </div>
+        </dl>
+      </section>
       <Footer />
     </div>
   );

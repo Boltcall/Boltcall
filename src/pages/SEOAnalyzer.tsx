@@ -14,8 +14,8 @@ const SEOAnalyzer: React.FC = () => {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   useEffect(() => {
-    document.title = 'Free SEO Audit Tool - Analyze Your Website SEO';
-    updateMetaDescription('Free SEO audit tool analyzes your website SEO. Get detailed report on rankings, keywords, and optimization opportunities. Try free.');
+    document.title = 'Free SEO Audit Tool for Local Business | Boltcall';
+    updateMetaDescription('Boltcall free SEO audit tool analyzes your local business website. Get detailed report on rankings, keywords, and optimization opportunities. Try free.');
 
     // Add canonical link
     let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
@@ -297,7 +297,7 @@ const SEOAnalyzer: React.FC = () => {
 
       {/* How It Works */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">How the Free SEO Audit Works</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">How does the free SEO audit work?</h2>
         <p className="text-gray-500 text-center mb-8 text-sm max-w-xl mx-auto">
           Enter your website URL and email. Our tool crawls your site the same way Google does, checks 30+ ranking factors, and delivers a plain-English report to your inbox — usually within minutes.
         </p>
@@ -560,6 +560,29 @@ const SEOAnalyzer: React.FC = () => {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions About SEO Audits</h2>
+        <dl className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What does a free SEO audit check?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">A free SEO audit checks your page titles, meta descriptions, heading structure, internal links, mobile usability, page speed, and schema markup. Boltcall's audit also includes AEO signals — the factors that determine whether your business appears in AI-generated answers on Google and ChatGPT.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How long does an SEO audit take?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Boltcall's SEO audit delivers results to your inbox within minutes. The analysis covers 30+ ranking factors including technical SEO, content gaps, and AEO signals. Most business owners receive actionable results in under 5 minutes after submitting their URL.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What is AEO and why does it matter for local businesses?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">AEO (Answer Engine Optimization) is the practice of structuring your content so AI tools like Google's AI Overview, ChatGPT, and Perplexity can cite your business as a trusted answer. Local businesses with strong AEO signals get featured in AI-generated responses, driving zero-cost traffic without paid ads.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How do I fix SEO issues on my local business website?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Start with the highest-impact fixes: add missing meta descriptions, fix duplicate title tags, add FAQ schema markup, and ensure your business name and phone number appear consistently across all pages. Most local business websites can move from page 3 to page 1 within 60–90 days by fixing 5–8 core issues identified in a free audit.</p>
+          </div>
+        </dl>
       </section>
 
       </main>

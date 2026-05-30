@@ -19,7 +19,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = 'AI vs Human Receptionist: Which is Right for Your Local Business? | Boltcall';
-    updateMetaDescription('Compare AI vs human receptionists for local businesses. Discover costs, benefits, and which option delivers better ROI for your small business.');
+    updateMetaDescription('Compare AI vs human receptionists for local businesses. Discover how Boltcall AI delivers better ROI than human answering services. Get started free.');
 
     const script = document.createElement('script');
     script.type = 'application/ld+json';
@@ -691,6 +691,28 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
             ))}
           </div>
         </div>
+      </section>
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">AI vs Human Receptionist — Frequently Asked Questions</h2>
+        <dl className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Is an AI receptionist better than a human receptionist?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">For speed and availability, yes. An AI receptionist like Boltcall responds in under 11 seconds, works 24/7 including holidays, never puts callers on hold, and costs 80% less than a human. Human receptionists are better for complex emotional situations requiring judgment and empathy beyond a defined script.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How much does an AI receptionist cost compared to a human?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">A human receptionist costs $2,500–$4,500/month including salary, benefits, and training. Boltcall's AI receptionist starts at $549/month with unlimited calls, no per-minute fees, and no staffing overhead. For a local business receiving 20+ calls per day, AI provides the same coverage at 85–90% lower cost.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Can customers tell they're talking to an AI receptionist?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Modern AI voice technology has improved dramatically. Boltcall's AI uses natural conversational AI that sounds professional and handles common requests fluently. You can configure the AI to be transparent about being an automated system or to present as a business assistant — many customers prefer efficient AI over on-hold waits.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What happens when the AI can't handle a call?</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">Boltcall's AI handles the majority of inbound calls — answering questions, capturing lead info, and booking appointments. For calls requiring human judgment, the AI can transfer to a staff member, schedule a callback, or take a detailed message. You control the escalation rules and which call types route to humans.</p>
+          </div>
+        </dl>
       </section>
       <Footer />
     </>

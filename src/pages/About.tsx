@@ -342,6 +342,29 @@ const About: React.FC = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions About Boltcall</h2>
+        <dl className="space-y-5">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">What does Boltcall actually do?</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">Boltcall is a speed-to-lead platform that is a fully automated AI receptionist for local service businesses. It answers every inbound call 24/7, captures web leads instantly, books appointments into your calendar, and sends follow-up texts — all without any human intervention required from your team.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Who founded Boltcall and where is it based?</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">Boltcall was founded to solve the #1 problem local service businesses face: losing leads because no one answered fast enough. The platform is used by plumbers, dentists, HVAC companies, law firms, med spas, and hundreds of other local businesses across North America.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Is Boltcall right for my industry?</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">If your business receives inbound calls or web leads and the first to respond wins the customer, Boltcall is built for you. It works across home services, healthcare, legal, solar, real estate, and any local service vertical where speed-to-lead directly impacts revenue.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">How is Boltcall different from a human answering service?</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">Unlike human answering services, Boltcall responds in under 11 seconds — even at 3am on a Sunday — with no hold times, no staffing costs, and no missed calls. It integrates directly with your calendar to book appointments instantly, something human services can't do without a multi-step callback process.</p>
+          </div>
+        </dl>
+      </section>
+
       <Footer />
     </div>
   );

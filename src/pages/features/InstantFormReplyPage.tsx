@@ -13,8 +13,8 @@ import { WavePath } from '../../components/ui/wave-path';
 const InstantFormReplyPage: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Instant Lead Response System for Small Businesses';
-    updateMetaDescription('Automatically respond to form submissions in seconds. Qualify leads instantly, book appointments from forms and ads. Get started now.');
+    document.title = 'Instant Form Reply for Local Business | Boltcall';
+    updateMetaDescription('Boltcall instant form reply automatically responds to form submissions in seconds. Qualify leads instantly, book appointments from web forms and ads. Get started now.');
 
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';
@@ -64,9 +64,16 @@ const InstantFormReplyPage: React.FC = () => {
               Turn Form Submissions into <span className="text-blue-600">Instant Conversations</span>
             </h1>
             
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
               Automatically respond to every form submission within seconds, qualify leads, and book appointments—all without manual work.
             </p>
+
+            {/* AEO Direct Answer Block */}
+            <div className="mt-2 mb-8 bg-blue-50 border-l-4 border-blue-600 p-5 rounded-r-lg text-left max-w-2xl mx-auto speakable-intro">
+              <p className="text-gray-800 leading-relaxed">
+                Instant form reply is a lead automation feature that is a system responding to web form submissions within seconds using AI. Boltcall is a speed-to-lead platform that sends instant follow-up texts, qualifies the lead, and books appointments automatically — so no submitted form goes unanswered.
+              </p>
+            </div>
           </motion.div>
           </div>
         </div>
