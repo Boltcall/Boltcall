@@ -73,6 +73,12 @@ const ClientListPage = React.lazy(() => import('../pages/dashboard/agency/Client
 const ClientDetailPage = React.lazy(() => import('../pages/dashboard/agency/ClientDetailPage'));
 const FounderGate = React.lazy(() => import('../components/agency/FounderGate'));
 
+// ── Lazy loads — Client Portal (/client/*) ────────────────────────────────
+// Separate route surface from the founder UI. Auth-gated via ProtectedRoute;
+// the page itself returns "no_client" if the caller is not linked to an
+// agency_clients row (RLS enforces the data scope).
+const ClientHomePage = React.lazy(() => import('../pages/dashboard/client/ClientHomePage'));
+
 // ── Lazy loads — Dashboard settings ──────────────────────────────────────
 const QARubricsPage = React.lazy(() => import('../pages/dashboard/QARubricsPage'));
 const QAReviewPage = React.lazy(() => import('../pages/dashboard/QAReviewPage'));
@@ -326,6 +332,18 @@ const NavigationWrapper: React.FC = () => {
           element={
             <ProtectedRoute>
               <Navigate to="/dashboard/getting-started" replace />
+            </ProtectedRoute>
+          }
+        />
+        {/* Client Portal — separate calm surface from the founder dashboard.
+            Auth-gated by ProtectedRoute; the page returns "no_client" when
+            the caller is not yet linked to an agency_clients row. RLS scopes
+            all data reads to the caller's client_id at the function layer. */}
+        <Route
+          path="/client"
+          element={
+            <ProtectedRoute>
+              <ClientHomePage />
             </ProtectedRoute>
           }
         />
