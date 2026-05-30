@@ -35,6 +35,7 @@ import type { Handler, HandlerEvent } from '@netlify/functions';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { wrapCronWithAlert } from './_shared/agency-cron-alert';
 
 const AGENT_NAME = 'cron-monday-creative';
 const TARGET_FN = 'agency-creative-foundry';
@@ -48,7 +49,7 @@ interface LiveBoltClient {
   vertical: string | null;
 }
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const inner: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
   // Manual smoke-test path: ?client_id=<uuid> bypasses the live-client scan
   // and POSTs the single client through, useful for verifying the chain end-to-end.
@@ -149,6 +150,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
+export const handler = wrapCronWithAlert('agency-cron-monday-creative', inner);
 
 // ───────────────────────────────────────────────────────────────────────────
 //   Helpers

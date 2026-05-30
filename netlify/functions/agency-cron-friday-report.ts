@@ -38,6 +38,7 @@ import type { Handler, HandlerEvent } from '@netlify/functions';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { wrapCronWithAlert } from './_shared/agency-cron-alert';
 
 const AGENT_NAME = 'cron-friday-report';
 const TARGET_FN = 'agency-reporting-scribe';
@@ -52,7 +53,7 @@ interface LiveClient {
   timezone: string | null;
 }
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const inner: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
   const now = new Date();
 
@@ -146,6 +147,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
+export const handler = wrapCronWithAlert('agency-cron-friday-report', inner);
 
 // ───────────────────────────────────────────────────────────────────────────
 //   Helpers

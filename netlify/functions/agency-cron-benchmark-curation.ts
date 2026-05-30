@@ -67,6 +67,7 @@ import { promises as fs } from 'node:fs';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { generateEmbedding } from './_shared/azure-ai';
+import { wrapCronWithAlert } from './_shared/agency-cron-alert';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Constants
@@ -160,7 +161,7 @@ interface PerAgentResult {
 //   Handler
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const inner: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
   const url = new URL(
     event.rawUrl ||
@@ -206,6 +207,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
+export const handler = wrapCronWithAlert('agency-cron-benchmark-curation', inner);
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Per-agent curator

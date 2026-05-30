@@ -25,6 +25,7 @@ import type { Handler, HandlerEvent } from '@netlify/functions';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { wrapCronWithAlert } from './_shared/agency-cron-alert';
 
 const AGENT_NAME = 'cron-daily-qa-audit';
 const TARGET_FN = 'agency-qa-auditor';
@@ -36,7 +37,7 @@ interface LiveClient {
   vertical: string | null;
 }
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const inner: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
   const url = new URL(
     event.rawUrl ||
@@ -122,6 +123,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
+export const handler = wrapCronWithAlert('agency-cron-daily-qa-audit', inner);
 
 // ───────────────────────────────────────────────────────────────────────────
 //   Helpers
