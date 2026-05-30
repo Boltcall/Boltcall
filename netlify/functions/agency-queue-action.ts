@@ -60,7 +60,7 @@ const SHIP_HANDLER_FOR_TYPE: Record<string, string | null> = {
   escalation_action: null,
   knowledge_base: null,
   digital_twin_seed: null,
-  experiment_plan: null,
+  experiment_plan: '/.netlify/functions/agency-promote-experiment',
   expansion_pitch: null,
 };
 
