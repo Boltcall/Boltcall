@@ -15,7 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 
 import { authedFetch } from '../../lib/authedFetch';
-import QAScoreBreakdown, { DimNote, DimScore } from './QAScoreBreakdown';
+import QAScoreBreakdown, { type DimNote, type DimScore } from './QAScoreBreakdown';
 import TranscriptViewer from './TranscriptViewer';
 
 interface CallDetailDrawerProps {

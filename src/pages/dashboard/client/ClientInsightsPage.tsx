@@ -21,7 +21,7 @@ import { authedFetch } from '../../../lib/authedFetch';
 import PipelineForecast from '../../../components/client/PipelineForecast';
 import VerticalBenchmark from '../../../components/client/VerticalBenchmark';
 import AnomalyTimeline, {
-  AnomalyEntry,
+  type AnomalyEntry,
 } from '../../../components/client/AnomalyTimeline';
 import NarratedChart from '../../../components/client/NarratedChart';
 

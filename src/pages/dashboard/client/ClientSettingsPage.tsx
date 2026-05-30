@@ -22,7 +22,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Loader2, Check, Volume2, ChevronDown, ChevronUp, CreditCard } from 'lucide-react';
+import { Loader2, Check, Volume2, CreditCard } from 'lucide-react';
 import ClientGate from '../../../components/client/ClientGate';
 import { authedFetch } from '../../../lib/authedFetch';
 
