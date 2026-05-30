@@ -53,6 +53,7 @@ import {
   type AgentConfig,
 } from './_shared/agency-adapters/cekura-adapter';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -314,6 +315,15 @@ const PERSONA_SEEDS: Record<string, Record<PersonaCategory, Array<Partial<Person
 export const handler: Handler = async (event: HandlerEvent): Promise<HandlerResponse> => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return {
+      statusCode: authz.status,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: authz.message }),
+    };
   }
 
   let body: InvokeBody;

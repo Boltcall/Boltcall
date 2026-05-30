@@ -66,6 +66,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { runAgent, type JsonSchemaObject } from './_shared/agency-agents/run-agent';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { getCreativeInsights } from './_shared/agency-adapters/meta-ads-adapter';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Constants
@@ -194,6 +195,16 @@ const CRITIC_SCHEMA: JsonSchemaObject = {
 
 export const handler: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return {
+      statusCode: authz.status,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: authz.message }),
+    };
+  }
+
   const url = new URL(
     event.rawUrl ||
       `https://x${event.path}${event.rawQuery ? `?${event.rawQuery}` : ''}`,

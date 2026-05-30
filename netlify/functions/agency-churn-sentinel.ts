@@ -57,6 +57,7 @@ import { runAgent, type RunAgentResult } from './_shared/agency-agents/run-agent
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { getInvoices } from './_shared/agency-adapters/stripe-adapter';
 import { listRecentCalls } from './_shared/agency-adapters/retell-adapter';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Types
@@ -1342,6 +1343,16 @@ function estimateOpusCost(resp: Anthropic.Message): number {
 
 export const handler: Handler = async (event: HandlerEvent) => {
   const startedAt = Date.now();
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return {
+      statusCode: authz.status,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: authz.message }),
+    };
+  }
+
   const triggeredBy = event.headers?.['x-trigger'] ?? 'cron';
   const supabase = getServiceSupabase();
 

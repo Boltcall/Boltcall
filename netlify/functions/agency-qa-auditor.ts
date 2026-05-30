@@ -61,6 +61,7 @@ import {
 } from './_shared/agency-adapters/retell-adapter';
 import { retrieve } from './_shared/agency-knowledge/retrieve';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ─── 0. Constants ────────────────────────────────────────────────────────────
 
@@ -219,6 +220,15 @@ interface JudgmentRecord {
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, body: '' };
+  }
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return {
+      statusCode: authz.status,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: authz.message }),
+    };
   }
 
   let body: {

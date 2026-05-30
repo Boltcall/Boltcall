@@ -80,6 +80,7 @@ import {
   type AdDimensions,
 } from '../_shared/agency-adapters/gemini-image';
 import { getCreativeInsights } from '../_shared/agency-adapters/meta-ads-adapter';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ────────────────────────────────────────────────────────────────────────────
 //   Constants & tunables
@@ -259,6 +260,12 @@ interface RunSummary {
 
 export const handler: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return json(authz.status, { error: authz.message });
+  }
+
   let body: { client_id?: string } = {};
   try {
     body = event.body ? (JSON.parse(event.body) as { client_id?: string }) : {};
