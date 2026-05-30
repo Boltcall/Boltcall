@@ -111,6 +111,49 @@
 [functions."daily-lead-summary"]
   schedule = "0 7 * * *"
 
+# ─── Agency OS scheduled functions (Phase F — Layer 2 backbone) ─────────────
+# Backbone for the n8n workflows. n8n is the orchestration ergonomic; these
+# are the load-bearing backups so the OS degrades gracefully if n8n is down.
+# Per plan §4 "Failure mode: if n8n goes down, the OS degrades gracefully —
+# Netlify scheduled functions are the backup for the time-critical workflows".
+
+# Weekly creative refresh — Mondays 06:00 UTC (Bolt System SKU only).
+[functions."agency-cron-monday-creative"]
+  schedule = "0 6 * * 1"
+
+# Friday auto-report — every hour from 06:00 to 15:00 UTC on Fridays; the
+# function filters per client.timezone to only fan in the 06:00-08:00 local
+# window. Dedupe gate via report_sent event presence.
+[functions."agency-cron-friday-report"]
+  schedule = "0 6-15 * * 5"
+
+# Monthly optimization brief — 1st of every month, 09:00 UTC.
+[functions."agency-cron-monthly-optimization"]
+  schedule = "0 9 1 * *"
+
+# Daily QA audit — 02:00 UTC (global trough).
+[functions."agency-cron-daily-qa-audit"]
+  schedule = "0 2 * * *"
+
+# Hourly delivery monitor — kicks the in-process loop in agency-delivery-monitor.
+[functions."agency-cron-hourly-monitor"]
+  schedule = "@hourly"
+
+# Post-ship critic with auto-revert — every 15 minutes. The window-end check
+# is the gate; most ticks see 0–3 candidates.
+[functions."agency-post-ship-watcher"]
+  schedule = "*/15 * * * *"
+
+# Why-Log backfill — every hour. Generates plain-English explanations for
+# warn+ severity events that don't have one yet. Hard daily cap = 1000 events.
+[functions."agency-event-why-explanation-backfill"]
+  schedule = "@hourly"
+
+# BENCHMARK curator — Sundays 04:00 UTC. Writes scenario proposals to disk;
+# NEVER edits BENCHMARK.md directly (human review required).
+[functions."agency-cron-benchmark-curation"]
+  schedule = "0 4 * * 0"
+
 # Netlify handles /.netlify/functions/* routing automatically — no redirect needed
 
 # Long cache for hashed static assets
