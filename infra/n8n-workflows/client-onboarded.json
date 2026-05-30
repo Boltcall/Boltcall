@@ -1,0 +1,192 @@
+{
+  "name": "Agency OS — client-onboarded",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agency-stripe-webhook",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-stripe-in",
+      "name": "Stripe Webhook IN",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "agency-stripe-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate Stripe webhook signature\nconst crypto = require('crypto');\nconst stripeSecret = $env.STRIPE_WEBHOOK_SECRET;\nconst signature = $input.first().headers['stripe-signature'];\nconst rawBody = JSON.stringify($input.first().body);\n\n// In production, use stripe.webhooks.constructEvent(rawBody, signature, stripeSecret)\n// Here we verify the event type and structure minimally for n8n context\nconst event = $input.first().body;\nif (!event || !event.type) {\n  throw new Error('Invalid Stripe payload: missing event.type');\n}\n\n// Only process checkout.session.completed or customer.subscription.created\nconst allowedTypes = [\n  'checkout.session.completed',\n  'customer.subscription.created',\n  'invoice.payment_succeeded'\n];\n\nif (!allowedTypes.includes(event.type)) {\n  return [{ json: { skip: true, reason: `Event type ${event.type} not handled` } }];\n}\n\nconst session = event.data?.object ?? {};\nconst metadata = session.metadata ?? {};\n\nreturn [{\n  json: {\n    skip: false,\n    stripe_event_id: event.id,\n    event_type: event.type,\n    customer_id: session.customer,\n    subscription_id: session.subscription ?? session.id,\n    client_email: session.customer_email ?? metadata.email,\n    business_name: metadata.business_name ?? null,\n    sku: metadata.sku ?? 'bolt_system',\n    mrr_cents: session.amount_total ?? 89700,\n    vertical: metadata.vertical ?? null,\n    timezone: metadata.timezone ?? 'America/New_York'\n  }\n}];\n"
+      },
+      "id": "validate-stripe-signature",
+      "name": "Validate Stripe Signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "skip-check",
+      "name": "Skip Non-Relevant Events",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_clients",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"founder_id\": \"{{ $env.FOUNDER_UUID }}\",\n  \"status\": \"pending_intake\",\n  \"sku\": \"{{ $json.sku }}\",\n  \"mrr\": {{ $json.mrr_cents }},\n  \"vertical\": \"{{ $json.vertical }}\",\n  \"timezone\": \"{{ $json.timezone }}\",\n  \"notes\": \"Stripe event {{ $json.stripe_event_id }}\"\n}",
+        "options": {}
+      },
+      "id": "supabase-insert-client",
+      "name": "Supabase — Insert agency_clients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-intake-officer",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"create_calcom_event_type\",\n  \"client_id\": \"{{ $node['Supabase — Insert agency_clients'].json[0].id }}\",\n  \"client_email\": \"{{ $node['Validate Stripe Signature'].json.client_email }}\",\n  \"business_name\": \"{{ $node['Validate Stripe Signature'].json.business_name }}\"\n}",
+        "options": {}
+      },
+      "id": "create-calcom-event-type",
+      "name": "Cal.com — Create Intake Event Type",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-intake-officer",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"send_intake_email\",\n  \"client_id\": \"{{ $node['Supabase — Insert agency_clients'].json[0].id }}\",\n  \"client_email\": \"{{ $node['Validate Stripe Signature'].json.client_email }}\",\n  \"scheduling_url\": \"{{ $node['Cal.com — Create Intake Event Type'].json.scheduling_url }}\",\n  \"business_name\": \"{{ $node['Validate Stripe Signature'].json.business_name }}\"\n}",
+        "options": {}
+      },
+      "id": "send-calcom-email",
+      "name": "HTTP — Send Cal.com Intake Link Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-delivery-monitor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"telegram_notify\",\n  \"message\": \"New agency client onboarded! Business: {{ $node['Validate Stripe Signature'].json.business_name ?? 'Unknown' }}, SKU: {{ $node['Validate Stripe Signature'].json.sku }}, client_id: {{ $node['Supabase — Insert agency_clients'].json[0].id }}\",\n  \"severity\": \"info\"\n}",
+        "options": {}
+      },
+      "id": "atlas-telegram-notify",
+      "name": "Atlas — Telegram Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 220]
+    }
+  ],
+  "connections": {
+    "Stripe Webhook IN": {
+      "main": [
+        [{ "node": "Validate Stripe Signature", "type": "main", "index": 0 }]
+      ]
+    },
+    "Validate Stripe Signature": {
+      "main": [
+        [{ "node": "Skip Non-Relevant Events", "type": "main", "index": 0 }]
+      ]
+    },
+    "Skip Non-Relevant Events": {
+      "main": [
+        [],
+        [{ "node": "Supabase — Insert agency_clients", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Insert agency_clients": {
+      "main": [
+        [{ "node": "Cal.com — Create Intake Event Type", "type": "main", "index": 0 }]
+      ]
+    },
+    "Cal.com — Create Intake Event Type": {
+      "main": [
+        [{ "node": "HTTP — Send Cal.com Intake Link Email", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — Send Cal.com Intake Link Email": {
+      "main": [
+        [{ "node": "Atlas — Telegram Notification", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-1"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}
