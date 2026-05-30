@@ -52,6 +52,11 @@
  */
 
 import { getServiceSupabase } from '../token-utils';
+import {
+  emitAgencyEvent as kernelEmitAgencyEvent,
+  type AgencyEventType,
+  type AgencyEventSeverity,
+} from '../emit-agency-event';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -163,36 +168,31 @@ async function loadPuppeteer(): Promise<PuppeteerBundle | null> {
 }
 
 // ---------------------------------------------------------------------------
-// Internal: event emission helper (best-effort, never throws)
+// Internal: event emission helper — delegates to shared kernel emitter.
+//
+// Spec §7: pdf-renderer event types are already in the allowed AgencyEventType
+// union (report_sent / report_degraded / report_failed). The kernel emitter
+// handles the aios_event_log mirror via mirrorToAiosEventLog — we do NOT
+// double-write. Telemetry failures must never break a report render.
 // ---------------------------------------------------------------------------
-
-type EventSeverity = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
 async function emitAgencyEvent(args: {
   client_id?: string;
   agent_name?: string;
-  type: string;
-  severity?: EventSeverity;
+  type: AgencyEventType;
+  severity?: AgencyEventSeverity;
   payload?: Record<string, unknown>;
 }): Promise<void> {
   try {
-    const supabase = getServiceSupabase();
-    await supabase.from('agency_events').insert({
-      client_id: args.client_id ?? null,
+    await kernelEmitAgencyEvent({
+      client_id: args.client_id ?? '',
       agent_name: args.agent_name ?? 'pdf-renderer',
       type: args.type,
       severity: args.severity ?? 'info',
       payload: args.payload ?? {},
     });
-    // Mirror to global event bus so loop-monitor sees adapter telemetry.
-    await supabase.from('aios_event_log').insert({
-      source: 'pdf-renderer',
-      type: args.type,
-      severity: args.severity ?? 'info',
-      payload: { client_id: args.client_id, agent_name: args.agent_name, ...(args.payload ?? {}) },
-    });
   } catch (err) {
-    // Telemetry must never break the caller.
+    // Telemetry must never break the caller — spec §7 (never throw upstream).
     console.warn('[pdf-renderer] emitAgencyEvent failed:', (err as Error)?.message);
   }
 }

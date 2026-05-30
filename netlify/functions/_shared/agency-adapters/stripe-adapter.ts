@@ -22,7 +22,11 @@
  */
 
 import Stripe from 'stripe';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import {
+  emitAgencyEvent,
+  type AgencyEventType,
+  type AgencyEventSeverity,
+} from '../emit-agency-event';
 
 // ───────────────────────────── Config ─────────────────────────────
 
@@ -42,12 +46,6 @@ const STRIPE_WEBHOOK_SECRET =
 // (changing requires a coordinated Stripe Dashboard rotation). Once the
 // platform pin is bumped, drop the cast.
 const STRIPE_API_VERSION = '2025-04-30.basil' as Stripe.LatestApiVersion;
-
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ||
-  process.env.VITE_SUPABASE_URL ||
-  'https://hbwogktdajorojljkjwg.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 const RETRY_BACKOFF_MS = 750; // single retry, then give up
 const STRIPE_TIMEOUT_MS = 15_000;
@@ -141,60 +139,30 @@ export function maskId(id: string | null | undefined): string {
   return `***${id.slice(-MASK_TAIL_LEN)}`;
 }
 
-// ─────────────────────── Supabase event sink ──────────────────────
-
-let _serviceClient: SupabaseClient | null = null;
-function getServiceClient(): SupabaseClient | null {
-  if (!SUPABASE_SERVICE_KEY) return null;
-  if (!_serviceClient) {
-    _serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-  }
-  return _serviceClient;
-}
+// ─────────────────────── Event sink ───────────────────────────────
 
 /**
- * Emit an `agency_events` row. Best-effort — adapter NEVER throws on telemetry
- * failure. Mirrors the shape from plan §3.
+ * Emit a kernel agency_events row via the shared helper. Best-effort —
+ * adapter NEVER throws on telemetry failure.
  *
- * Prefers the shared `emit-agency-event` helper (plan §12) if it ships;
- * otherwise writes directly to `agency_events` so this adapter is
- * self-contained and the rest of the OS can be built in any order.
+ * Spec §7 (stripe-adapter rules): dotted op strings are NOT valid event types.
+ * Map to allowed AgencyEventType (subscription_changed / notification_sent /
+ * adapter_error) with the original op moved into payload.op. `.ok` and
+ * `.retry` for any op drop to console.debug / console.warn — only `.error`
+ * paths emit a kernel `adapter_error`.
  *
  * IMPORTANT: payload values are caller-controlled. The caller MUST pre-mask
  * any customer / subscription IDs via `maskId()` before passing them here.
  */
 async function emitEvent(args: {
   client_id?: string;
-  type: string;
-  severity: 'debug' | 'info' | 'warn' | 'error' | 'critical';
+  type: AgencyEventType;
+  severity: AgencyEventSeverity;
   payload: Record<string, any>;
 }): Promise<void> {
   try {
-    // Try the shared helper first.
-    try {
-      const mod: any = await import('../emit-agency-event' as any).catch(
-        () => null,
-      );
-      if (mod && typeof mod.emitAgencyEvent === 'function') {
-        await mod.emitAgencyEvent({
-          client_id: args.client_id,
-          agent_name: 'stripe-adapter',
-          type: args.type,
-          severity: args.severity,
-          payload: args.payload,
-        });
-        return;
-      }
-    } catch {
-      // Fall through to direct insert.
-    }
-
-    const sb = getServiceClient();
-    if (!sb) return;
-    await sb.from('agency_events').insert({
-      client_id: args.client_id ?? null,
+    await emitAgencyEvent({
+      client_id: args.client_id ?? '',
       agent_name: 'stripe-adapter',
       type: args.type,
       severity: args.severity,
@@ -204,6 +172,40 @@ async function emitEvent(args: {
     // Telemetry must never break the operation.
     console.warn('[stripe-adapter] event emit failed:', e);
   }
+}
+
+/** Spec §7: stripe op success drops to console.debug — no kernel event. */
+function debugLog(op: string, payload: Record<string, unknown>): void {
+  console.debug(`[stripe-adapter] ${op}.ok`, payload);
+}
+
+/** Spec §7: stripe op retry drops to console.warn — no kernel event. */
+function warnRetry(op: string, payload: Record<string, unknown>): void {
+  console.warn(`[stripe-adapter] ${op}.retry`, payload);
+}
+
+/** Spec §7: stripe op error emits a kernel adapter_error event. */
+async function emitStripeError(args: {
+  client_id?: string;
+  op: string;
+  payload: Record<string, unknown>;
+}): Promise<void> {
+  const errMessage =
+    typeof args.payload.error_message === 'string'
+      ? args.payload.error_message
+      : `${args.op} failed`;
+  await emitEvent({
+    client_id: args.client_id,
+    type: 'adapter_error',
+    severity: 'error',
+    payload: {
+      adapter: 'stripe-adapter',
+      operation: args.op,
+      op: args.op,
+      error_message: errMessage,
+      ...args.payload,
+    },
+  });
 }
 
 // ───────────────────────── Stripe plumbing ────────────────────────
@@ -260,12 +262,8 @@ async function stripeRequest<T>(opts: {
     try {
       const result = await opts.exec();
       const latency_ms = Date.now() - startedAt;
-      await emitEvent({
-        client_id: opts.client_id,
-        type: `stripe.${opts.op}.ok`,
-        severity: 'debug',
-        payload: { ...opts.event_payload, latency_ms, attempt },
-      });
+      // Spec §7: stripe.<op>.ok drops to console.debug — no kernel event.
+      debugLog(opts.op, { ...opts.event_payload, latency_ms, attempt });
       return result;
     } catch (err: any) {
       lastErr = err;
@@ -276,32 +274,25 @@ async function stripeRequest<T>(opts: {
         undefined;
 
       if (transient && attempt === 0) {
-        await emitEvent({
-          client_id: opts.client_id,
-          type: `stripe.${opts.op}.retry`,
-          severity: 'warn',
-          payload: {
-            ...opts.event_payload,
-            latency_ms,
-            status,
-            error_type: err?.type ?? err?.name ?? 'unknown',
-            // err.message from Stripe SDK is safe (no PII), but we still trim.
-            error_message: String(err?.message ?? '').slice(0, 300),
-          },
+        warnRetry(opts.op, {
+          ...opts.event_payload,
+          latency_ms,
+          status,
+          error_type: err?.type ?? err?.name ?? 'unknown',
+          error_message: String(err?.message ?? '').slice(0, 300),
         });
         await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
         continue;
       }
 
-      await emitEvent({
+      await emitStripeError({
         client_id: opts.client_id,
-        type: `stripe.${opts.op}.error`,
-        severity: 'error',
+        op: opts.op,
         payload: {
           ...opts.event_payload,
-          latency_ms,
+          duration_ms: latency_ms,
           status,
-          error_type: err?.type ?? err?.name ?? 'unknown',
+          error_class: err?.type ?? err?.name ?? 'unknown',
           error_message: String(err?.message ?? '').slice(0, 500),
         },
       });
@@ -553,13 +544,14 @@ export async function getSubscriptionStatus(
   const mrr_usd = computeMrrUsd(sub);
 
   await emitEvent({
-    type: 'stripe.subscription.snapshot',
+    type: 'subscription_changed',
     severity: 'info',
     payload: {
       subscription: masked,
       status: sub.status,
       mrr_usd,
       latest_invoice_status,
+      op: 'subscription.snapshot',
     },
   });
 
@@ -596,9 +588,14 @@ export async function createPortalLink(
   });
 
   await emitEvent({
-    type: 'stripe.portal_link.created',
+    type: 'notification_sent',
     severity: 'info',
-    payload: { customer: masked, return_url_host: safeHost(opts.return_url) },
+    payload: {
+      channel: 'portal_link',
+      customer: masked,
+      return_url_host: safeHost(opts.return_url),
+      op: 'portal_link.created',
+    },
   });
 
   return { portal_url: session.url };
@@ -643,11 +640,8 @@ export async function getInvoices(
     };
   });
 
-  await emitEvent({
-    type: 'stripe.invoices.listed',
-    severity: 'debug',
-    payload: { customer: masked, count: invoices.length, limit },
-  });
+  // Spec §7: stripe.invoices.listed is informational-only — debug log, no kernel event.
+  debugLog('invoices.listed', { customer: masked, count: invoices.length, limit });
 
   return invoices;
 }
@@ -686,9 +680,14 @@ export async function handleSubscriptionEvent(
   } catch (err: any) {
     // SAFETY: do not log the raw body — could contain customer email, etc.
     await emitEvent({
-      type: 'stripe.webhook.signature_invalid',
+      type: 'adapter_error',
       severity: 'warn',
-      payload: { error_message: String(err?.message ?? '').slice(0, 300) },
+      payload: {
+        adapter: 'stripe-adapter',
+        operation: 'webhook.signature_invalid',
+        op: 'webhook.signature_invalid',
+        error_message: String(err?.message ?? '').slice(0, 300),
+      },
     });
     throw new Error(
       `[stripe-adapter] webhook signature verification failed: ${err?.message}`,
@@ -698,7 +697,7 @@ export async function handleSubscriptionEvent(
   const { action, customer_id, subscription_id } = recommendAction(event);
 
   await emitEvent({
-    type: 'stripe.webhook.received',
+    type: 'subscription_changed',
     severity: action === 'noop' ? 'debug' : 'info',
     payload: {
       event_id: event.id,
@@ -707,6 +706,7 @@ export async function handleSubscriptionEvent(
       subscription: maskId(subscription_id),
       recommended_action: action,
       livemode: event.livemode,
+      op: 'webhook.received',
     },
   });
 
@@ -747,12 +747,13 @@ export async function setMetadata(
 
   const updated_at = new Date().toISOString();
   await emitEvent({
-    type: 'stripe.customer.metadata_updated',
+    type: 'subscription_changed',
     severity: 'info',
     payload: {
       customer: masked,
       keys: Object.keys(coerced),
       updated_at,
+      op: 'customer.metadata_updated',
     },
   });
 

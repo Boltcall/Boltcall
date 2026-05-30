@@ -46,6 +46,7 @@
  */
 
 import { getServiceSupabase } from '../token-utils';
+import { emitAgencyEvent } from '../emit-agency-event';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Types
@@ -651,58 +652,53 @@ interface CostIncurredPayload {
 }
 
 /**
- * Best-effort write to agency_events. Image gen is the most expensive line
- * item in the OS so we never want a generation to fail because the event log
- * is unavailable — we log + swallow.
+ * Best-effort write to agency_events via the shared kernel emitter.
+ * Image gen is the most expensive line item in the OS so we never want a
+ * generation to fail because the event log is unavailable — we log + swallow.
  *
- * Schema target: agency_events
- *   event_type     'cost_incurred'
- *   client_id      (nullable; null = OS-level cost like sample pack regeneration)
- *   severity       'info'
- *   cost_usd       numeric
- *   payload        jsonb (all the structured fields below)
- *   source         text (function name)
- *   ts             timestamptz default now()
- *
- * Also mirrors into aios_event_log so the existing self-improving loop
- * monitors pick it up alongside every other channel's cost data.
+ * Spec §7: the kernel emit-agency-event helper handles the aios_event_log
+ * mirror automatically (mirrorToAiosEventLog). We do NOT double-write.
+ * All adapter-specific fields flow through payload — no top-level cost_usd,
+ * no top-level ts, no top-level source. Schema is costIncurredSchema.
  */
 async function emitCostIncurred(payload: CostIncurredPayload): Promise<void> {
   try {
-    const supabase = getServiceSupabase();
-    const row = {
-      event_type: 'cost_incurred',
-      severity: 'info' as const,
-      client_id: payload.client_id ?? null,
-      cost_usd: payload.cost_usd,
-      source: payload.source,
+    const {
+      cost_usd,
+      source,
+      client_id,
+      n_images,
+      model,
+      vertical,
+      angle,
+      dimensions,
+      prompt_fingerprint,
+      variation_strength,
+    } = payload;
+
+    await emitAgencyEvent({
+      client_id: client_id ?? '',
+      agent_name: 'gemini-image-adapter',
+      type: 'cost_incurred',
+      severity: 'info',
       payload: {
-        ...payload,
+        category: 'image_generation',
+        provider: 'gemini',
+        amount_usd: cost_usd,
+        model,
+        op: source,
+        source,
+        n_images,
+        ...(dimensions ? { dimensions } : {}),
+        ...(angle ? { angle } : {}),
+        ...(vertical ? { vertical } : {}),
+        ...(prompt_fingerprint ? { prompt_fingerprint } : {}),
+        ...(variation_strength ? { variation_strength } : {}),
         cost_table_version: COST_TABLE_VERSION,
       },
-      ts: new Date().toISOString(),
-    };
-
-    // Primary write — the agency-OS-scoped event log.
-    const { error: agencyErr } = await supabase.from('agency_events').insert(row);
-    if (agencyErr) {
-      console.error('[gemini-image] agency_events insert failed:', agencyErr.message);
-    }
-
-    // Mirror to aios_event_log so loop-monitors see it. Schema there is
-    // slightly different — uses channel/subject_id rather than client_id.
-    const { error: aiosErr } = await supabase.from('aios_event_log').insert({
-      event_type: 'cost_incurred',
-      channel: 'agency_creative',
-      subject_id: payload.client_id ?? null,
-      payload: row.payload,
-      ts: row.ts,
     });
-    if (aiosErr) {
-      console.error('[gemini-image] aios_event_log insert failed:', aiosErr.message);
-    }
   } catch (e) {
-    console.error('[gemini-image] emitCostIncurred threw (non-blocking):', e);
+    console.error('[gemini-image-adapter] emitCostIncurred threw (non-blocking):', e);
   }
 }
 
