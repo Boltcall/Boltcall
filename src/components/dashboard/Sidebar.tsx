@@ -8,6 +8,7 @@ import {
   Volume2
 } from 'lucide-react';
 import NavItem from './NavItem';
+import AgencyNavSection from './AgencyNavSection';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -64,6 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 />
               ))}
             </div>
+            <AgencyNavSection />
           </nav>
         </div>
       </aside>

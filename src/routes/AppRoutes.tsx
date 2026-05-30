@@ -67,6 +67,13 @@ const GettingStartedPage = React.lazy(() => import('../pages/dashboard/GettingSt
 const FeedbackPage = React.lazy(() => import('../pages/dashboard/FeedbackPage'));
 const BoltcallAgentPage = React.lazy(() => import('../pages/dashboard/BoltcallAgentPage'));
 
+// ── Lazy loads — Agency OS (founder-gated) ───────────────────────────────
+const QueuePage = React.lazy(() => import('../pages/dashboard/agency/QueuePage'));
+const HealthPage = React.lazy(() => import('../pages/dashboard/agency/HealthPage'));
+const ClientListPage = React.lazy(() => import('../pages/dashboard/agency/ClientListPage'));
+const ClientDetailPage = React.lazy(() => import('../pages/dashboard/agency/ClientDetailPage'));
+const FounderGate = React.lazy(() => import('../components/agency/FounderGate'));
+
 // ── Lazy loads — Dashboard settings ──────────────────────────────────────
 const QARubricsPage = React.lazy(() => import('../pages/dashboard/QARubricsPage'));
 const QAReviewPage = React.lazy(() => import('../pages/dashboard/QAReviewPage'));
@@ -339,6 +346,12 @@ const NavigationWrapper: React.FC = () => {
           <Route path="feedback" element={<FeedbackPage />} />
           <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="locations/:locationId" element={<LocationDashboardPage />} />
+
+          {/* Agency OS — founder-only (JWT app_metadata.role === 'founder') */}
+          <Route path="agency/queue" element={<FounderGate><QueuePage /></FounderGate>} />
+          <Route path="agency/health" element={<FounderGate><HealthPage /></FounderGate>} />
+          <Route path="agency/clients" element={<FounderGate><ClientListPage /></FounderGate>} />
+          <Route path="agency/clients/:id" element={<FounderGate><ClientDetailPage /></FounderGate>} />
 
           {/* Pro-gated merged pages */}
           <Route path="leads" element={<PlanGate requiredPlan="pro"><LeadsPage /></PlanGate>} />
