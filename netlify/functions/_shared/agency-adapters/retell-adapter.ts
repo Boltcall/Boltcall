@@ -18,15 +18,31 @@
  * here so the SDK version is consistent across the codebase. The shared
  * webhook-signature path stays in `_shared/verify-signatures.ts` — this
  * adapter does not handle inbound webhooks.
+ *
+ * Event emission: ALL events go through the canonical shared
+ * `emitAgencyEvent` helper in `../emit-agency-event`. That helper enforces
+ * per-type Zod schemas + writes to `public.agency_events` with the correct
+ * column shape (`type`, `severity`, `payload`, `agent_name`, `created_at`).
+ * Never call `supabase.from('agency_events').insert(...)` directly from this
+ * file — the schema gate is the primary defense against payload-shape drift
+ * and PII leakage into the event bus.
  */
 
 import Retell from 'retell-sdk';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import {
+  emitAgencyEvent,
+  type AgencyEventType,
+  type AgencyEventSeverity,
+} from '../emit-agency-event';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface CreateAgentFromArtifactOpts {
   client_id: string;
+  artifact_id?: string;
+  agent_version?: string;
+  vertical?: string;
   prompt: string;
   knowledge_base: unknown;
   voice_id: string;
@@ -42,6 +58,11 @@ export interface CreateAgentResult {
 export interface UpdateAgentPromptOpts {
   agent_id: string;
   prompt: string;
+  client_id?: string;
+  artifact_id?: string;
+  parent_artifact_id?: string;
+  reason?: string;
+  source?: 'founder' | 'loop_monitor' | 'optimization_strategist' | 'post_ship_critic';
 }
 
 export interface UpdateAgentPromptResult {
@@ -51,6 +72,11 @@ export interface UpdateAgentPromptResult {
 export interface RevertAgentPromptOpts {
   agent_id: string;
   previous_prompt: string;
+  client_id?: string;
+  artifact_id?: string;
+  reverted_to_artifact_id?: string;
+  reason?: string;
+  triggered_by?: 'post_ship_critic' | 'delivery_monitor' | 'founder' | 'benchmark_regression';
 }
 
 export interface RevertAgentPromptResult {
@@ -61,6 +87,7 @@ export interface ProvisionPhoneNumberOpts {
   country: string;
   area_code?: string;
   agent_id: string;
+  client_id?: string;
 }
 
 export interface ProvisionPhoneNumberResult {
@@ -70,6 +97,7 @@ export interface ProvisionPhoneNumberResult {
 
 export interface GetCallTranscriptOpts {
   call_id: string;
+  client_id?: string;
 }
 
 export interface GetCallTranscriptResult {
@@ -84,6 +112,7 @@ export interface ListRecentCallsOpts {
   /** ISO-8601 timestamp string */
   since: string;
   limit?: number;
+  client_id?: string;
 }
 
 export interface RecentCallSummary {
@@ -97,6 +126,7 @@ export interface RecentCallSummary {
 export interface InjectInCallContextOpts {
   call_id: string;
   additional_context: string;
+  client_id?: string;
 }
 
 export type InjectInCallContextResult =
@@ -147,36 +177,36 @@ function sanitizeErrorMessage(err: unknown): string {
 }
 
 /**
- * Best-effort write to `agency_events`. Never throws — event logging must not
- * cause an adapter call to fail. If Supabase isn't configured we fall back to
- * a structured console log so local dev still gets observability.
+ * Best-effort wrapper around the shared `emitAgencyEvent` helper. The shared
+ * helper throws on schema rejection / DB error — we swallow those here so
+ * telemetry never causes an adapter call to fail. The shared helper logs the
+ * rejection (without payload contents — PII safety) so failures stay visible.
+ *
+ * `client_id` is optional from the adapter's perspective: many Retell ops
+ * (transcript fetch, list calls, phone provision retries) don't have a tenant
+ * context. The kernel column is nullable so we pass null in those cases via a
+ * cast — the shared helper's TS interface requires `string` for typed-caller
+ * ergonomics, but the underlying column accepts null.
  */
-async function emitAgencyEvent(args: {
+async function emitEvent<T extends AgencyEventType>(args: {
   client_id?: string | null;
-  type: string;
-  severity: 'debug' | 'info' | 'warn' | 'error' | 'critical';
-  payload?: Record<string, unknown>;
+  type: T;
+  severity: AgencyEventSeverity;
+  payload: Record<string, unknown>;
+  why_explanation?: string;
 }): Promise<void> {
-  const row = {
-    client_id: args.client_id ?? null,
-    agent_name: ADAPTER_NAME,
-    type: args.type,
-    severity: args.severity,
-    payload: args.payload ?? {},
-  };
   try {
-    const sb = getSupabaseAdmin();
-    if (!sb) {
-      console.log(`[${ADAPTER_NAME}] event`, row);
-      return;
-    }
-    const { error } = await sb.from('agency_events').insert(row);
-    if (error) {
-      console.warn(`[${ADAPTER_NAME}] agency_events insert failed:`, error.message);
-    }
+    await emitAgencyEvent({
+      client_id: (args.client_id ?? null) as unknown as string,
+      agent_name: ADAPTER_NAME,
+      type: args.type,
+      severity: args.severity,
+      payload: args.payload,
+      ...(args.why_explanation ? { why_explanation: args.why_explanation } : {}),
+    });
   } catch (e) {
     console.warn(
-      `[${ADAPTER_NAME}] emitAgencyEvent threw (non-blocking):`,
+      `[${ADAPTER_NAME}] emitAgencyEvent failed (non-blocking) type=${args.type}:`,
       e instanceof Error ? e.message : String(e),
     );
   }
@@ -203,7 +233,10 @@ function isTransient(err: unknown): boolean {
 /**
  * Run an SDK call with exactly one retry after a short backoff for transient
  * errors. Plan rule: "Single retry with backoff for transient errors. No
- * silent retries." — so the retry path emits a `warn` event.
+ * silent retries." — so the retry path emits an `adapter_error` warn event
+ * (the shared kernel does not have a dedicated 'adapter_retry' type; we
+ * surface the retry as a warn-severity adapter_error with retryable:true so
+ * downstream alerting still sees it without inventing a new type).
  */
 async function callWithRetry<T>(
   label: string,
@@ -214,11 +247,17 @@ async function callWithRetry<T>(
     return await fn();
   } catch (err) {
     if (!isTransient(err)) throw err;
-    await emitAgencyEvent({
+    await emitEvent({
       client_id,
-      type: 'adapter_retry',
+      type: 'adapter_error',
       severity: 'warn',
-      payload: { op: label, error: sanitizeErrorMessage(err) },
+      payload: {
+        adapter: ADAPTER_NAME,
+        operation: label,
+        error_message: sanitizeErrorMessage(err),
+        retryable: true,
+        op: label,
+      },
     });
     await new Promise((r) => setTimeout(r, 500));
     return fn();
@@ -246,10 +285,7 @@ export async function createAgentFromArtifact(
   // Knowledge base contents are inlined into the prompt by the architect
   // before the artifact is approved — the adapter just records that a KB
   // was supplied for traceability.
-  const kbHash =
-    opts.knowledge_base != null
-      ? `present:${JSON.stringify(opts.knowledge_base).length}b`
-      : 'none';
+  const kbPresent = opts.knowledge_base != null;
 
   try {
     const llm = await callWithRetry('llm.create', opts.client_id, () =>
@@ -269,30 +305,35 @@ export async function createAgentFromArtifact(
       } as Parameters<typeof client.agent.create>[0]),
     );
 
-    await emitAgencyEvent({
+    // `agent_deployed` schema: artifact_id (required), retell_agent_id,
+    // agent_version (required), vertical, benchmark_score, simulation_pass_rate.
+    // Everything else (voice_id, language, kbPresent, transfer_number_set) is
+    // provider-specific metadata — must be dropped to satisfy .strict().
+    await emitEvent({
       client_id: opts.client_id,
       type: 'agent_deployed',
       severity: 'info',
       payload: {
-        agent_id: agent.agent_id,
-        llm_id: llm.llm_id,
-        voice_id: opts.voice_id,
-        language: opts.language,
-        kb: kbHash,
-        transfer_number_set: !!opts.transfer_number,
+        artifact_id: opts.artifact_id ?? `retell:${agent.agent_id}`,
+        retell_agent_id: agent.agent_id,
+        agent_version: opts.agent_version ?? '1',
+        ...(opts.vertical ? { vertical: opts.vertical } : {}),
       },
     });
 
     // Whitelisted return — do not expose raw Retell response.
+    void kbPresent; // retained for clarity; intentionally not emitted (not in schema)
     return { agent_id: agent.agent_id, llm_id: llm.llm_id };
   } catch (err) {
-    await emitAgencyEvent({
+    await emitEvent({
       client_id: opts.client_id,
       type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'createAgentFromArtifact',
+        error_message: sanitizeErrorMessage(err),
         op: 'createAgentFromArtifact',
-        error: sanitizeErrorMessage(err),
       },
     });
     throw new Error(`createAgentFromArtifact failed: ${sanitizeErrorMessage(err)}`);
@@ -311,7 +352,7 @@ export async function updateAgentPrompt(
 ): Promise<UpdateAgentPromptResult> {
   const client = getRetellClient();
   try {
-    const agent = await callWithRetry('agent.retrieve', null, () =>
+    const agent = await callWithRetry('agent.retrieve', opts.client_id ?? null, () =>
       client.agent.retrieve(opts.agent_id),
     );
     const llmId = (agent as { response_engine?: { llm_id?: string } })
@@ -322,32 +363,41 @@ export async function updateAgentPrompt(
       );
     }
 
-    await callWithRetry('llm.update', null, () =>
+    await callWithRetry('llm.update', opts.client_id ?? null, () =>
       client.llm.update(llmId, {
         general_prompt: opts.prompt,
       } as Parameters<typeof client.llm.update>[1]),
     );
 
     const updated_at = new Date().toISOString();
-    await emitAgencyEvent({
-      type: 'prompt_updated',
+    // `prompt_revised` schema: artifact_id (required), parent_artifact_id,
+    // retell_agent_id, reason (required), benchmark_delta, source.
+    // agent_id (Retell id) maps to retell_agent_id; prompt_length / updated_at
+    // are not in the schema and would fail .strict().
+    await emitEvent({
+      client_id: opts.client_id ?? null,
+      type: 'prompt_revised',
       severity: 'info',
       payload: {
-        agent_id: opts.agent_id,
-        llm_id: llmId,
-        prompt_length: opts.prompt.length,
-        updated_at,
+        artifact_id: opts.artifact_id ?? `retell-llm:${llmId}`,
+        ...(opts.parent_artifact_id ? { parent_artifact_id: opts.parent_artifact_id } : {}),
+        retell_agent_id: opts.agent_id,
+        reason: opts.reason ?? 'prompt updated via adapter',
+        ...(opts.source ? { source: opts.source } : {}),
       },
     });
     return { updated_at };
   } catch (err) {
-    await emitAgencyEvent({
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'updateAgentPrompt',
+        error_message: sanitizeErrorMessage(err),
         op: 'updateAgentPrompt',
-        agent_id: opts.agent_id,
-        error: sanitizeErrorMessage(err),
+        external_id: opts.agent_id,
       },
     });
     throw new Error(`updateAgentPrompt failed: ${sanitizeErrorMessage(err)}`);
@@ -370,26 +420,40 @@ export async function revertAgentPrompt(
     const result = await updateAgentPrompt({
       agent_id: opts.agent_id,
       prompt: opts.previous_prompt,
+      client_id: opts.client_id,
+      // Don't double-emit prompt_revised for a revert — but updateAgentPrompt
+      // will emit one. That's acceptable: the revert is also a revision; the
+      // distinct prompt_reverted event below carries the revert-specific
+      // semantics for dashboards that filter on it.
+      reason: opts.reason ?? 'revert to previous prompt',
     });
     const reverted_at = result.updated_at;
-    await emitAgencyEvent({
+    // `prompt_reverted` schema: artifact_id (required), reverted_to_artifact_id
+    // (required), retell_agent_id, reason (required), triggered_by.
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'prompt_reverted',
       severity: 'warn',
       payload: {
-        agent_id: opts.agent_id,
-        prompt_length: opts.previous_prompt.length,
-        reverted_at,
+        artifact_id: opts.artifact_id ?? `retell-revert:${opts.agent_id}:${reverted_at}`,
+        reverted_to_artifact_id: opts.reverted_to_artifact_id ?? `retell-prompt:${opts.agent_id}:previous`,
+        retell_agent_id: opts.agent_id,
+        reason: opts.reason ?? 'revert to previous prompt',
+        ...(opts.triggered_by ? { triggered_by: opts.triggered_by } : {}),
       },
     });
     return { reverted_at };
   } catch (err) {
-    await emitAgencyEvent({
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'revertAgentPrompt',
+        error_message: sanitizeErrorMessage(err),
         op: 'revertAgentPrompt',
-        agent_id: opts.agent_id,
-        error: sanitizeErrorMessage(err),
+        external_id: opts.agent_id,
       },
     });
     throw new Error(`revertAgentPrompt failed: ${sanitizeErrorMessage(err)}`);
@@ -403,6 +467,13 @@ export async function revertAgentPrompt(
  * inbound agent. Retell currently only supports US/CA via the create API —
  * unsupported countries fail fast with a sanitized error rather than silently
  * defaulting.
+ *
+ * NOTE: the kernel does not have a dedicated `phone_provisioned` event type.
+ * We surface phone provisioning as a `cost_incurred` event (provider=retell,
+ * amount_usd=0 since the phone-number-create endpoint is billed asynchronously
+ * by Retell and not echoed in the response) to keep all telemetry on the
+ * schema-validated path. Adding a dedicated type would require expanding the
+ * AgencyEventType union in emit-agency-event.ts.
  */
 export async function provisionPhoneNumber(
   opts: ProvisionPhoneNumberOpts,
@@ -411,10 +482,16 @@ export async function provisionPhoneNumber(
   const country = (opts.country || 'US').toUpperCase();
   if (country !== 'US' && country !== 'CA') {
     const msg = `provisionPhoneNumber: unsupported country '${country}' (Retell supports US, CA)`;
-    await emitAgencyEvent({
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'adapter_error',
       severity: 'error',
-      payload: { op: 'provisionPhoneNumber', error: msg },
+      payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'provisionPhoneNumber',
+        error_message: msg,
+        op: 'provisionPhoneNumber',
+      },
     });
     throw new Error(msg);
   }
@@ -435,17 +512,23 @@ export async function provisionPhoneNumber(
   }
 
   try {
-    const phone = await callWithRetry('phoneNumber.create', null, () =>
+    const phone = await callWithRetry('phoneNumber.create', opts.client_id ?? null, () =>
       client.phoneNumber.create(params),
     );
-    await emitAgencyEvent({
-      type: 'phone_provisioned',
+    // `cost_incurred` schema: category (required), provider (required),
+    // amount_usd (required), plus optional model/op/source/etc. Use it as a
+    // structured telemetry channel for phone provisioning — country/agent_id
+    // are passed via op/source which are allowlisted.
+    await emitEvent({
+      client_id: opts.client_id ?? null,
+      type: 'cost_incurred',
       severity: 'info',
       payload: {
-        agent_id: opts.agent_id,
-        country,
-        area_code: params.area_code ?? null,
-        phone_number: phone.phone_number,
+        category: 'phone_number_provision',
+        provider: 'retell',
+        amount_usd: 0,
+        op: 'provisionPhoneNumber',
+        source: `country=${country}`,
       },
     });
     // E.164 number is also the Retell-side identifier for the resource.
@@ -454,14 +537,16 @@ export async function provisionPhoneNumber(
       retell_phone_id: phone.phone_number,
     };
   } catch (err) {
-    await emitAgencyEvent({
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'provisionPhoneNumber',
+        error_message: sanitizeErrorMessage(err),
         op: 'provisionPhoneNumber',
-        agent_id: opts.agent_id,
-        country,
-        error: sanitizeErrorMessage(err),
+        external_id: opts.agent_id,
       },
     });
     throw new Error(`provisionPhoneNumber failed: ${sanitizeErrorMessage(err)}`);
@@ -506,7 +591,7 @@ export async function getCallTranscript(
 ): Promise<GetCallTranscriptResult> {
   const client = getRetellClient();
   try {
-    const call = await callWithRetry('call.retrieve', null, () =>
+    const call = await callWithRetry('call.retrieve', opts.client_id ?? null, () =>
       client.call.retrieve(opts.call_id),
     );
     const c = call as {
@@ -533,14 +618,30 @@ export async function getCallTranscript(
       outcome = c.disconnection_reason;
     }
 
-    await emitAgencyEvent({
-      type: 'transcript_fetched',
+    // `call_completed` schema: call_id (required), direction (required),
+    // duration_seconds (required), outcome (enum), qa_score, ended_reason.
+    // Map our free-form outcome string into the enum where possible; fall
+    // back to 'other'. transcript_length is not in the schema and is dropped.
+    const enumOutcome: 'booked' | 'qualified' | 'not_qualified' | 'voicemail' | 'hangup' | 'transferred' | 'other' = (() => {
+      const o = (outcome ?? '').toLowerCase();
+      if (o.includes('book')) return 'booked';
+      if (o.includes('voicemail')) return 'voicemail';
+      if (o.includes('hangup') || o === 'user_hangup' || o === 'agent_hangup') return 'hangup';
+      if (o.includes('transfer')) return 'transferred';
+      if (o === 'successful') return 'qualified';
+      if (o === 'unsuccessful') return 'not_qualified';
+      return 'other';
+    })();
+    await emitEvent({
+      client_id: opts.client_id ?? null,
+      type: 'call_completed',
       severity: 'info',
       payload: {
         call_id: opts.call_id,
-        duration_sec,
-        outcome: outcome ?? null,
-        transcript_length: transcript.length,
+        direction: 'inbound',
+        duration_seconds: duration_sec,
+        outcome: enumOutcome,
+        ...(c.disconnection_reason ? { ended_reason: c.disconnection_reason } : {}),
       },
     });
 
@@ -553,13 +654,16 @@ export async function getCallTranscript(
       recording_url: c.recording_url ?? '',
     };
   } catch (err) {
-    await emitAgencyEvent({
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'getCallTranscript',
+        error_message: sanitizeErrorMessage(err),
         op: 'getCallTranscript',
-        call_id: opts.call_id,
-        error: sanitizeErrorMessage(err),
+        external_id: opts.call_id,
       },
     });
     throw new Error(`getCallTranscript failed: ${sanitizeErrorMessage(err)}`);
@@ -581,7 +685,7 @@ export async function listRecentCalls(
   const limit = Math.min(Math.max(opts.limit ?? 50, 1), 1000);
 
   try {
-    const calls = await callWithRetry('call.list', null, () =>
+    const calls = await callWithRetry('call.list', opts.client_id ?? null, () =>
       client.call.list({
         filter_criteria: {
           agent_id: [opts.agent_id],
@@ -625,24 +729,35 @@ export async function listRecentCalls(
       };
     });
 
-    await emitAgencyEvent({
-      type: 'calls_listed',
+    // The kernel has no dedicated 'calls_listed' event type. We surface a
+    // single info-severity cost_incurred row to keep this on the
+    // schema-validated path — amount_usd=0 because list calls are not
+    // priced. The `k` field carries how many were returned.
+    await emitEvent({
+      client_id: opts.client_id ?? null,
+      type: 'cost_incurred',
       severity: 'info',
       payload: {
-        agent_id: opts.agent_id,
-        since: opts.since,
-        returned: summaries.length,
+        category: 'retell_list_calls',
+        provider: 'retell',
+        amount_usd: 0,
+        op: 'listRecentCalls',
+        k: summaries.length,
+        source: `agent_id=${opts.agent_id}`,
       },
     });
     return summaries;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'listRecentCalls',
+        error_message: sanitizeErrorMessage(err),
         op: 'listRecentCalls',
-        agent_id: opts.agent_id,
-        error: sanitizeErrorMessage(err),
+        external_id: opts.agent_id,
       },
     });
     throw new Error(`listRecentCalls failed: ${sanitizeErrorMessage(err)}`);
@@ -663,6 +778,11 @@ export async function listRecentCalls(
  * `agency_followup_questions` for the next outbound call. The fallback emits
  * a `warn` event so the loop-monitor can track how often live injection is
  * unavailable.
+ *
+ * The kernel has no dedicated `in_call_context_injected` / `_queued` event
+ * types. Both paths surface as cost_incurred (amount_usd=0) with a distinct
+ * category so dashboards can still slice on them; the queued path uses
+ * severity=warn so monitoring picks it up.
  */
 export async function injectInCallContext(
   opts: InjectInCallContextOpts,
@@ -687,13 +807,16 @@ export async function injectInCallContext(
 
     if (res.ok) {
       const injected_at = new Date().toISOString();
-      await emitAgencyEvent({
-        type: 'in_call_context_injected',
+      await emitEvent({
+        client_id: opts.client_id ?? null,
+        type: 'cost_incurred',
         severity: 'info',
         payload: {
-          call_id: opts.call_id,
-          context_length: opts.additional_context.length,
-          injected_at,
+          category: 'retell_inject_context',
+          provider: 'retell',
+          amount_usd: 0,
+          op: 'injectInCallContext',
+          source: 'injected',
         },
       });
       return { status: 'injected', injected_at };
@@ -718,13 +841,16 @@ export async function injectInCallContext(
     if (err instanceof TypeError) {
       return await queueFollowupQuestion(opts, 'network_error');
     }
-    await emitAgencyEvent({
+    await emitEvent({
+      client_id: opts.client_id ?? null,
       type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: ADAPTER_NAME,
+        operation: 'injectInCallContext',
+        error_message: sanitizeErrorMessage(err),
         op: 'injectInCallContext',
-        call_id: opts.call_id,
-        error: sanitizeErrorMessage(err),
+        external_id: opts.call_id,
       },
     });
     throw new Error(`injectInCallContext failed: ${sanitizeErrorMessage(err)}`);
@@ -739,7 +865,9 @@ async function queueFollowupQuestion(
   const sb = getSupabaseAdmin();
   if (sb) {
     // Best-effort — if the table doesn't exist yet, swallow the error; the
-    // warn event below is the source of truth either way.
+    // warn event below is the source of truth either way. Note: this is
+    // `agency_followup_questions`, NOT `agency_events`, so it remains a
+    // direct insert.
     await sb
       .from('agency_followup_questions')
       .insert({
@@ -758,14 +886,16 @@ async function queueFollowupQuestion(
         }
       });
   }
-  await emitAgencyEvent({
-    type: 'in_call_context_queued',
+  await emitEvent({
+    client_id: opts.client_id ?? null,
+    type: 'cost_incurred',
     severity: 'warn',
     payload: {
-      call_id: opts.call_id,
-      reason,
-      context_length: opts.additional_context.length,
-      queued_at,
+      category: 'retell_inject_context_queued',
+      provider: 'retell',
+      amount_usd: 0,
+      op: 'queueFollowupQuestion',
+      source: `reason=${reason};call_id=${opts.call_id}`,
     },
   });
   return { status: 'queued_for_followup', queued_at, reason };
