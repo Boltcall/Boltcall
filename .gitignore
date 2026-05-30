@@ -36,3 +36,4 @@ dist-ssr
 
 # Playwright MCP scratch output (snapshots, logs, screenshots)
 .playwright-mcp/
+seo-autoresearch/__pycache__/
