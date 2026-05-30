@@ -79,16 +79,16 @@ const FounderGate = React.lazy(() => import('../components/agency/FounderGate'))
 // (status NOT IN ('churned','paused')); the gate component enforces this
 // client-side and the kernel's RLS policies enforce it server-side.
 const AgencyClientGate = React.lazy(() => import('../components/client/AgencyClientGate'));
-const ClientHomePage = React.lazy(() => import('../pages/client/ClientHomePage'));
-const ClientWelcomePage = React.lazy(() => import('../pages/client/ClientWelcomePage'));
-const ClientAgentPage = React.lazy(() => import('../pages/client/ClientAgentPage'));
-const ClientCallsPage = React.lazy(() => import('../pages/client/ClientCallsPage'));
-const ClientInsightsPage = React.lazy(() => import('../pages/client/ClientInsightsPage'));
-const ClientAdsPage = React.lazy(() => import('../pages/client/ClientAdsPage'));
-const ClientReportsPage = React.lazy(() => import('../pages/client/ClientReportsPage'));
-const ClientCirclePage = React.lazy(() => import('../pages/client/ClientCirclePage'));
-const ClientApprovalsPage = React.lazy(() => import('../pages/client/ClientApprovalsPage'));
-const ClientSettingsPage = React.lazy(() => import('../pages/client/ClientSettingsPage'));
+const ClientHomePage = React.lazy(() => import('../pages/dashboard/client/ClientHomePage'));
+const ClientWelcomePage = React.lazy(() => import('../pages/dashboard/client/ClientWelcomePage'));
+const ClientAgentPage = React.lazy(() => import('../pages/dashboard/client/ClientAgentPage'));
+const ClientCallsPage = React.lazy(() => import('../pages/dashboard/client/ClientCallsPage'));
+const ClientInsightsPage = React.lazy(() => import('../pages/dashboard/client/ClientInsightsPage'));
+const ClientAdsPage = React.lazy(() => import('../pages/dashboard/client/ClientAdsPage'));
+const ClientReportsPage = React.lazy(() => import('../pages/dashboard/client/ClientReportsPage'));
+const ClientCirclePage = React.lazy(() => import('../pages/dashboard/client/ClientCirclePage'));
+const ClientApprovalsPage = React.lazy(() => import('../pages/dashboard/client/ClientApprovalsPage'));
+const ClientSettingsPage = React.lazy(() => import('../pages/dashboard/client/ClientSettingsPage'));
 
 // ── Lazy loads — Dashboard settings ──────────────────────────────────────
 const QARubricsPage = React.lazy(() => import('../pages/dashboard/QARubricsPage'));

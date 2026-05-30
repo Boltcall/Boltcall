@@ -50,18 +50,18 @@ import { Loader2, AlertTriangle } from 'lucide-react';
 
 import { authedFetch } from '../../../lib/authedFetch';
 import AgentPersonalityCard, {
-  AgentPersonality,
+  type AgentPersonality,
 } from '../../../components/client/AgentPersonalityCard';
 import BusinessBriefEditor, {
-  BriefField,
-  SaveBriefFieldInput,
-  SaveResult,
+  type BriefField,
+  type SaveBriefFieldInput,
+  type SaveResult,
 } from '../../../components/client/BusinessBriefEditor';
 import StressTestPanel, {
-  StressScenarioId,
-  StressTestResult,
+  type StressScenarioId,
+  type StressTestResult,
 } from '../../../components/client/StressTestPanel';
-import CallList, { CallRow } from '../../../components/client/CallList';
+import CallList, { type CallRow } from '../../../components/client/CallList';
 
 // ─── Response types ──────────────────────────────────────────────────────────
 

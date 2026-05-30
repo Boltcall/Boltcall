@@ -22,7 +22,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { authedFetch } from '../../../lib/authedFetch';
-import CallList, { CallRow } from '../../../components/client/CallList';
+import CallList, { type CallRow } from '../../../components/client/CallList';
 import CallDetailDrawer from '../../../components/client/CallDetailDrawer';
 
 interface CallsResponse {
