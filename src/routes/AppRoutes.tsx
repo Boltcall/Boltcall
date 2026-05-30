@@ -34,6 +34,13 @@ const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 
+// ── Lazy loads — V2 shell (opt-in, parallel surface to V1) ───────────────
+// V2 is the AI-native redesign that all 12 Day-8 V2 pages compose into.
+// Gated per-workspace via workspaces.v2_enabled — see V2OptInGate. V1 stays
+// untouched; this is a sibling route surface, not a replacement.
+const DashboardLayoutV2 = React.lazy(() => import('../components/v2/DashboardLayoutV2'));
+const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
 const SettingsLayout = React.lazy(() => import('../components/dashboard/SettingsLayout'));
@@ -451,6 +458,34 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
+        {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
+            Parallel route surface to /dashboard. V1 stays untouched; this
+            tree is added at root so V2 has its own URL prefix and shell.
+            V2OptInGate inside the index renders the opt-in card when the
+            workspace hasn't flipped the flag yet. Inner V2 pages will be
+            added under this tree as Day 8 lands. */}
+        <Route
+          path="/v2"
+          element={
+            <ProtectedRoute>
+              <DashboardProviders>
+                <DashboardLayoutV2 />
+              </DashboardProviders>
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            index
+            element={
+              <V2OptInGate>
+                <div className="min-h-[40vh] flex items-center justify-center text-sm text-zinc-500">
+                  V2 shell ready. Day 8 pages mount here.
+                </div>
+              </V2OptInGate>
+            }
+          />
+        </Route>
+
         {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
         <Route path="/setup" element={<Setup />} />
         <Route path="/setup/loading" element={<ProtectedRoute><DashboardProviders><SetupLoading /></DashboardProviders></ProtectedRoute>} />
