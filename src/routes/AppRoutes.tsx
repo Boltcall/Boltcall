@@ -73,6 +73,12 @@ const ClientListPage = React.lazy(() => import('../pages/dashboard/agency/Client
 const ClientDetailPage = React.lazy(() => import('../pages/dashboard/agency/ClientDetailPage'));
 const FounderGate = React.lazy(() => import('../components/agency/FounderGate'));
 
+// ── Lazy loads — Agency OS Client Portal (/client/* — gated by agency_clients row) ─
+// Backend functions verify the calling JWT has an agency_clients row; the frontend
+// just requires auth. ClientAdsPage further requires sku='bolt_system'.
+const ClientAdsPage = React.lazy(() => import('../pages/dashboard/client/ClientAdsPage'));
+const ClientReportsPage = React.lazy(() => import('../pages/dashboard/client/ClientReportsPage'));
+
 // ── Lazy loads — Dashboard settings ──────────────────────────────────────
 const QARubricsPage = React.lazy(() => import('../pages/dashboard/QARubricsPage'));
 const QAReviewPage = React.lazy(() => import('../pages/dashboard/QAReviewPage'));
@@ -416,6 +422,33 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
+        {/* Agency OS Client Portal — /client/* routes are auth-gated.
+            The Netlify functions backing these pages enforce that the calling
+            JWT maps to an agency_clients row (status != churned/paused) before
+            returning data, so the row-level "is the user a managed-service
+            client?" check lives in the API layer.
+            DashboardProviders wraps so AuthContext/SubscriptionContext are
+            available for hooks like authedFetch + auth.getSession. */}
+        <Route
+          path="/client/ads"
+          element={
+            <ProtectedRoute>
+              <DashboardProviders>
+                <ClientAdsPage />
+              </DashboardProviders>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client/reports"
+          element={
+            <ProtectedRoute>
+              <DashboardProviders>
+                <ClientReportsPage />
+              </DashboardProviders>
+            </ProtectedRoute>
+          }
+        />
         {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
         <Route path="/setup" element={<Setup />} />
         <Route path="/setup/loading" element={<ProtectedRoute><DashboardProviders><SetupLoading /></DashboardProviders></ProtectedRoute>} />
