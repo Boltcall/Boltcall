@@ -50,6 +50,7 @@ import {
 } from './_shared/agency-adapters/cekura-adapter';
 import { generateSpeech, getFounderCloneVoiceId } from './_shared/agency-adapters/elevenlabs-adapter';
 import { listRecentCalls } from './_shared/agency-adapters/retell-adapter';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Types
@@ -254,6 +255,12 @@ export const handler: Handler = async (
   _context: HandlerContext,
 ) => {
   const startedAt = Date.now();
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return json(authz.status, { error: authz.message });
+  }
+
   let body: RunnerBody = {};
   if (event.body) {
     try {

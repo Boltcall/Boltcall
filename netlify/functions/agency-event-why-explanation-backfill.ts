@@ -41,6 +41,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 const AGENT_NAME = 'why-log-generator';
 const BATCH_SIZE = 50;
@@ -74,6 +75,16 @@ interface RelatedEvent {
 
 export const handler: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return {
+      statusCode: authz.status,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: authz.message }),
+    };
+  }
+
   const url = new URL(
     event.rawUrl ||
       `https://x${event.path}${event.rawQuery ? `?${event.rawQuery}` : ''}`,

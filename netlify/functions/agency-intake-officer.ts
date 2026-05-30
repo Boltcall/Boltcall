@@ -56,6 +56,7 @@ import {
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { getServiceSupabase } from './_shared/token-utils';
 import { verifyRetellSignature } from './_shared/verify-signatures';
+import { authorizeSentinel } from './_shared/agency-runner-auth';
 import path from 'node:path';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -849,6 +850,19 @@ export const handler: Handler = async (event) => {
 
   try {
     if (mode === 'sentinel') {
+      // Sentinel is invoked mid-call by Retell tool-use — not by the founder,
+      // not by cron. It uses its own dedicated shared secret so a leak of
+      // CRON_SECRET doesn't grant access here. Fail-closed if the env var
+      // is unset.
+      const sentinelAuthz = authorizeSentinel(event);
+      if (!sentinelAuthz.ok) {
+        return {
+          statusCode: sentinelAuthz.status,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: sentinelAuthz.message }),
+        };
+      }
+
       const body = JSON.parse(event.body ?? '{}') as {
         client_id?: string;
         retell_call_id?: string;

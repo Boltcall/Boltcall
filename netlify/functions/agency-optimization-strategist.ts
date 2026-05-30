@@ -46,6 +46,7 @@ import { playbackHistoricalCalls } from './_shared/agency-adapters/cekura-adapte
 import { retrieve } from './_shared/agency-knowledge/retrieve';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { getServiceSupabase } from './_shared/token-utils';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -1025,6 +1026,15 @@ async function runForClient(client_id: string): Promise<{
 
 export const handler: Handler = async (event) => {
   const HEADERS = { 'Content-Type': 'application/json' };
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return {
+      statusCode: authz.status,
+      headers: HEADERS,
+      body: JSON.stringify({ error: authz.message }),
+    };
+  }
 
   // Two trigger modes:
   //   - POST { client_id } → ad-hoc single-client run

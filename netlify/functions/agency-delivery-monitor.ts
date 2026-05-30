@@ -49,6 +49,7 @@ import {
   type CampaignInsights,
 } from './_shared/agency-adapters/meta-ads-adapter';
 import { getBookings } from './_shared/agency-adapters/calcom-adapter';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Types
@@ -267,6 +268,15 @@ const OUTPUT_SCHEMA = {
 
 export const handler: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return {
+      statusCode: authz.status,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: authz.message }),
+    };
+  }
 
   // Allow manual single-client invocation for dev / scenario testing.
   const url = new URL(
