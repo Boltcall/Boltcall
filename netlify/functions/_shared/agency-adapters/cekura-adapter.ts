@@ -232,7 +232,12 @@ async function safeInsert(table: string, rows: any | any[]): Promise<boolean> {
  * must never break the simulation pipeline.
  */
 async function emitCostEvent(opts: {
-  event_type: string;
+  /**
+   * Adapter-local event kind name (e.g. 'cekura_batch_completed'). NOT the
+   * kernel column — the kernel column is `type`, populated by the dispatcher
+   * below after mapping each adapter kind to an allowed AgencyEventType.
+   */
+  kind: string;
   client_id?: string;
   cost_usd: number;
   payload: Record<string, any>;
@@ -244,7 +249,7 @@ async function emitCostEvent(opts: {
   let severity: AgencyEventSeverity = 'info';
   let typedPayload: Record<string, unknown>;
 
-  switch (opts.event_type) {
+  switch (opts.kind) {
     case 'cekura_batch_completed':
     case 'cekura_playback_completed': {
       // digital_twin_run_completed schema:
@@ -262,7 +267,7 @@ async function emitCostEvent(opts: {
         ? p.failure_clusters.length
         : (typeof p.failure_clusters === 'number' ? p.failure_clusters : undefined);
       typedPayload = {
-        run_id: String(p.fleet_id ?? `cekura-${opts.event_type}-${Date.now()}`),
+        run_id: String(p.fleet_id ?? `cekura-${opts.kind}-${Date.now()}`),
         ...(p.artifact_id ? { artifact_id: String(p.artifact_id) } : {}),
         persona_count: nCalls,
         pass_rate: passRate,
@@ -283,7 +288,7 @@ async function emitCostEvent(opts: {
         category: 'cekura_fleet_generation',
         provider: 'anthropic',
         amount_usd: Number(opts.cost_usd ?? 0),
-        op: opts.event_type,
+        op: opts.kind,
         source: `fleet=${String(p.fleet_id ?? '')};n_personas=${String(p.n_personas ?? '')};n_transcripts=${String(p.n_source_transcripts ?? '')}`,
       };
       break;
@@ -296,10 +301,10 @@ async function emitCostEvent(opts: {
       // from Anthropic spend in cost dashboards.
       type = 'cost_incurred';
       typedPayload = {
-        category: opts.event_type,
+        category: opts.kind,
         provider: 'other',
         amount_usd: Number(opts.cost_usd ?? 0),
-        op: opts.event_type,
+        op: opts.kind,
         source: typeof p.fleet_id === 'string' ? `fleet=${p.fleet_id}` : 'cekura-adapter',
       };
       break;
@@ -320,7 +325,7 @@ async function emitCostEvent(opts: {
     // issue codes if this was a schema rejection.
     console.warn(
       `[cekura-adapter] emitAgencyEvent failed (non-blocking) for ` +
-      `event=${opts.event_type} type=${type}: ${err?.message ?? String(err)}`,
+      `kind=${opts.kind} type=${type}: ${err?.message ?? String(err)}`,
     );
   }
 }
@@ -640,7 +645,7 @@ export async function generatePersonaFleet(opts: {
   );
 
   await emitCostEvent({
-    event_type: 'cekura_fleet_generated',
+    kind: 'cekura_fleet_generated',
     client_id:  opts.client_id,
     cost_usd,
     payload: {
@@ -800,7 +805,7 @@ export async function runSimulationBatch(opts: {
   });
 
   await emitCostEvent({
-    event_type: 'cekura_batch_completed',
+    kind: 'cekura_batch_completed',
     cost_usd,
     payload: {
       fleet_id:       resolvedFleetId,
@@ -916,7 +921,7 @@ export async function playbackHistoricalCalls(opts: {
   );
 
   await emitCostEvent({
-    event_type: 'cekura_playback_completed',
+    kind: 'cekura_playback_completed',
     client_id:  opts.client_id,
     cost_usd,
     payload: {
@@ -1088,7 +1093,7 @@ export async function exportClientFacingProof(opts: {
   );
 
   await emitCostEvent({
-    event_type: 'cekura_proof_exported',
+    kind: 'cekura_proof_exported',
     client_id:  opts.client_id,
     cost_usd:   0,
     payload: {
