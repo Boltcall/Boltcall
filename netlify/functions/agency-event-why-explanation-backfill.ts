@@ -42,6 +42,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { wrapCronWithAlert } from './_shared/agency-cron-alert';
 
 const AGENT_NAME = 'why-log-generator';
 const BATCH_SIZE = 50;
@@ -73,7 +74,7 @@ interface RelatedEvent {
   created_at: string;
 }
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const inner: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
 
   const authz = await authorizeRunner(event);
@@ -206,6 +207,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
+export const handler = wrapCronWithAlert('agency-event-why-explanation-backfill', inner);
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Helpers

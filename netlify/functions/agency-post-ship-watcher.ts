@@ -67,6 +67,7 @@ import { runAgent, type JsonSchemaObject } from './_shared/agency-agents/run-age
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { getCreativeInsights } from './_shared/agency-adapters/meta-ads-adapter';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { wrapCronWithAlert } from './_shared/agency-cron-alert';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Constants
@@ -193,7 +194,7 @@ const CRITIC_SCHEMA: JsonSchemaObject = {
 //   Handler
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const inner: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
 
   const authz = await authorizeRunner(event);
@@ -283,6 +284,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
+export const handler = wrapCronWithAlert('agency-post-ship-watcher', inner);
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Per-artifact processor
