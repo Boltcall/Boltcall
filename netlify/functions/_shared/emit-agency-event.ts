@@ -46,6 +46,8 @@ export type AgencyEventType =
   | 'creative_paused'
   // Reporting + optimization
   | 'report_sent'
+  | 'report_degraded'
+  | 'report_failed'
   | 'optimization_brief_queued'
   | 'escalation_action_drafted'
   // Monitoring + risk
@@ -59,7 +61,26 @@ export type AgencyEventType =
   // Self-improvement loop
   | 'digital_twin_run_completed'
   | 'benchmark_score_recorded'
-  | 'post_ship_outcome_recorded';
+  | 'post_ship_outcome_recorded'
+  // Notifications (slack-adapter)
+  | 'notification_sent'
+  | 'notification_failed'
+  | 'notification_fallback_email'
+  // Cohort / community (slack-adapter)
+  | 'cohort_invited'
+  | 'cohort_win_posted'
+  | 'cohort_members_listed'
+  // Ads (meta-ads-adapter)
+  | 'ad_campaign_created'
+  | 'ad_campaign_updated'
+  | 'ad_set_created'
+  | 'conversion_event_sent'
+  // Calendar (calcom-adapter)
+  | 'calendar_event_created'
+  | 'booking_fetched'
+  | 'booking_cancelled'
+  // Billing (stripe-adapter)
+  | 'subscription_changed';
 
 export type AgencyEventSeverity = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
@@ -148,11 +169,30 @@ const creativePausedSchema = z.object({
 }).strict();
 
 const reportSentSchema = z.object({
-  report_id: z.string(),
-  period_start: z.string(), // ISO date
-  period_end: z.string(),   // ISO date
-  delivery_channel: z.enum(['email', 'slack', 'portal', 'pdf_download']),
+  report_id: z.string().optional(),
+  period_start: z.string().optional(), // ISO date
+  period_end: z.string().optional(),   // ISO date
+  delivery_channel: z.enum(['email', 'slack', 'portal', 'pdf_download']).optional(),
   next_week_ask: z.string().optional(),
+  // pdf-renderer adapter fields (kept as optional for the file-output path):
+  path: z.string().optional(),
+  size_bytes: z.number().int().nonnegative().optional(),
+  page_count: z.number().int().nonnegative().optional(),
+  page_format: z.string().optional(),
+  ttl_sec: z.number().int().nonnegative().optional(),
+}).strict();
+
+const reportDegradedSchema = z.object({
+  reason: z.string(),
+  error: z.string().optional(),
+  fallback_used: z.boolean().optional(),
+  op: z.string().optional(),
+}).strict();
+
+const reportFailedSchema = z.object({
+  reason: z.string(),
+  error: z.string().optional(),
+  op: z.string().optional(),
 }).strict();
 
 const optimizationBriefQueuedSchema = z.object({
@@ -192,10 +232,29 @@ const expansionCandidateIdentifiedSchema = z.object({
 
 const costIncurredSchema = z.object({
   category: z.string(),
-  provider: z.enum(['anthropic', 'openai', 'retell', 'meta', 'google', 'stripe', 'supabase', 'twilio', 'gemini', 'other']),
+  provider: z.enum(['anthropic', 'openai', 'retell', 'meta', 'google', 'stripe', 'supabase', 'twilio', 'gemini', 'azure-openai', 'other']),
   amount_usd: z.number().nonnegative(),
-  tokens: z.number().int().nonnegative().optional(),
+  tokens: z.union([
+    z.number().int().nonnegative(),
+    z.object({ input: z.number().int().nonnegative(), output: z.number().int().nonnegative() }),
+  ]).optional(),
   model: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+  source: z.string().optional(),
+  op: z.string().optional(),
+  n_images: z.number().int().nonnegative().optional(),
+  dimensions: z.string().optional(),
+  angle: z.string().optional(),
+  vertical: z.string().optional(),
+  prompt_fingerprint: z.string().optional(),
+  variation_strength: z.string().optional(),
+  cost_table_version: z.string().optional(),
+  embedding_model: z.string().optional(),
+  query_chars: z.number().int().nonnegative().optional(),
+  k: z.number().int().nonnegative().optional(),
+  kinds: z.union([z.array(z.string()), z.literal('all')]).optional(),
+  returned_chunks: z.number().int().nonnegative().optional(),
+  operation: z.string().optional(),
 }).strict();
 
 const rateLimitHitSchema = z.object({
@@ -207,9 +266,14 @@ const rateLimitHitSchema = z.object({
 const adapterErrorSchema = z.object({
   adapter: z.string(),
   operation: z.string(),
-  error_class: z.string(),
+  error_class: z.string().optional(),
   error_message: z.string(), // already-sanitized; NEVER raw provider response
   retryable: z.boolean().optional(),
+  op: z.string().optional(),
+  external_id: z.string().optional(),
+  duration_ms: z.number().int().nonnegative().optional(),
+  description: z.string().optional(),
+  error: z.union([z.string(), z.object({ message: z.string(), name: z.string().optional() })]).optional(),
 }).strict();
 
 const digitalTwinRunCompletedSchema = z.object({
@@ -239,6 +303,138 @@ const postShipOutcomeRecordedSchema = z.object({
   verdict: z.enum(['pass', 'regress', 'inconclusive']),
 }).strict();
 
+// ── Notification schemas (slack-adapter) ──────────────────────────────────
+
+const notificationSentSchema = z.object({
+  channel: z.enum(['critical', 'digest', 'weekly_report', 'portal_link', 'other']).optional(),
+  ts: z.string().optional(),
+  has_file: z.boolean().optional(),
+  op: z.string().optional(),
+  return_url_host: z.string().optional(),
+  customer: z.string().optional(),
+}).strict();
+
+const notificationFailedSchema = z.object({
+  channel: z.string().optional(),
+  reason: z.string(),
+  op: z.string().optional(),
+}).strict();
+
+const notificationFallbackEmailSchema = z.object({
+  channel: z.string(),
+  reason: z.string(),
+  fallback_ts: z.string().optional(),
+}).strict();
+
+// ── Cohort / community schemas (slack-adapter) ────────────────────────────
+
+const cohortInvitedSchema = z.object({
+  channel_id: z.string(),
+  vertical: z.string(),
+  region: z.string().nullable().optional(),
+  revenue_tier: z.string().nullable().optional(),
+  slack_user_id: z.string().nullable().optional(),
+  method: z.string().optional(),
+}).strict();
+
+const cohortWinPostedSchema = z.object({
+  cohort_channel_id: z.string(),
+  ts: z.string(),
+  has_evidence: z.boolean().optional(),
+}).strict();
+
+const cohortMembersListedSchema = z.object({
+  cohort_channel_id: z.string(),
+  count: z.number().int().nonnegative(),
+}).strict();
+
+// ── Ad schemas (meta-ads-adapter) ─────────────────────────────────────────
+
+const adCampaignCreatedSchema = z.object({
+  campaign_id: z.string(),
+  ad_account_id: z.string().optional(),
+  objective: z.string().optional(),
+  daily_budget_usd: z.number().nonnegative().optional(),
+  op: z.string().optional(),
+  external_id: z.string().optional(),
+  duration_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const adCampaignUpdatedSchema = z.object({
+  campaign_id: z.string().optional(),
+  pixel_id: z.string().optional(),
+  configured_at: z.string().optional(),
+  has_test_event_code: z.boolean().optional(),
+  op: z.string().optional(),
+  external_id: z.string().optional(),
+  duration_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const adSetCreatedSchema = z.object({
+  adset_id: z.string(),
+  campaign_id: z.string(),
+  daily_budget_usd: z.number().nonnegative().optional(),
+  has_lead_form: z.boolean().optional(),
+  op: z.string().optional(),
+  external_id: z.string().optional(),
+  duration_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const conversionEventSentSchema = z.object({
+  pixel_id: z.string(),
+  event_name: z.string(),
+  events_received: z.number().int().nonnegative().optional(),
+  test_mode: z.boolean().optional(),
+  op: z.string().optional(),
+  external_id: z.string().optional(),
+  duration_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+// ── Calendar schemas (calcom-adapter) ─────────────────────────────────────
+
+const calendarEventCreatedSchema = z.object({
+  event_type_id: z.number().int().optional(),
+  slug: z.string().optional(),
+  duration_min: z.number().int().optional(),
+  owner: z.string().optional(),
+  public_url: z.string().optional(),
+  scheduling_url: z.string().optional(),
+  paused_at: z.string().optional(),
+  op: z.string().optional(),
+}).strict();
+
+const bookingFetchedSchema = z.object({
+  count: z.number().int().nonnegative(),
+  event_type_id: z.number().int().nullable().optional(),
+  since: z.string(),
+  until: z.string(),
+  op: z.string().optional(),
+}).strict();
+
+const bookingCancelledSchema = z.object({
+  booking_id: z.number().int(),
+  reason: z.string(),
+  cancelled_at: z.string(),
+  op: z.string().optional(),
+}).strict();
+
+// ── Billing schemas (stripe-adapter) ──────────────────────────────────────
+
+const subscriptionChangedSchema = z.object({
+  subscription: z.string().optional(),       // masked id like "sub_***Lq3F"
+  customer: z.string().optional(),           // masked id
+  status: z.string().optional(),
+  mrr_usd: z.number().optional(),
+  latest_invoice_status: z.string().optional(),
+  event_id: z.string().optional(),
+  event_type: z.string().optional(),
+  recommended_action: z.string().optional(),
+  livemode: z.boolean().optional(),
+  keys: z.array(z.string()).optional(),
+  updated_at: z.string().optional(),
+  op: z.string().optional(),
+}).strict();
+
 const EVENT_SCHEMAS = {
   call_completed: callCompletedSchema,
   lead_captured: leadCapturedSchema,
@@ -250,6 +446,8 @@ const EVENT_SCHEMAS = {
   creative_published: creativePublishedSchema,
   creative_paused: creativePausedSchema,
   report_sent: reportSentSchema,
+  report_degraded: reportDegradedSchema,
+  report_failed: reportFailedSchema,
   optimization_brief_queued: optimizationBriefQueuedSchema,
   escalation_action_drafted: escalationActionDraftedSchema,
   anomaly_detected: anomalyDetectedSchema,
@@ -261,6 +459,25 @@ const EVENT_SCHEMAS = {
   digital_twin_run_completed: digitalTwinRunCompletedSchema,
   benchmark_score_recorded: benchmarkScoreRecordedSchema,
   post_ship_outcome_recorded: postShipOutcomeRecordedSchema,
+  // Notifications (slack-adapter)
+  notification_sent: notificationSentSchema,
+  notification_failed: notificationFailedSchema,
+  notification_fallback_email: notificationFallbackEmailSchema,
+  // Cohort / community (slack-adapter)
+  cohort_invited: cohortInvitedSchema,
+  cohort_win_posted: cohortWinPostedSchema,
+  cohort_members_listed: cohortMembersListedSchema,
+  // Ads (meta-ads-adapter)
+  ad_campaign_created: adCampaignCreatedSchema,
+  ad_campaign_updated: adCampaignUpdatedSchema,
+  ad_set_created: adSetCreatedSchema,
+  conversion_event_sent: conversionEventSentSchema,
+  // Calendar (calcom-adapter)
+  calendar_event_created: calendarEventCreatedSchema,
+  booking_fetched: bookingFetchedSchema,
+  booking_cancelled: bookingCancelledSchema,
+  // Billing (stripe-adapter)
+  subscription_changed: subscriptionChangedSchema,
 } as const satisfies Record<AgencyEventType, z.ZodTypeAny>;
 
 // ── 3. Fields the client RLS view is allowed to expose ─────────────────────
@@ -283,6 +500,8 @@ const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string>> = {
   creative_published:               ['platform'],
   creative_paused:                  ['platform', 'reason'],
   report_sent:                      ['period_start', 'period_end', 'delivery_channel'],
+  report_degraded:                  [],
+  report_failed:                    [],
   optimization_brief_queued:        ['experiment_count'],
   escalation_action_drafted:        ['action_type'],
   anomaly_detected:                 ['metric', 'window'],
@@ -294,6 +513,25 @@ const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string>> = {
   digital_twin_run_completed:       ['pass_rate'],
   benchmark_score_recorded:         ['passed'],
   post_ship_outcome_recorded:       ['verdict', 'window'],
+  // Notifications (slack-adapter) — internal telemetry; nothing exposed to clients.
+  notification_sent:                [],
+  notification_failed:              [],
+  notification_fallback_email:      [],
+  // Cohort / community (slack-adapter) — internal.
+  cohort_invited:                   [],
+  cohort_win_posted:                [],
+  cohort_members_listed:            [],
+  // Ads (meta-ads-adapter) — internal; campaign ids etc. are founder-only.
+  ad_campaign_created:              [],
+  ad_campaign_updated:              [],
+  ad_set_created:                   [],
+  conversion_event_sent:            [],
+  // Calendar (calcom-adapter) — internal.
+  calendar_event_created:           [],
+  booking_fetched:                  [],
+  booking_cancelled:                [],
+  // Billing (stripe-adapter) — internal; never expose subscription internals.
+  subscription_changed:             [],
 };
 
 // Event types the client is allowed to see at all. Anything not in this set
