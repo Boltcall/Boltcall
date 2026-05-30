@@ -73,6 +73,23 @@ const ClientListPage = React.lazy(() => import('../pages/dashboard/agency/Client
 const ClientDetailPage = React.lazy(() => import('../pages/dashboard/agency/ClientDetailPage'));
 const FounderGate = React.lazy(() => import('../components/agency/FounderGate'));
 
+// ── Lazy loads — Client Portal (client-gated via AgencyClientGate) ───────
+// The portal is a separate route surface from the Agency OS founder UI.
+// Access is gated by "user has at least one active agency_clients row"
+// (status NOT IN ('churned','paused')); the gate component enforces this
+// client-side and the kernel's RLS policies enforce it server-side.
+const AgencyClientGate = React.lazy(() => import('../components/client/AgencyClientGate'));
+const ClientHomePage = React.lazy(() => import('../pages/client/ClientHomePage'));
+const ClientWelcomePage = React.lazy(() => import('../pages/client/ClientWelcomePage'));
+const ClientAgentPage = React.lazy(() => import('../pages/client/ClientAgentPage'));
+const ClientCallsPage = React.lazy(() => import('../pages/client/ClientCallsPage'));
+const ClientInsightsPage = React.lazy(() => import('../pages/client/ClientInsightsPage'));
+const ClientAdsPage = React.lazy(() => import('../pages/client/ClientAdsPage'));
+const ClientReportsPage = React.lazy(() => import('../pages/client/ClientReportsPage'));
+const ClientCirclePage = React.lazy(() => import('../pages/client/ClientCirclePage'));
+const ClientApprovalsPage = React.lazy(() => import('../pages/client/ClientApprovalsPage'));
+const ClientSettingsPage = React.lazy(() => import('../pages/client/ClientSettingsPage'));
+
 // ── Lazy loads — Dashboard settings ──────────────────────────────────────
 const QARubricsPage = React.lazy(() => import('../pages/dashboard/QARubricsPage'));
 const QAReviewPage = React.lazy(() => import('../pages/dashboard/QAReviewPage'));
@@ -350,6 +367,24 @@ const NavigationWrapper: React.FC = () => {
           <Route path="agency/health" element={<FounderGate><HealthPage /></FounderGate>} />
           <Route path="agency/clients" element={<FounderGate><ClientListPage /></FounderGate>} />
           <Route path="agency/clients/:id" element={<FounderGate><ClientDetailPage /></FounderGate>} />
+
+          {/* Client Portal — gated to users with an active agency_clients row.
+              Wraps each page in <AgencyClientGate> so non-clients hitting a
+              direct URL get the "reserved for managed clients" surface.
+              The portal lives at /dashboard/client/* (one route surface) so
+              clients keep using the same DashboardLayout shell as everyone
+              else; the sidebar (ClientPortalNavSection) is the only thing
+              that visually differentiates the portal. */}
+          <Route path="client" element={<AgencyClientGate><ClientHomePage /></AgencyClientGate>} />
+          <Route path="client/welcome" element={<AgencyClientGate><ClientWelcomePage /></AgencyClientGate>} />
+          <Route path="client/agent" element={<AgencyClientGate><ClientAgentPage /></AgencyClientGate>} />
+          <Route path="client/calls" element={<AgencyClientGate><ClientCallsPage /></AgencyClientGate>} />
+          <Route path="client/insights" element={<AgencyClientGate><ClientInsightsPage /></AgencyClientGate>} />
+          <Route path="client/ads" element={<AgencyClientGate><ClientAdsPage /></AgencyClientGate>} />
+          <Route path="client/reports" element={<AgencyClientGate><ClientReportsPage /></AgencyClientGate>} />
+          <Route path="client/circle" element={<AgencyClientGate><ClientCirclePage /></AgencyClientGate>} />
+          <Route path="client/approvals" element={<AgencyClientGate><ClientApprovalsPage /></AgencyClientGate>} />
+          <Route path="client/settings" element={<AgencyClientGate><ClientSettingsPage /></AgencyClientGate>} />
 
           {/* Pro-gated merged pages */}
           <Route path="leads" element={<PlanGate requiredPlan="pro"><LeadsPage /></PlanGate>} />
