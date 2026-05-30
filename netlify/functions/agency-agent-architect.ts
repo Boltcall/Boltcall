@@ -26,10 +26,15 @@
  *      can either re-do intake or escalate — we do NOT silently ship a
  *      half-baked prompt to a real customer line.
  *
- * Trigger: state-driven from `agency-state-router` (or invoked directly via
- *   POST { client_id, intake_call_id }) — fires when:
- *     - agency_intake_calls.extracted_profile is non-null
- *     - the matching intake-officer artifact is approved or shipped
+ * Trigger: POST from n8n intake-call-completed workflow after intake-officer
+ *   succeeds (extraction_score >= 0.7). The workflow waits for the intake
+ *   artifact to land in agency_artifacts, then chains here with the
+ *   intake_artifact_id pinned so this runner consumes the exact profile that
+ *   passed the extraction gate.
+ *
+ *   Also invocable directly via POST { client_id, intake_call_id? | intake_artifact_id? }
+ *   for retries / manual founder kicks. Authorization: Bearer of AGENCY_OS_SERVICE_TOKEN
+ *   is required for all POSTs (server-to-server only).
  *
  * Deploy: this runner produces the draft. The actual Retell agent provisioning
  * happens later in `agency-deploy-agent.ts` via
@@ -59,6 +64,13 @@ import { emitAgencyEvent } from './_shared/emit-agency-event';
 interface InvokeBody {
   client_id: string;
   intake_call_id?: string;
+  /**
+   * Pinned source-of-truth artifact id from agency_artifacts (type='agent_prompt').
+   * When set (the n8n chain sets this), we resolve the intake row via this artifact
+   * rather than picking the latest extracted_profile by recency — avoids races
+   * between concurrent intake calls for the same client.
+   */
+  intake_artifact_id?: string;
   /** Override for the persona count per category. Default 3. */
   personas_per_category?: number;
   /** Override for max iterations. Default 4. */
@@ -316,6 +328,29 @@ export const handler: Handler = async (event: HandlerEvent): Promise<HandlerResp
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
+  // ── Auth gate: server-to-server only.
+  // n8n's intake-call-completed chain forwards AGENCY_OS_SERVICE_TOKEN as a
+  // Bearer header. Any direct human / browser invocation will 401. We compare
+  // against the env value and refuse if either side is missing.
+  const expectedToken = process.env.AGENCY_OS_SERVICE_TOKEN;
+  if (!expectedToken) {
+    console.error('[agency-agent-architect] AGENCY_OS_SERVICE_TOKEN not configured — refusing all requests');
+    return { statusCode: 500, body: 'service token not configured' };
+  }
+  const rawAuth =
+    event.headers?.authorization ??
+    event.headers?.Authorization ??
+    '';
+  const bearerMatch = /^Bearer\s+(.+)$/i.exec(rawAuth.trim());
+  const providedToken = bearerMatch ? bearerMatch[1].trim() : '';
+  if (!providedToken || providedToken !== expectedToken) {
+    return {
+      statusCode: 401,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'unauthorized — valid Bearer AGENCY_OS_SERVICE_TOKEN required' }),
+    };
+  }
+
   let body: InvokeBody;
   try {
     body = JSON.parse(event.body || '{}');
@@ -323,7 +358,7 @@ export const handler: Handler = async (event: HandlerEvent): Promise<HandlerResp
     return { statusCode: 400, body: 'Invalid JSON' };
   }
 
-  const { client_id, intake_call_id, personas_per_category, max_iterations } = body;
+  const { client_id, intake_call_id, intake_artifact_id, personas_per_category, max_iterations } = body;
   if (!client_id) {
     return { statusCode: 400, body: 'client_id required' };
   }
@@ -332,6 +367,7 @@ export const handler: Handler = async (event: HandlerEvent): Promise<HandlerResp
     const result = await runArchitect({
       client_id,
       intake_call_id,
+      intake_artifact_id,
       personas_per_category: personas_per_category ?? 3,
       max_iterations: max_iterations ?? 4,
     });
@@ -353,6 +389,8 @@ export const handler: Handler = async (event: HandlerEvent): Promise<HandlerResp
 interface RunArchitectArgs {
   client_id: string;
   intake_call_id?: string;
+  /** Pinned source-of-truth agency_artifacts.id (type='agent_prompt') — set by n8n chain. */
+  intake_artifact_id?: string;
   personas_per_category: number;
   max_iterations: number;
 }
@@ -372,7 +410,15 @@ async function runArchitect(args: RunArchitectArgs): Promise<RunArchitectResult>
 
   // (a) Load client + intake call. The intake row is the source of the
   //     extracted_profile that the architect generates a prompt from.
-  const { client, intake } = await loadClientAndIntake(supabase, args.client_id, args.intake_call_id);
+  //     If intake_artifact_id is pinned (n8n chain), resolve the intake row
+  //     via that artifact so we use the EXACT profile that passed the
+  //     extraction_score gate — avoids races between concurrent intake calls.
+  const { client, intake } = await loadClientAndIntake(
+    supabase,
+    args.client_id,
+    args.intake_call_id,
+    args.intake_artifact_id,
+  );
 
   const vertical = (client.vertical ?? 'default') as string;
   const verticalKey = (PERSONA_SEEDS[vertical] ? vertical : 'default') as keyof typeof PERSONA_SEEDS;
@@ -805,6 +851,7 @@ async function loadClientAndIntake(
   supabase: SupabaseClient,
   client_id: string,
   intake_call_id?: string,
+  intake_artifact_id?: string,
 ): Promise<LoadedContext> {
   const { data: client, error: cErr } = await supabase
     .from('agency_clients')
@@ -813,6 +860,34 @@ async function loadClientAndIntake(
     .single();
   if (cErr || !client) {
     throw new Error(`agency_clients lookup failed for ${client_id}: ${cErr?.message ?? 'not found'}`);
+  }
+
+  // Resolution priority (most specific wins):
+  //   1. intake_artifact_id (n8n chain pin) — read the artifact, then resolve the
+  //      source intake call from its content. This ensures the profile that
+  //      passed the extraction_score gate is exactly what the architect builds on.
+  //   2. intake_call_id — direct pin from a manual / retry invocation.
+  //   3. fallback — latest intake row for the client with non-null extracted_profile.
+  let resolvedCallId = intake_call_id;
+
+  if (intake_artifact_id && !resolvedCallId) {
+    const { data: artifact, error: aErr } = await supabase
+      .from('agency_artifacts')
+      .select('id, content')
+      .eq('id', intake_artifact_id)
+      .eq('client_id', client_id)
+      .single();
+    if (aErr || !artifact) {
+      throw new Error(
+        `agency_artifacts lookup for intake_artifact_id=${intake_artifact_id} failed: ${aErr?.message ?? 'not found'}`,
+      );
+    }
+    const content = (artifact.content as Record<string, unknown> | null) ?? {};
+    const callIdFromArtifact =
+      (content.intake_call_id as string | undefined) ??
+      (content.call_id as string | undefined) ??
+      ((content.source as Record<string, unknown> | undefined)?.intake_call_id as string | undefined);
+    if (callIdFromArtifact) resolvedCallId = callIdFromArtifact;
   }
 
   // Latest intake with a non-null extracted_profile, unless caller pinned one.
@@ -824,11 +899,11 @@ async function loadClientAndIntake(
     .order('created_at', { ascending: false })
     .limit(1);
 
-  const { data: intakeRows, error: iErr } = intake_call_id
+  const { data: intakeRows, error: iErr } = resolvedCallId
     ? await supabase
         .from('agency_intake_calls')
         .select('id, extracted_profile')
-        .eq('id', intake_call_id)
+        .eq('id', resolvedCallId)
         .single()
         .then(r => ({ data: r.data ? [r.data] : null, error: r.error }))
     : await intakeQuery;
