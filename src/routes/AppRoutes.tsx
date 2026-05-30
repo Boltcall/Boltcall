@@ -66,13 +66,7 @@ const LocationDashboardPage = React.lazy(() => import('../pages/dashboard/Locati
 const GettingStartedPage = React.lazy(() => import('../pages/dashboard/GettingStartedPage'));
 const FeedbackPage = React.lazy(() => import('../pages/dashboard/FeedbackPage'));
 const BoltcallAgentPage = React.lazy(() => import('../pages/dashboard/BoltcallAgentPage'));
-// Agency OS — founder-only approval queue (Phase D). Gated inside the page
-// itself via app_metadata.role === 'founder'; renders a Forbidden screen for
-// non-founder accounts. Lazy-loaded so the queue's keyboard/auto-refresh
-// logic only ships to clients that visit /dashboard/agency/queue.
-const AgencyQueuePage = React.lazy(() => import('../pages/dashboard/agency/QueuePage'));
-
-// ── Lazy loads — Agency OS (founder-gated) ───────────────────────────────
+// ── Lazy loads — Agency OS (founder-gated via FounderGate) ───────────────
 const QueuePage = React.lazy(() => import('../pages/dashboard/agency/QueuePage'));
 const HealthPage = React.lazy(() => import('../pages/dashboard/agency/HealthPage'));
 const ClientListPage = React.lazy(() => import('../pages/dashboard/agency/ClientListPage'));
@@ -349,9 +343,6 @@ const NavigationWrapper: React.FC = () => {
           <Route path="getting-started" element={<GettingStartedPage />} />
           <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="feedback" element={<FeedbackPage />} />
-          {/* Agency OS founder approval queue — Phase D. Founder gate is enforced inside the page. */}
-          <Route path="agency/queue" element={<AgencyQueuePage />} />
-          <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="locations/:locationId" element={<LocationDashboardPage />} />
 
           {/* Agency OS — founder-only (JWT app_metadata.role === 'founder') */}
