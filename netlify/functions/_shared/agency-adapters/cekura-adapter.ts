@@ -38,6 +38,11 @@
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import {
+  emitAgencyEvent,
+  type AgencyEventType,
+  type AgencyEventSeverity,
+} from '../emit-agency-event';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -204,33 +209,125 @@ async function safeInsert(table: string, rows: any | any[]): Promise<boolean> {
   }
 }
 
+/**
+ * Route a cekura-adapter cost/outcome event through the canonical shared
+ * `emitAgencyEvent` helper. The shared helper validates the payload against
+ * the per-type Zod schema and writes to `public.agency_events` with the
+ * correct kernel columns (type / severity / payload / agent_name /
+ * created_at) — never the legacy `event_type` / `cost_usd` / `ts` columns
+ * which do not exist on the kernel table.
+ *
+ * Mirroring to `aios_event_log` is handled inside `emitAgencyEvent` (compact
+ * summary only — full payload stays in `agency_events`). No duplicate write
+ * from this adapter.
+ *
+ * Mapping (each adapter `event_type` → kernel `AgencyEventType`):
+ *   - cekura_fleet_generated     → cost_incurred       (provider=anthropic, Opus tokens)
+ *   - cekura_batch_completed     → digital_twin_run_completed
+ *   - cekura_playback_completed  → digital_twin_run_completed (no fleet, ad-hoc replay)
+ *   - cekura_proof_exported      → cost_incurred       (amount_usd=0, internal telemetry)
+ *   - anything else              → cost_incurred       (safe fallback)
+ *
+ * Throws are swallowed: this is telemetry; a schema rejection or DB error
+ * must never break the simulation pipeline.
+ */
 async function emitCostEvent(opts: {
-  event_type: string;
+  /**
+   * Adapter-local event kind name (e.g. 'cekura_batch_completed'). NOT the
+   * kernel column — the kernel column is `type`, populated by the dispatcher
+   * below after mapping each adapter kind to an allowed AgencyEventType.
+   */
+  kind: string;
   client_id?: string;
   cost_usd: number;
   payload: Record<string, any>;
 }): Promise<void> {
-  await safeInsert('aios_event_log', {
-    event_type: opts.event_type,
-    channel:    'voice',
-    subject_id: opts.client_id || null,
-    sentiment:  'neutral',
-    payload: {
-      ...opts.payload,
-      cost_usd: opts.cost_usd,
-    },
-    ts: new Date().toISOString(),
-  });
-  // Also write to agency_events if the table exists — it's the agency-OS
-  // canonical kernel log. Best-effort.
-  await safeInsert('agency_events', {
-    client_id:   opts.client_id || null,
-    event_type:  opts.event_type,
-    severity:    'info',
-    payload:     opts.payload,
-    cost_usd:    opts.cost_usd,
-    ts:          new Date().toISOString(),
-  });
+  const client_id = (opts.client_id ?? null) as unknown as string;
+  const p = opts.payload ?? {};
+
+  let type: AgencyEventType;
+  let severity: AgencyEventSeverity = 'info';
+  let typedPayload: Record<string, unknown>;
+
+  switch (opts.kind) {
+    case 'cekura_batch_completed':
+    case 'cekura_playback_completed': {
+      // digital_twin_run_completed schema:
+      //   run_id (req), artifact_id, persona_count (req, positive int),
+      //   pass_rate (req, 0-1), average_qa_score (req, 0-10),
+      //   failure_clusters (optional int count — NOT array).
+      type = 'digital_twin_run_completed';
+      const nCalls = Math.max(1, Number(p.n_calls ?? 1));
+      const avgQa = Number(p.avg_qa_score ?? 0);
+      // Approximate pass_rate from avg score (0-10) → (0-1) when not provided.
+      const passRate = typeof p.pass_rate === 'number'
+        ? Math.min(1, Math.max(0, p.pass_rate))
+        : Math.min(1, Math.max(0, avgQa / 10));
+      const failureClusterCount = Array.isArray(p.failure_clusters)
+        ? p.failure_clusters.length
+        : (typeof p.failure_clusters === 'number' ? p.failure_clusters : undefined);
+      typedPayload = {
+        run_id: String(p.fleet_id ?? `cekura-${opts.kind}-${Date.now()}`),
+        ...(p.artifact_id ? { artifact_id: String(p.artifact_id) } : {}),
+        persona_count: nCalls,
+        pass_rate: passRate,
+        average_qa_score: avgQa,
+        ...(typeof failureClusterCount === 'number'
+          ? { failure_clusters: failureClusterCount }
+          : {}),
+      };
+      break;
+    }
+    case 'cekura_fleet_generated': {
+      // cost_incurred schema with provider=anthropic (Opus tokens for
+      // persona clustering). Provider-specific metadata (fleet_id,
+      // n_personas, n_source_transcripts) is folded into allowed
+      // optional fields where it fits (`source`, `op`).
+      type = 'cost_incurred';
+      typedPayload = {
+        category: 'cekura_fleet_generation',
+        provider: 'anthropic',
+        amount_usd: Number(opts.cost_usd ?? 0),
+        op: opts.kind,
+        source: `fleet=${String(p.fleet_id ?? '')};n_personas=${String(p.n_personas ?? '')};n_transcripts=${String(p.n_source_transcripts ?? '')}`,
+      };
+      break;
+    }
+    case 'cekura_proof_exported':
+    default: {
+      // cost_incurred fallback. Cekura proof export has no associated
+      // model spend; amount_usd is whatever the caller declared
+      // (typically 0). provider='other' so this stays distinguishable
+      // from Anthropic spend in cost dashboards.
+      type = 'cost_incurred';
+      typedPayload = {
+        category: opts.kind,
+        provider: 'other',
+        amount_usd: Number(opts.cost_usd ?? 0),
+        op: opts.kind,
+        source: typeof p.fleet_id === 'string' ? `fleet=${p.fleet_id}` : 'cekura-adapter',
+      };
+      break;
+    }
+  }
+
+  try {
+    await emitAgencyEvent({
+      client_id,
+      agent_name: 'cekura-adapter',
+      type,
+      severity,
+      payload: typedPayload,
+    });
+  } catch (err: any) {
+    // Telemetry must never break the simulation pipeline. Log without the
+    // payload (PII) — the shared helper has already logged the per-field
+    // issue codes if this was a schema rejection.
+    console.warn(
+      `[cekura-adapter] emitAgencyEvent failed (non-blocking) for ` +
+      `kind=${opts.kind} type=${type}: ${err?.message ?? String(err)}`,
+    );
+  }
 }
 
 /**
@@ -548,7 +645,7 @@ export async function generatePersonaFleet(opts: {
   );
 
   await emitCostEvent({
-    event_type: 'cekura_fleet_generated',
+    kind: 'cekura_fleet_generated',
     client_id:  opts.client_id,
     cost_usd,
     payload: {
@@ -708,7 +805,7 @@ export async function runSimulationBatch(opts: {
   });
 
   await emitCostEvent({
-    event_type: 'cekura_batch_completed',
+    kind: 'cekura_batch_completed',
     cost_usd,
     payload: {
       fleet_id:       resolvedFleetId,
@@ -824,7 +921,7 @@ export async function playbackHistoricalCalls(opts: {
   );
 
   await emitCostEvent({
-    event_type: 'cekura_playback_completed',
+    kind: 'cekura_playback_completed',
     client_id:  opts.client_id,
     cost_usd,
     payload: {
@@ -996,7 +1093,7 @@ export async function exportClientFacingProof(opts: {
   );
 
   await emitCostEvent({
-    event_type: 'cekura_proof_exported',
+    kind: 'cekura_proof_exported',
     client_id:  opts.client_id,
     cost_usd:   0,
     payload: {
