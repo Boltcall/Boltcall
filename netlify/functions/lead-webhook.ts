@@ -6,6 +6,7 @@ import { getSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { authenticateApiKey } from './_shared/validate-api-key';
 import { verifyFacebookSignature } from './_shared/verify-signatures';
+import { handleInboundLead } from './_shared/lead-response-service';
 
 /**
  * Lead Webhook — receives leads from external sources and inserts into Supabase `leads` table.
@@ -110,7 +111,7 @@ function parseFacebookFieldData(fieldData: Array<{ name: string; values: string[
 }
 
 // Process a Facebook leadgen webhook payload
-async function handleFacebookLeadgen(body: any, supabase: ReturnType<typeof createClient>) {
+async function handleFacebookLeadgen(body: any, supabase: any) {
   const results: any[] = [];
   const errors: string[] = [];
 
@@ -180,34 +181,18 @@ async function handleFacebookLeadgen(body: any, supabase: ReturnType<typeof crea
         continue;
       }
 
-      const { data, error: insertErr } = await supabase
-        .from('leads')
-        .insert(leadRow)
-        .select()
-        .single();
+      const outcome = await handleInboundLead({
+        body: leadRow,
+        source: 'facebook_ads',
+      }, leadResponseDeps(supabase));
 
-      if (insertErr) {
-        errors.push(`Insert failed for leadgen_id=${leadgen_id}: ${insertErr.message}`);
+      if (outcome.status !== 'captured') {
+        errors.push(`Lead response failed for leadgen_id=${leadgen_id}: ${outcome.warnings.join(', ') || outcome.status}`);
       } else {
-        results.push(data);
-        // Fire user webhooks for Facebook leads
-        if (userId && data) {
-          fireWebhooks(userId, 'new_lead', {
-            id: data.id,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            email: data.email,
-            phone: data.phone,
-            source: data.source,
-            status: data.status,
-            created_at: data.created_at,
-          });
-          // Instant response call — fire-and-forget, non-blocking
-          if (data.phone) {
-            triggerInstantResponseCall(userId, data.phone, 'facebook_ads', supabase).catch(() => {});
-          }
-        }
+        results.push(outcome.lead);
       }
+
+          // Instant response call — fire-and-forget, non-blocking
     }
   }
 
@@ -245,8 +230,8 @@ async function triggerInstantResponseCall(
 
   const agentId: string | undefined =
     (agentRow as any)?.retell_agent_id ||
-    (agentRow?.api_keys as any)?.retell_agent_id;
-  const fromNumber = phoneRow?.phone_number;
+    ((agentRow as any)?.api_keys as any)?.retell_agent_id;
+  const fromNumber = (phoneRow as any)?.phone_number;
 
   if (!agentId || !fromNumber) {
     console.warn(`[lead-webhook] No agent/phone for instant response, user=${userId}`);
@@ -255,7 +240,7 @@ async function triggerInstantResponseCall(
 
   try {
     const retell = new Retell({ apiKey: retellApiKey });
-    await retell.call.createPhoneCall({
+    await (retell as any).call.createPhoneCall({
       from_number: fromNumber,
       to_number: toNumber,
       agent_id: agentId,
@@ -265,6 +250,37 @@ async function triggerInstantResponseCall(
   } catch (err: any) {
     console.error('[lead-webhook] Instant response call failed (non-blocking):', err?.message || err);
   }
+}
+
+function leadResponseDeps(supabase: any) {
+  const retellApiKey = process.env.RETELL_API_KEY;
+  return {
+    supabase,
+    retellApiKey,
+    retellFactory: retellApiKey ? () => new Retell({ apiKey: retellApiKey }) : undefined,
+    fireWebhooks,
+    syncCrm: async (lead: Record<string, any>, userId: string, originalBody: Record<string, any>) => {
+      const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+      await fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sync_lead',
+          userId,
+          lead: {
+            name: originalBody.name || null,
+            first_name: lead.first_name || null,
+            last_name: lead.last_name || null,
+            phone: lead.phone || null,
+            email: lead.email || null,
+            source: lead.source || 'web_form',
+            status: lead.status || 'new',
+            notes: originalBody.notes || originalBody.message || null,
+          },
+        }),
+      });
+    },
+  };
 }
 
 export const handler: Handler = async (event) => {
@@ -372,6 +388,50 @@ export const handler: Handler = async (event) => {
       };
     }
 
+    try {
+      const outcome = await handleInboundLead({
+        body,
+        source: body.source || 'website_form',
+      }, leadResponseDeps(supabase));
+
+      if (outcome.status === 'rejected') {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: outcome.warnings.join(', ') || 'Lead rejected', outcome }),
+        };
+      }
+
+      if (outcome.status === 'failed') {
+        await notifyError('lead-webhook: Lead processing failed', new Error(outcome.warnings.join(', ') || 'lead processing failed'), {
+          source: body.source || 'website_form',
+          email: body.email || 'none',
+          phone: body.phone || body.phone_number || 'none',
+        });
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Failed to insert lead. Our team has been notified.', outcome }),
+        };
+      }
+
+      return {
+        statusCode: 201,
+        headers,
+        body: JSON.stringify({ success: true, lead: outcome.lead, outcome }),
+      };
+    } catch (error) {
+      console.error('Lead webhook error:', error);
+      await notifyError('lead-webhook: Unhandled exception', error);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: 'Lead processing failed. Our team has been notified.',
+        }),
+      };
+    }
+
     const lead = normalizeLead(body);
 
     try {
@@ -407,7 +467,7 @@ export const handler: Handler = async (event) => {
         });
         // Instant response call — fire-and-forget, non-blocking
         if (data.phone) {
-          triggerInstantResponseCall(lead.user_id, data.phone, lead.source || 'website_form', supabase).catch(() => {});
+          triggerInstantResponseCall(lead.user_id, data.phone, lead.source || 'website_form', supabase as any).catch(() => {});
         }
       }
 
