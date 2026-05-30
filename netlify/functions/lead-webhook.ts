@@ -38,33 +38,6 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-// Normalize incoming lead data from various formats into our leads table schema
-// Table columns: id, source, first_name, last_name, email, phone, status, call_status,
-// call_id, call_duration, sms_sent, sms_sid, raw_data, last_contact_at, created_at
-function normalizeLead(body: any): Record<string, any> {
-  // Parse name into first/last
-  let firstName = body.first_name || '';
-  let lastName = body.last_name || '';
-  if (!firstName && !lastName) {
-    const fullName = body.name || body.full_name || '';
-    const parts = fullName.trim().split(/\s+/);
-    firstName = parts[0] || '';
-    lastName = parts.slice(1).join(' ') || '';
-  }
-
-  const lead: Record<string, any> = {
-    first_name: firstName || null,
-    last_name: lastName || null,
-    email: body.email || null,
-    phone: body.phone || body.phone_number || null,
-    source: body.source || body.source_type || body.acquisition_source || 'website_form',
-    status: body.status || 'pending',
-    raw_data: body,
-  };
-  if (body.user_id) lead.user_id = body.user_id;
-  return lead;
-}
-
 // Handle Facebook webhook verification (GET)
 function handleFacebookVerification(params: Record<string, string | undefined>) {
   const mode = params['hub.mode'];
@@ -192,64 +165,10 @@ async function handleFacebookLeadgen(body: any, supabase: any) {
         results.push(outcome.lead);
       }
 
-          // Instant response call — fire-and-forget, non-blocking
     }
   }
 
   return { results, errors };
-}
-
-// Trigger an instant outbound Retell call for a new lead (fire-and-forget)
-async function triggerInstantResponseCall(
-  userId: string,
-  toNumber: string,
-  source: string,
-  supabase: ReturnType<typeof createClient>
-): Promise<void> {
-  const retellApiKey = process.env.RETELL_API_KEY;
-  if (!retellApiKey) return;
-
-  // Look up the user's agent — direct retell_agent_id column primary, legacy
-  // api_keys JSONB nesting as fallback. Newer rows have api_keys = {} so the
-  // JSONB-only read would silently miss every modern agent.
-  const [{ data: agentRow }, { data: phoneRow }] = await Promise.all([
-    supabase
-      .from('agents')
-      .select('retell_agent_id, api_keys')
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from('phone_numbers')
-      .select('phone_number')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  const agentId: string | undefined =
-    (agentRow as any)?.retell_agent_id ||
-    ((agentRow as any)?.api_keys as any)?.retell_agent_id;
-  const fromNumber = (phoneRow as any)?.phone_number;
-
-  if (!agentId || !fromNumber) {
-    console.warn(`[lead-webhook] No agent/phone for instant response, user=${userId}`);
-    return;
-  }
-
-  try {
-    const retell = new Retell({ apiKey: retellApiKey });
-    await (retell as any).call.createPhoneCall({
-      from_number: fromNumber,
-      to_number: toNumber,
-      agent_id: agentId,
-      metadata: { source, user_id: userId },
-    });
-    console.log(`[lead-webhook] Instant response call triggered to ${toNumber} (source=${source})`);
-  } catch (err: any) {
-    console.error('[lead-webhook] Instant response call failed (non-blocking):', err?.message || err);
-  }
 }
 
 function leadResponseDeps(supabase: any) {
@@ -432,86 +351,6 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    const lead = normalizeLead(body);
-
-    try {
-      const { data, error } = await supabase
-        .from('leads')
-        .insert(lead)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Supabase insert error:', error);
-        await notifyError('lead-webhook: Lead insert failed', error, {
-          source: lead.source, email: lead.email || 'none', phone: lead.phone || 'none',
-        });
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({ error: 'Failed to insert lead. Our team has been notified.' }),
-        };
-      }
-
-      // Fire user webhooks (Zapier, Make, etc.)
-      if (lead.user_id && data) {
-        fireWebhooks(lead.user_id, 'new_lead', {
-          id: data.id,
-          first_name: data.first_name,
-          last_name: data.last_name,
-          email: data.email,
-          phone: data.phone,
-          source: data.source,
-          status: data.status,
-          created_at: data.created_at,
-        });
-        // Instant response call — fire-and-forget, non-blocking
-        if (data.phone) {
-          triggerInstantResponseCall(lead.user_id, data.phone, lead.source || 'website_form', supabase as any).catch(() => {});
-        }
-      }
-
-      // Sync lead to connected CRMs (fire-and-forget)
-      if (lead.user_id) {
-        const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
-        fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'sync_lead',
-            userId: lead.user_id,
-            lead: {
-              name: body.name || null,
-              first_name: lead.first_name || null,
-              last_name: lead.last_name || null,
-              phone: lead.phone || null,
-              email: lead.email || null,
-              source: lead.source || 'web_form',
-              status: lead.status || 'new',
-              notes: body.notes || body.message || null,
-            },
-          }),
-        }).catch(err => {
-          console.error('[lead-webhook] CRM sync failed (non-blocking):', err);
-        });
-      }
-
-      return {
-        statusCode: 201,
-        headers,
-        body: JSON.stringify({ success: true, lead: data }),
-      };
-    } catch (error) {
-      console.error('Lead webhook error:', error);
-      await notifyError('lead-webhook: Unhandled exception', error);
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({
-          error: 'Lead processing failed. Our team has been notified.',
-        }),
-      };
-    }
   }
 
   return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
