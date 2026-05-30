@@ -12,9 +12,12 @@
  *     alternatives_rejected on every artifact (Feature #1)
  *   - generate-simulate-iterate loop for producer agents (agent-architect)
  *   - adversarial-critic stage with one rebuttal pass (Feature #7)
- *   - artifact insert into `agency_artifacts` (status='draft')
- *   - matching `agency_events` row with `why_explanation`
- *   - per-call `cost_incurred` event for cost dashboard
+ *   - artifact insert into `agency_artifacts` (status='draft') with dedicated
+ *     kernel columns populated (confidence, reasoning_trace, retrieved_context,
+ *     alternatives_rejected, adversarial_review, predicted_impact)
+ *   - matching `agency_events` row emitted via shared kernel `emitAgencyEvent`
+ *     with artifact_type → event_type mapping (see ARTIFACT_TO_EVENT_TYPE)
+ *   - per-call `cost_incurred` event via the shared kernel for cost dashboard
  *   - one-shot transient-error retry + loud `adapter_error` on second failure
  *
  * The harness does NOT ship artifacts. That's a separate concern handled by the
@@ -27,12 +30,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServiceSupabase } from '../token-utils';
 
-// ─────────────────────────────────────────────────────────────────────────────
-//   Parallel-task stubs — these files are written by sibling agents in this
-//   phase. Importing them by relative path lets TS compile in the meantime.
-// ─────────────────────────────────────────────────────────────────────────────
-import { classifyDifficulty } from './router-classifier';
+import { classifyDifficulty, routeModel } from './router-classifier';
 import { retrieve } from '../agency-knowledge/retrieve';
+import { emitAgencyEvent } from '../emit-agency-event';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Types
@@ -49,7 +49,10 @@ export type ArtifactType =
   | 'optimization_brief'
   | 'prompt_revision'
   | 'client_outreach'
-  | 'escalation_action';
+  | 'escalation_action'
+  | 'digital_twin_seed'
+  | 'experiment_plan'
+  | 'expansion_pitch';
 
 export interface IterationCheckResult {
   pass: boolean;
@@ -80,6 +83,17 @@ export interface RunAgentOptions<TInput, TOutput> {
   knowledge_k?: number;
   /** Optional pre-formed retrieval query; default = JSON.stringify(input). */
   knowledge_query?: string;
+  /**
+   * Optional one-line summary of the input for the router-classifier. If
+   * omitted, the harness builds a generic summary. Better summaries → better
+   * routing decisions; callers should pass one whenever they can.
+   */
+  router_summary?: string;
+  /**
+   * The agent's "natural" default tier — used by routeModel() as the anchor
+   * the classifier bumps up/down from. Defaults to 'sonnet'.
+   */
+  agent_default_tier?: ModelTier;
 }
 
 export interface AdversarialReview {
@@ -177,6 +191,31 @@ const DEFAULT_TOOL_NAME = 'emit_structured_output';
 const DEFAULT_MAX_TOKENS = 4096;
 const DEFAULT_KNOWLEDGE_K = 10;
 
+// ─────────────────────────────────────────────────────────────────────────────
+//   Artifact → event-type mapping (per Phase B fix spec §3)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The kernel event-bus has a strict union of allowed event types. Several
+// artifact types do NOT have a 1:1 matching event type — e.g. shipping a
+// `weekly_report` artifact emits `report_sent`. This table is the single
+// source of truth for that translation; do NOT pass artifact_type straight
+// through as the event type.
+
+const ARTIFACT_TO_EVENT_TYPE: Record<ArtifactType, string> = {
+  agent_prompt: 'agent_deployed',
+  knowledge_base: 'agent_deployed',
+  ad_creative: 'creative_published',
+  ad_copy: 'creative_published',
+  weekly_report: 'report_sent',
+  optimization_brief: 'optimization_brief_queued',
+  prompt_revision: 'prompt_revised',
+  client_outreach: 'notification_sent',
+  escalation_action: 'escalation_action_drafted',
+  digital_twin_seed: 'digital_twin_run_completed',
+  experiment_plan: 'optimization_brief_queued',
+  expansion_pitch: 'expansion_candidate_identified',
+};
+
 // Critic templates per artifact type — used when the skill_dir doesn't supply
 // its own `adversarial-critic.md`.
 const DEFAULT_CRITIC_TEMPLATES: Record<ArtifactType, string> = {
@@ -198,6 +237,12 @@ const DEFAULT_CRITIC_TEMPLATES: Record<ArtifactType, string> = {
     'You are an adversarial reviewer of client outreach. Attack: tone-mismatch with the client, generic openers, missing specific evidence, weak ask, anything that reads as automated. Return concrete findings only.',
   escalation_action:
     'You are an adversarial reviewer of an escalation action. Attack: is the root cause hypothesis actually supported, is the proposed action reversible, is the rollback path defined. Return concrete findings only.',
+  digital_twin_seed:
+    'You are an adversarial reviewer of a digital-twin persona seed. Attack: do the personas cover the real call distribution, are objections + accents + scenarios concrete enough to drive a useful simulation, are any personas near-duplicates, do they include adversarial / regulated-output edge cases. Return concrete findings only.',
+  experiment_plan:
+    'You are an adversarial reviewer of an experiment plan. Attack: are the hypotheses falsifiable, are sample sizes adequate, is the success metric the right one, is there a defined rollback trigger if the experiment regresses, are there confounds. Return concrete findings only.',
+  expansion_pitch:
+    "You are an adversarial reviewer of an expansion pitch. Attack: is the predicted lift defensible, is the simulated-value evidence specific, is the ask aligned with the prospect's actual stage, does the pitch over-promise. Return concrete findings only.",
 };
 
 // Errors that are worth one retry. Everything else fails immediately.
@@ -227,6 +272,8 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     ship_target,
     knowledge_k = DEFAULT_KNOWLEDGE_K,
     knowledge_query,
+    router_summary,
+    agent_default_tier = 'sonnet',
   } = options;
 
   // (a) Load SKILL.md + prompt.md + output-schema.json from skill_dir.
@@ -247,9 +294,9 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     model_hint ??
     (await pickTierViaRouter({
       agent_name,
-      client_id,
       input,
-      supabase,
+      agent_default_tier,
+      router_summary,
     }));
 
   // (c) RAG pre-pass.
@@ -258,7 +305,6 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     agent_name,
     query: knowledge_query ?? safeStringify(input),
     k: knowledge_k,
-    supabase,
   });
 
   // Build the initial user message. The agent prompt template can reference
@@ -282,7 +328,7 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
   let totalCost = 0;
   let output: TOutput | undefined;
   let lastModel = MODEL_IDS[tier];
-  const iterationHistory: Array<{ iteration: number; pass: boolean; why?: string }> = [];
+  const iteration_history: Array<{ iteration: number; pass: boolean; why?: string }> = [];
 
   const conversation: Anthropic.MessageParam[] = [
     { role: 'user', content: baseUserMessage },
@@ -302,7 +348,7 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
           client_id,
         });
       } catch (err) {
-        await emitAdapterError(supabase, client_id, agent_name, 'callClaude failed', err);
+        await safeEmitAdapterError(client_id, agent_name, 'callClaude failed', err);
         throw err;
       }
 
@@ -326,8 +372,7 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
       }
 
       // Second failure → loud event + throw.
-      await emitAdapterError(
-        supabase,
+      await safeEmitAdapterError(
         client_id,
         agent_name,
         `schema validation failed twice: ${validation.reason}`,
@@ -349,7 +394,7 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     // (e) Iteration guard (generate-simulate-iterate).
     if (max_iterations > 1 && iteration_check) {
       const guard = await iteration_check(output);
-      iterationHistory.push({ iteration, pass: guard.pass, why: guard.why });
+      iteration_history.push({ iteration, pass: guard.pass, why: guard.why });
       if (guard.pass) break;
       if (iteration >= max_iterations) break;
 
@@ -381,7 +426,6 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
       tier,
       criticPrompt,
       artifact: output,
-      supabase,
     });
     totalCost += critic.cost_usd;
 
@@ -395,7 +439,6 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
         priorOutput: output,
         findings: critic.findings,
         output_schema: enforcedSchema,
-        supabase,
       });
       totalCost += rebuttalResult.cost_usd;
       rebuttals = rebuttalResult.rebuttals;
@@ -418,7 +461,10 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
   const latency_ms = Date.now() - t0;
   const confidence = clampConfidence(output.confidence);
 
-  // (g) Insert artifact.
+  // (g) Insert artifact. Cross-cutting epistemic fields (confidence,
+  //     reasoning_trace, retrieved_context, alternatives_rejected,
+  //     adversarial_review, predicted_impact) go into dedicated kernel columns;
+  //     only the type-specific payload + iteration_history stay inside content.
   const artifact_id = await insertArtifact({
     supabase,
     client_id,
@@ -431,26 +477,23 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     confidence,
     retrieved_context,
     adversarial_review,
-    iteration_history: iterationHistory,
+    iteration_history,
     ship_target,
   });
 
-  // (h) Matching event.
-  await emitAgencyEvent({
-    supabase,
+  // (h) Matching kernel event. artifact_type is translated to the canonical
+  //     event_type via ARTIFACT_TO_EVENT_TYPE (e.g. agent_prompt → agent_deployed).
+  await safeEmitArtifactEvent({
     client_id,
     agent_name,
-    type: artifact_type,
-    severity: 'info',
-    payload: {
-      artifact_id,
-      iterations: iteration,
-      cost_usd: totalCost,
-      latency_ms,
-      confidence,
-      model: lastModel,
-    },
-    why_explanation: summarizeWhy(agent_name, artifact_type, output, confidence, iteration),
+    artifact_type,
+    artifact_id,
+    iterations: iteration,
+    cost_usd: totalCost,
+    latency_ms,
+    confidence,
+    model: lastModel,
+    output,
   });
 
   return {
@@ -697,28 +740,38 @@ function schemasShallowMatch(a: JsonSchemaObject, b: JsonSchemaObject): boolean 
 
 async function pickTierViaRouter(args: {
   agent_name: string;
-  client_id: string;
   input: unknown;
-  supabase: SupabaseClient;
+  agent_default_tier: ModelTier;
+  router_summary?: string;
 }): Promise<ModelTier> {
   try {
-    const difficulty = await classifyDifficulty({
+    const inputStr = safeStringify(args.input);
+    const summary =
+      args.router_summary && args.router_summary.trim().length > 0
+        ? args.router_summary
+        : `Agent ${args.agent_name} processing input (${inputStr.length} chars)`;
+
+    const { difficulty } = await classifyDifficulty({
       agent_name: args.agent_name,
-      client_id: args.client_id,
-      input: args.input,
+      summary,
+      payload_size_chars: inputStr.length,
     });
-    // Map router output to a tier. The router returns trivial|normal|hard;
-    // the agent's natural tier is bumped up one step on hard inputs.
-    if (difficulty === 'hard') return 'opus';
-    if (difficulty === 'normal') return 'sonnet';
-    return 'haiku';
+
+    // Delegate the tier math to routeModel so the bump/clamp policy lives in
+    // one place (and so the routing decision gets logged via router-classifier's
+    // built-in cost-event side effect).
+    return routeModel({
+      agent_name: args.agent_name,
+      agent_default_tier: args.agent_default_tier,
+      difficulty,
+    });
   } catch (err) {
     console.warn(
-      `[run-agent:${args.agent_name}] router-classifier failed, defaulting to sonnet: ${
+      `[run-agent:${args.agent_name}] router-classifier failed, defaulting to ${args.agent_default_tier}: ${
         (err as Error).message
       }`,
     );
-    return 'sonnet';
+    return args.agent_default_tier;
   }
 }
 
@@ -727,16 +780,21 @@ async function safeRetrieve(args: {
   agent_name: string;
   query: string;
   k: number;
-  supabase: SupabaseClient;
 }): Promise<KnowledgeChunk[]> {
   try {
-    const chunks = await retrieve({
+    const result = await retrieve({
       client_id: args.client_id,
-      query: args.query,
+      query_text: args.query,
       k: args.k,
-      agent_name: args.agent_name,
     });
-    return Array.isArray(chunks) ? (chunks as KnowledgeChunk[]) : [];
+    // retrieve() returns { chunks, cost_usd }; map RetrievedChunk → KnowledgeChunk.
+    const chunks = Array.isArray(result?.chunks) ? result.chunks : [];
+    return chunks.map((c) => ({
+      id: c.id,
+      kind: c.kind,
+      content: c.content,
+      score: c.similarity,
+    }));
   } catch (err) {
     // Retrieval is a soft dependency — never fail the agent because RAG broke.
     console.warn(
@@ -763,7 +821,6 @@ async function runCritic(args: {
   tier: ModelTier;
   criticPrompt: string;
   artifact: unknown;
-  supabase: SupabaseClient;
 }): Promise<CriticResult> {
   // Critic uses one tier lower than the producer (cost-contained). Opus -> Sonnet,
   // Sonnet -> Haiku, Haiku stays Haiku.
@@ -824,7 +881,6 @@ async function runRebuttal<TOutput extends CrossCuttingArtifactFields>(args: {
   priorOutput: TOutput;
   findings: string[];
   output_schema: JsonSchemaObject;
-  supabase: SupabaseClient;
 }): Promise<RebuttalResult<TOutput>> {
   const rebuttalSystem = [
     args.systemPrompt,
@@ -904,31 +960,49 @@ interface InsertArtifactArgs {
 }
 
 async function insertArtifact(args: InsertArtifactArgs): Promise<string> {
-  // `content` carries the agent payload + the cross-cutting epistemic context.
-  // The schema column on agency_artifacts is `content jsonb`; columns like
-  // confidence/retrieved_context/adversarial_review may not exist yet on the
-  // base table (plan ships them additive). We store them inside `content` so
-  // this code works against the v1 migration; if a follow-up migration adds
-  // dedicated columns, those can be promoted from here in one place.
+  // The kernel migration (`20260530_agency_kernel.sql`) created dedicated
+  // columns for the cross-cutting epistemic fields. Promote them out of the
+  // `content` jsonb blob and into their real columns:
+  //   - confidence              numeric(3,2)
+  //   - reasoning_trace         text[]   (CHECK array_length = 3)
+  //   - retrieved_context       jsonb
+  //   - alternatives_rejected   jsonb
+  //   - adversarial_review      jsonb
+  //   - predicted_impact        jsonb
+  //
+  // Only the type-specific payload + iteration_history stay inside `content`
+  // (no dedicated column exists for iteration_history in the kernel).
+
+  const predicted_impact_raw = args.output.predicted_impact;
   const predicted_impact =
-    typeof args.output.predicted_impact === 'object' && args.output.predicted_impact !== null
-      ? args.output.predicted_impact
-      : undefined;
+    predicted_impact_raw && typeof predicted_impact_raw === 'object'
+      ? (predicted_impact_raw as Record<string, unknown>)
+      : null;
 
   const content = {
     payload: stripCrossCutting(args.output),
-    confidence: args.confidence,
-    reasoning_trace: args.output.reasoning_trace,
-    alternatives_rejected: args.output.alternatives_rejected,
-    retrieved_context: args.retrieved_context.map((c) => ({
-      id: c.id,
-      kind: c.kind,
-      score: c.score,
-    })),
-    adversarial_review: args.adversarial_review ?? null,
     iteration_history: args.iteration_history,
-    predicted_impact: predicted_impact ?? null,
   };
+
+  // The kernel CHECK constraint requires reasoning_trace.length === 3. Pad with
+  // a sentinel if shorter, truncate if longer. Either way, log a warn so the
+  // upstream agent prompt can be tightened — the right answer is "always 3".
+  const normalized_reasoning_trace = normalizeReasoningTraceForColumn(
+    args.agent_name,
+    args.output.reasoning_trace,
+  );
+
+  // alternatives_rejected: jsonb column. schema-enforcement already validates
+  // it as an array; pass through as-is.
+  const alternatives_rejected = Array.isArray(args.output.alternatives_rejected)
+    ? args.output.alternatives_rejected
+    : [];
+
+  const retrieved_context_jsonb = args.retrieved_context.map((c) => ({
+    knowledge_id: c.id,
+    kind: c.kind,
+    score: c.score,
+  }));
 
   const { data, error } = await args.supabase
     .from('agency_artifacts')
@@ -942,6 +1016,14 @@ async function insertArtifact(args: InsertArtifactArgs): Promise<string> {
       ship_target: args.ship_target ?? null,
       cost_usd: args.cost_usd,
       latency_ms: args.latency_ms,
+
+      // Dedicated kernel columns (per phase-B fix spec §6).
+      confidence: args.confidence,
+      reasoning_trace: normalized_reasoning_trace,
+      retrieved_context: retrieved_context_jsonb,
+      alternatives_rejected,
+      adversarial_review: args.adversarial_review ?? null,
+      predicted_impact,
     })
     .select('id')
     .single();
@@ -968,67 +1050,188 @@ function stripCrossCutting(
     confidence: _c,
     reasoning_trace: _r,
     alternatives_rejected: _a,
+    predicted_impact: _p,
     ...rest
   } = output;
   void _c;
   void _r;
   void _a;
+  void _p;
   return rest;
 }
 
-interface EmitAgencyEventArgs {
-  supabase: SupabaseClient;
-  client_id: string;
-  agent_name: string;
-  type: string;
-  severity: 'debug' | 'info' | 'warn' | 'error' | 'critical';
-  payload: Record<string, unknown>;
-  why_explanation?: string;
+/**
+ * Enforce the kernel `reasoning_trace` CHECK constraint (array_length = 3).
+ * If the agent emitted fewer than 3 bullets, pad with a sentinel; if more,
+ * truncate to the first 3. Either case logs a warn so the upstream agent
+ * prompt can be fixed — the contract is exactly 3.
+ */
+function normalizeReasoningTraceForColumn(
+  agent_name: string,
+  raw: unknown,
+): string[] {
+  const arr = Array.isArray(raw) ? raw.filter((b): b is string => typeof b === 'string') : [];
+  if (arr.length === 3) return arr;
+
+  if (arr.length > 3) {
+    console.warn(
+      `[run-agent:${agent_name}] reasoning_trace had ${arr.length} entries; truncated to 3 to satisfy kernel CHECK.`,
+    );
+    return arr.slice(0, 3);
+  }
+
+  console.warn(
+    `[run-agent:${agent_name}] reasoning_trace had ${arr.length} entries; padded to 3 to satisfy kernel CHECK.`,
+  );
+  const padded = [...arr];
+  while (padded.length < 3) padded.push('(no additional reasoning provided)');
+  return padded;
 }
 
-async function emitAgencyEvent(args: EmitAgencyEventArgs): Promise<void> {
-  const row = {
-    client_id: args.client_id,
-    agent_name: args.agent_name,
-    type: args.type,
-    severity: args.severity,
-    payload: {
-      ...args.payload,
-      ...(args.why_explanation ? { why_explanation: args.why_explanation } : {}),
-    },
-  };
-  const { error } = await args.supabase.from('agency_events').insert(row);
-  if (error) {
-    console.error(
-      `[run-agent:${args.agent_name}] agency_events insert failed: ${error.message}`,
+// ─────────────────────────────────────────────────────────────────────────────
+//   Event emission helpers (all delegate to the shared kernel emitter)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Emit the post-artifact-creation kernel event. Maps `artifact_type` →
+ * canonical `event_type` (see ARTIFACT_TO_EVENT_TYPE). Falls back to
+ * `agent_deployed` if the mapping table is missing the artifact type
+ * (defensive — should never happen because the mapping covers every
+ * member of the ArtifactType union).
+ *
+ * The shared kernel emitAgencyEvent() validates payloads against a strict
+ * per-type Zod schema, so the payload here is shaped to satisfy each
+ * mapped event's schema. We populate the schema-required keys + (where the
+ * schema allows it) an `op` field carrying the original artifact_type so
+ * downstream consumers can still tell what was generated.
+ *
+ * Never throws (wrapped in try/catch) — a downed event-bus must not block
+ * a successful artifact insert.
+ */
+async function safeEmitArtifactEvent(args: {
+  client_id: string;
+  agent_name: string;
+  artifact_type: ArtifactType;
+  artifact_id: string;
+  iterations: number;
+  cost_usd: number;
+  latency_ms: number;
+  confidence: number;
+  model: string;
+  output: Record<string, unknown> & CrossCuttingArtifactFields;
+}): Promise<void> {
+  const event_type =
+    ARTIFACT_TO_EVENT_TYPE[args.artifact_type] ?? 'agent_deployed';
+
+  // Build a payload shape that satisfies the mapped event type's Zod schema.
+  // The shared kernel rejects unknown keys (strict), so each branch must
+  // emit ONLY the fields its schema allows.
+  let payload: Record<string, unknown>;
+
+  switch (event_type) {
+    case 'agent_deployed':
+      payload = {
+        artifact_id: args.artifact_id,
+        agent_version: args.model,
+      };
+      break;
+    case 'creative_published':
+      payload = {
+        artifact_id: args.artifact_id,
+        // No platform known at draft time; the deploy handler emits a second
+        // post-ship `creative_published` with the real platform. Sentinel
+        // 'other' satisfies the enum.
+        platform: 'other',
+      };
+      break;
+    case 'report_sent':
+      payload = {
+        report_id: args.artifact_id,
+        delivery_channel: 'portal',
+      };
+      break;
+    case 'optimization_brief_queued':
+      payload = {
+        artifact_id: args.artifact_id,
+        experiment_count: 0,
+      };
+      break;
+    case 'prompt_revised':
+      payload = {
+        artifact_id: args.artifact_id,
+        reason: `Generated by ${args.agent_name}`,
+      };
+      break;
+    case 'notification_sent':
+      // client_outreach → notification_sent. Per spec §8, notification_sent
+      // schema accepts an `op` field carrying the originating artifact_type.
+      // Do NOT add unknown keys (strict zod will reject).
+      payload = {
+        op: args.artifact_type,
+      };
+      break;
+    case 'escalation_action_drafted':
+      payload = {
+        artifact_id: args.artifact_id,
+        action_type: 'other',
+        reversible: true,
+      };
+      break;
+    case 'digital_twin_run_completed':
+      // digital_twin_seed → digital_twin_run_completed. The schema requires
+      // run-stat fields we don't have at draft time; placeholders.
+      payload = {
+        run_id: args.artifact_id,
+        artifact_id: args.artifact_id,
+        persona_count: 1,
+        pass_rate: 0,
+        average_qa_score: 0,
+      };
+      break;
+    case 'expansion_candidate_identified':
+      payload = {
+        candidate_user_id: args.client_id,
+        signals: [`expansion_pitch:${args.artifact_id}`],
+      };
+      break;
+    default:
+      payload = { artifact_id: args.artifact_id };
+  }
+
+  try {
+    await emitAgencyEvent({
+      client_id: args.client_id,
+      agent_name: args.agent_name,
+      // Cast: the union accepted by emitAgencyEvent is broader than our local
+      // mapping range; runtime validation lives in the kernel.
+      type: event_type as Parameters<typeof emitAgencyEvent>[0]['type'],
+      severity: 'info',
+      payload,
+      why_explanation: summarizeWhy(
+        args.agent_name,
+        args.artifact_type,
+        args.output,
+        args.confidence,
+        args.iterations,
+      ),
+    });
+  } catch (err) {
+    console.warn(
+      `[run-agent:${args.agent_name}] artifact event emission failed (non-fatal) ` +
+        `event_type=${event_type} err=${(err as Error).message}`,
     );
   }
 }
 
-async function emitAdapterError(
-  supabase: SupabaseClient,
-  client_id: string,
-  agent_name: string,
-  description: string,
-  err: unknown,
-): Promise<void> {
-  await emitAgencyEvent({
-    supabase,
-    client_id,
-    agent_name,
-    type: 'adapter_error',
-    severity: 'error',
-    payload: {
-      description,
-      error:
-        err instanceof Error
-          ? { message: err.message, name: err.name }
-          : { message: String(err) },
-    },
-    why_explanation: `${agent_name} hit an adapter error: ${description}`,
-  });
-}
-
+/**
+ * Emit an adapter_error via the shared kernel. Best-effort; never throws.
+ * Used both inside the runAgent loop (artifact insert failure, schema
+ * validation failure) and inside callClaude (Claude API failure).
+ *
+ * The shared kernel's adapter_error schema (per spec §8) requires
+ * `adapter`, `operation`, `error_message`; `error_class`, `description`,
+ * `retryable`, `op` are optional.
+ */
 async function safeEmitAdapterError(
   client_id: string,
   agent_name: string,
@@ -1036,8 +1239,25 @@ async function safeEmitAdapterError(
   err: unknown,
 ): Promise<void> {
   try {
-    const supabase = getServiceSupabase();
-    await emitAdapterError(supabase, client_id, agent_name, description, err);
+    const error_message =
+      err instanceof Error ? err.message : typeof err === 'string' ? err : String(err);
+    const error_class =
+      err instanceof Error && err.name ? err.name : 'UnknownError';
+
+    await emitAgencyEvent({
+      client_id,
+      agent_name,
+      type: 'adapter_error',
+      severity: 'error',
+      payload: {
+        adapter: agent_name,
+        operation: 'run-agent',
+        error_class,
+        error_message,
+        description,
+      },
+      why_explanation: `${agent_name} hit an adapter error: ${description}`,
+    });
   } catch (innerErr) {
     console.error(
       `[run-agent:${agent_name}] failed to emit adapter_error event: ${(innerErr as Error).message}`,
@@ -1054,19 +1274,26 @@ interface CostEventArgs {
   latency_ms: number;
 }
 
+/**
+ * Emit a `cost_incurred` event via the shared kernel for every Claude call.
+ * The kernel cost_incurred schema requires `category`, `provider`, `amount_usd`
+ * — we map our internal tokens/model/cost_usd onto that shape.
+ *
+ * Fire-and-forget: never blocks the caller, never throws.
+ */
 async function safeEmitCostEvent(args: CostEventArgs): Promise<void> {
   try {
-    const supabase = getServiceSupabase();
     await emitAgencyEvent({
-      supabase,
       client_id: args.client_id,
       agent_name: args.agent_name,
       type: 'cost_incurred',
       severity: 'debug',
       payload: {
-        model: args.model,
-        cost_usd: args.cost_usd,
+        category: 'llm_call',
+        provider: 'anthropic',
+        amount_usd: args.cost_usd,
         tokens: args.tokens,
+        model: args.model,
         latency_ms: args.latency_ms,
       },
     });
