@@ -31,6 +31,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { emitAgencyEvent, type AgencyEventType, type AgencyEventSeverity } from '../emit-agency-event';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Constants
@@ -269,41 +270,90 @@ async function resolveAdAccountId(opts: {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Event emission
+// Event emission — normalized through shared kernel emitter
 // ──────────────────────────────────────────────────────────────────────────────
+//
+// Adapter ops map to AgencyEventType per the §7 adapter_event_rules spec:
+//   createCampaign       -> ad_campaign_created  (success) / adapter_error (error)
+//   createAdSet          -> ad_set_created       (success) / adapter_error (error)
+//   pushCreative         -> creative_published   (success) / adapter_error (error)
+//   pauseAd              -> creative_paused      (success) / adapter_error (error)
+//   getCampaignInsights  -> DROP (debug)         (success) / adapter_error (error)
+//   getCreativeInsights  -> DROP (debug)         (success) / adapter_error (error)
+//   setupConversionApi   -> ad_campaign_updated  (success) / adapter_error (error)
+//   sendConversionEvent  -> conversion_event_sent (success) / adapter_error (error)
+//   listAdAccounts       -> DROP (debug)         (success) / adapter_error (error)
 
-type EventSeverity = 'debug' | 'info' | 'warn' | 'error';
+type EventSeverity = AgencyEventSeverity;
 
-interface EmitEventArgs {
+interface EmitOkArgs {
   operation: string;
+  type: AgencyEventType;
   severity: EventSeverity;
   client_id?: string;
-  payload: Record<string, unknown>;      // already field-whitelisted by caller
+  payload: Record<string, unknown>;
   duration_ms?: number;
   external_id?: string;
 }
 
-async function emitAgencyEvent(args: EmitEventArgs): Promise<void> {
-  const supabase = getSupabaseAdmin();
-  if (!supabase) {
-    // Local/dev fallback — never throw from telemetry.
-    console.log(`[${ADAPTER_NAME}] ${args.severity} ${args.operation}`, args.payload);
-    return;
-  }
+interface EmitErrorArgs {
+  operation: string;
+  client_id?: string;
+  err: unknown;
+  duration_ms?: number;
+  external_id?: string;
+  extra?: Record<string, unknown>;
+}
+
+async function emitMetaEvent(args: EmitOkArgs): Promise<void> {
   try {
-    await supabase.from('agency_events').insert({
-      source: ADAPTER_NAME,
-      operation: args.operation,
+    await emitAgencyEvent({
+      client_id: args.client_id ?? '',
+      agent_name: ADAPTER_NAME,
+      type: args.type,
       severity: args.severity,
-      client_id: args.client_id ?? null,
-      external_id: args.external_id ?? null,
-      duration_ms: args.duration_ms ?? null,
-      payload: args.payload,
+      payload: {
+        ...args.payload,
+        op: args.operation,
+        operation: args.operation,
+        ...(args.external_id !== undefined ? { external_id: args.external_id } : {}),
+        ...(args.duration_ms !== undefined ? { duration_ms: args.duration_ms } : {}),
+      },
     });
   } catch (e) {
     // Telemetry is best-effort. Do not block the caller.
     console.error(`[${ADAPTER_NAME}] failed to emit agency_event`, e);
   }
+}
+
+async function emitMetaError(args: EmitErrorArgs): Promise<void> {
+  const message = args.err instanceof Error ? args.err.message : String(args.err);
+  const code = args.err instanceof MetaAdsAdapterError ? args.err.code : 'UNKNOWN';
+  try {
+    await emitAgencyEvent({
+      client_id: args.client_id ?? '',
+      agent_name: ADAPTER_NAME,
+      type: 'adapter_error',
+      severity: 'error',
+      payload: {
+        adapter: ADAPTER_NAME,
+        operation: args.operation,
+        op: args.operation,
+        error_class: code,
+        error_message: message,
+        ...(args.external_id !== undefined ? { external_id: args.external_id } : {}),
+        ...(args.duration_ms !== undefined ? { duration_ms: args.duration_ms } : {}),
+        ...(args.extra ?? {}),
+      },
+    });
+  } catch (e) {
+    console.error(`[${ADAPTER_NAME}] failed to emit agency_event`, e);
+  }
+}
+
+function debugLog(operation: string, payload: Record<string, unknown>): void {
+  // Non-business adapter telemetry: spec §7 says drop to debug log, not kernel.
+  console.debug(`[${ADAPTER_NAME}] ${operation}`, payload);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -460,8 +510,9 @@ export async function createCampaign(opts: CreateCampaignOpts): Promise<CreateCa
 
     const whitelisted: CreateCampaignResult = { campaign_id };
 
-    await emitAgencyEvent({
+    await emitMetaEvent({
       operation: 'createCampaign',
+      type: 'ad_campaign_created',
       severity: 'info',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
@@ -476,17 +527,12 @@ export async function createCampaign(opts: CreateCampaignOpts): Promise<CreateCa
 
     return whitelisted;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'createCampaign',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: externalRef,
-      payload: {
-        ad_account_id: accountId,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -547,8 +593,9 @@ export async function createAdSet(opts: CreateAdSetOpts): Promise<CreateAdSetRes
 
     const whitelisted: CreateAdSetResult = { adset_id };
 
-    await emitAgencyEvent({
+    await emitMetaEvent({
       operation: 'createAdSet',
+      type: 'ad_set_created',
       severity: 'info',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
@@ -563,17 +610,12 @@ export async function createAdSet(opts: CreateAdSetOpts): Promise<CreateAdSetRes
 
     return whitelisted;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'createAdSet',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: externalRef,
-      payload: {
-        campaign_id: opts.campaign_id,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -688,14 +730,16 @@ export async function pushCreative(opts: PushCreativeOpts): Promise<PushCreative
 
     const whitelisted: PushCreativeResult = { ad_id, creative_id };
 
-    await emitAgencyEvent({
+    await emitMetaEvent({
       operation: 'pushCreative',
+      type: 'creative_published',
       severity: 'info',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: externalRef,
       payload: {
         ...whitelisted,
+        platform: 'meta',
         adset_id: opts.adset_id,
         cta: opts.cta,
         destination_type: opts.destination_type,
@@ -706,19 +750,12 @@ export async function pushCreative(opts: PushCreativeOpts): Promise<PushCreative
 
     return whitelisted;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'pushCreative',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: externalRef,
-      payload: {
-        adset_id: opts.adset_id,
-        cta: opts.cta,
-        destination_type: opts.destination_type,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -741,27 +778,23 @@ export async function pauseAd(opts: PauseAdOpts): Promise<PauseAdResult> {
     });
 
     const result: PauseAdResult = { paused_at: new Date().toISOString() };
-    await emitAgencyEvent({
+    await emitMetaEvent({
       operation: 'pauseAd',
+      type: 'creative_paused',
       severity: 'info',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.ad_id,
-      payload: { ad_id: opts.ad_id, paused_at: result.paused_at },
+      payload: { ad_id: opts.ad_id, platform: 'meta', paused_at: result.paused_at, reason: 'manual_pause' },
     });
     return result;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'pauseAd',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.ad_id,
-      payload: {
-        ad_id: opts.ad_id,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -832,30 +865,23 @@ export async function getCampaignInsights(
       spend_usd: n(row?.spend),
     };
 
-    await emitAgencyEvent({
-      operation: 'getCampaignInsights',
-      severity: 'debug',
-      client_id: opts.client_id,
+    // Spec §7: getCampaignInsights success drops to console.debug (no kernel event).
+    debugLog('getCampaignInsights', {
+      campaign_id: opts.campaign_id,
+      since: opts.since,
+      until: opts.until,
       duration_ms: Date.now() - startedAt,
-      external_id: opts.campaign_id,
-      payload: { campaign_id: opts.campaign_id, since: opts.since, until: opts.until, ...insights },
+      ...insights,
     });
 
     return insights;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'getCampaignInsights',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.campaign_id,
-      payload: {
-        campaign_id: opts.campaign_id,
-        since: opts.since,
-        until: opts.until,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -894,30 +920,23 @@ export async function getCreativeInsights(
       leads,
     };
 
-    await emitAgencyEvent({
-      operation: 'getCreativeInsights',
-      severity: 'debug',
-      client_id: opts.client_id,
+    // Spec §7: getCreativeInsights success drops to console.debug (no kernel event).
+    debugLog('getCreativeInsights', {
+      ad_id: opts.ad_id,
+      since: opts.since,
+      until: opts.until,
       duration_ms: Date.now() - startedAt,
-      external_id: opts.ad_id,
-      payload: { ad_id: opts.ad_id, since: opts.since, until: opts.until, ...insights },
+      ...insights,
     });
 
     return insights;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'getCreativeInsights',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.ad_id,
-      payload: {
-        ad_id: opts.ad_id,
-        since: opts.since,
-        until: opts.until,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -972,8 +991,9 @@ export async function setupConversionApi(
       throw new MetaAdsAdapterError(`Failed to persist CAPI config: ${error.message}`, { code: 'SUPABASE_WRITE_FAILED' });
     }
 
-    await emitAgencyEvent({
+    await emitMetaEvent({
       operation: 'setupConversionApi',
+      type: 'ad_campaign_updated',
       severity: 'info',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
@@ -987,17 +1007,12 @@ export async function setupConversionApi(
 
     return { configured_at };
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'setupConversionApi',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.pixel_id,
-      payload: {
-        pixel_id: opts.pixel_id,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -1039,9 +1054,10 @@ export async function sendConversionEvent(
     const events_received = n(res.body?.events_received);
     const result: SendConversionEventResult = { events_received };
 
-    await emitAgencyEvent({
+    await emitMetaEvent({
       operation: 'sendConversionEvent',
-      severity: 'debug',
+      type: 'conversion_event_sent',
+      severity: 'info',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.pixel_id,
@@ -1055,18 +1071,12 @@ export async function sendConversionEvent(
 
     return result;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'sendConversionEvent',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.pixel_id,
-      payload: {
-        pixel_id: opts.pixel_id,
-        event_name: opts.event_name,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }
@@ -1104,28 +1114,21 @@ export async function listAdAccounts(
       account_status: Number.isFinite(r?.account_status) ? Number(r.account_status) : 0,
     }));
 
-    await emitAgencyEvent({
-      operation: 'listAdAccounts',
-      severity: 'debug',
-      client_id: opts.client_id,
+    // Spec §7: listAdAccounts success drops to console.debug (no kernel event).
+    debugLog('listAdAccounts', {
+      business_id: opts.business_id,
+      account_count: accounts.length,
       duration_ms: Date.now() - startedAt,
-      external_id: opts.business_id,
-      payload: { business_id: opts.business_id, account_count: accounts.length },
     });
 
     return accounts;
   } catch (err) {
-    await emitAgencyEvent({
+    await emitMetaError({
       operation: 'listAdAccounts',
-      severity: 'error',
       client_id: opts.client_id,
       duration_ms: Date.now() - startedAt,
       external_id: opts.business_id,
-      payload: {
-        business_id: opts.business_id,
-        error_message: err instanceof Error ? err.message : String(err),
-        error_code: err instanceof MetaAdsAdapterError ? err.code : 'UNKNOWN',
-      },
+      err,
     });
     throw err;
   }

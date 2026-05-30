@@ -26,6 +26,11 @@
 
 import { getServiceSupabase } from '../token-utils';
 import { notifyError } from '../notify';
+import {
+  emitAgencyEvent,
+  type AgencyEventType,
+  type AgencyEventSeverity,
+} from '../emit-agency-event';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -90,35 +95,32 @@ function slackAdminToken(): string {
   return t;
 }
 
-/** Emit an agency_events row + mirror to aios_event_log. Never throws. */
+/**
+ * Emit a kernel agency_events row via the shared helper. Never throws.
+ *
+ * Spec §7 (slack-adapter rules): all Slack event types are already in the
+ * allowed AgencyEventType union (notification_sent / notification_failed /
+ * notification_fallback_email / cohort_invited / cohort_win_posted /
+ * cohort_members_listed). The kernel emitter handles the aios_event_log
+ * mirror automatically — we do NOT double-write.
+ *
+ * Exception: cohort_win_failed maps to adapter_error with payload.op = 'cohort_win'.
+ */
 async function emitEvent(row: {
   client_id?: string | null;
   agent_name: string;
-  type: string;
-  severity?: 'debug' | 'info' | 'warn' | 'error' | 'critical';
+  type: AgencyEventType;
+  severity?: AgencyEventSeverity;
   payload?: Record<string, unknown>;
 }): Promise<void> {
   try {
-    const supabase = getServiceSupabase();
-    const evt = {
-      client_id: row.client_id ?? null,
+    await emitAgencyEvent({
+      client_id: row.client_id ?? '',
       agent_name: row.agent_name,
       type: row.type,
       severity: row.severity ?? 'info',
       payload: row.payload ?? {},
-    };
-
-    // Best-effort double-write. The plan's emit-agency-event helper does the
-    // same; this adapter cannot depend on it (it lives one layer up).
-    await Promise.allSettled([
-      supabase.from('agency_events').insert(evt),
-      supabase.from('aios_event_log').insert({
-        source: 'agency.slack-adapter',
-        event_type: evt.type,
-        severity: evt.severity,
-        payload: { ...evt.payload, client_id: evt.client_id, agent_name: evt.agent_name },
-      }),
-    ]);
+    });
   } catch (err) {
     // Event-log failures must never break the adapter's primary action.
     console.error('[slack-adapter] emitEvent failed:', err);
@@ -753,11 +755,14 @@ export async function postCohortWin(opts: PostCohortWinOpts): Promise<PostCohort
     });
     await emitEvent({
       agent_name: 'slack-adapter',
-      type: 'cohort_win_failed',
+      type: 'adapter_error',
       severity: 'error',
       payload: {
+        adapter: 'slack-adapter',
+        operation: 'cohort_win',
+        op: 'cohort_win',
         cohort_channel_id: opts.cohort_channel_id,
-        reason: err instanceof Error ? err.message : String(err),
+        error_message: err instanceof Error ? err.message : String(err),
       },
     });
     throw err;

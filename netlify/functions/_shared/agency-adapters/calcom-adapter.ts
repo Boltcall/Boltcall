@@ -15,19 +15,17 @@
  * Wire mirrors the live pattern in netlify/functions/calcom-webhook.ts.
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import {
+  emitAgencyEvent,
+  type AgencyEventType,
+  type AgencyEventSeverity,
+} from '../emit-agency-event';
 
 // ───────────────────────────── Config ─────────────────────────────
 
 const CAL_API_BASE = 'https://api.cal.com/v1';
 const CAL_API_KEY =
   process.env.CALCOM_API_KEY || process.env.CAL_API_KEY || '';
-
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ||
-  process.env.VITE_SUPABASE_URL ||
-  'https://hbwogktdajorojljkjwg.supabase.co';
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 const RETRY_BACKOFF_MS = 750; // single retry, then give up
 const FETCH_TIMEOUT_MS = 15_000;
@@ -125,58 +123,26 @@ function pick(
   return out;
 }
 
-// ─────────────────────── Supabase event sink ──────────────────────
-
-let _serviceClient: SupabaseClient | null = null;
-function getServiceClient(): SupabaseClient | null {
-  if (!SUPABASE_SERVICE_KEY) return null;
-  if (!_serviceClient) {
-    _serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-  }
-  return _serviceClient;
-}
+// ─────────────────────── Event sink ───────────────────────────────
 
 /**
- * Emit an `agency_events` row. Best-effort — adapter never throws on telemetry
- * failure. Mirrors the shape from §3 of the plan.
+ * Emit a kernel agency_events row via the shared helper. Best-effort — adapter
+ * never throws on telemetry failure.
  *
- * Prefers the shared `emit-agency-event` helper (plan §12) if present;
- * otherwise writes directly to `agency_events` so this adapter is
- * self-contained and the rest of the OS can be built in any order.
+ * Spec §7 (calcom-adapter rules): dotted op strings are NOT valid event types.
+ * Map to allowed AgencyEventType with the original op moved into payload.op.
+ * `.ok` and `.retry` for any op drop to console.debug / console.warn —
+ * only `.error` paths emit a kernel `adapter_error`.
  */
 async function emitEvent(args: {
   client_id?: string;
-  type: string;
-  severity: 'debug' | 'info' | 'warn' | 'error' | 'critical';
+  type: AgencyEventType;
+  severity: AgencyEventSeverity;
   payload: Record<string, any>;
 }): Promise<void> {
   try {
-    let useShared = false;
-    try {
-      const mod: any = await import('../emit-agency-event' as any).catch(
-        () => null,
-      );
-      if (mod && typeof mod.emitAgencyEvent === 'function') {
-        await mod.emitAgencyEvent({
-          client_id: args.client_id,
-          agent_name: 'calcom-adapter',
-          type: args.type,
-          severity: args.severity,
-          payload: args.payload,
-        });
-        useShared = true;
-      }
-    } catch {
-      // ignore — fall through to direct insert
-    }
-    if (useShared) return;
-
-    const sb = getServiceClient();
-    if (!sb) return;
-    await sb.from('agency_events').insert({
-      client_id: args.client_id ?? null,
+    await emitAgencyEvent({
+      client_id: args.client_id ?? '',
       agent_name: 'calcom-adapter',
       type: args.type,
       severity: args.severity,
@@ -186,6 +152,40 @@ async function emitEvent(args: {
     // Telemetry must never break the operation.
     console.warn('[calcom-adapter] event emit failed:', e);
   }
+}
+
+/** Spec §7: success telemetry drops to console.debug — no kernel event. */
+function debugLog(op: string, payload: Record<string, unknown>): void {
+  console.debug(`[calcom-adapter] ${op}.ok`, payload);
+}
+
+/** Spec §7: retry telemetry drops to console.warn — no kernel event. */
+function warnRetry(op: string, payload: Record<string, unknown>): void {
+  console.warn(`[calcom-adapter] ${op}.retry`, payload);
+}
+
+/** Spec §7: emit a kernel adapter_error event for .error paths. */
+async function emitCalcomError(args: {
+  client_id?: string;
+  op: string;
+  payload: Record<string, unknown>;
+}): Promise<void> {
+  const description =
+    typeof args.payload.error === 'string'
+      ? args.payload.error
+      : `${String(args.payload.method ?? '')} ${String(args.payload.path ?? '')} failed`;
+  await emitEvent({
+    client_id: args.client_id,
+    type: 'adapter_error',
+    severity: 'error',
+    payload: {
+      adapter: 'calcom-adapter',
+      operation: args.op,
+      op: args.op,
+      error_message: description,
+      ...args.payload,
+    },
+  });
 }
 
 // ───────────────────────── HTTP plumbing ──────────────────────────
@@ -261,17 +261,13 @@ async function calRequest<T = any>(opts: {
       const text = await res.text();
 
       if (res.ok) {
-        await emitEvent({
-          client_id: opts.client_id,
-          type: `calcom.${opts.context}.ok`,
-          severity: 'debug',
-          payload: {
-            method: opts.method,
-            path: opts.path,
-            status: res.status,
-            latency_ms,
-            attempt,
-          },
+        // Spec §7: success drops to console.debug — no kernel event.
+        debugLog(opts.context, {
+          method: opts.method,
+          path: opts.path,
+          status: res.status,
+          latency_ms,
+          attempt,
         });
         return text ? (JSON.parse(text) as T) : (undefined as unknown as T);
       }
@@ -279,32 +275,26 @@ async function calRequest<T = any>(opts: {
       // Retry only on 429 / 5xx
       const transient = res.status === 429 || res.status >= 500;
       if (transient && attempt === 0) {
-        await emitEvent({
-          client_id: opts.client_id,
-          type: `calcom.${opts.context}.retry`,
-          severity: 'warn',
-          payload: {
-            method: opts.method,
-            path: opts.path,
-            status: res.status,
-            latency_ms,
-            body_snippet: text.slice(0, 300),
-          },
+        warnRetry(opts.context, {
+          method: opts.method,
+          path: opts.path,
+          status: res.status,
+          latency_ms,
+          body_snippet: text.slice(0, 300),
         });
         await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
         continue;
       }
 
-      await emitEvent({
+      await emitCalcomError({
         client_id: opts.client_id,
-        type: `calcom.${opts.context}.error`,
-        severity: 'error',
+        op: opts.context,
         payload: {
           method: opts.method,
           path: opts.path,
           status: res.status,
-          latency_ms,
-          body_snippet: text.slice(0, 500),
+          duration_ms: latency_ms,
+          error: text.slice(0, 500),
         },
       });
       throw new CalcomError(res.status, text);
@@ -313,25 +303,19 @@ async function calRequest<T = any>(opts: {
       const isAbort = err?.name === 'AbortError';
       const isNetwork = !(err instanceof CalcomError);
       if (isNetwork && attempt === 0) {
-        await emitEvent({
-          client_id: opts.client_id,
-          type: `calcom.${opts.context}.retry`,
-          severity: 'warn',
-          payload: {
-            method: opts.method,
-            path: opts.path,
-            error: String(err?.message || err),
-            timed_out: isAbort,
-          },
+        warnRetry(opts.context, {
+          method: opts.method,
+          path: opts.path,
+          error: String(err?.message || err),
+          timed_out: isAbort,
         });
         await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
         continue;
       }
       if (!(err instanceof CalcomError)) {
-        await emitEvent({
+        await emitCalcomError({
           client_id: opts.client_id,
-          type: `calcom.${opts.context}.error`,
-          severity: 'error',
+          op: opts.context,
           payload: {
             method: opts.method,
             path: opts.path,
@@ -388,9 +372,15 @@ export async function createEventType(
   if (!event_type_id || typeof event_type_id !== 'number') {
     await emitEvent({
       client_id: opts.client_id,
-      type: 'calcom.createEventType.malformed_response',
+      type: 'adapter_error',
       severity: 'error',
-      payload: { response_snippet: JSON.stringify(result).slice(0, 500) },
+      payload: {
+        adapter: 'calcom-adapter',
+        operation: 'createEventType.malformed_response',
+        op: 'createEventType.malformed_response',
+        error_message: 'Cal.com did not return an event_type id',
+        description: JSON.stringify(result).slice(0, 500),
+      },
     });
     throw new Error(
       '[calcom-adapter] createEventType: Cal.com did not return an event_type id',
@@ -403,7 +393,7 @@ export async function createEventType(
 
   await emitEvent({
     client_id: opts.client_id,
-    type: 'calcom.event_type.created',
+    type: 'calendar_event_created',
     severity: 'info',
     payload: {
       event_type_id,
@@ -411,6 +401,7 @@ export async function createEventType(
       duration_min: opts.duration_min,
       owner: opts.scheduling_url_owner,
       public_url,
+      op: 'event_type.created',
     },
   });
 
@@ -463,13 +454,14 @@ export async function getBookings(
 
   await emitEvent({
     client_id: opts.client_id,
-    type: 'calcom.bookings.fetched',
+    type: 'booking_fetched',
     severity: 'debug',
     payload: {
       count: bookings.length,
       event_type_id: opts.event_type_id ?? null,
       since: opts.since,
       until: opts.until,
+      op: 'bookings.fetched',
     },
   });
 
@@ -496,12 +488,13 @@ export async function cancelBooking(
 
   const cancelled_at = new Date().toISOString();
   await emitEvent({
-    type: 'calcom.booking.cancelled',
+    type: 'booking_cancelled',
     severity: 'info',
     payload: {
       booking_id: opts.booking_id,
       reason: opts.reason,
       cancelled_at,
+      op: 'booking.cancelled',
     },
   });
   return { cancelled_at };
@@ -526,9 +519,13 @@ export async function pauseEventType(
 
   const paused_at = new Date().toISOString();
   await emitEvent({
-    type: 'calcom.event_type.paused',
+    type: 'calendar_event_created',
     severity: 'info',
-    payload: { event_type_id: opts.event_type_id, paused_at },
+    payload: {
+      event_type_id: opts.event_type_id,
+      paused_at,
+      op: 'event_type.paused',
+    },
   });
   return { paused_at };
 }
@@ -573,15 +570,12 @@ export async function getAvailability(
     }
   }
 
-  await emitEvent({
-    type: 'calcom.availability.fetched',
-    severity: 'debug',
-    payload: {
-      event_type_id: opts.event_type_id,
-      date_from: opts.date_from,
-      date_to: opts.date_to,
-      slot_count: out.length,
-    },
+  // Spec §7: availability.fetched is too noisy for the kernel — debug only.
+  debugLog('availability.fetched', {
+    event_type_id: opts.event_type_id,
+    date_from: opts.date_from,
+    date_to: opts.date_to,
+    slot_count: out.length,
   });
 
   return out;
@@ -618,9 +612,14 @@ export async function setupClientIntakeBooking(
 
     await emitEvent({
       client_id: opts.client_id,
-      type: 'calcom.intake_booking.ready',
+      type: 'calendar_event_created',
       severity: 'info',
-      payload: { slug, owner, scheduling_url: public_url },
+      payload: {
+        slug,
+        owner,
+        scheduling_url: public_url,
+        op: 'intake_booking.ready',
+      },
     });
 
     return { scheduling_url: public_url };
@@ -638,9 +637,14 @@ export async function setupClientIntakeBooking(
       )}/${encodeURIComponent(slug)}`;
       await emitEvent({
         client_id: opts.client_id,
-        type: 'calcom.intake_booking.idempotent_hit',
+        type: 'calendar_event_created',
         severity: 'info',
-        payload: { slug, owner, scheduling_url },
+        payload: {
+          slug,
+          owner,
+          scheduling_url,
+          op: 'intake_booking.idempotent_hit',
+        },
       });
       return { scheduling_url };
     }
