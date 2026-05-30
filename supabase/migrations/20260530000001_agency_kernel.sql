@@ -34,7 +34,7 @@
 --   2026-05-30 — first migration in the Agency OS series.
 --
 -- Paired RLS migration:
---   `supabase/migrations/20260530_agency_kernel_rls.sql` (separate file)
+--   `supabase/migrations/20260530000003_agency_rls.sql` (separate file)
 --   defines the founder/client RLS policies, the `is_founder()` helper, the
 --   `force row level security` enforcement, and the supporting indexes for
 --   RLS performance. Apply IMMEDIATELY after this file — these tables are
@@ -561,7 +561,7 @@ CREATE INDEX IF NOT EXISTS idx_agency_digital_twin_personas_active
 -- END Agency OS Kernel Migration
 --
 -- Next step: apply the paired RLS migration
---   `supabase/migrations/20260530_agency_kernel_rls.sql`
+--   `supabase/migrations/20260530000003_agency_rls.sql`
 -- which enables RLS, defines the founder/client policies, sets up the
 -- is_founder() helper, forces RLS on all tables, and adds the
 -- agency_events_client_view + ship_result secret-token guard trigger.

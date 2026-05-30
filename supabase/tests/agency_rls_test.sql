@@ -215,13 +215,13 @@ begin
         -- Two visibly distinct vectors so similarity ordering is deterministic.
         execute $sql$
             update public.agency_knowledge
-               set embedding = (select array_fill(0.01::real, ARRAY[1536])::vector)
+               set embedding = (select array_fill(0.01::real, ARRAY[3072])::halfvec)
              where client_id = $1
         $sql$ using agency_rls_test.client_a_id();
 
         execute $sql$
             update public.agency_knowledge
-               set embedding = (select array_fill(0.99::real, ARRAY[1536])::vector)
+               set embedding = (select array_fill(0.99::real, ARRAY[3072])::halfvec)
              where client_id = $1
         $sql$ using agency_rls_test.client_b_id();
     end if;
@@ -471,14 +471,14 @@ begin
 
     perform agency_rls_test.assume(agency_rls_test.client_a_uid()::text, 'authenticated', 'user');
 
-    -- Build a 1536-dim probe close to client B's vector (0.99).
-    probe := (select array_fill(0.99::real, ARRAY[1536])::vector)::text;
+    -- Build a 3072-dim probe close to client B's vector (0.99).
+    probe := (select array_fill(0.99::real, ARRAY[3072])::halfvec)::text;
 
     execute format($q$
         select count(*) from (
             select client_id
               from public.agency_knowledge
-             order by embedding <-> %L::vector
+             order by embedding <-> %L::halfvec
              limit 5
         ) s
         where s.client_id <> %L::uuid
