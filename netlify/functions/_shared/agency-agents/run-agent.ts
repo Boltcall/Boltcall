@@ -249,6 +249,75 @@ const DEFAULT_CRITIC_TEMPLATES: Record<ArtifactType, string> = {
 const TRANSIENT_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504, 529]);
 
 // ─────────────────────────────────────────────────────────────────────────────
+//   Per-agent per-day USD cap (env: AGENCY_AGENT_DAILY_USD_CAP, default 50)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Hard ceiling on USD spent per agent per UTC calendar day. */
+const AGENT_DAILY_USD_CAP: number = (() => {
+  const raw = process.env.AGENCY_AGENT_DAILY_USD_CAP;
+  if (!raw) return 50;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 50;
+})();
+
+interface DailyCapStatus {
+  cap: number;
+  spent_today: number;
+  allowed: boolean;
+}
+
+/**
+ * Query `agency_events` for the sum of `cost_incurred` amounts emitted by
+ * `agent_name` since the start of today (UTC). Returns whether the cap permits
+ * another run.
+ *
+ * Gracefully degrades: a Supabase query failure returns `allowed: true` with a
+ * console.warn so a transient stats failure never blocks production.
+ */
+async function checkDailyUsdCap(agent_name: string): Promise<DailyCapStatus> {
+  try {
+    const supabase = getServiceSupabase();
+
+    const startOfTodayUtc = new Date();
+    startOfTodayUtc.setUTCHours(0, 0, 0, 0);
+
+    const { data: rows, error: fetchError } = await supabase
+      .from('agency_events')
+      .select('payload')
+      .eq('agent_name', agent_name)
+      .eq('type', 'cost_incurred')
+      .gte('created_at', startOfTodayUtc.toISOString());
+
+    if (fetchError) {
+      console.warn(
+        `[run-agent:${agent_name}] checkDailyUsdCap query failed (allowing run): ${fetchError.message}`,
+      );
+      return { cap: AGENT_DAILY_USD_CAP, spent_today: 0, allowed: true };
+    }
+
+    const spent_today = (rows ?? []).reduce((sum, row) => {
+      const amount = Number(
+        (row.payload as Record<string, unknown> | null)?.amount_usd ?? 0,
+      );
+      return sum + (Number.isFinite(amount) ? amount : 0);
+    }, 0);
+
+    return {
+      cap: AGENT_DAILY_USD_CAP,
+      spent_today,
+      allowed: spent_today < AGENT_DAILY_USD_CAP,
+    };
+  } catch (err) {
+    console.warn(
+      `[run-agent:${agent_name}] checkDailyUsdCap threw unexpectedly (allowing run): ${
+        (err as Error).message
+      }`,
+    );
+    return { cap: AGENT_DAILY_USD_CAP, spent_today: 0, allowed: true };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 //   Public — runAgent
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -275,6 +344,43 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     router_summary,
     agent_default_tier = 'sonnet',
   } = options;
+
+  // (0) Per-agent per-day USD cap gate. Runs before any model call.
+  //     If the agent has already spent ≥ AGENT_DAILY_USD_CAP today (UTC),
+  //     emit a rate_limit_hit event and throw so callers surface a clear error.
+  {
+    const capStatus = await checkDailyUsdCap(agent_name);
+    if (!capStatus.allowed) {
+      // Seconds until next UTC midnight.
+      const nowMs = Date.now();
+      const nextMidnightMs =
+        new Date(new Date().toISOString().slice(0, 10)).getTime() +
+        24 * 60 * 60 * 1000;
+      const retry_after_seconds = Math.max(0, Math.ceil((nextMidnightMs - nowMs) / 1000));
+
+      await emitAgencyEvent({
+        client_id,
+        agent_name,
+        type: 'rate_limit_hit',
+        severity: 'warn',
+        payload: {
+          provider: 'anthropic',
+          endpoint: `agent:${agent_name}`,
+          retry_after_seconds,
+        },
+        why_explanation:
+          `${agent_name} exceeded its daily USD cap of $${capStatus.cap.toFixed(2)} ` +
+          `(spent $${capStatus.spent_today.toFixed(4)} today). ` +
+          `Resets in ${retry_after_seconds}s at next UTC midnight.`,
+      });
+
+      throw new Error(
+        `[run-agent:${agent_name}] daily USD cap exceeded: spent $${capStatus.spent_today.toFixed(
+          4,
+        )} of $${capStatus.cap.toFixed(2)} cap. Retry after ${retry_after_seconds}s.`,
+      );
+    }
+  }
 
   // (a) Load SKILL.md + prompt.md + output-schema.json from skill_dir.
   const { systemPrompt, skillNotes, schemaFromDisk } = loadSkillFiles(skill_dir);
