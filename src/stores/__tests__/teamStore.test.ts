@@ -37,11 +37,26 @@ vi.mock('../../lib/supabase', () => {
       from: vi.fn().mockReturnValue(chain),
       auth: {
         getSession: vi.fn().mockResolvedValue({
-          data: { session: { user: { id: 'user-1', email: 'owner@test.com' } } },
+          data: {
+            session: {
+              access_token: 'fake-jwt',
+              user: { id: 'user-1', email: 'owner@test.com' },
+            },
+          },
         }),
       },
     },
   };
+});
+
+// inviteMember + removeMember now POST to /invite-member; stub fetch so the
+// store doesn't try to hit a real Netlify function during tests.
+beforeEach(() => {
+  (global as any).fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve({}),
+  });
 });
 
 import { useTeamStore } from '../teamStore';
