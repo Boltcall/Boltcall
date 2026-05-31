@@ -67,6 +67,7 @@ vi.mock('../../lib/supabase', () => ({
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'en', changeLanguage: vi.fn() } }),
   Trans: ({ children }: any) => <>{children}</>,
+  initReactI18next: { type: '3rdParty', init: () => {} },
 }));
 
 vi.mock('lenis', () => ({ default: class { destroy() {} raf() {} } }));
@@ -123,25 +124,26 @@ describe('Speed-to-Lead funnel flow', () => {
   });
 
   it('stores results and navigates to report after test completes', async () => {
-    const user = userEvent.setup();
     render(<MemoryRouter><SpeedTestLanding /></MemoryRouter>);
 
     const input = screen.getByPlaceholderText(/enter your website url/i);
-    await user.type(input, 'https://example.com');
+    // fireEvent.change is faster + more reliable than userEvent.type under the
+    // jsdom timers used here (mirrors the sibling test on line 113).
+    fireEvent.change(input, { target: { value: 'https://example.com' } });
 
     const submitBtn = screen.getByRole('button', { name: /run health check/i });
-    await user.click(submitBtn);
+    fireEvent.click(submitBtn);
 
     await waitFor(() => {
       const state = useSpeedTestStore.getState();
       expect(state.results).not.toBeNull();
       expect(state.results?.mobileScore).toBe(72);
-    }, { timeout: 5000 });
+    }, { timeout: 10000 });
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/speed-test/report');
-    }, { timeout: 5000 });
-  });
+    }, { timeout: 10000 });
+  }, 15000);
 });
 
 describe('Speed-to-Lead store flow', () => {

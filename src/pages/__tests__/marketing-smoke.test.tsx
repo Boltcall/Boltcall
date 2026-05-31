@@ -25,12 +25,41 @@ vi.mock('framer-motion', () => ({
       }),
   }),
   AnimatePresence: ({ children }: any) => <>{children}</>,
-  useMotionValue: () => ({ set: vi.fn(), get: () => 0 }),
+  LayoutGroup: ({ children }: any) => <>{children}</>,
+  MotionConfig: ({ children }: any) => <>{children}</>,
+  Reorder: { Group: ({ children }: any) => <>{children}</>, Item: ({ children }: any) => <>{children}</> },
+  useMotionValue: () => ({ set: vi.fn(), get: () => 0, on: vi.fn(), destroy: vi.fn() }),
+  useMotionValueEvent: () => undefined,
   useTransform: () => 0,
   useSpring: () => ({ set: vi.fn(), get: () => 0 }),
   useInView: () => true,
-  useScroll: () => ({ scrollYProgress: { get: () => 0 } }),
+  useScroll: () => ({ scrollYProgress: { get: () => 0, on: vi.fn() }, scrollY: { get: () => 0, on: vi.fn() } }),
   useAnimation: () => ({ start: vi.fn(), stop: vi.fn() }),
+  useAnimationControls: () => ({ start: vi.fn(), stop: vi.fn() }),
+  useAnimationFrame: () => undefined,
+  useCycle: (...items: any[]) => [items[0], vi.fn()],
+  useDragControls: () => ({ start: vi.fn() }),
+  useReducedMotion: () => false,
+  useIsPresent: () => true,
+  useVelocity: () => ({ set: vi.fn(), get: () => 0 }),
+  useTime: () => ({ set: vi.fn(), get: () => 0 }),
+  domAnimation: {},
+  domMax: {},
+  LazyMotion: ({ children }: any) => <>{children}</>,
+  m: new Proxy({}, {
+    get: (_target, prop) =>
+      React.forwardRef(({ children, ...props }: any, ref: any) => {
+        const safe: any = {};
+        for (const [k, v] of Object.entries(props)) {
+          if (!k.startsWith('while') && !k.startsWith('animate') && !k.startsWith('initial') &&
+              !k.startsWith('exit') && !k.startsWith('transition') && !k.startsWith('variants') &&
+              k !== 'layout' && k !== 'layoutId' && k !== 'onViewportEnter' && k !== 'viewport') {
+            safe[k] = v;
+          }
+        }
+        return React.createElement(prop as string, { ...safe, ref }, children);
+      }),
+  }),
 }));
 
 vi.mock('../../contexts/AuthContext', () => ({
@@ -67,6 +96,7 @@ vi.mock('react-i18next', () => ({
     i18n: { language: 'en', changeLanguage: vi.fn() },
   }),
   Trans: ({ children }: any) => <>{children}</>,
+  initReactI18next: { type: '3rdParty', init: () => {} },
 }));
 
 vi.mock('canvas-confetti', () => ({ default: vi.fn() }));

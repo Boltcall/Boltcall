@@ -17,9 +17,10 @@ describe('TOKEN_PLANS', () => {
   });
 
   it('has correct prices', () => {
-    expect(TOKEN_PLANS.starter.price).toBe(99);
-    expect(TOKEN_PLANS.pro.price).toBe(179);
-    expect(TOKEN_PLANS.ultimate.price).toBe(249);
+    // Canonical Boltcall plan prices (per CLAUDE.md memory).
+    expect(TOKEN_PLANS.starter.price).toBe(549);
+    expect(TOKEN_PLANS.pro.price).toBe(897);
+    expect(TOKEN_PLANS.ultimate.price).toBe(4997);
   });
 });
 
