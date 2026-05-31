@@ -345,7 +345,7 @@ const V2MessagesPage: React.FC = () => {
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
                 <a href="/v2/integrations">
-                  <Plug />
+                  <Plug className="w-3.5 h-3.5 mr-1.5" />
                   Open integrations
                 </a>
               </Button>
