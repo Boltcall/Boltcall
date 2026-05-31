@@ -489,6 +489,41 @@ const NavigationWrapper: React.FC = () => {
               </V2OptInGate>
             }
           />
+          {/* V2 page wave 2 — Leads / Messages / Agent / Knowledge. Each page
+              renders behind the V2OptInGate (workspace.v2_enabled). The outer
+              <Suspense> wrapper inside NavigationWrapper handles the lazy load. */}
+          <Route
+            path="leads"
+            element={
+              <V2OptInGate>
+                <V2LeadsPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="messages"
+            element={
+              <V2OptInGate>
+                <V2MessagesPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="agent"
+            element={
+              <V2OptInGate>
+                <V2AgentPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="knowledge"
+            element={
+              <V2OptInGate>
+                <V2KnowledgePage />
+              </V2OptInGate>
+            }
+          />
         </Route>
 
         {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
