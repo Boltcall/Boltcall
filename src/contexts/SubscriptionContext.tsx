@@ -65,10 +65,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     fetchSubscription();
   }, [fetchSubscription]);
 
-  // Calculate trial status
+  // Calculate trial status. Only authenticated users with a known createdAt
+  // can be in a trial — unauthenticated visitors must never appear "trialing".
   const getTrialDaysRemaining = (): number => {
+    if (!isAuthenticated || !user) return 0;
     const createdStr = user?.createdAt || (user as any)?.created_at;
-    if (!createdStr) return TRIAL_DAYS; // Default to full trial for new users
+    if (!createdStr) return TRIAL_DAYS; // Default to full trial for authenticated users with no createdAt
     const createdAt = new Date(createdStr);
     const now = new Date();
     const diffMs = now.getTime() - createdAt.getTime();

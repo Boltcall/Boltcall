@@ -37,7 +37,12 @@ vi.mock('../../lib/supabase', () => {
       from: vi.fn().mockReturnValue(chain),
       auth: {
         getSession: vi.fn().mockResolvedValue({
-          data: { session: { user: { id: 'user-1', email: 'owner@test.com' } } },
+          data: {
+            session: {
+              access_token: 'fake-jwt',
+              user: { id: 'user-1', email: 'owner@test.com' },
+            },
+          },
         }),
       },
     },
@@ -55,6 +60,13 @@ describe('teamStore', () => {
       membersLoading: false,
     });
     mockSupabaseChain = (globalThis as any).__mockSupabaseChain;
+    // inviteMember + removeMember now POST to /invite-member; stub fetch so
+    // the store doesn't try to hit a real Netlify function during tests.
+    (global as any).fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({}),
+    });
   });
 
   describe('fetchMembers', () => {
@@ -162,8 +174,14 @@ describe('teamStore', () => {
       expect(members.find((m) => m.id === 'm1')).toBeUndefined();
     });
 
-    it('should throw on supabase error', async () => {
-      mockSupabaseChain.eq = vi.fn().mockResolvedValue({ error: { message: 'delete failed' } });
+    it('should throw when the remove request fails', async () => {
+      // removeMember now POSTs to /invite-member; failure surfaces as a non-OK
+      // fetch response, not a Supabase error.
+      (global as any).fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ error: 'delete failed' }),
+      });
       await expect(useTeamStore.getState().removeMember('m1')).rejects.toBeDefined();
     });
   });

@@ -81,12 +81,12 @@ describe('Setup page', () => {
     vi.clearAllMocks()
   })
 
-  it('renders step 1 - Your Business', () => {
+  it('renders step 1 - Personal Profile', () => {
     render(<Setup />)
-    expect(screen.getByText('Tell us about your business')).toBeInTheDocument()
-    expect(screen.getByLabelText('Business Name')).toBeInTheDocument()
-    expect(screen.getByLabelText('Your Name')).toBeInTheDocument()
-    expect(screen.getByText('Step 1 of 3: Your Business')).toBeInTheDocument()
+    expect(screen.getByText('Tell us about yourself')).toBeInTheDocument()
+    expect(screen.getByLabelText(/Full Name/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Work Email/)).toBeInTheDocument()
+    expect(screen.getByText('Step 1 of 3: Personal Profile')).toBeInTheDocument()
   })
 
   it('has the Next button disabled when required fields are empty', () => {
@@ -95,16 +95,14 @@ describe('Setup page', () => {
     expect(nextButton).toBeDisabled()
   })
 
-  it('enables Next button when business name and industry are filled', async () => {
+  it('keeps Next disabled when only one personal field is filled', async () => {
     const user = userEvent.setup()
     render(<Setup />)
 
-    // Fill in business name (minimum 2 chars)
-    const businessNameInput = screen.getByLabelText('Business Name')
-    await user.type(businessNameInput, 'Test Business')
+    // Fill in full name only — Country (Radix Select) is required and not filled.
+    const fullNameInput = screen.getByLabelText(/Full Name/)
+    await user.type(fullNameInput, 'Test User')
 
-    // Industry is a Radix Select which is hard to interact with in tests.
-    // The Next button should still be disabled without industry.
     const nextButton = screen.getByRole('button', { name: /next/i })
     expect(nextButton).toBeDisabled()
   })
