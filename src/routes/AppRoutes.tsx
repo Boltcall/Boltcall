@@ -40,6 +40,12 @@ const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 // untouched; this is a sibling route surface, not a replacement.
 const DashboardLayoutV2 = React.lazy(() => import('../components/v2/DashboardLayoutV2'));
 const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+// V2 page wave 3 — Integrations / Reputation / Help / QA / Settings
+const V2IntegrationsPage = React.lazy(() => import('../pages/v2/V2IntegrationsPage'));
+const V2ReputationPage = React.lazy(() => import('../pages/v2/V2ReputationPage'));
+const V2HelpPage = React.lazy(() => import('../pages/v2/V2HelpPage'));
+const V2QAPage = React.lazy(() => import('../pages/v2/V2QAPage'));
+const V2SettingsPage = React.lazy(() => import('../pages/v2/V2SettingsPage'));
 
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
@@ -481,6 +487,50 @@ const NavigationWrapper: React.FC = () => {
                 <div className="min-h-[40vh] flex items-center justify-center text-sm text-zinc-500">
                   V2 shell ready. Day 8 pages mount here.
                 </div>
+              </V2OptInGate>
+            }
+          />
+          {/* V2 page wave 3 — Integrations / Reputation / Help / QA / Settings.
+              Each page renders behind the V2OptInGate (workspace.v2_enabled).
+              The outer <Suspense> wrapper inside NavigationWrapper handles the
+              lazy load. */}
+          <Route
+            path="integrations"
+            element={
+              <V2OptInGate>
+                <V2IntegrationsPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="reputation"
+            element={
+              <V2OptInGate>
+                <V2ReputationPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="help"
+            element={
+              <V2OptInGate>
+                <V2HelpPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="qa"
+            element={
+              <V2OptInGate>
+                <V2QAPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <V2OptInGate>
+                <V2SettingsPage />
               </V2OptInGate>
             }
           />
