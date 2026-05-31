@@ -445,6 +445,80 @@ const subscriptionChangedSchema = z.object({
   op: z.string().optional(),
 }).strict();
 
+// ── SaaS V2 dashboard schemas (wave-2 pages) ──────────────────────────────
+// These are internal telemetry only — never projected to clients. Workspace_id
+// is used in place of client_id for SaaS self-serve users (no agency_clients row).
+
+const saasV2LeadsListRenderedSchema = z.object({
+  workspace_id: z.string(),
+  count: z.number().int().nonnegative(),
+  filter_applied: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2MessagesListRenderedSchema = z.object({
+  workspace_id: z.string(),
+  count: z.number().int().nonnegative(),
+  needs_reply_count: z.number().int().nonnegative().optional(),
+  channel_breakdown: z.record(z.number().int().nonnegative()).optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2AgentStressTestRunSchema = z.object({
+  workspace_id: z.string(),
+  scenario_id: z.enum([
+    'price_shopper',
+    'emergency',
+    'hostile_caller',
+    'comparison_shopper',
+    'non_english',
+    'low_info',
+  ]),
+  qa_score: z.number().min(0).max(10),
+  outcome: z.string(),
+  duration_min: z.number().nonnegative().optional(),
+}).strict();
+
+const saasV2KnowledgeGapDetectedSchema = z.object({
+  workspace_id: z.string(),
+  query_text: z.string().max(200),
+  top_score: z.number(),
+  source: z.enum(['kb_search', 'ai_extract', 'conversation']),
+}).strict();
+
+const saasV2LeadDrawerOpenedSchema = z.object({
+  workspace_id: z.string(),
+  lead_id: z.string(),
+}).strict();
+
+const saasV2MessageReplyDraftedSchema = z.object({
+  workspace_id: z.string(),
+  thread_id: z.string(),
+  channel: z.enum(['sms', 'email', 'chat']),
+  tier: z.enum(['haiku', 'sonnet']),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2AgentSummaryRenderedSchema = z.object({
+  workspace_id: z.string(),
+  agent_id: z.string(),
+  narrative_confidence: z.number().min(0).max(1),
+}).strict();
+
+const saasV2KbDraftAcceptedSchema = z.object({
+  workspace_id: z.string(),
+  kb_folder_id: z.string(),
+  doc_count: z.number().int().nonnegative(),
+  source: z.enum(['scrape', 'upload', 'ai_extract']),
+}).strict();
+
+const saasV2MessageThreadOpenedSchema = z.object({
+  workspace_id: z.string(),
+  thread_id: z.string(),
+  channel: z.enum(['sms', 'email', 'chat']),
+  message_count: z.number().int().nonnegative().optional(),
+}).strict();
+
 const EVENT_SCHEMAS = {
   call_completed: callCompletedSchema,
   lead_captured: leadCapturedSchema,
