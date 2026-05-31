@@ -97,6 +97,9 @@ vi.mock('../../../lib/supabase', () => ({
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
     },
     channel: () => ({ on: () => ({ subscribe: vi.fn() }) }),
+    removeChannel: vi.fn(),
+    removeAllChannels: vi.fn(),
+    getChannels: () => [],
   },
 }));
 
