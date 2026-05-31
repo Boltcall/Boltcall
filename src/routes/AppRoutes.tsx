@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLenis } from '../hooks/useLenis';
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
@@ -277,6 +277,12 @@ const LogoAnimationDemoPage = React.lazy(() => import('../pages/LogoAnimationDem
 const RockerSwitchDemoPage = React.lazy(() => import('../pages/RockerSwitchDemoPage'));
 const ReceptionistDemo = React.lazy(() => import('../pages/ReceptionistDemo'));
 
+// ── Lazy loads — V2 SaaS dashboard surface (page wave 1) ─────────────────
+const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+const V2HomePage = React.lazy(() => import('../pages/v2/V2HomePage'));
+const V2AnalyticsPage = React.lazy(() => import('../pages/v2/V2AnalyticsPage'));
+const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
+
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
@@ -404,6 +410,23 @@ const NavigationWrapper: React.FC = () => {
             <Route path="notification-preferences" element={<Navigate to="/dashboard/settings/notifications" replace />} />
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
+        </Route>
+        {/* V2 SaaS dashboard surface — opt-in via V2OptInGate (Week 1 shell stub) */}
+        <Route
+          path="/v2"
+          element={
+            <ProtectedRoute>
+              <DashboardProviders>
+                <V2OptInGate>
+                  <Outlet />
+                </V2OptInGate>
+              </DashboardProviders>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<V2HomePage />} />
+          <Route path="analytics" element={<V2AnalyticsPage />} />
+          <Route path="calls" element={<V2CallsPage />} />
         </Route>
         {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
         <Route path="/setup" element={<Setup />} />
