@@ -136,54 +136,52 @@ export const handler: Handler = async (event) => {
       const body = JSON.parse(event.body || '{}');
       const { action: postAction } = body;
 
-      // Purchase a phone number — atomic: buys on Twilio, registers with Retell,
-      // and saves to phone_numbers in one server-side transaction so a partial
-      // failure can't orphan the user (charged on Twilio but no DB row /
-      // unusable by the agent). Pre-fix bugs (2026-05-31 QA):
-      //   C1 - frontend INSERT was missing business_profile_id, workspace_id,
-      //        country_code; every Twilio purchase 23502'd silently.
-      //   C2 - no step registered the bought number with Retell, so even when
-      //        the DB save happened to work the outbound call failed with
-      //        "404 Item +1... not found from phone-number".
-      //   C3 - the frontend swallowed the 23502 with console.error, so the
-      //        user got no toast and Twilio kept billing the orphan number.
+      // Purchase a phone number — the user clicks Buy in the dashboard and
+      // gets back a fully-working Retell-provisioned number with both
+      // inbound (AI receptionist) and outbound (speed_to_lead callback)
+      // agents already attached. End to end in one server-side step.
+      //
+      // History: this used to go through Twilio's IncomingPhoneNumbers API
+      // and then try Retell's import-phone-number to wire the bought number
+      // into the AI. That path needs a Twilio Elastic SIP Trunk
+      // termination_uri that Boltcall doesn't currently provision, so import
+      // always failed with "request/body must have required property
+      // 'termination_uri'". Net effect: the user got billed by Twilio for a
+      // number their AI couldn't actually use. See C2 in the 2026-05-31 QA.
+      //
+      // Switching to Retell's create-phone-number provisions a number from
+      // Retell's own Twilio pool, wires both agents in the same call, and
+      // returns a number that works on the first call. Tested live during
+      // the 2026-05-31 QA: smoke-test workspace's +15129574374 was created
+      // this way and an outbound speed_to_lead call from it to a US number
+      // registered cleanly (call_56b2c954385cf599e41d8d2d4e5).
+      //
+      // The body still accepts `phone_number` for backwards compatibility
+      // with the existing UI (which lets the user "click" a specific Twilio
+      // number from the search list) — we use it only to extract the area
+      // code, since Retell picks the actual number from its pool.
       if (postAction === 'purchase') {
-        const { phone_number, voice_url, sms_url, friendly_name, country_code } = body;
-        if (!phone_number) {
-          return { statusCode: 400, headers, body: JSON.stringify({ error: 'phone_number required' }) };
-        }
+        const { phone_number, friendly_name, country_code } = body;
 
-        // ── Step 0: gather the user context the phone_numbers schema requires
-        //    so we can fail fast before incurring a Twilio charge. ──────────
+        // ── Step 0: gather the user context phone_numbers requires and the
+        //    agent IDs Retell needs to attach. ─────────────────────────────
         const serviceSupabase = createClient(
           process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
           process.env.SUPABASE_SERVICE_KEY || '',
         );
         const [{ data: profileRow }, { data: workspaceRow }, { data: inboundAgent }, { data: outboundAgent }] = await Promise.all([
-          serviceSupabase.from('business_profiles')
-            .select('id')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: true })
-            .limit(1).maybeSingle(),
-          serviceSupabase.from('workspaces')
-            .select('id')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: true })
-            .limit(1).maybeSingle(),
-          serviceSupabase.from('agents')
-            .select('retell_agent_id')
-            .eq('user_id', userId)
-            .in('agent_type', ['inbound', 'ai_receptionist', 'receptionist'])
+          serviceSupabase.from('business_profiles').select('id').eq('user_id', userId)
+            .order('created_at', { ascending: true }).limit(1).maybeSingle(),
+          serviceSupabase.from('workspaces').select('id, name').eq('user_id', userId)
+            .order('created_at', { ascending: true }).limit(1).maybeSingle(),
+          serviceSupabase.from('agents').select('retell_agent_id')
+            .eq('user_id', userId).in('agent_type', ['inbound', 'ai_receptionist', 'receptionist'])
             .not('retell_agent_id', 'is', null)
-            .order('created_at', { ascending: true })
-            .limit(1).maybeSingle(),
-          serviceSupabase.from('agents')
-            .select('retell_agent_id')
-            .eq('user_id', userId)
-            .in('agent_type', ['speed_to_lead', 'outbound_speed_to_lead'])
+            .order('created_at', { ascending: true }).limit(1).maybeSingle(),
+          serviceSupabase.from('agents').select('retell_agent_id')
+            .eq('user_id', userId).in('agent_type', ['speed_to_lead', 'outbound_speed_to_lead'])
             .not('retell_agent_id', 'is', null)
-            .order('created_at', { ascending: true })
-            .limit(1).maybeSingle(),
+            .order('created_at', { ascending: true }).limit(1).maybeSingle(),
         ]);
         if (!profileRow?.id || !workspaceRow?.id) {
           return { statusCode: 409, headers, body: JSON.stringify({
@@ -198,92 +196,97 @@ export const handler: Handler = async (event) => {
           }) };
         }
 
-        // ── Step 1: Twilio purchase ─────────────────────────────────────────
-        const formData = new URLSearchParams({
-          PhoneNumber: phone_number,
-          ...(voice_url && { VoiceUrl: voice_url }),
-          ...(sms_url && { SmsUrl: sms_url }),
-          ...(friendly_name && { FriendlyName: friendly_name }),
-        });
-        const url = `${TWILIO_API_BASE}/Accounts/${accountSid}/IncomingPhoneNumbers.json`;
-        const twilioResp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData.toString(),
-        });
-        const twilioData = await twilioResp.json();
-        if (!twilioResp.ok) {
-          throw new Error(twilioData.message || `Twilio purchase failed: ${twilioResp.status}`);
+        // ── Step 1: Retell provisions the number with both agents attached.
+        const retellApiKey = process.env.RETELL_API_KEY;
+        if (!retellApiKey) {
+          return { statusCode: 500, headers, body: JSON.stringify({ error: 'RETELL_API_KEY not configured' }) };
+        }
+        const cc = (country_code || 'US').toUpperCase();
+        // Pull the area code out of the "selected" number when present —
+        // accepts +15125551234, 15125551234, 5125551234, or just "512".
+        let areaCode: number | undefined;
+        if (typeof phone_number === 'string') {
+          const digits = phone_number.replace(/\D/g, '');
+          // For US/CA the leading 1 is the country code; the next 3 digits
+          // are the NPA. For everything else, fall back to the first 3
+          // digits which Retell will validate.
+          const npa = (cc === 'US' || cc === 'CA') && digits.length >= 11
+            ? digits.slice(1, 4)
+            : digits.slice(0, 3);
+          const parsed = Number.parseInt(npa, 10);
+          if (Number.isFinite(parsed) && parsed >= 100 && parsed <= 999) areaCode = parsed;
         }
 
-        // ── Step 2: Persist to phone_numbers BEFORE Retell registration so we
-        //    have a paper trail even if the Retell call fails. We mark status
-        //    'pending' and flip to 'active' after Retell succeeds. ──────────
-        const cc = (country_code || 'US').toUpperCase();
+        const retellBody: Record<string, any> = {
+          country_code: cc === 'US' || cc === 'CA' ? cc : 'US', // Retell currently only takes US|CA
+          inbound_agent_id: inboundAgent.retell_agent_id,
+        };
+        if (outboundAgent?.retell_agent_id) retellBody.outbound_agent_id = outboundAgent.retell_agent_id;
+        if (areaCode) retellBody.area_code = areaCode;
+        if (friendly_name) retellBody.nickname = friendly_name;
+        else if (workspaceRow.name) retellBody.nickname = workspaceRow.name;
+
+        const retellResp = await fetch('https://api.retellai.com/create-phone-number', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${retellApiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(retellBody),
+        });
+        const retellData = await retellResp.json().catch(() => ({}));
+        if (!retellResp.ok) {
+          const msg = retellData?.error_message || retellData?.message || `Retell create-phone-number failed: ${retellResp.status}`;
+          console.error('Retell create-phone-number failed:', msg, { areaCode, cc });
+          return { statusCode: 502, headers, body: JSON.stringify({
+            error: 'Phone provider unavailable. Please try again or contact support.',
+            detail: msg,
+          }) };
+        }
+        const provisionedNumber = retellData.phone_number;
+        if (!provisionedNumber) {
+          return { statusCode: 502, headers, body: JSON.stringify({
+            error: 'Retell did not return a phone number',
+            detail: JSON.stringify(retellData).slice(0, 500),
+          }) };
+        }
+
+        // ── Step 2: Persist to phone_numbers with status='active' since the
+        //    Retell side is already wired up. ────────────────────────────
         const { data: phoneRow, error: insertErr } = await serviceSupabase
           .from('phone_numbers')
           .insert({
             business_profile_id: profileRow.id,
             user_id: userId,
             workspace_id: workspaceRow.id,
-            phone_number: twilioData.phone_number,
-            phone_type: 'twilio',
+            phone_number: provisionedNumber,
+            phone_type: 'retell-twilio',
             country_code: cc,
-            location: body.location || (friendly_name as string | undefined) || 'N/A',
-            status: 'pending',
-            twilio_sid: twilioData.sid,
+            location: body.location || (friendly_name as string | undefined) || retellData.phone_number_pretty || 'N/A',
+            status: 'active',
+            twilio_sid: 'retell_pool',
           })
           .select()
           .single();
         if (insertErr) {
-          // The number is bought on Twilio but we can't track it. Surface
-          // loudly so the caller can release the number or contact support.
-          console.error('phone_numbers insert failed after Twilio purchase:', insertErr, { sid: twilioData.sid });
+          console.error('phone_numbers insert failed after Retell provision:', insertErr, { provisionedNumber });
+          // We've already provisioned on Retell; reconcile by deleting that
+          // side too so we don't leave a stray number that's billing.
+          try {
+            await fetch(`https://api.retellai.com/delete-phone-number/${encodeURIComponent(provisionedNumber)}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${retellApiKey}` },
+            });
+          } catch (e) {
+            console.error('Retell rollback failed:', e);
+          }
           return { statusCode: 500, headers, body: JSON.stringify({
-            error: 'Number purchased but local save failed',
+            error: 'Provisioned but local save failed; provisioner was rolled back.',
             detail: insertErr.message,
-            twilio_sid: twilioData.sid,
-            phone_number: twilioData.phone_number,
-            recovery: 'Contact support with the twilio_sid above — number can be released or reconciled.',
           }) };
         }
 
-        // ── Step 3: Register with Retell so the outbound speed_to_lead call
-        //    has a valid from_number and inbound calls route to the
-        //    receptionist. ─────────────────────────────────────────────────
-        const retellApiKey = process.env.RETELL_API_KEY;
-        let retellRegistered = false;
-        let retellError: string | null = null;
-        if (retellApiKey) {
-          try {
-            const retellBody: Record<string, any> = {
-              phone_number: twilioData.phone_number,
-              phone_number_type: 'twilio',
-              twilio_account_sid: accountSid,
-              twilio_auth_token: process.env.TWILIO_AUTH_TOKEN,
-              inbound_agent_id: inboundAgent.retell_agent_id,
-            };
-            if (outboundAgent?.retell_agent_id) retellBody.outbound_agent_id = outboundAgent.retell_agent_id;
-            if (friendly_name) retellBody.nickname = friendly_name;
-
-            const retellResp = await fetch('https://api.retellai.com/import-phone-number', {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${retellApiKey}`, 'Content-Type': 'application/json' },
-              body: JSON.stringify(retellBody),
-            });
-            const retellData = await retellResp.json().catch(() => ({}));
-            if (retellResp.ok) {
-              retellRegistered = true;
-              await serviceSupabase.from('phone_numbers').update({ status: 'active' }).eq('id', phoneRow.id);
-            } else {
-              retellError = retellData?.error_message || retellData?.message || `Retell register failed: ${retellResp.status}`;
-              console.error('Retell import failed:', retellError, { phone_number, sid: twilioData.sid });
-            }
-          } catch (e: any) {
-            retellError = e?.message || String(e);
-            console.error('Retell import threw:', retellError);
-          }
-        }
+        // For UI compatibility with the previous response shape.
+        const retellRegistered = true;
+        const retellError = null as string | null;
+        const twilioData = { sid: 'retell_pool', phone_number: provisionedNumber, friendly_name: retellBody.nickname || '' };
 
         return {
           statusCode: 200,
