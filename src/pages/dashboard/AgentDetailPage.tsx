@@ -130,7 +130,10 @@ const AgentDetailPage: React.FC = () => {
         setAgent(data);
         setName(data.name || '');
         setStatus(data.status || 'active');
-        setGreeting(data.greeting || '');
+        // begin_message is the actual greeting column on agents — data.greeting
+        // is undefined and would silently blank the field, so a save without
+        // an edit would overwrite the stored value with empty.
+        setGreeting(data.begin_message || '');
         setVoiceId(data.voice_id || '');
         setTransferPhone(data.transfer_phone_number || '');
         setAvatar(data.avatar ?? null);
@@ -202,16 +205,17 @@ const AgentDetailPage: React.FC = () => {
     setIsSaving(true);
 
     try {
+      // Only write columns that actually exist on the agents table. greeting
+      // is stored as begin_message. transfer_phone_number / avatar / color
+      // have no columns yet — they're UI-only state until a follow-up migration
+      // adds them, otherwise this whole UPDATE 400s and nothing saves.
       const { data: updated, error } = await supabase
         .from('agents')
         .update({
           name,
           status,
-          greeting,
+          begin_message: greeting,
           voice_id: voiceId,
-          transfer_phone_number: transferPhone,
-          avatar,
-          color,
           updated_at: new Date().toISOString(),
         })
         .eq('id', agent.id)
