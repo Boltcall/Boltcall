@@ -70,16 +70,16 @@
 import type { Handler, HandlerEvent } from '@netlify/functions';
 import path from 'node:path';
 
-import { runAgent, type JsonSchemaObject } from '../_shared/agency-agents/run-agent';
-import { emitAgencyEvent } from '../_shared/emit-agency-event';
-import { getServiceSupabase } from '../_shared/token-utils';
-import { generateEmbedding } from '../_shared/azure-ai';
+import { runAgent, type JsonSchemaObject } from './_shared/agency-agents/run-agent';
+import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { getServiceSupabase } from './_shared/token-utils';
+import { generateEmbedding } from './_shared/azure-ai';
 import {
   generateAdCreative,
   type AdAngle,
   type AdDimensions,
-} from '../_shared/agency-adapters/gemini-image';
-import { getCreativeInsights } from '../_shared/agency-adapters/meta-ads-adapter';
+} from './_shared/agency-adapters/gemini-image';
+import { getCreativeInsights } from './_shared/agency-adapters/meta-ads-adapter';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 
 // ────────────────────────────────────────────────────────────────────────────
