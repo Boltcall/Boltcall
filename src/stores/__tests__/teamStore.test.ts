@@ -174,8 +174,14 @@ describe('teamStore', () => {
       expect(members.find((m) => m.id === 'm1')).toBeUndefined();
     });
 
-    it('should throw on supabase error', async () => {
-      mockSupabaseChain.eq = vi.fn().mockResolvedValue({ error: { message: 'delete failed' } });
+    it('should throw when the remove request fails', async () => {
+      // removeMember now POSTs to /invite-member; failure surfaces as a non-OK
+      // fetch response, not a Supabase error.
+      (global as any).fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ error: 'delete failed' }),
+      });
       await expect(useTeamStore.getState().removeMember('m1')).rejects.toBeDefined();
     });
   });
