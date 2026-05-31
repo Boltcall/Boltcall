@@ -68,9 +68,42 @@ const BlogSEO: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Complete Guide to SEO", "item": "https://boltcall.org/blog/complete-guide-to-seo"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-seo';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is SEO and why does it matter for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "SEO (Search Engine Optimization) is the process of improving your website so it ranks higher on Google when local customers search for your services. For local businesses, strong SEO means more calls, more bookings, and more revenue — without paying for ads." }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take to see results from local SEO?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Most local businesses see measurable improvements in 3–6 months with consistent SEO effort. Quick wins like Google Business Profile optimization can show results in 2–4 weeks. Competitive keywords typically take 6–12 months to rank on page one." }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the most important SEO factors for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The top SEO factors for local businesses are: Google Business Profile optimization, consistent NAP (name, address, phone) citations, customer reviews, local keyword content, mobile-friendly website speed, and inbound links from local directories." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does having an AI receptionist help with local SEO?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Indirectly, yes. Boltcall's AI receptionist increases call-to-booking conversion rates, which can generate more Google reviews from satisfied customers — one of the strongest local ranking signals. More 5-star reviews means higher local pack rankings." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema-seo')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -125,9 +158,14 @@ const BlogSEO: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="prose prose-lg max-w-none mb-12"
         >
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-5 mb-4 rounded-r-xl">
+            <p className="text-lg text-gray-800 leading-relaxed">
+              SEO (Search Engine Optimization) is the practice of improving your website so it appears higher in Google search results when local customers look for your services. For local businesses, SEO means more calls, more bookings, and more revenue — without paying for ads every month.
+            </p>
+          </div>
           <p className="text-xl text-gray-700 leading-relaxed font-medium">
-            Your potential customers are searching for your services right now. The question is: 
-            will they find you or your competitor? SEO isn't just about ranking higher—it's about 
+            Your potential customers are searching for your services right now. The question is:
+            will they find you or your competitor? SEO isn't just about ranking higher—it's about
             being visible when it matters most. Here's why it's critical for your business.
           </p>
         </motion.div>
@@ -569,6 +607,31 @@ const BlogSEO: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is SEO and why does it matter for local businesses?</h3>
+              <p className="text-gray-700">SEO is the process of improving your website so it ranks higher on Google when local customers search for your services. For local businesses, strong SEO means more calls, more bookings, and more revenue — without paying for ads.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does it take to see results from local SEO?</h3>
+              <p className="text-gray-700">Most local businesses see measurable improvements in 3–6 months with consistent SEO effort. Quick wins like Google Business Profile optimization can show results in 2–4 weeks. Competitive keywords typically take 6–12 months to rank on page one.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What are the most important SEO factors for local businesses?</h3>
+              <p className="text-gray-700">The top SEO factors for local businesses are: Google Business Profile optimization, consistent NAP citations, customer reviews, local keyword content, mobile-friendly website speed, and inbound links from local directories.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does having an AI receptionist help with local SEO?</h3>
+              <p className="text-gray-700">Indirectly, yes. Boltcall's AI receptionist increases call-to-booking conversion rates, which generates more Google reviews from satisfied customers — one of the strongest local ranking signals. More 5-star reviews means higher local pack rankings.</p>
+            </div>
           </div>
         </div>
       </section>

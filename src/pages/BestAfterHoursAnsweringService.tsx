@@ -4,8 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Phone, Users, Zap, DollarSign, CheckCircle, AlertTriangle } from 'lucide-react';
 import Header from '../components/Header';
-// Footer intentionally imported for future use when page is completed
-// import Footer from '../components/Footer';
+import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -16,7 +15,7 @@ const BestAfterHoursAnsweringService: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = 'Best After Hours Answering Service for Local Businesses: AI vs Traditional | Boltcall';
-    updateMetaDescription('Compare the best after hours answering services for local businesses. AI receptionists outperform traditional services with 24/7 coverage and lower costs.');
+    updateMetaDescription('Compare the best after hours answering services for local businesses. AI receptionists beat traditional services with 24/7 coverage and lower costs. Start free.');
 
     const schema = {
       '@context': 'https://schema.org',
@@ -60,8 +59,47 @@ const BestAfterHoursAnsweringService: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const bcScript = document.createElement('script');
+    bcScript.type = 'application/ld+json';
+    bcScript.id = 'breadcrumb-jsonld';
+    bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best After Hours Answering Service", "item": "https://boltcall.org/blog/best-after-hours-answering-service"}]});
+    document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-after-hours';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best after hours answering service for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall's AI receptionist is the top-rated after hours answering service for local businesses. It answers every call 24/7, books appointments, handles emergencies, and costs 60–80% less than traditional human answering services." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does an after hours answering service cost?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Traditional answering services charge $100–$500/month plus per-minute fees, typically totaling $300–$1,500/month. AI after hours answering services like Boltcall offer flat-rate plans starting at $389/month with unlimited calls and no per-minute overages." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI answer calls as effectively as a human answering service?",
+          "acceptedAnswer": { "@type": "Answer", "text": "For routine calls — appointment requests, emergency triage, lead capture — AI handles 95% of interactions with higher consistency and speed than human operators. Complex or emotionally sensitive calls are escalated to your on-call staff." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does an after hours answering service integrate with my calendar?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall integrates with Google Calendar, Calendly, and major scheduling platforms. After-hours callers can book directly into your schedule, with automatic confirmation texts and reminders sent without any staff involvement." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema-after-hours')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -562,6 +600,32 @@ const BestAfterHoursAnsweringService: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best after hours answering service for local businesses?</h3>
+              <p className="text-gray-700">Boltcall's AI receptionist is the top-rated after hours answering service for local businesses. It answers every call 24/7, books appointments, handles emergencies, and costs 60–80% less than traditional human answering services.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an after hours answering service cost?</h3>
+              <p className="text-gray-700">Traditional answering services charge $100–$500/month plus per-minute fees, typically totaling $300–$1,500/month. Boltcall offers flat-rate plans starting at $389/month with unlimited calls and no per-minute overages.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI answer calls as effectively as a human answering service?</h3>
+              <p className="text-gray-700">For routine calls — appointment requests, emergency triage, lead capture — AI handles 95% of interactions with higher consistency and speed than human operators. Complex calls are escalated to your on-call staff.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does an after hours answering service integrate with my calendar?</h3>
+              <p className="text-gray-700">Yes. Boltcall integrates with Google Calendar, Calendly, and major scheduling platforms. After-hours callers book directly into your schedule, with automatic confirmation texts and reminders sent without any staff involvement.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </>
   );
 };

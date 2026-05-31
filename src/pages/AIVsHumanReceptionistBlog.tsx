@@ -67,9 +67,54 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI vs Human Receptionist", "item": "https://boltcall.org/blog/ai-vs-human-receptionist"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist cheaper than a human receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. An AI receptionist costs $79–$179/month versus $3,200–$4,500/month for a full-time human receptionist including salary, benefits, and payroll taxes — a savings of 70–90% annually."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI receptionists handle complex customer questions?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI receptionists handle routine tasks like appointment booking, FAQs, and lead capture very well. For highly complex or emotional situations, calls are automatically escalated to a human staff member."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do customers know they are talking to an AI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Modern AI receptionists use natural-sounding voices and conversation flows that feel professional and responsive. Businesses choose whether to disclose AI usage — many do so transparently in their greeting."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How quickly can I set up an AI receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Boltcall's AI receptionist can be set up in under 30 minutes. You provide your business information, configure call flows, and the system goes live immediately — no technical expertise required."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -135,7 +180,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
               {/* Direct Answer Block */}
               <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8">
                 <p className="text-lg font-medium text-gray-900">
-                  <strong>Quick Answer:</strong> AI receptionists cost 70-80% less than human staff, work 24/7, and handle unlimited calls simultaneously. They're ideal for appointment booking and basic inquiries, while human receptionists excel at complex problem-solving and nuanced customer relationships.
+                  <strong>Quick Answer:</strong> An AI receptionist is an automated virtual phone system that answers calls, books appointments, and captures leads 24/7 — at 70–80% less cost than a human hire. Boltcall's AI receptionist means every inbound call is answered instantly, with no hold times, no sick days, and no after-hours gaps.
                 </p>
               </div>
 
@@ -668,6 +713,31 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist cheaper than a human receptionist?</h3>
+              <p className="text-gray-700">Yes. An AI receptionist costs $79–$179/month versus $3,200–$4,500/month for a full-time human receptionist — a savings of 70–90% annually. Boltcall's plans start at $389/mo with no setup fees.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI receptionists handle complex customer questions?</h3>
+              <p className="text-gray-700">AI receptionists handle routine tasks like appointment booking, FAQs, and lead capture very well. For highly complex or emotional situations, calls are automatically escalated to a human staff member.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Do customers know they are talking to an AI?</h3>
+              <p className="text-gray-700">Modern AI receptionists use natural-sounding voices and conversation flows that feel professional and responsive. Businesses choose whether to disclose AI usage — many do so transparently in their greeting.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How quickly can I set up an AI receptionist?</h3>
+              <p className="text-gray-700">Boltcall's AI receptionist can be set up in under 30 minutes. You provide your business information, configure call flows, and the system goes live immediately — no technical expertise required.</p>
+            </div>
           </div>
         </div>
       </section>

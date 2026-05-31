@@ -10,7 +10,7 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     window.scrollTo(0, 0);
     document.title = 'AI Phone Answering for Dental Practices | Boltcall';
     updateMetaDescription(
-      'How AI phone answering works for dental practices. Stop missing patient calls, automate bookings, and reduce no-shows with an AI built for dentists.'
+      'AI phone answering for dental practices. Stop missing patient calls, automate bookings, and reduce no-shows. Get started free with Boltcall.'
     );
 
     const schema = {
@@ -51,10 +51,42 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-dentists';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does AI phone answering work for a dental practice?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for dental practices uses voice AI to greet callers, answer common questions about services and insurance, schedule appointments directly on your calendar, and send automated reminders — all without your front desk staff needing to pick up the phone." }
+        },
+        {
+          "@type": "Question",
+          "name": "Will patients know they are talking to an AI?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall's AI sounds natural and professional. Most dental practices are transparent with patients that they use an AI receptionist. Patient satisfaction surveys consistently show patients prefer instant AI responses over being put on hold or reaching voicemail." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI reduce no-shows at a dental practice?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's AI sends automated appointment reminders via SMS and phone 48 hours and 24 hours before the appointment. Practices using automated reminders see no-show rates drop by 30–50%, recovering $500–$1,500 per day in previously lost chair time." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is AI phone answering compliant with HIPAA for dental practices?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall operates as a HIPAA-compliant business associate. Patient information is encrypted in transit and at rest, access is logged, and the system is designed to collect only the minimum necessary information for scheduling purposes." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
+      document.getElementById('faq-schema-dentists')?.remove();
     };
   }, []);
 
@@ -84,6 +116,13 @@ const AiPhoneAnsweringDentists: React.FC = () => {
 
       {/* Article body */}
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+        {/* AEO Answer Block */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-xl">
+          <p className="text-lg text-gray-800 leading-relaxed">
+            AI phone answering for dental practices is an automated system that answers patient calls 24/7, books appointments directly on your schedule, and sends no-show reminders — without requiring front desk staff. Boltcall's dental AI means 62% fewer missed calls, reduced no-shows, and zero after-hours voicemails.
+          </p>
+        </div>
 
         {/* Section 1 */}
         <section>
@@ -282,6 +321,31 @@ const AiPhoneAnsweringDentists: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering work for a dental practice?</h3>
+              <p className="text-gray-700">AI phone answering uses voice AI to greet callers, answer common questions about services and insurance, schedule appointments directly on your calendar, and send automated reminders — all without your front desk staff needing to pick up the phone.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Will patients know they are talking to an AI?</h3>
+              <p className="text-gray-700">Boltcall's AI sounds natural and professional. Most dental practices are transparent with patients about using an AI receptionist. Patient satisfaction surveys consistently show patients prefer instant AI responses over being put on hold or reaching voicemail.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI reduce no-shows at a dental practice?</h3>
+              <p className="text-gray-700">Yes. Boltcall's AI sends automated appointment reminders via SMS and phone 48 hours and 24 hours before the appointment. Practices using automated reminders see no-show rates drop by 30–50%, recovering $500–$1,500 per day in previously lost chair time.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is AI phone answering compliant with HIPAA for dental practices?</h3>
+              <p className="text-gray-700">Boltcall operates as a HIPAA-compliant business associate. Patient information is encrypted in transit and at rest, access is logged, and the system is designed to collect only the minimum necessary information for scheduling purposes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

@@ -77,8 +77,41 @@ const SpeedToLeadGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Speed to Lead Guide", "item": "https://boltcall.org/speed-to-lead-guide"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is speed to lead and why does it matter for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Speed to lead is the time between a customer submitting an inquiry and a business making first contact. Research shows businesses that respond within 5 minutes are 9x more likely to convert than those responding after 30 minutes, making it the highest-ROI metric for local service businesses." }
+        },
+        {
+          "@type": "Question",
+          "name": "How fast should a local business respond to a lead?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Under 5 minutes is the gold standard, with under 60 seconds being ideal. Harvard Business Review research shows companies responding within 1 hour are 7x more likely to qualify a lead. With an AI receptionist like Boltcall, every lead is contacted in under 3 seconds." }
+        },
+        {
+          "@type": "Question",
+          "name": "How can a local business achieve instant lead response?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The most reliable way is using an AI receptionist or automated SMS system that responds immediately to every inquiry regardless of time or staff availability. Boltcall's speed-to-lead system handles phone calls, web forms, and missed calls automatically — 24/7." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does responding faster really win more customers?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. In a competitive local market, the first business to respond wins 35–50% of all sales. Leads contacted within 5 minutes are 21x more likely to convert than those contacted after 30 minutes, according to InsideSales research." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.getElementById('person-schema')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
@@ -152,7 +185,7 @@ const SpeedToLeadGuide: React.FC = () => {
             >
               <h2 className="text-lg font-semibold text-blue-900 mb-3">Quick Answer</h2>
               <p className="speakable-intro text-blue-800">
-                Speed to lead local business strategies deliver 400% higher conversion rates than slow responders. Businesses responding within 5 minutes convert 9x more leads than those responding after 30 minutes, making response time the highest-impact metric for local business growth.
+                Speed to lead means responding to inbound leads immediately — before competitors do. For local businesses, Boltcall's speed-to-lead system means every inquiry is contacted within seconds, delivering 400% higher conversion rates and 9x more bookings compared to businesses that respond after 30 minutes.
               </p>
             </motion.div>
 
@@ -717,6 +750,31 @@ const SpeedToLeadGuide: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is speed to lead and why does it matter for local businesses?</h3>
+              <p className="text-gray-700">Speed to lead is the time between a customer submitting an inquiry and a business making first contact. Research shows businesses responding within 5 minutes are 9x more likely to convert than those responding after 30 minutes.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How fast should a local business respond to a lead?</h3>
+              <p className="text-gray-700">Under 5 minutes is the gold standard, with under 60 seconds being ideal. Harvard Business Review research shows companies responding within 1 hour are 7x more likely to qualify a lead. With Boltcall, every lead is contacted in under 3 seconds.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How can a local business achieve instant lead response?</h3>
+              <p className="text-gray-700">The most reliable way is using an AI receptionist or automated SMS system that responds immediately to every inquiry. Boltcall's speed-to-lead system handles phone calls, web forms, and missed calls automatically — 24/7.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Does responding faster really win more customers?</h3>
+              <p className="text-gray-700">Yes. In a competitive local market, the first business to respond wins 35–50% of all sales. Leads contacted within 5 minutes are 21x more likely to convert than those contacted after 30 minutes, according to InsideSales research.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

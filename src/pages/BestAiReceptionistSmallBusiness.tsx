@@ -64,9 +64,42 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist for Small Business", "item": "https://boltcall.org/blog/best-ai-receptionist-small-business"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-small-biz';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best AI receptionist for a small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is the top-rated AI receptionist for small businesses in 2026. It answers every call 24/7, books appointments, responds to web form leads in under 60 seconds, and costs a fraction of a human receptionist — starting at $389/month." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does an AI receptionist cost for a small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionist plans for small businesses range from $79 to $500/month. Boltcall's plans start at $389/month and include 24/7 call answering, appointment booking, SMS follow-up, and CRM integrations — all with no setup fees." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI receptionist handle multiple calls at once?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Unlike a human receptionist who can only take one call at a time, an AI receptionist handles unlimited simultaneous calls. This means no missed calls during peak hours, lunch breaks, or after closing time." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I get started with an AI receptionist for my small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "With Boltcall, setup takes under 30 minutes. You provide your business information, configure call flows and FAQ responses, and the AI goes live the same day. No technical expertise required, and there is a free trial available." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema-small-biz')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -591,6 +624,31 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI receptionist for a small business?</h3>
+              <p className="text-gray-700">Boltcall is the top-rated AI receptionist for small businesses in 2026. It answers every call 24/7, books appointments, responds to web form leads in under 60 seconds, and costs a fraction of a human receptionist — starting at $389/month.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an AI receptionist cost for a small business?</h3>
+              <p className="text-gray-700">AI receptionist plans for small businesses range from $79 to $500/month. Boltcall's plans start at $389/month and include 24/7 call answering, appointment booking, SMS follow-up, and CRM integrations — all with no setup fees.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI receptionist handle multiple calls at once?</h3>
+              <p className="text-gray-700">Yes. Unlike a human receptionist who can only take one call at a time, an AI receptionist handles unlimited simultaneous calls. This means no missed calls during peak hours, lunch breaks, or after closing time.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How do I get started with an AI receptionist for my small business?</h3>
+              <p className="text-gray-700">With Boltcall, setup takes under 30 minutes. You provide your business information, configure call flows and FAQ responses, and the AI goes live the same day. No technical expertise required, and there is a free trial available.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </>
   );

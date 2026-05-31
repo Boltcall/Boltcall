@@ -81,9 +81,42 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "How AI Receptionist Works", "item": "https://boltcall.org/blog/how-ai-receptionist-works"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does an AI receptionist understand what callers are saying?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists use automatic speech recognition (ASR) to convert spoken words to text, then natural language processing (NLP) to understand intent and extract key details like name, service needed, and preferred appointment time." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI receptionist book appointments automatically?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's AI receptionist integrates with your calendar system and can check availability, propose times, confirm bookings, and send confirmation messages — all during the call, without human involvement." }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens when an AI receptionist cannot handle a call?",
+          "acceptedAnswer": { "@type": "Answer", "text": "When a caller's request falls outside the AI's scope, it escalates to a human staff member via warm transfer, takes a detailed message, or schedules a callback — ensuring no caller is left without a resolution." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist available 24/7?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Unlike human receptionists who work set hours, an AI receptionist answers every call around the clock — including evenings, weekends, and holidays — with no overtime costs." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -141,6 +174,11 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="prose prose-lg max-w-none mb-12"
         >
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-4 rounded-r-xl">
+            <p className="text-lg text-gray-800 leading-relaxed">
+              An AI receptionist is an automated phone system that uses speech recognition and natural language processing to answer calls, book appointments, and capture lead information 24/7. Boltcall's AI receptionist means every inbound call is handled instantly — with no hold times, no missed leads, and no after-hours voicemail.
+            </p>
+          </div>
           <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
             You've heard about AI receptionists answering calls, booking appointments, and handling customer inquiries—but how do they actually work? This guide breaks down the technology and processes that power modern AI receptionist systems, from speech recognition to intelligent response generation.
           </p>
@@ -545,6 +583,31 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does an AI receptionist understand what callers are saying?</h3>
+              <p className="text-gray-700">AI receptionists use automatic speech recognition (ASR) to convert spoken words to text, then natural language processing (NLP) to understand intent and extract key details like name, service needed, and preferred appointment time.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI receptionist book appointments automatically?</h3>
+              <p className="text-gray-700">Yes. Boltcall's AI receptionist integrates with your calendar system and can check availability, propose times, confirm bookings, and send confirmation messages — all during the call, without human involvement.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What happens when an AI receptionist cannot handle a call?</h3>
+              <p className="text-gray-700">When a caller's request falls outside the AI's scope, it escalates to a human staff member via warm transfer, takes a detailed message, or schedules a callback — ensuring no caller is left without a resolution.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist available 24/7?</h3>
+              <p className="text-gray-700">Yes. Unlike human receptionists who work set hours, Boltcall's AI receptionist answers every call around the clock — including evenings, weekends, and holidays — with no overtime costs.</p>
+            </div>
           </div>
         </div>
       </section>

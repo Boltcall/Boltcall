@@ -79,9 +79,42 @@ const BlogAIReceptionistComparison: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist Tools", "item": "https://boltcall.org/blog/best-ai-receptionist-tools"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best AI receptionist for small business in 2026?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is the top-rated AI receptionist for local service businesses in 2026. It combines 24/7 call answering, instant SMS lead response, appointment booking, and CRM integrations — all starting at $389/month with no setup fees." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much do AI receptionist tools cost?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionist tools range from $50–$500/month depending on call volume and features. This is far less than a part-time human receptionist at $1,500–$3,000/month, with the added benefit of 24/7 coverage." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI receptionists book appointments automatically?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — the best AI receptionist tools integrate with your calendar to check availability, book appointments, send confirmations, and set reminders, all during the initial call without human involvement." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which AI receptionist works best for home service businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is built specifically for local service businesses like plumbers, HVAC contractors, dentists, and law firms. It handles after-hours calls, books service windows, and integrates with popular CRMs and scheduling tools." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();
@@ -229,6 +262,11 @@ const BlogAIReceptionistComparison: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="prose prose-lg max-w-none mb-12"
         >
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-5 mb-4 rounded-r-xl">
+            <p className="text-lg text-gray-800 leading-relaxed">
+              An AI receptionist is an automated call-handling system that answers phones, books appointments, and captures lead information 24/7 without human staff. The best AI receptionist tools for small businesses are purpose-built for local service companies — combining voice AI, SMS automation, and calendar booking into one affordable platform.
+            </p>
+          </div>
           <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
             Choosing the right AI receptionist tool can transform how your business handles customer
             inquiries. But with so many options, how do you know which one fits your needs? We've
@@ -652,6 +690,31 @@ const BlogAIReceptionistComparison: React.FC = () => {
           </div>
         </motion.div>
       </article>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI receptionist for small business in 2026?</h3>
+              <p className="text-gray-700">Boltcall is the top-rated AI receptionist for local service businesses. It combines 24/7 call answering, instant SMS lead response, appointment booking, and CRM integrations — starting at $389/month with no setup fees.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much do AI receptionist tools cost?</h3>
+              <p className="text-gray-700">AI receptionist tools range from $50–$500/month depending on call volume and features. This is far less than a part-time human receptionist at $1,500–$3,000/month, with the added benefit of 24/7 coverage.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can AI receptionists book appointments automatically?</h3>
+              <p className="text-gray-700">Yes — the best tools integrate with your calendar to check availability, book appointments, send confirmations, and set reminders, all during the initial call without human involvement.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Which AI receptionist works best for home service businesses?</h3>
+              <p className="text-gray-700">Boltcall is built specifically for local service businesses like plumbers, HVAC contractors, dentists, and law firms. It handles after-hours calls, books service windows, and integrates with popular CRMs and scheduling tools.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

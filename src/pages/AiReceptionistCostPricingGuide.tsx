@@ -82,9 +82,42 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Receptionist Cost & Pricing Guide", "item": "https://boltcall.org/blog/ai-receptionist-cost-pricing-guide"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much does an AI receptionist cost per month?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionist pricing typically ranges from $79–$500/month depending on call volume, features, and provider. Boltcall plans start at $389/month and include unlimited calls, appointment booking, and CRM integrations with no setup fees." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist cheaper than a human receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — significantly. A full-time human receptionist costs $38,000–$54,000/year in salary plus benefits, while an AI receptionist costs $948–$6,000/year. That's a 70–90% cost reduction with 24/7 coverage included." }
+        },
+        {
+          "@type": "Question",
+          "name": "Are there hidden costs with AI receptionist services?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Watch for per-minute overage fees, integration costs, setup charges, and annual contract requirements. Boltcall uses transparent flat-rate pricing with no hidden fees and a month-to-month option." }
+        },
+        {
+          "@type": "Question",
+          "name": "How quickly does an AI receptionist pay for itself?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Most local service businesses recover the cost of an AI receptionist within the first month by booking just 1–2 additional jobs from calls that would otherwise have gone to voicemail. At $500–$2,000 per job, the ROI is immediate." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
     };
@@ -697,6 +730,31 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
           </div>
         </div>
       </section>
+    {/* FAQ Section */}
+    <section id="faq" className="py-12 bg-white border-t border-gray-100">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+        <div className="space-y-6">
+          <div className="border border-gray-200 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an AI receptionist cost per month?</h3>
+            <p className="text-gray-700">AI receptionist pricing typically ranges from $79–$500/month. Boltcall plans start at $389/month and include unlimited calls, appointment booking, and CRM integrations with no setup fees.</p>
+          </div>
+          <div className="border border-gray-200 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist cheaper than a human receptionist?</h3>
+            <p className="text-gray-700">Yes — significantly. A full-time human receptionist costs $38,000–$54,000/year in salary plus benefits, while an AI receptionist costs $948–$6,000/year. That's a 70–90% cost reduction with 24/7 coverage included.</p>
+          </div>
+          <div className="border border-gray-200 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Are there hidden costs with AI receptionist services?</h3>
+            <p className="text-gray-700">Watch for per-minute overage fees, integration costs, setup charges, and annual contract requirements. Boltcall uses transparent flat-rate pricing with no hidden fees and a month-to-month option.</p>
+          </div>
+          <div className="border border-gray-200 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">How quickly does an AI receptionist pay for itself?</h3>
+            <p className="text-gray-700">Most local service businesses recover the cost within the first month by booking just 1–2 additional jobs from calls that would otherwise have gone to voicemail. At $500–$2,000 per job, the ROI is immediate.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <Footer />
   </>
   );

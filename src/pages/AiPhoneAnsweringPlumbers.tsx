@@ -57,9 +57,42 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema-plumbers';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does AI phone answering help plumbers capture more leads?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for plumbers answers every call 24/7, captures job details, and schedules appointments even when your crew is on-site. This prevents the $50,000+ in annual revenue that most plumbing businesses lose to missed calls and unanswered voicemails." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI handle emergency plumbing calls?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Boltcall's AI is trained to identify emergency situations — burst pipes, gas leaks, flooding — and immediately alert your on-call technician via SMS while keeping the customer on the line with reassurance and estimated arrival times." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does AI phone answering cost for a plumbing business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall plans for plumbing businesses start at $389/month — far less than a dedicated dispatcher or answering service. Most plumbing companies recover the cost by booking just one additional job per month from calls that would otherwise have gone to voicemail." }
+        },
+        {
+          "@type": "Question",
+          "name": "Will an AI receptionist work after business hours for plumbers?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — Boltcall's AI operates 24/7, 365 days a year. After-hours calls are answered, emergencies are flagged and escalated, and non-urgent jobs are scheduled for the next available slot. Your team wakes up to a full schedule, not a list of missed calls." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema-plumbers')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -581,6 +614,31 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section id="faq" className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+          <div className="space-y-6">
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How does AI phone answering help plumbers capture more leads?</h3>
+              <p className="text-gray-700">AI phone answering answers every call 24/7, captures job details, and schedules appointments even when your crew is on-site. This prevents the $50,000+ in annual revenue that most plumbing businesses lose to missed calls.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI handle emergency plumbing calls?</h3>
+              <p className="text-gray-700">Yes. Boltcall's AI identifies emergency situations — burst pipes, gas leaks, flooding — and immediately alerts your on-call technician via SMS while keeping the customer on the line with reassurance and estimated arrival times.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does AI phone answering cost for a plumbing business?</h3>
+              <p className="text-gray-700">Boltcall plans for plumbing businesses start at $389/month — far less than a dedicated dispatcher or answering service. Most plumbing companies recover the cost by booking just one additional job per month from calls that would otherwise have gone to voicemail.</p>
+            </div>
+            <div className="border border-gray-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Will an AI receptionist work after business hours for plumbers?</h3>
+              <p className="text-gray-700">Yes — Boltcall's AI operates 24/7, 365 days a year. After-hours calls are answered, emergencies are flagged and escalated, and non-urgent jobs are scheduled for the next available slot.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
