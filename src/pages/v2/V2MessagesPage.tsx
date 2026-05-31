@@ -16,7 +16,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   MessageSquare,
   Mail,
-  Phone,
+  Plug,
   RefreshCw,
   Send,
   Sparkles,
