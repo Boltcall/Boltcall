@@ -1,1 +1,12 @@
 commit	page	score_before	score_after	status	description
+6cccb95	/blog/ai-vs-human-receptionist	est~48	est~63	keep	Added FAQPage schema (4 Q&A), fixed AEO block to 50w "is an" format, added 4 question H3s in FAQ section
+6cccb95	/blog/is-ai-receptionist-worth-it	est~48	est~63	keep	Added FAQPage schema (4 Q&A), added AEO block 48w "is an", added 4 question H3s in FAQ section
+6cccb95	/blog/how-ai-receptionist-works	est~48	est~63	keep	Added FAQPage schema (4 Q&A), added AEO block 50w "is an", added 4 question H3s in FAQ section
+6cccb95	/blog/ai-receptionist-cost-pricing	est~53	est~63	keep	Added FAQPage schema (4 Q&A), added 4 question H3s in FAQ section (had AEO block already)
+6cccb95	/blog/speed-to-lead-local-business	est~48	est~63	keep	Added FAQPage schema (4 Q&A), fixed AEO block to "means" format 46w, added 4 question H3s
+6cccb95	/blog/best-ai-receptionist-tools	est~48	est~63	keep	Added FAQPage schema (4 Q&A), added AEO block 52w "is an", added 4 question H3s
+6cccb95	/blog/complete-guide-to-seo	est~48	est~63	keep	Added FAQPage schema (4 Q&A), added AEO block 48w "is the", added 4 question H3s
+6cccb95	/blog/ai-phone-answering-dentists	est~42	est~62	keep	Fixed meta desc 156->142 chars, added AEO block 47w, FAQPage schema, 4 question H3s, BreadcrumbList
+6cccb95	/blog/ai-phone-answering-plumbers	est~53	est~63	keep	Added FAQPage schema (4 Q&A), added 4 question H3s (had AEO block already)
+6cccb95	/blog/best-after-hours-answering-service	est~38	est~63	keep	Added Footer, BreadcrumbList schema, FAQPage schema, fixed meta CTA, added 4 question H3s
+6cccb95	/blog/best-ai-receptionist-small-business	est~53	est~63	keep	Added FAQPage schema (4 Q&A), added 4 question H3s (had AEO block already)
