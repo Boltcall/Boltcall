@@ -971,6 +971,72 @@ export function getClientFacingPayload(event: AgencyEventRow): ClientFacingEvent
   };
 }
 
+// ── 7. SaaS V2 sibling emitter ──────────────────────────────────────────────
+//
+// SaaS V2 self-serve users have NO `agency_clients` row, so the kernel
+// `emitAgencyEvent` (which REQUIRES a `client_id`) is the wrong tool. This
+// sibling helper writes ONLY to `aios_event_log` (the cross-system firehose
+// table) with `source = 'saas_v2'`. It still validates the payload against
+// the same per-type Zod schema so SaaS V2 telemetry stays as disciplined as
+// the agency-OS bus.
+//
+// Never throws — telemetry must not break the user-facing primary write.
+
+export type SaasV2EventType =
+  | 'saas_v2_leads_list_rendered'
+  | 'saas_v2_messages_list_rendered'
+  | 'saas_v2_agent_stress_test_run'
+  | 'saas_v2_knowledge_gap_detected'
+  | 'saas_v2_lead_drawer_opened'
+  | 'saas_v2_message_reply_drafted'
+  | 'saas_v2_agent_summary_rendered'
+  | 'saas_v2_kb_draft_accepted'
+  | 'saas_v2_message_thread_opened';
+
+export interface EmitSaasV2EventInput<T extends SaasV2EventType = SaasV2EventType> {
+  workspace_id: string;
+  type: T;
+  severity?: AgencyEventSeverity;
+  payload: Record<string, unknown>;
+}
+
+export async function emitSaasV2Event<T extends SaasV2EventType>(
+  input: EmitSaasV2EventInput<T>,
+): Promise<void> {
+  try {
+    // Validate against the same per-type schema bank.
+    const validated = validatePayload(
+      input.type as AgencyEventType,
+      input.payload,
+      `saas_v2:${input.type}`,
+    );
+
+    const supabase = getServiceSupabase();
+    const { error } = await supabase.from('aios_event_log').insert({
+      source: 'saas_v2',
+      event_type: input.type,
+      severity: input.severity ?? 'info',
+      payload: {
+        workspace_id: input.workspace_id,
+        ...validated,
+      },
+    });
+    if (error) {
+      console.warn(
+        `[emit-saas-v2-event] aios_event_log insert failed type=${input.type} ` +
+        `workspace=${input.workspace_id} err=${error.message}`,
+      );
+    }
+  } catch (err) {
+    // Validation failure or supabase throw — telemetry only, never escalate.
+    console.warn(
+      `[emit-saas-v2-event] swallowed type=${input.type} workspace=${
+        input.workspace_id
+      } err=${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+}
+
 /**
  * Schema introspection — exported for tests and for the docs generator. Do not
  * import in hot paths; the Zod schemas should be referenced directly.
