@@ -626,6 +626,16 @@ const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string>> = {
   booking_cancelled:                [],
   // Billing (stripe-adapter) — internal; never expose subscription internals.
   subscription_changed:             [],
+  // SaaS V2 dashboard surface (wave-2 pages) — internal telemetry only.
+  saas_v2_leads_list_rendered:      [],
+  saas_v2_messages_list_rendered:   [],
+  saas_v2_agent_stress_test_run:    [],
+  saas_v2_knowledge_gap_detected:   [],
+  saas_v2_lead_drawer_opened:       [],
+  saas_v2_message_reply_drafted:    [],
+  saas_v2_agent_summary_rendered:   [],
+  saas_v2_kb_draft_accepted:        [],
+  saas_v2_message_thread_opened:    [],
 };
 
 // Event types the client is allowed to see at all. Anything not in this set
