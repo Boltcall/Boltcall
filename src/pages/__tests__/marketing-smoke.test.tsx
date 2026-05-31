@@ -25,6 +25,7 @@ vi.mock('framer-motion', () => ({
       }),
   }),
   AnimatePresence: ({ children }: any) => <>{children}</>,
+  LayoutGroup: ({ children }: any) => <>{children}</>,
   useMotionValue: () => ({ set: vi.fn(), get: () => 0 }),
   useTransform: () => 0,
   useSpring: () => ({ set: vi.fn(), get: () => 0 }),
