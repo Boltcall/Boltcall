@@ -657,12 +657,4 @@ const V2MessagesPage: React.FC = () => {
   );
 };
 
-// ─── Local icon shim ────────────────────────────────────────────────────────
-// Avoid a second lucide import statement at the top by inlining the plug icon
-// for the "Open integrations" CTA — keeps the imports section clean and
-// matches the V2-shell convention of one lucide import per file.
-const Plug: React.FC = () => (
-  <Phone className="w-3.5 h-3.5 mr-1.5" />
-);
-
 export default V2MessagesPage;
