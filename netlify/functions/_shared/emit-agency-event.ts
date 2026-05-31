@@ -562,6 +562,16 @@ const EVENT_SCHEMAS = {
   booking_cancelled: bookingCancelledSchema,
   // Billing (stripe-adapter)
   subscription_changed: subscriptionChangedSchema,
+  // SaaS V2 dashboard surface (wave-2 pages) — telemetry only
+  saas_v2_leads_list_rendered: saasV2LeadsListRenderedSchema,
+  saas_v2_messages_list_rendered: saasV2MessagesListRenderedSchema,
+  saas_v2_agent_stress_test_run: saasV2AgentStressTestRunSchema,
+  saas_v2_knowledge_gap_detected: saasV2KnowledgeGapDetectedSchema,
+  saas_v2_lead_drawer_opened: saasV2LeadDrawerOpenedSchema,
+  saas_v2_message_reply_drafted: saasV2MessageReplyDraftedSchema,
+  saas_v2_agent_summary_rendered: saasV2AgentSummaryRenderedSchema,
+  saas_v2_kb_draft_accepted: saasV2KbDraftAcceptedSchema,
+  saas_v2_message_thread_opened: saasV2MessageThreadOpenedSchema,
 } as const satisfies Record<AgencyEventType, z.ZodTypeAny>;
 
 // ── 3. Fields the client RLS view is allowed to expose ─────────────────────
