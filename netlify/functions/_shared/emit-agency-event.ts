@@ -80,7 +80,17 @@ export type AgencyEventType =
   | 'booking_fetched'
   | 'booking_cancelled'
   // Billing (stripe-adapter)
-  | 'subscription_changed';
+  | 'subscription_changed'
+  // SaaS V2 dashboard surface (wave-2 pages) — telemetry only, never client-visible
+  | 'saas_v2_leads_list_rendered'
+  | 'saas_v2_messages_list_rendered'
+  | 'saas_v2_agent_stress_test_run'
+  | 'saas_v2_knowledge_gap_detected'
+  | 'saas_v2_lead_drawer_opened'
+  | 'saas_v2_message_reply_drafted'
+  | 'saas_v2_agent_summary_rendered'
+  | 'saas_v2_kb_draft_accepted'
+  | 'saas_v2_message_thread_opened';
 
 export type AgencyEventSeverity = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
@@ -435,6 +445,80 @@ const subscriptionChangedSchema = z.object({
   op: z.string().optional(),
 }).strict();
 
+// ── SaaS V2 dashboard schemas (wave-2 pages) ──────────────────────────────
+// These are internal telemetry only — never projected to clients. Workspace_id
+// is used in place of client_id for SaaS self-serve users (no agency_clients row).
+
+const saasV2LeadsListRenderedSchema = z.object({
+  workspace_id: z.string(),
+  count: z.number().int().nonnegative(),
+  filter_applied: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2MessagesListRenderedSchema = z.object({
+  workspace_id: z.string(),
+  count: z.number().int().nonnegative(),
+  needs_reply_count: z.number().int().nonnegative().optional(),
+  channel_breakdown: z.record(z.number().int().nonnegative()).optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2AgentStressTestRunSchema = z.object({
+  workspace_id: z.string(),
+  scenario_id: z.enum([
+    'price_shopper',
+    'emergency',
+    'hostile_caller',
+    'comparison_shopper',
+    'non_english',
+    'low_info',
+  ]),
+  qa_score: z.number().min(0).max(10),
+  outcome: z.string(),
+  duration_min: z.number().nonnegative().optional(),
+}).strict();
+
+const saasV2KnowledgeGapDetectedSchema = z.object({
+  workspace_id: z.string(),
+  query_text: z.string().max(200),
+  top_score: z.number(),
+  source: z.enum(['kb_search', 'ai_extract', 'conversation']),
+}).strict();
+
+const saasV2LeadDrawerOpenedSchema = z.object({
+  workspace_id: z.string(),
+  lead_id: z.string(),
+}).strict();
+
+const saasV2MessageReplyDraftedSchema = z.object({
+  workspace_id: z.string(),
+  thread_id: z.string(),
+  channel: z.enum(['sms', 'email', 'chat']),
+  tier: z.enum(['haiku', 'sonnet']),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2AgentSummaryRenderedSchema = z.object({
+  workspace_id: z.string(),
+  agent_id: z.string(),
+  narrative_confidence: z.number().min(0).max(1),
+}).strict();
+
+const saasV2KbDraftAcceptedSchema = z.object({
+  workspace_id: z.string(),
+  kb_folder_id: z.string(),
+  doc_count: z.number().int().nonnegative(),
+  source: z.enum(['scrape', 'upload', 'ai_extract']),
+}).strict();
+
+const saasV2MessageThreadOpenedSchema = z.object({
+  workspace_id: z.string(),
+  thread_id: z.string(),
+  channel: z.enum(['sms', 'email', 'chat']),
+  message_count: z.number().int().nonnegative().optional(),
+}).strict();
+
 const EVENT_SCHEMAS = {
   call_completed: callCompletedSchema,
   lead_captured: leadCapturedSchema,
@@ -478,6 +562,16 @@ const EVENT_SCHEMAS = {
   booking_cancelled: bookingCancelledSchema,
   // Billing (stripe-adapter)
   subscription_changed: subscriptionChangedSchema,
+  // SaaS V2 dashboard surface (wave-2 pages) — telemetry only
+  saas_v2_leads_list_rendered: saasV2LeadsListRenderedSchema,
+  saas_v2_messages_list_rendered: saasV2MessagesListRenderedSchema,
+  saas_v2_agent_stress_test_run: saasV2AgentStressTestRunSchema,
+  saas_v2_knowledge_gap_detected: saasV2KnowledgeGapDetectedSchema,
+  saas_v2_lead_drawer_opened: saasV2LeadDrawerOpenedSchema,
+  saas_v2_message_reply_drafted: saasV2MessageReplyDraftedSchema,
+  saas_v2_agent_summary_rendered: saasV2AgentSummaryRenderedSchema,
+  saas_v2_kb_draft_accepted: saasV2KbDraftAcceptedSchema,
+  saas_v2_message_thread_opened: saasV2MessageThreadOpenedSchema,
 } as const satisfies Record<AgencyEventType, z.ZodTypeAny>;
 
 // ── 3. Fields the client RLS view is allowed to expose ─────────────────────
@@ -532,6 +626,16 @@ const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string>> = {
   booking_cancelled:                [],
   // Billing (stripe-adapter) — internal; never expose subscription internals.
   subscription_changed:             [],
+  // SaaS V2 dashboard surface (wave-2 pages) — internal telemetry only.
+  saas_v2_leads_list_rendered:      [],
+  saas_v2_messages_list_rendered:   [],
+  saas_v2_agent_stress_test_run:    [],
+  saas_v2_knowledge_gap_detected:   [],
+  saas_v2_lead_drawer_opened:       [],
+  saas_v2_message_reply_drafted:    [],
+  saas_v2_agent_summary_rendered:   [],
+  saas_v2_kb_draft_accepted:        [],
+  saas_v2_message_thread_opened:    [],
 };
 
 // Event types the client is allowed to see at all. Anything not in this set
@@ -865,6 +969,72 @@ export function getClientFacingPayload(event: AgencyEventRow): ClientFacingEvent
     why_explanation: event.why_explanation,
     created_at: event.created_at,
   };
+}
+
+// ── 7. SaaS V2 sibling emitter ──────────────────────────────────────────────
+//
+// SaaS V2 self-serve users have NO `agency_clients` row, so the kernel
+// `emitAgencyEvent` (which REQUIRES a `client_id`) is the wrong tool. This
+// sibling helper writes ONLY to `aios_event_log` (the cross-system firehose
+// table) with `source = 'saas_v2'`. It still validates the payload against
+// the same per-type Zod schema so SaaS V2 telemetry stays as disciplined as
+// the agency-OS bus.
+//
+// Never throws — telemetry must not break the user-facing primary write.
+
+export type SaasV2EventType =
+  | 'saas_v2_leads_list_rendered'
+  | 'saas_v2_messages_list_rendered'
+  | 'saas_v2_agent_stress_test_run'
+  | 'saas_v2_knowledge_gap_detected'
+  | 'saas_v2_lead_drawer_opened'
+  | 'saas_v2_message_reply_drafted'
+  | 'saas_v2_agent_summary_rendered'
+  | 'saas_v2_kb_draft_accepted'
+  | 'saas_v2_message_thread_opened';
+
+export interface EmitSaasV2EventInput<T extends SaasV2EventType = SaasV2EventType> {
+  workspace_id: string;
+  type: T;
+  severity?: AgencyEventSeverity;
+  payload: Record<string, unknown>;
+}
+
+export async function emitSaasV2Event<T extends SaasV2EventType>(
+  input: EmitSaasV2EventInput<T>,
+): Promise<void> {
+  try {
+    // Validate against the same per-type schema bank.
+    const validated = validatePayload(
+      input.type as AgencyEventType,
+      input.payload,
+      `saas_v2:${input.type}`,
+    );
+
+    const supabase = getServiceSupabase();
+    const { error } = await supabase.from('aios_event_log').insert({
+      source: 'saas_v2',
+      event_type: input.type,
+      severity: input.severity ?? 'info',
+      payload: {
+        workspace_id: input.workspace_id,
+        ...validated,
+      },
+    });
+    if (error) {
+      console.warn(
+        `[emit-saas-v2-event] aios_event_log insert failed type=${input.type} ` +
+        `workspace=${input.workspace_id} err=${error.message}`,
+      );
+    }
+  } catch (err) {
+    // Validation failure or supabase throw — telemetry only, never escalate.
+    console.warn(
+      `[emit-saas-v2-event] swallowed type=${input.type} workspace=${
+        input.workspace_id
+      } err=${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 }
 
 /**
