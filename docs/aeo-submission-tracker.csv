@@ -1,0 +1,79 @@
+priority,tier,surface,url,owner,status,founder_only_blocker,notes
+P0,Launch,Product Hunt,https://www.producthunt.com/launch,Noam,Not Started,Login and launch submission,Flagship launch
+P0,Launch,Uneed,https://www.uneed.best,Noam/Codex,Not Started,Login if required,Product Hunt alternative
+P0,Launch,BetaList,https://betalist.com,Noam,Not Started,Login and approval flow,Early startup discovery
+P0,Launch,Launching Next,https://www.launchingnext.com/submit/,Noam/Codex,Not Started,Login/email if required,Free startup submission
+P1,Launch,Indie Hackers,https://www.indiehackers.com,Noam,Not Started,Founder account,Founder story
+P1,Launch,Hacker News Show HN,https://news.ycombinator.com/show,Noam,Not Started,Founder account,Only if demo is ready
+P1,Launch,Wellfound,https://wellfound.com,Noam,Not Started,Founder/company login,Startup profile
+P1,Launch,Crunchbase,https://www.crunchbase.com,Noam,Not Started,Founder/company login,Entity profile
+P1,Launch,F6S,https://www.f6s.com,Noam,Not Started,Founder/company login,Startup profile
+P2,Launch,Startup Stash,https://startupstash.com,Noam/Codex,Not Started,Login if required,Startup/tool directory
+P2,Launch,SaaSHub,https://www.saashub.com,Noam/Codex,Not Started,Login if required,SaaS directory
+P2,Launch,StartupBase,https://startupbase.io,Noam/Codex,Not Started,Login if required,Startup directory
+P2,Launch,SideProjectors,https://www.sideprojectors.com,Noam/Codex,Not Started,Login if required,Only if product listing fits
+P2,Launch,Betapage,https://betapage.co,Noam/Codex,Not Started,Login if required,Product directory
+P2,Launch,Startup Buffer,https://startupbuffer.com,Noam/Codex,Not Started,Login if required,Startup directory
+P2,Launch,Promote Project,https://www.promoteproject.com,Noam/Codex,Not Started,Login if required,Startup promotion
+P0,Reviews,G2,https://sell.g2.com/create-a-profile,Noam,Not Started,Vendor login/profile claim,Highest review-site AEO value
+P0,Reviews,Capterra/G2 Digital Markets,https://www.capterra.com/vendors/,Noam,Not Started,Vendor login/profile claim,Software review ecosystem
+P1,Reviews,GetApp,https://www.getapp.com,Noam,Not Started,Vendor login/profile claim,Usually connected to vendor ecosystem
+P1,Reviews,Software Advice,https://www.softwareadvice.com,Noam,Not Started,Vendor login/profile claim,Review-site profile
+P1,Reviews,SourceForge Business Software,https://sourceforge.net/directory/business-software/,Noam/Codex,Not Started,Login if required,Software directory
+P1,Reviews,AlternativeTo,https://alternativeto.net,Noam/Codex,Not Started,Login if required,Alternative/comparison visibility
+P1,Reviews,Crozdesk,https://crozdesk.com,Noam/Codex,Not Started,Login if required,SaaS review profile
+P1,Reviews,TrustRadius,https://www.trustradius.com,Noam,Not Started,Vendor login/profile claim,B2B reviews
+P2,Reviews,PeerSpot,https://www.peerspot.com,Noam,Not Started,Vendor login/profile claim,Enterprise review profile
+P2,Reviews,Slashdot Software,https://slashdot.org/software/,Noam/Codex,Not Started,Login if required,Software directory
+P2,Reviews,SoftwareSuggest,https://www.softwaresuggest.com,Noam/Codex,Not Started,Login if required,Software listing
+P2,Reviews,FinancesOnline,https://financesonline.com,Noam/Codex,Not Started,Login if required,SaaS reviews
+P2,Reviews,GoodFirms,https://www.goodfirms.co,Noam/Codex,Not Started,Login if required,Company/service profile
+P2,Reviews,Clutch,https://clutch.co,Noam,Not Started,Company login,Use if agency implementation is emphasized
+P2,Reviews,Serchen,https://www.serchen.com,Noam/Codex,Not Started,Login if required,Software directory
+P2,Reviews,FeaturedCustomers,https://www.featuredcustomers.com,Noam,Not Started,Customer proof/case studies,Later-stage proof
+P0,AI Directory,There Is An AI For That,https://theresanaiforthat.com,Noam/Codex,Not Started,Login/payment if required,Major AI tools directory
+P0,AI Directory,Futurepedia,https://www.futurepedia.io/submit-tool,Noam,Not Started,Login/payment if required,Major AI tools directory
+P0,AI Directory,Toolify,https://www.toolify.ai,Noam/Codex,Not Started,Login/payment if required,AI tool directory
+P1,AI Directory,FutureTools,https://www.futuretools.io,Noam/Codex,Not Started,Login if required,AI tool directory
+P1,AI Directory,aitools.fyi,https://aitools.fyi,Noam/Codex,Not Started,Login if required,AI tool directory
+P1,AI Directory,TopAI.tools,https://topai.tools,Noam/Codex,Not Started,Login if required,AI tool directory
+P1,AI Directory,AIChief,https://www.aichief.com,Noam/Codex,Not Started,Login if required,AI tool directory
+P1,AI Directory,AITopTools,https://aitoptools.com,Noam/Codex,Not Started,Login if required,AI tool directory
+P1,AI Directory,Powerusers AI,https://www.powerusers.ai,Noam/Codex,Not Started,Login if required,AI tool directory
+P2,AI Directory,FindMyAITool,https://findmyaitool.com,Noam/Codex,Not Started,Login if required,AI tool directory
+P2,AI Directory,Submit AI Tools,https://submitaitools.org,Noam/Codex,Not Started,Login if required,AI tool directory
+P2,AI Directory,AI Scout,https://aiscout.net,Noam/Codex,Not Started,Login if required,AI tool directory
+P2,AI Directory,Insidr AI Tools,https://www.insidr.ai/ai-tools,Noam/Codex,Not Started,Login if required,AI directory
+P0,Marketplace,Microsoft Marketplace,https://learn.microsoft.com/en-us/partner-center/marketplace-offers/create-new-saas-offer,Noam,Not Started,Partner Center/KYC,Start application
+P1,Marketplace,AWS Marketplace,https://docs.aws.amazon.com/marketplace/latest/userguide/user-guide-for-sellers.html,Noam,Not Started,Seller registration/KYC,Start seller flow
+P1,Marketplace,Google Cloud Marketplace,https://docs.cloud.google.com/marketplace/docs/partners/offer-products,Noam,Not Started,Partner/producer access,Start partner flow
+P1,Marketplace,HubSpot App Marketplace,https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/listing-your-app,Noam,Not Started,Developer account/app requirements,Integration listing
+P1,Marketplace,Zapier App Directory,https://developer.zapier.com,Noam/Codex,Not Started,Developer account/app review,Integration listing
+P1,Marketplace,Make Partner/App Directory,https://www.make.com/en/partners,Noam,Not Started,Partner application,Integration listing
+P1,Marketplace,Pipedrive Marketplace,https://developers.pipedrive.com,Noam,Not Started,Developer account/app review,CRM integration
+P1,Marketplace,Salesforce AppExchange,https://appexchange.salesforce.com,Noam,Not Started,Partner account/security review,Longer-term listing
+P1,Marketplace,GoHighLevel Marketplace,https://marketplace.gohighlevel.com,Noam,Not Started,Developer/partner login,Agency/local business stack
+P2,Marketplace,n8n Integrations,https://n8n.io/integrations/,Noam/Codex,Not Started,Public integration/API readiness,Automation visibility
+P2,Marketplace,Retell partner/content,https://www.retellai.com,Noam,Not Started,Partner outreach,Ask for case study/mention
+P2,Marketplace,Twilio partners,https://www.twilio.com/partners,Noam,Not Started,Partner criteria,Later-stage partner proof
+P1,Vertical,ServiceTitan Marketplace,https://marketplace.servicetitan.com,Noam,Not Started,Partner application,Home services authority
+P1,Vertical,Jobber App Marketplace,https://apps.getjobber.com,Noam,Not Started,Partner application,Home services authority
+P1,Vertical,Housecall Pro,https://www.housecallpro.com,Noam,Not Started,Partner/application access,Home services authority
+P1,Vertical,Clio App Directory,https://www.clio.com/app-directory/,Noam,Not Started,Developer/partner account,Legal vertical
+P1,Vertical,MyCase,https://www.mycase.com,Noam,Not Started,Partner/integration contact,Legal vertical
+P1,Community,LinkedIn founder profile,https://www.linkedin.com,Noam,Not Started,Founder login,Founder launch post
+P0,Community,LinkedIn company page,https://www.linkedin.com/company/,Noam,Not Started,Company admin,Pin canonical category
+P0,Community,X/Twitter,https://x.com,Noam,Not Started,Founder login,Launch thread
+P0,Community,YouTube,https://www.youtube.com,Noam,Not Started,Founder/channel login,Upload demo video
+P1,Community,Reddit r/smallbusiness,https://www.reddit.com/r/smallbusiness/,Noam,Not Started,Founder Reddit account,Value-first post only
+P1,Community,Reddit r/sweatystartup,https://www.reddit.com/r/sweatystartup/,Noam,Not Started,Founder Reddit account,Value-first post only
+P1,Community,Reddit r/Entrepreneur,https://www.reddit.com/r/Entrepreneur/,Noam,Not Started,Founder Reddit account,Founder story
+P1,Community,Reddit r/SaaS,https://www.reddit.com/r/SaaS/,Noam,Not Started,Founder Reddit account,Build-in-public post
+P1,Community,Reddit r/sales,https://www.reddit.com/r/sales/,Noam,Not Started,Founder Reddit account,Speed-to-lead discussion
+P1,Community,Reddit r/HVAC,https://www.reddit.com/r/HVAC/,Noam,Not Started,Founder Reddit account,Answer relevant threads only
+P1,Community,Reddit r/Plumbing,https://www.reddit.com/r/Plumbing/,Noam,Not Started,Founder Reddit account,Answer relevant threads only
+P1,Community,Reddit r/dentistry,https://www.reddit.com/r/dentistry/,Noam,Not Started,Founder Reddit account,Dental missed-call workflow only
+P1,Community,Reddit r/legaltech,https://www.reddit.com/r/legaltech/,Noam,Not Started,Founder Reddit account,Legal intake angle
+P2,Community,Quora,https://www.quora.com,Noam/Codex,Not Started,Founder login,Answer with disclosure
+P2,Community,Medium,https://medium.com,Noam/Codex,Not Started,Founder login,Founder essay
+P2,Community,Dev.to,https://dev.to,Noam/Codex,Not Started,Founder login,Technical/API angle only
