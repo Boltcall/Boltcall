@@ -324,6 +324,12 @@ const V2HomePage = React.lazy(() => import('../pages/v2/V2HomePage'));
 const V2AnalyticsPage = React.lazy(() => import('../pages/v2/V2AnalyticsPage'));
 const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
 
+// ── Lazy loads — V2 conversational setup wizard ──────────────────────────
+// Standalone route reached BEFORE opt-in; not wrapped in V2OptInGate so a
+// brand-new signup can reach the wizard before V2 is flipped on. The finalize
+// endpoint is where V2 actually goes live for the workspace.
+const V2SetupPage = React.lazy(() => import('../pages/v2/V2SetupPage'));
+
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
@@ -475,6 +481,14 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
+        {/* ── V2 Conversational Setup Wizard ───────────────────────────────
+            Standalone /v2/setup route — NOT inside the V2OptInGate parent
+            block because a brand-new signup must be able to reach the wizard
+            before V2 is enabled on the workspace. The wizard's finalize step
+            flips the v2_enabled flag and graduates the user into the gated
+            /v2/* tree below. Public so unauthenticated users can start setup;
+            auth happens in the wizard. */}
+        <Route path="/v2/setup" element={<V2SetupPage />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this
             tree is added at root so V2 has its own URL prefix and shell.
