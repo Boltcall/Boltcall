@@ -176,37 +176,40 @@ const PhoneNumbersPage: React.FC = () => {
     setPurchasingNumber(number.phone_number);
 
     try {
-      // Step 1: Purchase via Twilio
+      // The backend handles Twilio purchase + phone_numbers insert + Retell
+      // registration atomically (see twilio-numbers.ts purchase handler). This
+      // page used to do its own insert with a payload missing
+      // business_profile_id/workspace_id/country_code, which silently 23502'd
+      // and orphaned the Twilio number — fixed in the 2026-05-31 QA pass.
       const response = await authedFetch('/.netlify/functions/twilio-numbers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'purchase',
           phone_number: number.phone_number,
+          country_code: searchCountry,
+          location: [number.locality, number.region].filter(Boolean).join(', ') || 'N/A',
           friendly_name: `Boltcall - ${number.locality || number.region || 'Number'}`,
         }),
       });
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.details || err.error || 'Purchase failed');
+        throw new Error(err.detail || err.error || 'Purchase failed');
       }
 
       const result = await response.json();
 
-      // Step 2: Save to Supabase phone_numbers table
-      const { error: dbError } = await supabase.from('phone_numbers').insert({
-        user_id: user.id,
-        phone_number: result.phone_number,
-        phone_type: 'twilio',
-        location: [number.locality, number.region].filter(Boolean).join(', ') || 'N/A',
-        status: 'active',
-        twilio_sid: result.sid,
-        created_at: new Date().toISOString(),
-      });
-
-      if (dbError) {
-        console.error('Failed to save phone number to DB:', dbError);
+      // Soft-warn when Twilio + DB succeeded but Retell registration didn't —
+      // the number exists and is tracked but the AI receptionist can't use it
+      // yet. The backend marked status='pending' so it's visible in the list.
+      if (result.retell_error) {
+        showToast({
+          title: 'Number bought, AI link pending',
+          message: `Purchased ${result.phone_number}, but couldn't register with the AI: ${result.retell_error}. Contact support if it doesn't auto-resolve.`,
+          variant: 'warning',
+          duration: 7000,
+        });
       }
 
       setShowTwilioModal(false);
@@ -280,14 +283,28 @@ const PhoneNumbersPage: React.FC = () => {
 
     setConnectingSip(true);
     try {
-      // Save the connected phone number to Supabase
+      // phone_numbers requires business_profile_id + workspace_id + country_code
+      // (all NOT NULL). Look them up before the insert — the bug here was the
+      // same shape as the Twilio purchase path and was masked by SIP being
+      // less-tested.
+      const [{ data: bp }, { data: ws }] = await Promise.all([
+        supabase.from('business_profiles').select('id').eq('user_id', user.id).limit(1).maybeSingle(),
+        supabase.from('workspaces').select('id').eq('user_id', user.id).limit(1).maybeSingle(),
+      ]);
+      if (!bp?.id || !ws?.id) throw new Error('Finish onboarding first — workspace + business profile required.');
+
+      const phoneNumber = sipFormData.phoneNumber.trim();
+      const cc = (phoneNumber.startsWith('+1') ? 'US' : phoneNumber.startsWith('+44') ? 'GB' : 'US').toUpperCase();
+
       const { error: dbError } = await supabase.from('phone_numbers').insert({
+        business_profile_id: bp.id,
         user_id: user.id,
-        phone_number: sipFormData.phoneNumber.trim(),
+        workspace_id: ws.id,
+        phone_number: phoneNumber,
         phone_type: 'sip',
+        country_code: cc,
         location: sipFormData.nickname || 'Connected Number',
         status: 'active',
-        provider: 'sip',
         features: {
           termination_uri: sipFormData.terminationUri || null,
           sip_username: sipFormData.sipTrunkUsername || null,
