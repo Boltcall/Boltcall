@@ -25,7 +25,7 @@ import {
   Bot,
   BookOpen,
   BarChart3,
-  ClipboardList,
+  ClipboardCheck,
   Star,
   Plug,
   HelpCircle,
@@ -87,7 +87,7 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
       title: 'Insights',
       items: [
         { to: '/v2/analytics', label: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> },
-        { to: '/v2/qa', label: 'QA', icon: <ClipboardList className="w-4 h-4" /> },
+        { to: '/v2/qa', label: 'QA', icon: <ClipboardCheck className="w-4 h-4" /> },
       ],
     },
     {

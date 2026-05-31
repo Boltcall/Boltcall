@@ -103,7 +103,16 @@ export type AgencyEventType =
   | 'saas_v2_agent_summary_rendered'
   | 'saas_v2_kb_draft_accepted'
   | 'saas_v2_message_thread_opened'
-  | 'saas_v2_agent_suggest_edits';
+  | 'saas_v2_agent_suggest_edits'
+  // SaaS V2 surface (wave-3 integrations/reviews/help/qa/settings)
+  | 'saas_v2_integrations_list_rendered'
+  | 'saas_v2_integration_recommended'
+  | 'saas_v2_review_drafted'
+  | 'saas_v2_help_answer_rendered'
+  | 'saas_v2_qa_rendered'
+  | 'saas_v2_qa_run'
+  | 'saas_v2_settings_updated'
+  | 'saas_v2_settings_suggestion_applied';
 
 export type AgencyEventSeverity = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
@@ -607,6 +616,75 @@ const saasV2AgentSuggestEditsSchema = z.object({
   used_qa_failures: z.boolean().optional(),
 }).strict();
 
+// ── SaaS V2 surface schemas (wave-3 integrations/reviews/help/qa/settings) ─
+// V2 events are internal-only — they describe owner-facing UI surface activity
+// and never carry client-facing payload bits. All payloads are .strict().
+
+const saasV2IntegrationsListRenderedSchema = z.object({
+  workspace_id: z.string(),
+  connected_count: z.number().int().nonnegative(),
+  available_count: z.number().int().nonnegative(),
+  op: z.string().optional(),
+}).strict();
+
+const saasV2IntegrationRecommendedSchema = z.object({
+  workspace_id: z.string(),
+  provider: z.string(),
+  reason: z.string(),
+  model: z.string().optional(),
+}).strict();
+
+const saasV2ReviewDraftedSchema = z.object({
+  workspace_id: z.string(),
+  review_id: z.string(),
+  platform: z.string(),
+  rating: z.number().int().min(1).max(5),
+  draft_chars: z.number().int().nonnegative(),
+  model: z.string().optional(),
+}).strict();
+
+const saasV2HelpAnswerRenderedSchema = z.object({
+  workspace_id: z.string(),
+  query_chars: z.number().int().nonnegative(),
+  sources_cited: z.number().int().nonnegative(),
+  source_kinds: z.array(z.string()),
+  model: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2QaRenderedSchema = z.object({
+  workspace_id: z.string(),
+  scored_count: z.number().int().nonnegative(),
+  failing_count: z.number().int().nonnegative(),
+  avg_score: z.number().nullable(),
+  date_from: z.string().optional(),
+  date_to: z.string().optional(),
+}).strict();
+
+const saasV2QaRunSchema = z.object({
+  workspace_id: z.string(),
+  scored_count: z.number().int().nonnegative(),
+  window_days: z.number().int().positive().optional(),
+  skipped_count: z.number().int().nonnegative().optional(),
+  failures_count: z.number().int().nonnegative().optional(),
+  average_score: z.number().nullable().optional(),
+  low_score_count: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2SettingsUpdatedSchema = z.object({
+  workspace_id: z.string(),
+  field: z.string(),
+  op: z.string().optional(),
+}).strict();
+
+const saasV2SettingsSuggestionAppliedSchema = z.object({
+  workspace_id: z.string(),
+  field: z.string(),
+  prior_value: z.string(),
+  new_value: z.string(),
+  source: z.enum(['ai_strategist', 'heuristic', 'user']),
+}).strict();
+
 export const EVENT_SCHEMAS = {
   call_completed: callCompletedSchema,
   lead_captured: leadCapturedSchema,
@@ -664,6 +742,15 @@ export const EVENT_SCHEMAS = {
   saas_v2_kb_draft_accepted: saasV2KbDraftAcceptedSchema,
   saas_v2_message_thread_opened: saasV2MessageThreadOpenedSchema,
   saas_v2_agent_suggest_edits: saasV2AgentSuggestEditsSchema,
+  // SaaS V2 wave-3 (integrations/reviews/help/qa/settings)
+  saas_v2_integrations_list_rendered: saasV2IntegrationsListRenderedSchema,
+  saas_v2_integration_recommended: saasV2IntegrationRecommendedSchema,
+  saas_v2_review_drafted: saasV2ReviewDraftedSchema,
+  saas_v2_help_answer_rendered: saasV2HelpAnswerRenderedSchema,
+  saas_v2_qa_rendered: saasV2QaRenderedSchema,
+  saas_v2_qa_run: saasV2QaRunSchema,
+  saas_v2_settings_updated: saasV2SettingsUpdatedSchema,
+  saas_v2_settings_suggestion_applied: saasV2SettingsSuggestionAppliedSchema,
 } as const satisfies Record<AgencyEventType, z.ZodTypeAny>;
 
 // ── 3. Fields the client RLS view is allowed to expose ─────────────────────
@@ -724,6 +811,15 @@ export const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string
   saas_v2_kb_draft_accepted:        [],
   saas_v2_message_thread_opened:    [],
   saas_v2_agent_suggest_edits:      [],
+  // SaaS V2 surface (wave-3) — owner-only internal telemetry; never client-facing.
+  saas_v2_integrations_list_rendered:  [],
+  saas_v2_integration_recommended:     [],
+  saas_v2_review_drafted:              [],
+  saas_v2_help_answer_rendered:        [],
+  saas_v2_qa_rendered:                 [],
+  saas_v2_qa_run:                      [],
+  saas_v2_settings_updated:            [],
+  saas_v2_settings_suggestion_applied: [],
 };
 
 export const CLIENT_VISIBLE_TYPES: ReadonlySet<AgencyEventType> = new Set<AgencyEventType>([
@@ -1087,7 +1183,15 @@ export type SaasV2EventType =
   | 'saas_v2_agent_summary_rendered'
   | 'saas_v2_kb_draft_accepted'
   | 'saas_v2_message_thread_opened'
-  | 'saas_v2_agent_suggest_edits';
+  | 'saas_v2_agent_suggest_edits'
+  | 'saas_v2_integrations_list_rendered'
+  | 'saas_v2_integration_recommended'
+  | 'saas_v2_review_drafted'
+  | 'saas_v2_help_answer_rendered'
+  | 'saas_v2_qa_rendered'
+  | 'saas_v2_qa_run'
+  | 'saas_v2_settings_updated'
+  | 'saas_v2_settings_suggestion_applied';
 
 export interface EmitSaasV2EventInput<T extends SaasV2EventType = SaasV2EventType> {
   workspace_id: string;
