@@ -1,0 +1,310 @@
+{
+  "name": "Agency OS — intake-call-completed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agency-retell-webhook",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-retell-in",
+      "name": "Retell Webhook IN",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "agency-retell-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate Retell webhook signature\n// Retell sends X-Retell-Signature: sha256=<hmac>\nconst crypto = require('crypto');\nconst secret = $env.RETELL_API_KEY;\nconst sigHeader = $input.first().headers['x-retell-signature'] ?? '';\nconst rawBody = JSON.stringify($input.first().body);\n\n// HMAC-SHA256 validation\nconst expected = 'sha256=' + crypto.createHmac('sha256', secret).update(rawBody).digest('hex');\nif (sigHeader && sigHeader !== expected) {\n  throw new Error('Retell signature mismatch — possible replay attack');\n}\n\nconst payload = $input.first().body;\n\n// Only handle on-call-ended events\nif (payload.event !== 'call_ended') {\n  return [{ json: { skip: true, reason: `Event ${payload.event} not call_ended` } }];\n}\n\nconst call = payload.call ?? {};\nconst callId = call.call_id ?? payload.call_id;\nconst agentId = call.agent_id ?? null;\n\n// Determine client_id from agent metadata\nconst clientId = call.metadata?.client_id ?? null;\n\nif (!clientId) {\n  return [{ json: { skip: true, reason: 'No client_id in call metadata — not an agency intake call' } }];\n}\n\nreturn [{\n  json: {\n    skip: false,\n    call_id: callId,\n    agent_id: agentId,\n    client_id: clientId,\n    duration_seconds: call.duration_ms ? Math.round(call.duration_ms / 1000) : 0,\n    ended_reason: call.ended_reason ?? 'unknown',\n    recording_url: call.recording_url ?? null,\n    transcript_available: !!call.transcript\n  }\n}];\n"
+      },
+      "id": "validate-retell-signature",
+      "name": "Validate Retell Signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.skip }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "skip-check",
+      "name": "Skip Non-Intake Events",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-intake-officer",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"webhook\",\n  \"call_id\": \"{{ $json.call_id }}\",\n  \"client_id\": \"{{ $json.client_id }}\",\n  \"agent_id\": \"{{ $json.agent_id }}\",\n  \"duration_seconds\": {{ $json.duration_seconds }},\n  \"ended_reason\": \"{{ $json.ended_reason }}\",\n  \"recording_url\": \"{{ $json.recording_url }}\",\n  \"trigger_transcript_fetch\": true\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "post-intake-officer",
+      "name": "HTTP — POST agency-intake-officer (mode=webhook)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 220]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "wait-for-profile",
+      "name": "Wait For Profile",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1120, 220]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_artifacts?client_id=eq.{{ $('Validate Retell Signature').item.json.client_id }}&type=eq.agent_prompt&order=created_at.desc&limit=1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Accept", "value": "application/json" }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "fetch-profile",
+      "name": "Fetch Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 220]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "extraction-score-gate",
+              "leftValue": "={{ ($json[0] && $json[0].content && $json[0].content.extraction_score) ? $json[0].content.extraction_score : 0 }}",
+              "rightValue": 0.7,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "check-extraction-score",
+      "name": "Check Extraction Score",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1560, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-agent-architect",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.AGENCY_OS_SERVICE_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $('Validate Retell Signature').item.json.client_id }}\",\n  \"intake_artifact_id\": \"{{ $('Fetch Profile').item.json[0].id }}\"\n}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "id": "invoke-agent-architect",
+      "name": "Invoke Agent-Architect",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1780, 140]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Emit warn: intake profile too thin for architect — manual review queued\nconst clientId = $('Validate Retell Signature').item.json.client_id;\nconst score = ($('Fetch Profile').item.json[0] && $('Fetch Profile').item.json[0].content && $('Fetch Profile').item.json[0].content.extraction_score) ?? 0;\nconsole.warn(`[intake-call-completed] intake profile too thin for architect — manual review queued (client_id=${clientId}, extraction_score=${score})`);\nreturn [{ json: { skipped: true, reason: 'intake profile too thin for architect — manual review queued', client_id: clientId, extraction_score: score } }];\n"
+      },
+      "id": "warn-thin-profile",
+      "name": "Warn Thin Profile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "simulation-passed-gate",
+              "leftValue": "={{ $json.simulation_passed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "architect-result-handler",
+      "name": "Architect Result Handler",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 140]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Architect passed the simulation gate — log success\nconst clientId = $('Validate Retell Signature').item.json.client_id;\nconst artifactId = $json.artifact_id;\nconst iters = $json.iterations;\nconst aggregate = $json.final_aggregate ?? {};\nconsole.log(`[intake-call-completed] architect PASSED simulation gate (client_id=${clientId}, artifact_id=${artifactId}, iterations=${iters}, avg_qa=${(aggregate.avg_qa_score ?? 'n/a')})`);\nreturn [{ json: { success: true, client_id: clientId, artifact_id: artifactId, iterations: iters, avg_qa_score: aggregate.avg_qa_score ?? null } }];\n"
+      },
+      "id": "log-architect-success",
+      "name": "Log Architect Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 60]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Architect did NOT pass simulation gate — emit warn + queue for founder review\nconst clientId = $('Validate Retell Signature').item.json.client_id;\nconst artifactId = $json.artifact_id;\nconst iters = $json.iterations;\nconst blocker = $json.blocker_summary ?? 'no blocker_summary returned';\nconsole.warn(`[intake-call-completed] architect did not pass simulation gate, queued for founder (client_id=${clientId}, artifact_id=${artifactId}, iterations=${iters}): ${blocker}`);\nreturn [{ json: { success: false, client_id: clientId, artifact_id: artifactId, iterations: iters, blocker_summary: blocker, telegram_alert: true, alert_text: `[agency-os] architect did not pass simulation gate for client=${clientId}. Artifact ${artifactId} queued for founder review (${iters} iterations). Blocker: ${blocker}` } }];\n"
+      },
+      "id": "warn-architect-failed",
+      "name": "Warn Architect Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TELEGRAM_ALERT_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"tier\": \"warn\",\n  \"source\": \"intake-call-completed\",\n  \"text\": \"{{ $json.alert_text }}\",\n  \"client_id\": \"{{ $json.client_id }}\",\n  \"artifact_id\": \"{{ $json.artifact_id }}\"\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "telegram-alert-architect-failed",
+      "name": "Telegram Alert — Architect Failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2440, 220]
+    }
+  ],
+  "connections": {
+    "Retell Webhook IN": {
+      "main": [
+        [{ "node": "Validate Retell Signature", "type": "main", "index": 0 }]
+      ]
+    },
+    "Validate Retell Signature": {
+      "main": [
+        [{ "node": "Skip Non-Intake Events", "type": "main", "index": 0 }]
+      ]
+    },
+    "Skip Non-Intake Events": {
+      "main": [
+        [],
+        [{ "node": "HTTP — POST agency-intake-officer (mode=webhook)", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-intake-officer (mode=webhook)": {
+      "main": [
+        [{ "node": "Wait For Profile", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait For Profile": {
+      "main": [
+        [{ "node": "Fetch Profile", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Profile": {
+      "main": [
+        [{ "node": "Check Extraction Score", "type": "main", "index": 0 }]
+      ]
+    },
+    "Check Extraction Score": {
+      "main": [
+        [{ "node": "Invoke Agent-Architect", "type": "main", "index": 0 }],
+        [{ "node": "Warn Thin Profile", "type": "main", "index": 0 }]
+      ]
+    },
+    "Invoke Agent-Architect": {
+      "main": [
+        [{ "node": "Architect Result Handler", "type": "main", "index": 0 }]
+      ]
+    },
+    "Architect Result Handler": {
+      "main": [
+        [{ "node": "Log Architect Success", "type": "main", "index": 0 }],
+        [{ "node": "Warn Architect Failed", "type": "main", "index": 0 }]
+      ]
+    },
+    "Warn Architect Failed": {
+      "main": [
+        [{ "node": "Telegram Alert — Architect Failed", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-1"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "2"
+}

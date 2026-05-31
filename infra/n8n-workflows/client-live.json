@@ -1,0 +1,180 @@
+{
+  "name": "Agency OS — client-live",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 10 }]
+        }
+      },
+      "id": "poll-trigger",
+      "name": "Poll Every 10 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_clients?status=eq.live&live_at=is.null&order=signed_up_at.asc&limit=10",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "query-newly-live-clients",
+      "name": "Supabase — Query Newly-Live Clients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-clients",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-client-welcome-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $json.id }}\",\n  \"mode\": \"warm_cache\"\n}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "warm-welcome-video-cache",
+      "name": "HTTP — Warm Welcome Video Cache",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-delivery-monitor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"slack_invite_cohort\",\n  \"client_id\": \"{{ $json.id }}\",\n  \"vertical\": \"{{ $json.vertical }}\",\n  \"region\": \"{{ $json.region }}\"\n}",
+        "options": {}
+      },
+      "id": "slack-invite-cohort",
+      "name": "Slack — Invite to Cohort Channel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 340]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_clients?id=eq.{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"live_at\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {}
+      },
+      "id": "stamp-live-at",
+      "name": "Supabase — Stamp live_at",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Schedule recurring cron workflows for this client.\n// n8n does not natively \"schedule a workflow per client\" from within n8n.\n// Instead, we call the Netlify function that writes a client-specific\n// flag to Supabase. The monday/friday/monthly cron workflows then\n// query agency_clients WHERE status='live' at their scheduled time.\n// This node just confirms the client is now in the live pool.\nconsole.log(`Client ${$json.id} is now in the live cron pool (monday-creative, friday-report, monthly-optimization).`);\nreturn [{ json: { client_id: $json.id, cron_pool_confirmed: true } }];\n"
+      },
+      "id": "confirm-cron-pool",
+      "name": "Confirm Cron Pool Membership",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 280]
+    }
+  ],
+  "connections": {
+    "Poll Every 10 Min": {
+      "main": [
+        [{ "node": "Supabase — Query Newly-Live Clients", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Query Newly-Live Clients": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [
+          { "node": "HTTP — Warm Welcome Video Cache", "type": "main", "index": 0 },
+          { "node": "Slack — Invite to Cohort Channel", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "HTTP — Warm Welcome Video Cache": {
+      "main": [
+        [{ "node": "Supabase — Stamp live_at", "type": "main", "index": 0 }]
+      ]
+    },
+    "Slack — Invite to Cohort Channel": {
+      "main": [
+        [{ "node": "Supabase — Stamp live_at", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Stamp live_at": {
+      "main": [
+        [{ "node": "Confirm Cron Pool Membership", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-1"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

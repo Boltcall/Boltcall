@@ -34,6 +34,13 @@ const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 
+// ── Lazy loads — V2 shell (opt-in, parallel surface to V1) ───────────────
+// V2 is the AI-native redesign that all 12 Day-8 V2 pages compose into.
+// Gated per-workspace via workspaces.v2_enabled — see V2OptInGate. V1 stays
+// untouched; this is a sibling route surface, not a replacement.
+const DashboardLayoutV2 = React.lazy(() => import('../components/v2/DashboardLayoutV2'));
+const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
 const SettingsLayout = React.lazy(() => import('../components/dashboard/SettingsLayout'));
@@ -66,6 +73,29 @@ const LocationDashboardPage = React.lazy(() => import('../pages/dashboard/Locati
 const GettingStartedPage = React.lazy(() => import('../pages/dashboard/GettingStartedPage'));
 const FeedbackPage = React.lazy(() => import('../pages/dashboard/FeedbackPage'));
 const BoltcallAgentPage = React.lazy(() => import('../pages/dashboard/BoltcallAgentPage'));
+// ── Lazy loads — Agency OS (founder-gated via FounderGate) ───────────────
+const QueuePage = React.lazy(() => import('../pages/dashboard/agency/QueuePage'));
+const HealthPage = React.lazy(() => import('../pages/dashboard/agency/HealthPage'));
+const ClientListPage = React.lazy(() => import('../pages/dashboard/agency/ClientListPage'));
+const ClientDetailPage = React.lazy(() => import('../pages/dashboard/agency/ClientDetailPage'));
+const FounderGate = React.lazy(() => import('../components/agency/FounderGate'));
+
+// ── Lazy loads — Client Portal (client-gated via AgencyClientGate) ───────
+// The portal is a separate route surface from the Agency OS founder UI.
+// Access is gated by "user has at least one active agency_clients row"
+// (status NOT IN ('churned','paused')); the gate component enforces this
+// client-side and the kernel's RLS policies enforce it server-side.
+const AgencyClientGate = React.lazy(() => import('../components/client/AgencyClientGate'));
+const ClientHomePage = React.lazy(() => import('../pages/dashboard/client/ClientHomePage'));
+const ClientWelcomePage = React.lazy(() => import('../pages/dashboard/client/ClientWelcomePage'));
+const ClientAgentPage = React.lazy(() => import('../pages/dashboard/client/ClientAgentPage'));
+const ClientCallsPage = React.lazy(() => import('../pages/dashboard/client/ClientCallsPage'));
+const ClientInsightsPage = React.lazy(() => import('../pages/dashboard/client/ClientInsightsPage'));
+const ClientAdsPage = React.lazy(() => import('../pages/dashboard/client/ClientAdsPage'));
+const ClientReportsPage = React.lazy(() => import('../pages/dashboard/client/ClientReportsPage'));
+const ClientCirclePage = React.lazy(() => import('../pages/dashboard/client/ClientCirclePage'));
+const ClientApprovalsPage = React.lazy(() => import('../pages/dashboard/client/ClientApprovalsPage'));
+const ClientSettingsPage = React.lazy(() => import('../pages/dashboard/client/ClientSettingsPage'));
 
 // ── Lazy loads — Dashboard settings ──────────────────────────────────────
 const QARubricsPage = React.lazy(() => import('../pages/dashboard/QARubricsPage'));
@@ -337,8 +367,31 @@ const NavigationWrapper: React.FC = () => {
           <Route path="getting-started" element={<GettingStartedPage />} />
           <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="feedback" element={<FeedbackPage />} />
-          <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="locations/:locationId" element={<LocationDashboardPage />} />
+
+          {/* Agency OS — founder-only (JWT app_metadata.role === 'founder') */}
+          <Route path="agency/queue" element={<FounderGate><QueuePage /></FounderGate>} />
+          <Route path="agency/health" element={<FounderGate><HealthPage /></FounderGate>} />
+          <Route path="agency/clients" element={<FounderGate><ClientListPage /></FounderGate>} />
+          <Route path="agency/clients/:id" element={<FounderGate><ClientDetailPage /></FounderGate>} />
+
+          {/* Client Portal — gated to users with an active agency_clients row.
+              Wraps each page in <AgencyClientGate> so non-clients hitting a
+              direct URL get the "reserved for managed clients" surface.
+              The portal lives at /dashboard/client/* (one route surface) so
+              clients keep using the same DashboardLayout shell as everyone
+              else; the sidebar (ClientPortalNavSection) is the only thing
+              that visually differentiates the portal. */}
+          <Route path="client" element={<AgencyClientGate><ClientHomePage /></AgencyClientGate>} />
+          <Route path="client/welcome" element={<AgencyClientGate><ClientWelcomePage /></AgencyClientGate>} />
+          <Route path="client/agent" element={<AgencyClientGate><ClientAgentPage /></AgencyClientGate>} />
+          <Route path="client/calls" element={<AgencyClientGate><ClientCallsPage /></AgencyClientGate>} />
+          <Route path="client/insights" element={<AgencyClientGate><ClientInsightsPage /></AgencyClientGate>} />
+          <Route path="client/ads" element={<AgencyClientGate><ClientAdsPage /></AgencyClientGate>} />
+          <Route path="client/reports" element={<AgencyClientGate><ClientReportsPage /></AgencyClientGate>} />
+          <Route path="client/circle" element={<AgencyClientGate><ClientCirclePage /></AgencyClientGate>} />
+          <Route path="client/approvals" element={<AgencyClientGate><ClientApprovalsPage /></AgencyClientGate>} />
+          <Route path="client/settings" element={<AgencyClientGate><ClientSettingsPage /></AgencyClientGate>} />
 
           {/* Pro-gated merged pages */}
           <Route path="leads" element={<PlanGate requiredPlan="pro"><LeadsPage /></PlanGate>} />
@@ -405,6 +458,34 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
+        {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
+            Parallel route surface to /dashboard. V1 stays untouched; this
+            tree is added at root so V2 has its own URL prefix and shell.
+            V2OptInGate inside the index renders the opt-in card when the
+            workspace hasn't flipped the flag yet. Inner V2 pages will be
+            added under this tree as Day 8 lands. */}
+        <Route
+          path="/v2"
+          element={
+            <ProtectedRoute>
+              <DashboardProviders>
+                <DashboardLayoutV2 />
+              </DashboardProviders>
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            index
+            element={
+              <V2OptInGate>
+                <div className="min-h-[40vh] flex items-center justify-center text-sm text-zinc-500">
+                  V2 shell ready. Day 8 pages mount here.
+                </div>
+              </V2OptInGate>
+            }
+          />
+        </Route>
+
         {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
         <Route path="/setup" element={<Setup />} />
         <Route path="/setup/loading" element={<ProtectedRoute><DashboardProviders><SetupLoading /></DashboardProviders></ProtectedRoute>} />
