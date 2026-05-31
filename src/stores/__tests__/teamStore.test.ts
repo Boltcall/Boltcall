@@ -49,16 +49,6 @@ vi.mock('../../lib/supabase', () => {
   };
 });
 
-// inviteMember + removeMember now POST to /invite-member; stub fetch so the
-// store doesn't try to hit a real Netlify function during tests.
-beforeEach(() => {
-  (global as any).fetch = vi.fn().mockResolvedValue({
-    ok: true,
-    status: 200,
-    json: () => Promise.resolve({}),
-  });
-});
-
 import { useTeamStore } from '../teamStore';
 import { supabase } from '../../lib/supabase';
 
@@ -70,6 +60,13 @@ describe('teamStore', () => {
       membersLoading: false,
     });
     mockSupabaseChain = (globalThis as any).__mockSupabaseChain;
+    // inviteMember + removeMember now POST to /invite-member; stub fetch so
+    // the store doesn't try to hit a real Netlify function during tests.
+    (global as any).fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({}),
+    });
   });
 
   describe('fetchMembers', () => {
