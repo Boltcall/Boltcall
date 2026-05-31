@@ -1,0 +1,144 @@
+{
+  "name": "Agency OS — monthly-optimization",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-1st-month-0900",
+      "name": "Cron — 1st of Month 09:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_clients?status=eq.live&select=id,business_name,vertical,timezone,live_at",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "query-live-clients",
+      "name": "Supabase — Live Clients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Only run monthly optimization for clients who have been live >= 30 days.\n// First-month clients get an abbreviated orientation brief instead.\nconst clients = $input.all().map(i => i.json);\nconst now = Date.now();\nconst eligibleClients = clients.filter(c => {\n  if (!c.live_at) return false;\n  const liveMs = new Date(c.live_at).getTime();\n  const daysLive = (now - liveMs) / (1000 * 60 * 60 * 24);\n  return daysLive >= 30;\n});\nconsole.log(`Monthly optimization: ${eligibleClients.length}/${clients.length} clients eligible (>=30 days live)`);\nreturn eligibleClients.map(c => ({ json: c }));\n"
+      },
+      "id": "filter-eligible-clients",
+      "name": "Filter Clients Live >= 30 Days",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-clients",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-optimization-strategist",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $json.id }}\",\n  \"vertical\": \"{{ $json.vertical }}\",\n  \"business_name\": \"{{ $json.business_name }}\",\n  \"mode\": \"monthly_brief\"\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "post-optimization-strategist",
+      "name": "HTTP — POST agency-optimization-strategist",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first()?.json ?? {};\nconsole.log(`Monthly brief queued for client ${result.client_id}: artifact_id=${result.artifact_id}`);\nreturn [{ json: { client_id: result.client_id, artifact_id: result.artifact_id, status: result.status ?? 'queued' } }];\n"
+      },
+      "id": "log-result",
+      "name": "Log Optimization Brief Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Cron — 1st of Month 09:00 UTC": {
+      "main": [
+        [{ "node": "Supabase — Live Clients", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Live Clients": {
+      "main": [
+        [{ "node": "Filter Clients Live >= 30 Days", "type": "main", "index": 0 }]
+      ]
+    },
+    "Filter Clients Live >= 30 Days": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [{ "node": "HTTP — POST agency-optimization-strategist", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-optimization-strategist": {
+      "main": [
+        [{ "node": "Log Optimization Brief Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Optimization Brief Result": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-2", "cron"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

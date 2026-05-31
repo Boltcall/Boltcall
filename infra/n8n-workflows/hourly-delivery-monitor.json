@@ -1,0 +1,130 @@
+{
+  "name": "Agency OS — hourly-delivery-monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 1 }]
+        }
+      },
+      "id": "cron-every-hour",
+      "name": "Cron — Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-delivery-monitor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"full_sweep\",\n  \"window_minutes\": 60,\n  \"fire_time_utc\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "post-delivery-monitor",
+      "name": "HTTP — POST agency-delivery-monitor (batched)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first()?.json ?? {};\nconst anomalyCount = result.anomalies_count ?? 0;\nconst escalationCount = result.escalations_fired ?? 0;\nconsole.log(`Delivery monitor sweep: clients=${result.clients_checked} anomalies=${anomalyCount} escalations=${escalationCount}`);\n\nif (anomalyCount > 0) {\n  console.warn(`ANOMALY DETECTED: ${anomalyCount} anomalies across ${result.clients_checked} clients`);\n}\n\nreturn [{ json: { ...result, sweep_complete: true } }];\n"
+      },
+      "id": "log-monitor-result",
+      "name": "Log Monitor Sweep Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.anomalies_count ?? 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "anomaly-gate",
+      "name": "Has Anomalies?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-delivery-monitor",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"telegram_notify\",\n  \"severity\": \"warn\",\n  \"message\": \"Delivery monitor: {{ $json.anomalies_count }} anomalies detected across {{ $json.clients_checked }} live clients. Escalations fired: {{ $json.escalations_fired }}.\"\n}",
+        "options": {}
+      },
+      "id": "alert-telegram-anomaly",
+      "name": "Atlas — Telegram Anomaly Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 220]
+    }
+  ],
+  "connections": {
+    "Cron — Every Hour": {
+      "main": [
+        [{ "node": "HTTP — POST agency-delivery-monitor (batched)", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-delivery-monitor (batched)": {
+      "main": [
+        [{ "node": "Log Monitor Sweep Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Monitor Sweep Result": {
+      "main": [
+        [{ "node": "Has Anomalies?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Anomalies?": {
+      "main": [
+        [{ "node": "Atlas — Telegram Anomaly Alert", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-3", "cron"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

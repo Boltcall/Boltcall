@@ -231,6 +231,17 @@ export const handler: Handler = async (event) => {
           // ── Outcome evaluation: record win or trigger self-heal ──────────
           await triggerOutcomeEvaluation(call, agentId, agentOwner.user_id);
         }
+
+        // ── Self-improvement loop: score every completed call ─────────────
+        // Fire-and-forget — scorer writes to retell_calls + retell_call_scores
+        const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+        fetch(`${baseUrl}/.netlify/functions/retell-call-scorer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ call }),
+        }).catch(err => {
+          console.error('[retell-webhook] Call scorer trigger failed (non-blocking):', err);
+        });
       }
 
       return {

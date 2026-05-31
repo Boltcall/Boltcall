@@ -8,6 +8,8 @@ import {
   Volume2
 } from 'lucide-react';
 import NavItem from './NavItem';
+import AgencyNavSection from './AgencyNavSection';
+import ClientPortalNavSection from './ClientPortalNavSection';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -64,6 +66,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 />
               ))}
             </div>
+            {/* Render order: existing self-serve nav → ClientPortalNavSection
+                (visible only to active agency clients) → AgencyNavSection
+                (visible only to founders). Most users only see one section
+                because the gates are mutually exclusive in practice — a user
+                is either a self-serve customer, a managed client, or a
+                founder. Rendering all three is harmless because each
+                section returns null when its gate fails. */}
+            <ClientPortalNavSection />
+            <AgencyNavSection />
           </nav>
         </div>
       </aside>
