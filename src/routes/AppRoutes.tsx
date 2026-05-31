@@ -277,6 +277,12 @@ const LogoAnimationDemoPage = React.lazy(() => import('../pages/LogoAnimationDem
 const RockerSwitchDemoPage = React.lazy(() => import('../pages/RockerSwitchDemoPage'));
 const ReceptionistDemo = React.lazy(() => import('../pages/ReceptionistDemo'));
 
+// ── Lazy loads — V2 SaaS dashboard surface (page wave 1) ─────────────────
+const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+const V2HomePage = React.lazy(() => import('../pages/v2/V2HomePage'));
+const V2AnalyticsPage = React.lazy(() => import('../pages/v2/V2AnalyticsPage'));
+const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
+
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
