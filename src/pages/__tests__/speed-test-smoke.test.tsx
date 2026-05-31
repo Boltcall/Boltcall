@@ -58,6 +58,7 @@ vi.mock('react-i18next', () => ({
     i18n: { language: 'en', changeLanguage: vi.fn() },
   }),
   Trans: ({ children }: any) => <>{children}</>,
+  initReactI18next: { type: '3rdParty', init: () => {} },
 }));
 
 vi.mock('lenis', () => ({ default: class { destroy() {} raf() {} } }));
