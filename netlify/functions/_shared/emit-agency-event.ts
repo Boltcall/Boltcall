@@ -131,6 +131,7 @@ export const CLIENT_VISIBLE_TYPES: readonly AgencyEventType[] = [];
 /* ------------------------------------------------------------------ */
 
 export type Severity = 'info' | 'warn' | 'error';
+export type EventSeverity = 'info' | 'warning' | 'error' | 'critical';
 
 export interface EmitArgs<T extends AgencyEventType = AgencyEventType> {
   /** workspace_id (or legacy agency client_id) — kept as `client_id` for table compatibility */
