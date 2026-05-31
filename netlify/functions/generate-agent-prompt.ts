@@ -54,7 +54,15 @@ interface KnowledgeBase {
 }
 
 interface PromptRequest {
-  agentType: 'inbound' | 'outbound_speed_to_lead' | 'outbound_reactivation' | 'outbound_reminder' | 'outbound_review';
+  // Long forms are canonical; short forms ('speed_to_lead', 'reactivation',
+  // 'reminder', 'review') are accepted as legacy aliases — the caller in
+  // Setup.tsx and the agents DB column historically use the short form.
+  agentType:
+    | 'inbound'
+    | 'outbound_speed_to_lead' | 'speed_to_lead'
+    | 'outbound_reactivation' | 'reactivation'
+    | 'outbound_reminder' | 'reminder'
+    | 'outbound_review' | 'review';
   agentName?: string;
   language?: 'en' | 'es' | 'he'; // defaults to 'en'
   businessProfile: BusinessProfile;
@@ -3448,6 +3456,7 @@ function generatePrompt(req: PromptRequest): { prompt: string; beginMessage: str
         || (needsDisclosure ? l.defaultGreetingWithDisclosure(bp.businessName) : l.defaultGreeting(bp.businessName));
       break;
 
+    case 'speed_to_lead':
     case 'outbound_speed_to_lead':
       prompt = buildSpeedToLeadPrompt(req);
       beginMessage = needsDisclosure
@@ -3457,6 +3466,7 @@ function generatePrompt(req: PromptRequest): { prompt: string; beginMessage: str
           : `Hi, this is ${bp.businessName} calling. Am I speaking with the right person?`);
       break;
 
+    case 'reactivation':
     case 'outbound_reactivation':
       prompt = buildReactivationPrompt(req);
       beginMessage = needsDisclosure
@@ -3466,6 +3476,7 @@ function generatePrompt(req: PromptRequest): { prompt: string; beginMessage: str
           : `Hi, this is ${bp.businessName}. Do you have a quick moment?`);
       break;
 
+    case 'reminder':
     case 'outbound_reminder':
       prompt = buildReminderPrompt(req);
       beginMessage = lang === 'es'
@@ -3475,6 +3486,7 @@ function generatePrompt(req: PromptRequest): { prompt: string; beginMessage: str
           : `Hi, this is ${bp.businessName} with a quick appointment reminder.`);
       break;
 
+    case 'review':
     case 'outbound_review':
       prompt = buildReviewPrompt(req);
       beginMessage = lang === 'es'

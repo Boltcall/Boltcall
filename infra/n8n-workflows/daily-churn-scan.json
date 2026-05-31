@@ -1,0 +1,135 @@
+{
+  "name": "Agency OS — daily-churn-scan",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-daily-0600",
+      "name": "Cron — Daily 06:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-churn-sentinel",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"daily_scan\",\n  \"fire_time_utc\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "post-churn-sentinel",
+      "name": "HTTP — POST agency-churn-sentinel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first()?.json ?? {};\nconst redTier = result.red_tier_count ?? 0;\nconst yellowTier = result.yellow_tier_count ?? 0;\nconsole.log(`Churn scan complete: green=${result.green_tier_count} yellow=${yellowTier} red=${redTier}`);\nreturn [{ json: { ...result, scan_complete: true } }];\n"
+      },
+      "id": "log-churn-result",
+      "name": "Log Churn Scan Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.red_tier_count ?? 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "red-tier-gate",
+      "name": "Has Red-Tier Clients?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-churn-sentinel",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"telegram_notify_red_tier\",\n  \"red_clients\": {{ JSON.stringify($json.red_clients ?? []) }},\n  \"red_tier_count\": {{ $json.red_tier_count }}\n}",
+        "options": {}
+      },
+      "id": "alert-telegram-churn",
+      "name": "Atlas — Telegram Red-Tier Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 220]
+    }
+  ],
+  "connections": {
+    "Cron — Daily 06:00 UTC": {
+      "main": [
+        [{ "node": "HTTP — POST agency-churn-sentinel", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-churn-sentinel": {
+      "main": [
+        [{ "node": "Log Churn Scan Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Churn Scan Result": {
+      "main": [
+        [{ "node": "Has Red-Tier Clients?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Red-Tier Clients?": {
+      "main": [
+        [{ "node": "Atlas — Telegram Red-Tier Alert", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-3", "cron"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

@@ -57,6 +57,23 @@ export const handler: Handler = async (event) => {
         });
         const data = await response.json();
 
+        if (!response.ok) {
+          // Surface Twilio errors instead of silently returning [], which used
+          // to make a 401 (bad creds) look identical to "no numbers in that
+          // area" to the UI — see 2026-05-31 ship QA.
+          console.error('Twilio AvailablePhoneNumbers failed:', response.status, data);
+          return {
+            statusCode: 502,
+            headers,
+            body: JSON.stringify({
+              error: 'Phone provider unavailable. Please try again or contact support.',
+              twilio_status: response.status,
+              twilio_code: data?.code,
+              twilio_message: data?.message,
+            }),
+          };
+        }
+
         const numbers = (data.available_phone_numbers || []).map((num: any) => ({
           phone_number: num.phone_number,
           friendly_name: num.friendly_name,
@@ -82,6 +99,20 @@ export const handler: Handler = async (event) => {
         headers: { 'Authorization': `Basic ${auth}` },
       });
       const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Twilio IncomingPhoneNumbers list failed:', response.status, data);
+        return {
+          statusCode: 502,
+          headers,
+          body: JSON.stringify({
+            error: 'Phone provider unavailable. Please try again or contact support.',
+            twilio_status: response.status,
+            twilio_code: data?.code,
+            twilio_message: data?.message,
+          }),
+        };
+      }
 
       const numbers = (data.incoming_phone_numbers || [])
         .filter((num: any) => userNumberSet.has(num.phone_number))

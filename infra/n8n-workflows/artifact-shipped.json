@@ -1,0 +1,335 @@
+{
+  "name": "Agency OS — artifact-shipped",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 5 }]
+        }
+      },
+      "id": "poll-trigger",
+      "name": "Poll Every 5 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_artifacts?status=eq.approved&order=reviewed_at.asc&limit=20",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "query-approved-artifacts",
+      "name": "Supabase — Query Approved Artifacts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-artifacts",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.type }}",
+              "operation": "equals",
+              "value2": "agent_prompt"
+            }
+          ]
+        }
+      },
+      "id": "switch-artifact-type",
+      "name": "Switch — artifact.type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [900, 300],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "agent_prompt",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "agent_prompt"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "ad_creative",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "ad_creative"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "weekly_report",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "weekly_report"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "knowledge_base",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "knowledge_base"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-deploy-agent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"artifact_id\": \"{{ $json.id }}\",\n  \"client_id\": \"{{ $json.client_id }}\"\n}",
+        "options": { "timeout": 90000 }
+      },
+      "id": "ship-agent-prompt",
+      "name": "Ship — agency-deploy-agent (Retell)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-push-creative",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"artifact_id\": \"{{ $json.id }}\",\n  \"client_id\": \"{{ $json.client_id }}\"\n}",
+        "options": { "timeout": 90000 }
+      },
+      "id": "ship-ad-creative",
+      "name": "Ship — agency-push-creative (Meta Ads)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-reporting-scribe",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"ship_report\",\n  \"artifact_id\": \"{{ $json.id }}\",\n  \"client_id\": \"{{ $json.client_id }}\"\n}",
+        "options": { "timeout": 60000 }
+      },
+      "id": "ship-weekly-report",
+      "name": "Ship — agency-reporting-scribe (send report)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 420]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-deploy-agent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"mode\": \"sync_kb\",\n  \"artifact_id\": \"{{ $json.id }}\",\n  \"client_id\": \"{{ $json.client_id }}\"\n}",
+        "options": { "timeout": 60000 }
+      },
+      "id": "ship-knowledge-base",
+      "name": "Ship — agency-deploy-agent (sync KB)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 540]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge all ship results back into a single update payload\nconst shipResult = $input.first()?.json ?? {};\nconst artifactId = $input.first()?.json?.artifact_id ?? $('Switch — artifact.type').first()?.json?.id;\nreturn [{\n  json: {\n    artifact_id: artifactId,\n    ship_result: shipResult\n  }\n}];\n"
+      },
+      "id": "merge-ship-result",
+      "name": "Merge Ship Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 360]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_artifacts?id=eq.{{ $json.artifact_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"shipped\",\n  \"shipped_at\": \"{{ new Date().toISOString() }}\",\n  \"ship_result\": {{ JSON.stringify($json.ship_result) }}\n}",
+        "options": {}
+      },
+      "id": "update-artifact-shipped",
+      "name": "Supabase — Update status=shipped",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 360]
+    }
+  ],
+  "connections": {
+    "Poll Every 5 Min": {
+      "main": [
+        [{ "node": "Supabase — Query Approved Artifacts", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Query Approved Artifacts": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [{ "node": "Switch — artifact.type", "type": "main", "index": 0 }]
+      ]
+    },
+    "Switch — artifact.type": {
+      "agent_prompt": [
+        [{ "node": "Ship — agency-deploy-agent (Retell)", "type": "main", "index": 0 }]
+      ],
+      "ad_creative": [
+        [{ "node": "Ship — agency-push-creative (Meta Ads)", "type": "main", "index": 0 }]
+      ],
+      "weekly_report": [
+        [{ "node": "Ship — agency-reporting-scribe (send report)", "type": "main", "index": 0 }]
+      ],
+      "knowledge_base": [
+        [{ "node": "Ship — agency-deploy-agent (sync KB)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ship — agency-deploy-agent (Retell)": {
+      "main": [
+        [{ "node": "Merge Ship Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ship — agency-push-creative (Meta Ads)": {
+      "main": [
+        [{ "node": "Merge Ship Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ship — agency-reporting-scribe (send report)": {
+      "main": [
+        [{ "node": "Merge Ship Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Ship — agency-deploy-agent (sync KB)": {
+      "main": [
+        [{ "node": "Merge Ship Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Merge Ship Result": {
+      "main": [
+        [{ "node": "Supabase — Update status=shipped", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-1"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}

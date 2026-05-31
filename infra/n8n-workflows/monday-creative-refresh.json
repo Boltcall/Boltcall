@@ -1,0 +1,129 @@
+{
+  "name": "Agency OS — monday-creative-refresh",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "cron-monday-0600",
+      "name": "Cron — Monday 06:00 UTC",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/agency_clients?status=eq.live&sku=eq.bolt_system&select=id,business_name,vertical,timezone",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "query-live-bolt-system-clients",
+      "name": "Supabase — Live Bolt System Clients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-clients",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NETLIFY_FUNCTION_BASE }}/agency-creative-foundry",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $credentials.boltcallNetlifyServiceJWT }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $json.id }}\",\n  \"vertical\": \"{{ $json.vertical }}\",\n  \"business_name\": \"{{ $json.business_name }}\",\n  \"mode\": \"weekly_refresh\",\n  \"variants_requested\": 3\n}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "post-creative-foundry",
+      "name": "HTTP — POST agency-creative-foundry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first()?.json ?? {};\nconst status = result.status ?? 'unknown';\nconsole.log(`Creative foundry run for client ${result.client_id}: status=${status} artifacts=${JSON.stringify(result.artifact_ids ?? [])}`);\nreturn [{ json: { client_id: result.client_id, status, artifact_count: (result.artifact_ids ?? []).length } }];\n"
+      },
+      "id": "log-result",
+      "name": "Log Creative Run Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Cron — Monday 06:00 UTC": {
+      "main": [
+        [{ "node": "Supabase — Live Bolt System Clients", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Live Bolt System Clients": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [{ "node": "HTTP — POST agency-creative-foundry", "type": "main", "index": 0 }]
+      ]
+    },
+    "HTTP — POST agency-creative-foundry": {
+      "main": [
+        [{ "node": "Log Creative Run Result", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Creative Run Result": {
+      "main": [
+        [{ "node": "Split Into Batches", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "UTC"
+  },
+  "staticData": null,
+  "tags": ["agency-os", "phase-2", "cron"],
+  "triggerCount": 0,
+  "updatedAt": "2026-05-30T00:00:00.000Z",
+  "versionId": "1"
+}
