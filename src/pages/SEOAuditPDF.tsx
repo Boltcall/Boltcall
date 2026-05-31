@@ -48,6 +48,80 @@ const loadingSteps = [
 
 ];
 
+const aeoLaunchPhases = [
+  {
+    phase: 'Foundation',
+    date: 'Before launch',
+    items: [
+      'Canonical llms.txt, robots.txt, sitemap, schema, and pricing facts stay aligned.',
+      'Directory copy uses one category: AI speed-to-lead platform for local service businesses.',
+      'Screenshots, demo script, logo files, founder bio, and review request copy are ready.',
+    ],
+  },
+  {
+    phase: 'Launch day',
+    date: 'June 1',
+    items: [
+      'Launch Product Hunt first, then submit startup and AI-tool directories.',
+      'Publish LinkedIn, X, YouTube, Indie Hackers, and value-first Reddit posts.',
+      'Submit G2, Capterra, SourceForge, AlternativeTo, and SaaSHub profiles.',
+    ],
+  },
+  {
+    phase: 'Follow-up',
+    date: 'Days 2-7',
+    items: [
+      'Track approvals, live URLs, blockers, reviews, and AI-search visibility queries.',
+      'Start Azure Marketplace, AWS, Google Cloud, HubSpot, Zapier, Make, and vertical partner flows.',
+      'Turn launch objections into FAQs, comparison pages, and AEO answer blocks.',
+    ],
+  },
+];
+
+const aeoLaunchChannels = [
+  {
+    group: 'P0 launch surfaces',
+    targets: ['Product Hunt', 'Uneed', 'BetaList', 'Launching Next', 'LinkedIn', 'YouTube'],
+  },
+  {
+    group: 'Review and comparison',
+    targets: ['G2', 'Capterra', 'GetApp', 'SourceForge', 'AlternativeTo', 'SaaSHub'],
+  },
+  {
+    group: 'AI directories',
+    targets: ['There Is An AI For That', 'Futurepedia', 'Toolify', 'FutureTools', 'TopAI.tools'],
+  },
+  {
+    group: 'Marketplaces',
+    targets: ['Microsoft/Azure', 'AWS', 'Google Cloud', 'HubSpot', 'Zapier', 'Make', 'Pipedrive'],
+  },
+  {
+    group: 'Communities',
+    targets: ['Reddit smallbusiness', 'sweatystartup', 'SaaS', 'sales', 'HVAC', 'Plumbing', 'legaltech'],
+  },
+];
+
+const aeoWorkSplit = [
+  {
+    owner: 'Codex can do',
+    items: [
+      'Keep technical AEO files, schema, sitemap, and copy consistent.',
+      'Prepare submission copy, launch posts, screenshots checklist, and tracking rows.',
+      'Fill forms when a logged-in session is available and no 2FA, KYC, billing, or legal approval is required.',
+      'Monitor listings and search visibility, then turn questions into new FAQ or blog content.',
+    ],
+  },
+  {
+    owner: 'Founder must do',
+    items: [
+      'Log in, handle 2FA, identity checks, billing, marketplace KYC, and final submit approvals.',
+      'Post from personal LinkedIn, X, Reddit, Product Hunt, and YouTube accounts.',
+      'Approve claims about customers, revenue, integrations, testimonials, and paid upgrades.',
+      'Ask real users or testers for honest reviews where each platform allows it.',
+    ],
+  },
+];
+
 
 
 const WEBHOOK_URL = 'https://n8n.srv974118.hstgr.cloud/webhook/seo-aeo-audit';
@@ -1030,6 +1104,102 @@ const SEOAuditPDF: React.FC = () => {
 
         </motion.div>
 
+      </section>
+
+
+      {/* Boltcall AEO Launch Campaign */}
+      <section className="bg-slate-950 py-14">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between mb-8">
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-blue-200 bg-blue-500/15 border border-blue-400/20 px-3 py-1.5 rounded-full mb-4">
+                <Bot className="w-4 h-4" />
+                Boltcall campaign workspace
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                AEO Launch Campaign
+              </h2>
+              <p className="text-slate-300 max-w-2xl">
+                One organized campaign for making Boltcall discoverable in ChatGPT, Perplexity,
+                Google AI Overviews, software directories, launch communities, and marketplaces.
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+              Primary category: <span className="font-semibold text-white">AI speed-to-lead platform</span>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            {aeoLaunchPhases.map((phase) => (
+              <div key={phase.phase} className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <h3 className="font-semibold text-white">{phase.phase}</h3>
+                  <span className="text-xs font-medium text-blue-100 bg-blue-500/20 px-2.5 py-1 rounded-full">
+                    {phase.date}
+                  </span>
+                </div>
+                <ul className="space-y-3">
+                  {phase.items.map((item) => (
+                    <li key={item} className="flex gap-2 text-sm leading-relaxed text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300 mt-0.5 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-5">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <h3 className="font-semibold text-white mb-4">Submission lanes</h3>
+              <div className="space-y-4">
+                {aeoLaunchChannels.map((channel) => (
+                  <div key={channel.group}>
+                    <div className="text-sm font-semibold text-blue-100 mb-2">{channel.group}</div>
+                    <div className="flex flex-wrap gap-2">
+                      {channel.targets.map((target) => (
+                        <span key={target} className="text-xs text-slate-200 border border-white/10 bg-white/5 rounded-full px-3 py-1">
+                          {target}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <h3 className="font-semibold text-white mb-4">Execution split</h3>
+              <div className="space-y-5">
+                {aeoWorkSplit.map((column) => (
+                  <div key={column.owner}>
+                    <div className="text-sm font-semibold text-blue-100 mb-2">{column.owner}</div>
+                    <ul className="space-y-2">
+                      {column.items.map((item) => (
+                        <li key={item} className="flex gap-2 text-sm leading-relaxed text-slate-300">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-300 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 rounded-xl border border-blue-300/20 bg-blue-500/10 p-5">
+            <h3 className="font-semibold text-white mb-2">Canonical listing copy</h3>
+            <p className="text-sm leading-relaxed text-blue-50">
+              Boltcall is an AI speed-to-lead platform for local service businesses. It answers
+              calls, replies to web and ad leads, qualifies prospects, books appointments, sends
+              reminders, and follows up automatically so plumbers, HVAC companies, dentists, law
+              firms, med spas, roofers, solar installers, and other local operators respond before
+              competitors do.
+            </p>
+          </div>
+        </div>
       </section>
 
 
