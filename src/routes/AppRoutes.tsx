@@ -40,6 +40,11 @@ const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 // untouched; this is a sibling route surface, not a replacement.
 const DashboardLayoutV2 = React.lazy(() => import('../components/v2/DashboardLayoutV2'));
 const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+// V2 page wave 2 — Leads / Messages / Agent / Knowledge mount under /v2/*.
+const V2LeadsPage = React.lazy(() => import('../pages/v2/V2LeadsPage'));
+const V2MessagesPage = React.lazy(() => import('../pages/v2/V2MessagesPage'));
+const V2AgentPage = React.lazy(() => import('../pages/v2/V2AgentPage'));
+const V2KnowledgePage = React.lazy(() => import('../pages/v2/V2KnowledgePage'));
 
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
