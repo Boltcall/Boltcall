@@ -40,6 +40,17 @@ const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 // untouched; this is a sibling route surface, not a replacement.
 const DashboardLayoutV2 = React.lazy(() => import('../components/v2/DashboardLayoutV2'));
 const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+// V2 page wave 2 — Leads / Messages / Agent / Knowledge mount under /v2/*.
+const V2LeadsPage = React.lazy(() => import('../pages/v2/V2LeadsPage'));
+const V2MessagesPage = React.lazy(() => import('../pages/v2/V2MessagesPage'));
+const V2AgentPage = React.lazy(() => import('../pages/v2/V2AgentPage'));
+const V2KnowledgePage = React.lazy(() => import('../pages/v2/V2KnowledgePage'));
+// V2 page wave 3 — Integrations / Reputation / Help / QA / Settings
+const V2IntegrationsPage = React.lazy(() => import('../pages/v2/V2IntegrationsPage'));
+const V2ReputationPage = React.lazy(() => import('../pages/v2/V2ReputationPage'));
+const V2HelpPage = React.lazy(() => import('../pages/v2/V2HelpPage'));
+const V2QAPage = React.lazy(() => import('../pages/v2/V2QAPage'));
+const V2SettingsPage = React.lazy(() => import('../pages/v2/V2SettingsPage'));
 
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
@@ -307,6 +318,18 @@ const LogoAnimationDemoPage = React.lazy(() => import('../pages/LogoAnimationDem
 const RockerSwitchDemoPage = React.lazy(() => import('../pages/RockerSwitchDemoPage'));
 const ReceptionistDemo = React.lazy(() => import('../pages/ReceptionistDemo'));
 
+// ── Lazy loads — V2 SaaS dashboard surface (page wave 1) ─────────────────
+// V2OptInGate is already imported above with the V2 shell.
+const V2HomePage = React.lazy(() => import('../pages/v2/V2HomePage'));
+const V2AnalyticsPage = React.lazy(() => import('../pages/v2/V2AnalyticsPage'));
+const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
+
+// ── Lazy loads — V2 conversational setup wizard ──────────────────────────
+// Standalone route reached BEFORE opt-in; not wrapped in V2OptInGate so a
+// brand-new signup can reach the wizard before V2 is flipped on. The finalize
+// endpoint is where V2 actually goes live for the workspace.
+const V2SetupPage = React.lazy(() => import('../pages/v2/V2SetupPage'));
+
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
@@ -458,12 +481,19 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
+        {/* ── V2 Conversational Setup Wizard ───────────────────────────────
+            Standalone /v2/setup route — NOT inside the V2OptInGate parent
+            block because a brand-new signup must be able to reach the wizard
+            before V2 is enabled on the workspace. The wizard's finalize step
+            flips the v2_enabled flag and graduates the user into the gated
+            /v2/* tree below. Public so unauthenticated users can start setup;
+            auth happens in the wizard. */}
+        <Route path="/v2/setup" element={<V2SetupPage />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this
             tree is added at root so V2 has its own URL prefix and shell.
-            V2OptInGate inside the index renders the opt-in card when the
-            workspace hasn't flipped the flag yet. Inner V2 pages will be
-            added under this tree as Day 8 lands. */}
+            V2OptInGate wraps each page so the workspace must opt in before
+            seeing V2 content. */}
         <Route
           path="/v2"
           element={
@@ -474,17 +504,110 @@ const NavigationWrapper: React.FC = () => {
             </ProtectedRoute>
           }
         >
+          {/* V2 page wave 1 — Home / Analytics / Calls */}
           <Route
             index
             element={
               <V2OptInGate>
-                <div className="min-h-[40vh] flex items-center justify-center text-sm text-zinc-500">
-                  V2 shell ready. Day 8 pages mount here.
-                </div>
+                <V2HomePage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="analytics"
+            element={
+              <V2OptInGate>
+                <V2AnalyticsPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="calls"
+            element={
+              <V2OptInGate>
+                <V2CallsPage />
+              </V2OptInGate>
+            }
+          />
+          {/* V2 page wave 2 — Leads / Messages / Agent / Knowledge */}
+          <Route
+            path="leads"
+            element={
+              <V2OptInGate>
+                <V2LeadsPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="messages"
+            element={
+              <V2OptInGate>
+                <V2MessagesPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="agent"
+            element={
+              <V2OptInGate>
+                <V2AgentPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="knowledge"
+            element={
+              <V2OptInGate>
+                <V2KnowledgePage />
+              </V2OptInGate>
+            }
+          />
+          {/* V2 page wave 3 — Integrations / Reputation / Help / QA / Settings.
+              Each page renders behind the V2OptInGate (workspace.v2_enabled).
+              The outer <Suspense> wrapper inside NavigationWrapper handles the
+              lazy load. */}
+          <Route
+            path="integrations"
+            element={
+              <V2OptInGate>
+                <V2IntegrationsPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="reputation"
+            element={
+              <V2OptInGate>
+                <V2ReputationPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="help"
+            element={
+              <V2OptInGate>
+                <V2HelpPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="qa"
+            element={
+              <V2OptInGate>
+                <V2QAPage />
+              </V2OptInGate>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <V2OptInGate>
+                <V2SettingsPage />
               </V2OptInGate>
             }
           />
         </Route>
+
 
         {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
         <Route path="/setup" element={<Setup />} />
