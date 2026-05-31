@@ -90,7 +90,8 @@ export type AgencyEventType =
   | 'saas_v2_message_reply_drafted'
   | 'saas_v2_agent_summary_rendered'
   | 'saas_v2_kb_draft_accepted'
-  | 'saas_v2_message_thread_opened';
+  | 'saas_v2_message_thread_opened'
+  | 'saas_v2_agent_suggest_edits';
 
 export type AgencyEventSeverity = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
@@ -464,18 +465,28 @@ const saasV2MessagesListRenderedSchema = z.object({
   latency_ms: z.number().int().nonnegative().optional(),
 }).strict();
 
+// Union of wave-3 and wave-4 scenario ids + optional fields from both definitions.
 const saasV2AgentStressTestRunSchema = z.object({
   workspace_id: z.string(),
   scenario_id: z.enum([
+    // wave-3 enums
     'price_shopper',
     'emergency',
     'hostile_caller',
     'comparison_shopper',
     'non_english',
     'low_info',
+    // wave-4 enums
+    'caller-emergency',
+    'caller-pricing-objection',
+    'caller-wants-callback',
+    'caller-asks-about-insurance',
+    'caller-difficult-spelling',
+    'caller-wrong-number',
   ]),
-  qa_score: z.number().min(0).max(10),
-  outcome: z.string(),
+  qa_score: z.number().min(0).max(10).optional(),
+  outcome: z.string().optional(),
+  passed: z.boolean().optional(),
   duration_min: z.number().nonnegative().optional(),
 }).strict();
 
@@ -499,10 +510,16 @@ const saasV2MessageReplyDraftedSchema = z.object({
   latency_ms: z.number().int().nonnegative().optional(),
 }).strict();
 
+// Union of wave-3 and wave-4 agent-summary fields. All fields optional except
+// workspace_id so either caller passes validation.
 const saasV2AgentSummaryRenderedSchema = z.object({
   workspace_id: z.string(),
-  agent_id: z.string(),
-  narrative_confidence: z.number().min(0).max(1),
+  agent_id: z.string().optional(),
+  prompt_version: z.number().int().optional(),
+  prompt_length: z.number().int().nonnegative().optional(),
+  capabilities_count: z.number().int().nonnegative().optional(),
+  gaps_count: z.number().int().nonnegative().optional(),
+  narrative_confidence: z.number().min(0).max(1).optional(),
 }).strict();
 
 const saasV2KbDraftAcceptedSchema = z.object({
@@ -517,6 +534,13 @@ const saasV2MessageThreadOpenedSchema = z.object({
   thread_id: z.string(),
   channel: z.enum(['sms', 'email', 'chat']),
   message_count: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2AgentSuggestEditsSchema = z.object({
+  workspace_id: z.string(),
+  suggestion_count: z.number().int().nonnegative(),
+  high_severity_count: z.number().int().nonnegative().optional(),
+  used_qa_failures: z.boolean().optional(),
 }).strict();
 
 const EVENT_SCHEMAS = {
@@ -572,6 +596,7 @@ const EVENT_SCHEMAS = {
   saas_v2_agent_summary_rendered: saasV2AgentSummaryRenderedSchema,
   saas_v2_kb_draft_accepted: saasV2KbDraftAcceptedSchema,
   saas_v2_message_thread_opened: saasV2MessageThreadOpenedSchema,
+  saas_v2_agent_suggest_edits: saasV2AgentSuggestEditsSchema,
 } as const satisfies Record<AgencyEventType, z.ZodTypeAny>;
 
 // ── 3. Fields the client RLS view is allowed to expose ─────────────────────
@@ -636,6 +661,7 @@ const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string>> = {
   saas_v2_agent_summary_rendered:   [],
   saas_v2_kb_draft_accepted:        [],
   saas_v2_message_thread_opened:    [],
+  saas_v2_agent_suggest_edits:      [],
 };
 
 // Event types the client is allowed to see at all. Anything not in this set
@@ -991,7 +1017,8 @@ export type SaasV2EventType =
   | 'saas_v2_message_reply_drafted'
   | 'saas_v2_agent_summary_rendered'
   | 'saas_v2_kb_draft_accepted'
-  | 'saas_v2_message_thread_opened';
+  | 'saas_v2_message_thread_opened'
+  | 'saas_v2_agent_suggest_edits';
 
 export interface EmitSaasV2EventInput<T extends SaasV2EventType = SaasV2EventType> {
   workspace_id: string;
