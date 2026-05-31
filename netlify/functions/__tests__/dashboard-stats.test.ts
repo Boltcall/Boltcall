@@ -87,8 +87,11 @@ describe('dashboard-stats function', () => {
   });
 
   it('returns dashboard stats on valid auth', async () => {
+    // Endpoint is gated behind ADMIN_EMAILS (defaults to noamyakoby6@gmail.com).
+    // Provide an admin email on the mocked user so the request passes the gate.
+    process.env.ADMIN_EMAILS = 'admin@test.com';
     mockGetUser.mockResolvedValue({
-      data: { user: { id: 'user-1' } },
+      data: { user: { id: 'user-1', email: 'admin@test.com' } },
       error: null,
     });
 
