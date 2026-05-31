@@ -411,6 +411,23 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
+        {/* V2 SaaS dashboard surface — opt-in via V2OptInGate (Week 1 shell stub) */}
+        <Route
+          path="/v2"
+          element={
+            <ProtectedRoute>
+              <DashboardProviders>
+                <V2OptInGate>
+                  <Outlet />
+                </V2OptInGate>
+              </DashboardProviders>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<V2HomePage />} />
+          <Route path="analytics" element={<V2AnalyticsPage />} />
+          <Route path="calls" element={<V2CallsPage />} />
+        </Route>
         {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
         <Route path="/setup" element={<Setup />} />
         <Route path="/setup/loading" element={<ProtectedRoute><DashboardProviders><SetupLoading /></DashboardProviders></ProtectedRoute>} />
