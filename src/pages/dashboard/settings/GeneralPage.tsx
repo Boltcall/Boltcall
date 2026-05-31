@@ -26,7 +26,7 @@ const GeneralPage: React.FC = () => {
     owner: '',
     website: '',
     description: '',
-    industry: 'Technology'
+    industry: 'other'
   });
 
   const [addressInfo, setAddressInfo] = useState({
@@ -72,9 +72,12 @@ const GeneralPage: React.FC = () => {
             owner: profile.owner_name || user.name || '',
             website: profile.website_url || '',
             description: profile.description || '',
-            industry: profile.main_category
-              ? profile.main_category.charAt(0).toUpperCase() + profile.main_category.slice(1)
-              : 'Technology'
+            // main_category is the canonical (lowercase) value the wizard
+            // saved, e.g. 'plumber'. Keep it raw — the <select> below renders
+            // the matching {value,label} option. Falling back to 'other'
+            // surfaces the situation more honestly than silently defaulting
+            // to "Technology" when no match is found.
+            industry: profile.main_category || 'other'
           });
 
           // Fetch primary location for address
@@ -251,19 +254,31 @@ const GeneralPage: React.FC = () => {
     'Denmark'
   ];
 
-  const industries = [
-    'Technology',
-    'Healthcare',
-    'Finance',
-    'Retail',
-    'Education',
-    'Real Estate',
-    'Legal',
-    'Consulting',
-    'Manufacturing',
-    'Hospitality',
-    'Transportation',
-    'Other'
+  // Source of truth must mirror StepBusinessProfile so the wizard's saved
+  // value (e.g. 'plumber') round-trips correctly here. value = the lowercase
+  // slug stored in business_profiles.main_category, label = display string.
+  const industries: { value: string; label: string }[] = [
+    { value: 'dentist', label: 'Dentist' },
+    { value: 'medspa', label: 'Med Spa' },
+    { value: 'plumber', label: 'Plumber' },
+    { value: 'hvac', label: 'HVAC' },
+    { value: 'legal', label: 'Legal' },
+    { value: 'salon', label: 'Salon' },
+    { value: 'fitness', label: 'Fitness' },
+    { value: 'restaurant', label: 'Restaurant' },
+    { value: 'retail', label: 'Retail' },
+    { value: 'real_estate', label: 'Real Estate' },
+    { value: 'healthcare', label: 'Healthcare' },
+    { value: 'construction', label: 'Construction' },
+    { value: 'roofing', label: 'Roofing' },
+    { value: 'education', label: 'Education' },
+    { value: 'technology', label: 'Technology' },
+    { value: 'finance', label: 'Finance' },
+    { value: 'consulting', label: 'Consulting' },
+    { value: 'manufacturing', label: 'Manufacturing' },
+    { value: 'hospitality', label: 'Hospitality' },
+    { value: 'transportation', label: 'Transportation' },
+    { value: 'other', label: 'Other' },
   ];
 
   return (
@@ -338,8 +353,8 @@ const GeneralPage: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {industries.map((industry) => (
-                <option key={industry} value={industry}>
-                  {industry}
+                <option key={industry.value} value={industry.value}>
+                  {industry.label}
                 </option>
               ))}
             </select>
