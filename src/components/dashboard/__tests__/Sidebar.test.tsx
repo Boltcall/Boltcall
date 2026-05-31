@@ -36,7 +36,7 @@ describe('Sidebar', () => {
   it('should have nav items as links', () => {
     renderSidebar({ isOpen: true });
     const dashboardLink = screen.getByText('Dashboard').closest('a');
-    expect(dashboardLink).toHaveAttribute('href', '/');
+    expect(dashboardLink).toHaveAttribute('href', '/dashboard');
   });
 
   it('should have "Main navigation" aria-label on nav', () => {
