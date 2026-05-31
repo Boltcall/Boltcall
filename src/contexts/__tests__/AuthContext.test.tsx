@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
-import { AuthProvider, useAuth } from '../AuthContext';
+import { useAuth } from '../AuthContext';
+import { AuthProvider } from '../AuthProvider';
 import * as authLib from '../../lib/auth';
 
 // Mock the auth lib module
@@ -227,15 +228,18 @@ describe('AuthContext', () => {
   });
 
   describe('useAuth hook', () => {
-    it('throws when used outside AuthProvider', () => {
-      // Suppress console.error for the expected error
-      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    it('returns a safe no-op default when used outside AuthProvider', () => {
+      // AuthContext intentionally provides a safe default (no throw) so marketing
+      // pages that never wrap in AuthProvider can still call useAuth without
+      // crashing. The default is unauthenticated + loading.
+      const { result } = renderHook(() => useAuth());
 
-      expect(() => {
-        renderHook(() => useAuth());
-      }).toThrow('useAuth must be used within an AuthProvider');
-
-      spy.mockRestore();
+      expect(result.current.user).toBeNull();
+      expect(result.current.isAuthenticated).toBe(false);
+      expect(result.current.isLoading).toBe(true);
+      expect(typeof result.current.login).toBe('function');
+      expect(typeof result.current.logout).toBe('function');
+      expect(typeof result.current.signup).toBe('function');
     });
   });
 
