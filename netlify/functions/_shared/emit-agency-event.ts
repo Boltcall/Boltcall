@@ -112,7 +112,16 @@ export type AgencyEventType =
   | 'saas_v2_qa_rendered'
   | 'saas_v2_qa_run'
   | 'saas_v2_settings_updated'
-  | 'saas_v2_settings_suggestion_applied';
+  | 'saas_v2_settings_suggestion_applied'
+  // SaaS V2 setup wizard surface (wave-4 conversational setup security)
+  | 'saas_v2_setup_started'
+  | 'saas_v2_setup_message_sent'
+  | 'saas_v2_setup_kb_extracted'
+  | 'saas_v2_setup_agent_drafted'
+  | 'saas_v2_setup_completed'
+  | 'saas_v2_setup_abandoned'
+  | 'saas_v2_setup_secret_redacted'
+  | 'saas_v2_setup_finalize_version_mismatch';
 
 export type AgencyEventSeverity = 'debug' | 'info' | 'warn' | 'error' | 'critical';
 
@@ -685,6 +694,78 @@ const saasV2SettingsSuggestionAppliedSchema = z.object({
   source: z.enum(['ai_strategist', 'heuristic', 'user']),
 }).strict();
 
+// ── SaaS V2 setup wizard schemas (wave-4 conversational setup security) ───
+// Both security events (`saas_v2_setup_secret_redacted` and
+// `saas_v2_setup_finalize_version_mismatch`) are owner-only internal
+// telemetry. `secret_redacted.payload` MUST NEVER include the redacted value,
+// the original value, or any substring of either — only the pattern names
+// that matched and the count. The schema enforces that via .strict().
+
+const saasV2SetupStartedSchema = z.object({
+  workspace_id: z.string(),
+  entry_point: z.string().optional(),
+}).strict();
+
+const saasV2SetupMessageSentSchema = z.object({
+  workspace_id: z.string(),
+  turn_index: z.number().int().nonnegative(),
+  role: z.enum(['user', 'assistant']),
+  char_count: z.number().int().nonnegative(),
+  model_tier: z.string().optional(),
+  latency_ms: z.number().int().nonnegative().optional(),
+}).strict();
+
+const saasV2SetupKbExtractedSchema = z.object({
+  workspace_id: z.string(),
+  source: z.string(),
+  scrape_chars: z.number().int().nonnegative(),
+  services_count: z.number().int().nonnegative(),
+  faqs_count: z.number().int().nonnegative(),
+  has_policies: z.boolean(),
+}).strict();
+
+const saasV2SetupAgentDraftedSchema = z.object({
+  workspace_id: z.string(),
+  industry: z.string(),
+  prompt_chars: z.number().int().nonnegative(),
+  voice_id: z.string(),
+  agent_type: z.enum(['inbound', 'speed_to_lead', 'outbound']),
+}).strict();
+
+const saasV2SetupCompletedSchema = z.object({
+  workspace_id: z.string(),
+  business_profile_id: z.string().nullable().optional(),
+  retell_agent_id_inbound: z.string().optional(),
+  retell_agent_id_speed_to_lead: z.string().optional(),
+  total_turns: z.number().int().nonnegative(),
+  total_duration_seconds: z.number().int().nonnegative(),
+}).strict();
+
+const saasV2SetupAbandonedSchema = z.object({
+  workspace_id: z.string(),
+  last_step: z.string(),
+  turns_completed: z.number().int().nonnegative(),
+  reason: z.enum(['error', 'idle_timeout', 'user_aborted', 'unknown']),
+}).strict();
+
+const saasV2SetupSecretRedactedSchema = z.object({
+  workspace_id: z.string(),
+  conversation_id: z.string().optional(),
+  field: z.enum(['user_message', 'assistant_message', 'extracted']),
+  source: z.enum(['user', 'assistant']),
+  pattern_names: z.array(z.string()).max(20),
+  hit_count: z.number().int().positive(),
+}).strict();
+
+const saasV2SetupFinalizeVersionMismatchSchema = z.object({
+  workspace_id: z.string(),
+  reason: z.enum(['conversation_drift', 'state_drift']),
+  expected_conversation_id: z.string().optional(),
+  actual_conversation_id: z.string().nullable().optional(),
+  expected_version: z.number().int().optional(),
+  actual_version: z.number().int().nullable().optional(),
+}).strict();
+
 export const EVENT_SCHEMAS = {
   call_completed: callCompletedSchema,
   lead_captured: leadCapturedSchema,
@@ -751,6 +832,15 @@ export const EVENT_SCHEMAS = {
   saas_v2_qa_run: saasV2QaRunSchema,
   saas_v2_settings_updated: saasV2SettingsUpdatedSchema,
   saas_v2_settings_suggestion_applied: saasV2SettingsSuggestionAppliedSchema,
+  // SaaS V2 wave-4 (setup wizard — security + lifecycle)
+  saas_v2_setup_started: saasV2SetupStartedSchema,
+  saas_v2_setup_message_sent: saasV2SetupMessageSentSchema,
+  saas_v2_setup_kb_extracted: saasV2SetupKbExtractedSchema,
+  saas_v2_setup_agent_drafted: saasV2SetupAgentDraftedSchema,
+  saas_v2_setup_completed: saasV2SetupCompletedSchema,
+  saas_v2_setup_abandoned: saasV2SetupAbandonedSchema,
+  saas_v2_setup_secret_redacted: saasV2SetupSecretRedactedSchema,
+  saas_v2_setup_finalize_version_mismatch: saasV2SetupFinalizeVersionMismatchSchema,
 } as const satisfies Record<AgencyEventType, z.ZodTypeAny>;
 
 // ── 3. Fields the client RLS view is allowed to expose ─────────────────────
@@ -820,6 +910,15 @@ export const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string
   saas_v2_qa_run:                      [],
   saas_v2_settings_updated:            [],
   saas_v2_settings_suggestion_applied: [],
+  // SaaS V2 wave-4 (setup wizard — owner-only internal security telemetry).
+  saas_v2_setup_started:                  [],
+  saas_v2_setup_message_sent:             [],
+  saas_v2_setup_kb_extracted:             [],
+  saas_v2_setup_agent_drafted:            [],
+  saas_v2_setup_completed:                [],
+  saas_v2_setup_abandoned:                [],
+  saas_v2_setup_secret_redacted:          [],
+  saas_v2_setup_finalize_version_mismatch:[],
 };
 
 export const CLIENT_VISIBLE_TYPES: ReadonlySet<AgencyEventType> = new Set<AgencyEventType>([
@@ -1191,7 +1290,15 @@ export type SaasV2EventType =
   | 'saas_v2_qa_rendered'
   | 'saas_v2_qa_run'
   | 'saas_v2_settings_updated'
-  | 'saas_v2_settings_suggestion_applied';
+  | 'saas_v2_settings_suggestion_applied'
+  | 'saas_v2_setup_started'
+  | 'saas_v2_setup_message_sent'
+  | 'saas_v2_setup_kb_extracted'
+  | 'saas_v2_setup_agent_drafted'
+  | 'saas_v2_setup_completed'
+  | 'saas_v2_setup_abandoned'
+  | 'saas_v2_setup_secret_redacted'
+  | 'saas_v2_setup_finalize_version_mismatch';
 
 export interface EmitSaasV2EventInput<T extends SaasV2EventType = SaasV2EventType> {
   workspace_id: string;
