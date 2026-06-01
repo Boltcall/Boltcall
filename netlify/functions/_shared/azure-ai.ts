@@ -54,13 +54,22 @@ export function isAzureConfigured(): boolean {
   return isFoundryConfigured() || isLegacyAzureConfigured();
 }
 
-export function getAzureDeployment(tier: Tier | boolean = 'light'): string {
+export type AzureProvider = 'foundry' | 'legacy';
+
+export function getAzureDeployment(
+  tier: Tier | boolean = 'light',
+  provider?: AzureProvider,
+): string {
   // Backward compat: accept boolean (true = heavy, false = light)
   const t: Tier = typeof tier === 'boolean' ? (tier ? 'heavy' : 'light') : tier;
 
-  // When Foundry is configured, prefer FOUNDRY_DEPLOYMENT_* env vars for resolution.
-  // Falls back to non-prefixed envs only if those aren't set, then to GPT-5 defaults.
-  if (isFoundryConfigured()) {
+  // Pick provider: explicit > Foundry-if-configured > legacy. The explicit
+  // hint matters for the legacy fallback path — without it, this function
+  // returns Foundry deployment names even when the legacy resource is
+  // actually being called, causing 404 DeploymentNotFound.
+  const useFoundry = provider ? provider === 'foundry' : isFoundryConfigured();
+
+  if (useFoundry) {
     switch (t) {
       case 'heavy':
         return (
@@ -159,7 +168,7 @@ async function foundryResponsesCompletion(
 ): Promise<string> {
   const endpoint = process.env.AZURE_OPENAI_FOUNDRY_ENDPOINT!.replace(/\/$/, '');
   const apiKey = process.env.AZURE_OPENAI_FOUNDRY_KEY!;
-  const model = getAzureDeployment(tier);
+  const model = getAzureDeployment(tier, 'foundry');
   const url = `${endpoint}/openai/responses?api-version=${FOUNDRY_API_VERSION}`;
 
   const res = await fetch(url, {
@@ -203,7 +212,7 @@ async function legacyAzureChatCompletion(
 ): Promise<string> {
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT!.replace(/\/$/, '');
   const apiKey = process.env.AZURE_OPENAI_API_KEY!;
-  const deployment = getAzureDeployment(tier);
+  const deployment = getAzureDeployment(tier, 'legacy');
   const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${LEGACY_API_VERSION}`;
 
   const res = await fetch(url, {
