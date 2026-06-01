@@ -45,11 +45,11 @@ DROP POLICY IF EXISTS "Owner can read v2 qa scores" ON saas_v2_qa_scores;
 CREATE POLICY "Owner can read v2 qa scores"
   ON saas_v2_qa_scores FOR SELECT
   TO authenticated
-  USING (workspace_id IN (SELECT id FROM workspaces WHERE owner_id = auth.uid()));
+  USING (workspace_id IN (SELECT id FROM workspaces WHERE user_id = auth.uid()));
 
 DROP POLICY IF EXISTS "Owner can write v2 qa scores" ON saas_v2_qa_scores;
 CREATE POLICY "Owner can write v2 qa scores"
   ON saas_v2_qa_scores FOR ALL
   TO authenticated
-  USING (workspace_id IN (SELECT id FROM workspaces WHERE owner_id = auth.uid()))
-  WITH CHECK (workspace_id IN (SELECT id FROM workspaces WHERE owner_id = auth.uid()));
+  USING (workspace_id IN (SELECT id FROM workspaces WHERE user_id = auth.uid()))
+  WITH CHECK (workspace_id IN (SELECT id FROM workspaces WHERE user_id = auth.uid()));
