@@ -721,6 +721,107 @@ describe('saas-v2-setup-conversation: lost-update detection', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// FOLLOWUP — scrape-url CORS allowlist (no more '*')
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('scrape-url: CORS allowlist', () => {
+  let handler: any;
+  beforeAll(async () => {
+    const mod = await import('../scrape-url');
+    handler = mod.handler;
+  });
+  beforeEach(() => {
+    resetTestState();
+    process.env.INTERNAL_API_SECRET = 'test-internal-secret-32-byte-string-x';
+  });
+
+  it('rejects a request from a disallowed Origin with 403 (no wildcard)', async () => {
+    const res = await handler(
+      makeEvent({
+        headers: {
+          'x-internal-secret': 'test-internal-secret-32-byte-string-x',
+          origin: 'https://evil-attacker.example.com',
+          'content-type': 'application/json',
+        },
+        body: { url: 'https://example.com' },
+      }),
+      {} as any,
+    );
+    expect(res.statusCode).toBe(403);
+    // The Allow-Origin header must NOT be '*' (wildcard) — must echo the
+    // canonical production origin or nothing matching the attacker.
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('*');
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('https://evil-attacker.example.com');
+  });
+
+  it('allows a request from boltcall.org with proper allowlist headers', async () => {
+    // Stub Firecrawl + n8n + basic fetch all to fail-soft so we exit cleanly.
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 200,
+      text: async () => '<html><title>OK</title></html>',
+      json: async () => ({ success: false }),
+    });
+
+    const res = await handler(
+      makeEvent({
+        headers: {
+          'x-internal-secret': 'test-internal-secret-32-byte-string-x',
+          origin: 'https://boltcall.org',
+          'content-type': 'application/json',
+        },
+        body: { url: 'https://example.com' },
+      }),
+      {} as any,
+    );
+    expect(res.statusCode).not.toBe(403);
+    expect(res.headers['Access-Control-Allow-Origin']).toBe('https://boltcall.org');
+    expect(res.headers['Vary']).toBe('Origin');
+  });
+
+  it('OPTIONS preflight returns 204 with allowlist headers (not wildcard)', async () => {
+    const res = await handler(
+      makeEvent({
+        httpMethod: 'OPTIONS',
+        headers: { origin: 'https://boltcall.org' },
+        body: {},
+      }),
+      {} as any,
+    );
+    expect(res.statusCode).toBe(204);
+    expect(res.headers['Access-Control-Allow-Origin']).toBe('https://boltcall.org');
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('*');
+    expect(res.headers['Access-Control-Allow-Methods']).toContain('OPTIONS');
+    // The x-internal-secret header must be allow-listed so the server-to-
+    // server caller can still set it.
+    expect(res.headers['Access-Control-Allow-Headers']).toMatch(/x-internal-secret/i);
+  });
+
+  it('server-to-server caller (no Origin header) still works after CORS change', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 200,
+      text: async () => '<html><title>OK</title></html>',
+      json: async () => ({ success: false }),
+    });
+
+    const res = await handler(
+      makeEvent({
+        headers: {
+          'x-internal-secret': 'test-internal-secret-32-byte-string-x',
+          'content-type': 'application/json',
+          // intentionally no Origin
+        },
+        body: { url: 'https://example.com' },
+      }),
+      {} as any,
+    );
+    // No origin → no 403; falls through to normal handler logic.
+    expect(res.statusCode).not.toBe(403);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Bonus — redact-secrets unit coverage (paranoia about value leakage in events)
 // ─────────────────────────────────────────────────────────────────────────────
 
