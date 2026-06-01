@@ -12,13 +12,7 @@
 
 import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
-
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-};
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 
 interface WizardStatePayload {
   conversation: Array<{ role: string; content: string; ts: string }>;
@@ -27,11 +21,23 @@ interface WizardStatePayload {
 }
 
 export const handler: Handler = async (event) => {
+  const cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), { methods: 'GET' });
+  const headers = cors.headers;
+
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Defense-in-depth: if Origin header was set but didn't match the allowlist,
+  // refuse. Same-origin requests (from boltcall.org pages) typically include
+  // an Origin; tools like curl don't. We only block when Origin is present
+  // and unrecognized — otherwise legitimate server-to-server callers still work.
+  const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
+  if (requestOrigin && !cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
 
   const authHeader = event.headers['authorization'] || event.headers['Authorization'];
@@ -50,14 +56,14 @@ export const handler: Handler = async (event) => {
   // Resolve workspace via user_id then owner_id (compat with both schemas).
   let { data: ws } = await supa
     .from('workspaces')
-    .select('id, v2_setup_state, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at')
+    .select('id, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
   if (!ws) {
     const r = await supa
       .from('workspaces')
-      .select('id, v2_setup_state, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at')
+      .select('id, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at')
       .eq('owner_id', userId)
       .limit(1)
       .maybeSingle();
@@ -87,6 +93,7 @@ export const handler: Handler = async (event) => {
         extracted: {},
         wizard_step: 'intake',
         status: 'not_started',
+        state_version: 0,
         message: 'Requested conversation_id does not match the active session.',
       }),
     };
@@ -101,6 +108,7 @@ export const handler: Handler = async (event) => {
       extracted: state?.extracted || {},
       wizard_step: state?.wizard_step || 'intake',
       status: ws.v2_setup_status || 'not_started',
+      state_version: (ws.v2_setup_state_version as number | null) ?? 0,
       started_at: ws.v2_setup_started_at || null,
       completed_at: ws.v2_setup_completed_at || null,
     }),

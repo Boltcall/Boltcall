@@ -124,13 +124,31 @@ const handler: Handler = async (event) => {
   }
 
   try {
-    // Require internal secret — prevents external callers from burning Firecrawl credits
+    // Fail-CLOSED: INTERNAL_API_SECRET MUST be set in every deploy context.
+    // Previously this was fail-OPEN — when the env var was unset, the check
+    // was skipped entirely and any external caller could burn Firecrawl
+    // credits. That was a credential-leak amplifier; now we 503 instead.
     const internalSecret = process.env.INTERNAL_API_SECRET;
-    if (internalSecret) {
-      const callerSecret = event.headers['x-internal-secret'];
-      if (callerSecret !== internalSecret) {
-        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Forbidden' }) };
+    if (!internalSecret) {
+      console.error(
+        '[scrape-url] INTERNAL_API_SECRET is not configured — refusing to serve. ' +
+        'Set INTERNAL_API_SECRET in Netlify env (prod + deploy contexts).',
+      );
+      return { statusCode: 503, headers, body: JSON.stringify({ error: 'Service misconfigured' }) };
+    }
+    const callerSecret = event.headers['x-internal-secret'];
+    // Constant-time compare to defeat timing oracle attacks.
+    let ok = false;
+    if (callerSecret && typeof callerSecret === 'string' && callerSecret.length === internalSecret.length) {
+      try {
+        const crypto = await import('crypto');
+        ok = crypto.timingSafeEqual(Buffer.from(callerSecret), Buffer.from(internalSecret));
+      } catch {
+        ok = callerSecret === internalSecret;
       }
+    }
+    if (!ok) {
+      return { statusCode: 403, headers, body: JSON.stringify({ error: 'Forbidden' }) };
     }
 
     const { url } = JSON.parse(event.body || '{}');

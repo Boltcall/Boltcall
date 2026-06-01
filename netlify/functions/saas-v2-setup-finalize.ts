@@ -18,13 +18,7 @@
 
 import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
-
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
-};
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 
 interface ExtractedDraft {
   businessName?: string;
@@ -61,11 +55,21 @@ async function emitEvent(type: string, payload: Record<string, unknown>): Promis
 }
 
 export const handler: Handler = async (event) => {
+  const cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), { methods: 'POST' });
+  const headers = cors.headers;
+
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Defense-in-depth: if Origin header was set but didn't match the allowlist,
+  // refuse — finalize creates Retell agents and runs billable provisioning.
+  const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
+  if (requestOrigin && !cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
 
   // ── Auth ────────────────────────────────────────────────────────────────
@@ -82,7 +86,7 @@ export const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ── Body ────────────────────────────────────────────────────────────────
-  let body: { conversation_id?: string; confirm?: boolean };
+  let body: { conversation_id?: string; confirm?: boolean; expected_state_version?: number };
   try {
     body = JSON.parse(event.body || '{}');
   } catch {
@@ -91,18 +95,24 @@ export const handler: Handler = async (event) => {
   if (!body.confirm) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'confirm must be true' }) };
   }
+  if (!body.conversation_id) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'conversation_id is required' }) };
+  }
+  if (typeof body.expected_state_version !== 'number') {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'expected_state_version is required' }) };
+  }
 
   // ── Resolve workspace via user_id then owner_id ─────────────────────────
   let { data: ws } = await supa
     .from('workspaces')
-    .select('id, name, v2_setup_state, v2_setup_started_at')
+    .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
   if (!ws) {
     const r = await supa
       .from('workspaces')
-      .select('id, name, v2_setup_state, v2_setup_started_at')
+      .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at')
       .eq('owner_id', userId)
       .limit(1)
       .maybeSingle();
@@ -113,6 +123,42 @@ export const handler: Handler = async (event) => {
   }
 
   const workspaceId = ws.id as string;
+
+  // ── Version pinning — refuse to deploy a stale review ───────────────────
+  const currentConvoId = (ws.v2_setup_conversation_id as string | null) || null;
+  const currentVersion = (ws.v2_setup_state_version as number | null) ?? 0;
+  if (currentConvoId !== body.conversation_id) {
+    emitEvent('saas_v2_setup_finalize_version_mismatch', {
+      workspace_id: workspaceId,
+      reason: 'conversation_drift',
+      expected_conversation_id: body.conversation_id,
+      actual_conversation_id: currentConvoId,
+    }).catch(() => {});
+    return {
+      statusCode: 409,
+      headers,
+      body: JSON.stringify({
+        error: 'Conversation drifted — refresh and re-confirm the latest draft.',
+        code: 'state_drift',
+      }),
+    };
+  }
+  if (currentVersion !== body.expected_state_version) {
+    emitEvent('saas_v2_setup_finalize_version_mismatch', {
+      workspace_id: workspaceId,
+      reason: 'state_drift',
+      expected_version: body.expected_state_version,
+      actual_version: currentVersion,
+    }).catch(() => {});
+    return {
+      statusCode: 409,
+      headers,
+      body: JSON.stringify({
+        error: 'Setup state has changed since you reviewed it — refresh and re-confirm.',
+        code: 'state_drift',
+      }),
+    };
+  }
   const state = ws.v2_setup_state as { extracted?: ExtractedDraft; conversation?: unknown[] } | null;
   const extracted: ExtractedDraft = state?.extracted || {};
 
