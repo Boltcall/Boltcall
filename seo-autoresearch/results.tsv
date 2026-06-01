@@ -13,3 +13,17 @@ commit	page	score_before	score_after	status	description
 58353a0	/features/ai-receptionist	72	84	keep	Added FAQPage JSON-LD schema with 5 feature-specific Q&A pairs
 71f4318	/comparisons/voicemail-vs-boltcall	48	72	keep	Added AEO answer block + visible FAQ section with 4 question H3s
 71f4318	/comparisons/crm-instant-lead-reply-vs-boltcall	55	75	keep	Added AEO answer block + visible FAQ section with 5 question H3s
+30a7d8c	/features/ai-follow-up-system	62	78	keep	Added 6 internal links (Related Resources section)
+30a7d8c	/features/automated-reminders	62	78	keep	Added 6 internal links (Related Resources section)
+30a7d8c	/features/instant-form-reply	62	78	keep	Added 6 internal links (Related Resources section)
+87d1d73	/blog/ai-phone-answering-dentists	70	84	keep	Added FAQPage schema + 6 internal links
+87d1d73	/blog/ai-phone-answering-plumbers	68	82	keep	Added FAQPage schema + 6 internal links
+87d1d73	/blog/best-after-hours-answering-service	68	80	keep	Added 6 internal links (Related Resources section)
+7f1b862	/blog/how-ai-receptionist-works	68	82	keep	Added FAQPage schema + 6 internal links
+7f1b862	/blog/ai-receptionist-cost-pricing	65	80	keep	Added FAQPage schema + 6 internal links
+88acbe1	/blog/best-ai-receptionist-tools	75	88	keep	Added FAQPage schema + 6 internal links
+88acbe1	/blog/complete-guide-to-ai-for-local-businesses	65	78	keep	Added 6 internal links
+88acbe1	/blog/automatic-google-reviews	65	80	keep	Added FAQPage schema + 6 internal links
+88acbe1	/blog/why-speed-matters	70	84	keep	Added FAQPage schema with 5 Q&A pairs
+b9b7cdc	/blog/why-speed-matters	84	90	keep	Added 6 internal links (Related Resources section)
+b9b7cdc	/blog/is-ai-receptionist-worth-it	82	90	keep	Added 6 internal links (Related Resources section)
