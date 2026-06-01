@@ -56,9 +56,15 @@ const AdInstantResponsePage: React.FC = () => {
   }, [user?.id]);
 
   const handleConnectFacebook = async () => {
+    if (!user?.id) {
+      showToast({ message: 'Please sign in before connecting Facebook.', variant: 'error' });
+      return;
+    }
     setFbConnecting(true);
     try {
-      const response = await fetch('/.netlify/functions/facebook-auth-start');
+      const response = await fetch(
+        `/.netlify/functions/facebook-auth-start?user_id=${encodeURIComponent(user.id)}`,
+      );
       const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
