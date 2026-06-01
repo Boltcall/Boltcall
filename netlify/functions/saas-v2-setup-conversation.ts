@@ -395,6 +395,21 @@ async function loadWorkspaceState(userId: string): Promise<{
   };
 }
 
+/**
+ * Thrown by saveWorkspaceState when the optimistic-lock UPDATE matches zero
+ * rows — meaning a concurrent tab already advanced the state version since we
+ * loaded it. The handler converts this into a 409 so the client can prompt
+ * the user to refresh.
+ */
+export class LostUpdateError extends Error {
+  expectedVersion: number;
+  constructor(expectedVersion: number) {
+    super(`Workspace state version drift (expected ${expectedVersion}) — concurrent edit`);
+    this.name = 'LostUpdateError';
+    this.expectedVersion = expectedVersion;
+  }
+}
+
 async function saveWorkspaceState(opts: {
   workspaceId: string;
   state: WizardState;
@@ -412,10 +427,20 @@ async function saveWorkspaceState(opts: {
     updated_at: new Date().toISOString(),
   };
   if (opts.startedAt) patch.v2_setup_started_at = new Date().toISOString();
-  // Note: we don't use optimistic-lock .eq filter here because the supabase
-  // mock used in tests doesn't model chained .eq().eq() updates cleanly.
-  // Concurrent-tab drift is caught at finalize via the version-pinning check.
-  await supa.from('workspaces').update(patch).eq('id', opts.workspaceId);
+  // Optimistic-lock UPDATE: only patch the row if the version still matches
+  // what we read. Two tabs both reading version=5 will both try to write
+  // version=6 — exactly one of those UPDATEs will match a row; the other
+  // will affect 0 rows and we throw LostUpdateError → 409 to the client.
+  const { data, error } = await supa
+    .from('workspaces')
+    .update(patch)
+    .eq('id', opts.workspaceId)
+    .eq('v2_setup_state_version', opts.expectedVersion)
+    .select();
+  if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new LostUpdateError(opts.expectedVersion);
+  }
   return newVersion;
 }
 
@@ -658,13 +683,38 @@ export const handler: Handler = async (event) => {
   }
 
   // Persist — bump state version monotonically so finalize can detect drift.
-  const newVersion = await saveWorkspaceState({
-    workspaceId,
-    state,
-    conversationId,
-    expectedVersion: stateVersion,
-    startedAt: state.conversation.length <= 2,
-  });
+  // If a concurrent tab already advanced the version, return a 409 streamed
+  // event that the client can convert into a "refresh and retry" UX.
+  let newVersion: number;
+  try {
+    newVersion = await saveWorkspaceState({
+      workspaceId,
+      state,
+      conversationId,
+      expectedVersion: stateVersion,
+      startedAt: state.conversation.length <= 2,
+    });
+  } catch (e) {
+    if (e instanceof LostUpdateError) {
+      emitEvent('saas_v2_setup_conversation_lost_update', {
+        workspace_id: workspaceId,
+        conversation_id: conversationId,
+        expected_version: e.expectedVersion,
+      }).catch(() => {});
+      return {
+        statusCode: 409,
+        headers,
+        body: JSON.stringify({
+          error: 'Another tab updated this setup since you started typing — refresh to see the latest state.',
+          code: 'lost_update',
+          event: 'lost_update',
+          conversation_id: conversationId,
+          expected_version: e.expectedVersion,
+        }),
+      };
+    }
+    throw e;
+  }
 
   return {
     statusCode: 200,
