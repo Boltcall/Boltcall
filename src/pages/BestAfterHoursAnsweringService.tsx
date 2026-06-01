@@ -593,6 +593,19 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                   <p className="text-lg text-gray-700 italic leading-relaxed">"More than 60% of business calls happen outside traditional business hours. Companies that provide 24/7 phone coverage capture up to 40% more leads than those that only answer during the day."</p>
                   <footer className="mt-3 text-sm font-semibold text-gray-600">— BIA/Kelsey, Local Commerce Monitor Research</footer>
                 </blockquote>
+
+                {/* Related Resources */}
+                <div className="bg-gray-50 rounded-xl p-6 mt-10">
+                  <h2 className="text-lg font-bold text-gray-900 mb-4">Related Resources</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Link to="/pricing" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">→ View Boltcall Pricing</Link>
+                    <Link to="/features/ai-receptionist" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">→ AI Receptionist Feature</Link>
+                    <Link to="/blog/ai-vs-human-receptionist" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">→ AI vs Human Receptionist</Link>
+                    <Link to="/blog/is-ai-receptionist-worth-it" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">→ Is AI Receptionist Worth It?</Link>
+                    <Link to="/blog/best-ai-receptionist-small-business" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">→ Best AI Receptionist Guide</Link>
+                    <Link to="/signup" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium">→ Start Free Trial</Link>
+                  </div>
+                </div>
                 </article>
               </div>
             </div>

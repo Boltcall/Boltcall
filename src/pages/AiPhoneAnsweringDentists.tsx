@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
@@ -316,6 +317,32 @@ const AiPhoneAnsweringDentists: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+      {/* Related Resources */}
+      <section className="bg-gray-50 border-t border-gray-100 py-10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-lg font-bold text-gray-900 mb-5">Related Resources</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Link to="/pricing" className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 hover:border-blue-300 hover:shadow-sm transition-all text-sm font-medium text-gray-800">
+              <span className="text-blue-600">→</span> View Boltcall Pricing
+            </Link>
+            <Link to="/features/ai-receptionist" className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 hover:border-blue-300 hover:shadow-sm transition-all text-sm font-medium text-gray-800">
+              <span className="text-blue-600">→</span> AI Receptionist Feature
+            </Link>
+            <Link to="/blog/ai-vs-human-receptionist" className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 hover:border-blue-300 hover:shadow-sm transition-all text-sm font-medium text-gray-800">
+              <span className="text-blue-600">→</span> AI vs Human Receptionist Guide
+            </Link>
+            <Link to="/blog/best-ai-receptionist-small-business" className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 hover:border-blue-300 hover:shadow-sm transition-all text-sm font-medium text-gray-800">
+              <span className="text-blue-600">→</span> Best AI Receptionist for Small Business
+            </Link>
+            <Link to="/blog/is-ai-receptionist-worth-it" className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 px-4 py-3 hover:border-blue-300 hover:shadow-sm transition-all text-sm font-medium text-gray-800">
+              <span className="text-blue-600">→</span> Is AI Receptionist Worth It?
+            </Link>
+            <Link to="/signup" className="flex items-center gap-3 bg-blue-600 rounded-xl px-4 py-3 hover:bg-blue-700 transition-all text-sm font-medium text-white">
+              <span>→</span> Start Free Trial
+            </Link>
           </div>
         </div>
       </section>
