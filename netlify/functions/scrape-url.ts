@@ -1,4 +1,5 @@
 import type { Handler } from '@netlify/functions';
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 
 // Firecrawl API keys — waterfall: use key 1 first, if exhausted try key 2, then key 3
 const FIRECRAWL_KEYS = [
@@ -108,11 +109,18 @@ async function basicScrape(url: string): Promise<{ title: string; description: s
 }
 
 const handler: Handler = async (event) => {
+  // Use the strict v2 CORS allowlist instead of '*'. scrape-url is gated by
+  // INTERNAL_API_SECRET, but a wildcard CORS still lets any origin read
+  // responses (status codes, error messages) — a recon aid for an attacker
+  // who already exfiltrated the secret. The allowlist removes that primitive.
+  // Note: the x-internal-secret header is added to Allow-Headers so the v2
+  // setup conversation handler (server-to-server caller from the same origin)
+  // can still set it. Browsers don't add Origin on server-to-server fetches,
+  // so server callers stay unaffected by this change.
+  const cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), { methods: 'POST' });
   const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Content-Type': 'application/json',
+    ...cors.headers,
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-internal-secret',
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -121,6 +129,13 @@ const handler: Handler = async (event) => {
 
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Defense-in-depth: reject cross-origin requests from disallowed sites.
+  // Same-origin and server-to-server callers (no Origin header) still work.
+  const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
+  if (requestOrigin && !cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
 
   try {
