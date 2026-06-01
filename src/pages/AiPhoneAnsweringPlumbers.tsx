@@ -57,9 +57,46 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI Phone Answering for Plumbers", "item": "https://boltcall.org/blog/ai-phone-answering-plumbers"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-plumbers';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much revenue do plumbers lose from missed calls?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The average plumbing company loses $50,000–$120,000 per year from missed calls. A typical plumbing job is worth $300–$800, and busy plumbing businesses miss 15–25 calls per week during peak hours. With AI phone answering capturing those leads 24/7, most plumbers recover their investment within the first week." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI handle emergency plumbing calls like burst pipes?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. AI phone systems for plumbers are configured to triage emergency calls. When a caller reports a burst pipe, active flooding, or sewage backup, the AI immediately escalates to your on-call plumber via call transfer or text alert. Non-urgent requests like faucet replacement are scheduled for the next available slot." }
+        },
+        {
+          "@type": "Question",
+          "name": "How quickly can a plumber set up AI phone answering?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Setup takes under 24 hours. You provide your business name, service area, pricing ranges, and emergency protocols. The AI is trained on your specific services — drain cleaning, water heater repair, pipe replacement — and can be live on your existing phone number the same day you sign up." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does AI phone answering work after hours for plumbing businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "After-hours coverage is the biggest ROI driver for plumbing companies. AI answers every call 24/7, 365 days a year — including weekends and holidays. Emergency calls are routed to your on-call team instantly. Routine calls are booked for the next business day with a confirmation text, so no lead is ever lost." }
+        },
+        {
+          "@type": "Question",
+          "name": "What's the cost of AI phone answering for a plumbing company?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for plumbers costs $99–$249 per month with unlimited calls. Traditional answering services charge $1–$2 per call, which costs $800–$2,000 per month for busy plumbing companies. Hiring a full-time receptionist costs $35,000–$45,000 per year. AI delivers better coverage at 90% lower cost." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-plumbers')?.remove();
       document.head.removeChild(script);
     };
   }, []);

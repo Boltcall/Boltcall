@@ -40,7 +40,46 @@ const AIReceptionistPage: React.FC = () => {
     personScript.id = 'person-schema';
     personScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "Person", "name": "Boltcall Team", "url": "https://boltcall.org/about", "worksFor": {"@type": "Organization", "name": "Boltcall", "url": "https://boltcall.org"}});
     document.head.appendChild(personScript);
-    return () => { speakableScript.remove(); };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-ai-receptionist-feature';
+    faqScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is an AI receptionist?",
+          acceptedAnswer: { "@type": "Answer", text: "An AI receptionist is a voice AI system that answers your business phone calls 24/7, handles caller inquiries using natural conversation, books appointments directly into your calendar, captures lead information, and routes urgent calls to a human — all without any staff involvement. Boltcall's AI receptionist responds in under 1 second and handles unlimited simultaneous calls." }
+        },
+        {
+          "@type": "Question",
+          name: "How does Boltcall's AI receptionist handle calls?",
+          acceptedAnswer: { "@type": "Answer", text: "Boltcall answers every call instantly using a natural-sounding AI voice. It greets callers with your business name, identifies what they need, answers common questions from your knowledge base, checks your calendar for availability, books confirmed appointments, and sends the caller a text confirmation. Complex or urgent calls are transferred to you immediately with a call summary." }
+        },
+        {
+          "@type": "Question",
+          name: "Does the AI receptionist work after hours?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes. Boltcall's AI receptionist operates 24/7 — nights, weekends, and holidays. After-hours calls are handled the same way as business-hours calls: the AI answers, books appointments for the next available slot, and sends a confirmation. Emergency calls can be configured to immediately alert your on-call staff via phone or text." }
+        },
+        {
+          "@type": "Question",
+          name: "Can the AI receptionist handle multiple calls at once?",
+          acceptedAnswer: { "@type": "Answer", text: "Yes. Unlike a human receptionist who can only handle one call at a time, Boltcall handles unlimited simultaneous calls. During busy periods — Monday morning rush, post-holiday surge, after a marketing campaign — every caller is answered instantly with no hold time and no missed calls." }
+        },
+        {
+          "@type": "Question",
+          name: "How much does Boltcall's AI receptionist cost?",
+          acceptedAnswer: { "@type": "Answer", text: "Boltcall starts at $389/month with full call answering, appointment booking, CRM integration, and SMS follow-ups included. There are no per-call fees, no setup charges, and no long-term contracts required. Compare this to $35,000–$55,000/year for a full-time human receptionist." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
+    return () => {
+      speakableScript.remove();
+      document.getElementById('faq-jsonld-ai-receptionist-feature')?.remove();
+    };
   }, []);
   return (
     <div className="min-h-screen bg-white">

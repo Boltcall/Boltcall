@@ -51,10 +51,47 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-dentists';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does AI phone answering work for dental practices?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An AI phone answering system for dental practices answers every inbound call instantly, handles appointment booking and confirmations, answers common patient questions about insurance, hours, and services, and routes urgent calls to your on-call dentist or staff. It integrates with your dental practice management software to access real-time availability." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can AI handle dental appointment bookings automatically?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. AI receptionists for dental offices integrate directly with scheduling platforms like Dentrix, Eaglesoft, and Open Dental to book, reschedule, and cancel appointments in real time. The AI confirms the appointment with the patient via text, reducing no-shows by up to 40% through automated reminders." }
+        },
+        {
+          "@type": "Question",
+          "name": "What percentage of dental office calls go unanswered?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Studies show that 62% of calls to dental offices go unanswered during business hours, and nearly 100% after 5 PM. The primary reason is front desk staff being occupied with in-person patients. Each missed call represents a potential new patient worth $500–$2,000+ in lifetime value." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is AI phone answering HIPAA compliant for dental practices?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Reputable AI phone answering services for healthcare include HIPAA-compliant data handling, encrypted call logs, Business Associate Agreements (BAAs), and strict PHI protocols. Always confirm that your provider signs a BAA before deploying AI in a dental or medical setting." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does AI phone answering cost for a dental office?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI phone answering for dental practices typically costs $149–$299 per month with unlimited calls. This compares to $3,000–$5,000 per month for a full-time front desk employee or $800–$1,500 per month for a traditional dental answering service. The ROI is immediate if your practice books even two additional new patients per month." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
+      document.getElementById('faq-jsonld-dentists')?.remove();
     };
   }, []);
 

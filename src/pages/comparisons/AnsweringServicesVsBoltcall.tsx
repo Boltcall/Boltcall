@@ -12,6 +12,7 @@ import TableOfContents from '../../components/TableOfContents';
 const headings = [
   { id: 'quick-comparison', text: 'Quick Comparison', level: 2 },
   { id: 'why-boltcall', text: 'Why Boltcall is Better', level: 2 },
+  { id: 'faq', text: 'Frequently Asked Questions', level: 2 },
 ];
 
 const AnsweringServicesVsBoltcall: React.FC = () => {
@@ -38,7 +39,41 @@ const AnsweringServicesVsBoltcall: React.FC = () => {
     personScript.id = 'person-schema';
     personScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "Person", "name": "Boltcall Team", "url": "https://boltcall.org/about", "worksFor": {"@type": "Organization", "name": "Boltcall", "url": "https://boltcall.org"}});
     document.head.appendChild(personScript);
-    return () => { document.head.removeChild(bcSchema); };
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-answering-vs-boltcall';
+    faqScript.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is the difference between an answering service and Boltcall?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Traditional answering services use human operators to take messages and transfer calls — they cost $0.75–$2 per minute and only operate during set hours. Boltcall is an AI receptionist that answers 24/7 instantly, books appointments directly into your calendar, and charges a flat monthly rate with no per-call fees.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Are answering services cheaper than AI receptionists?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Traditional answering services appear cheaper at $50–$150/month, but per-call fees add up fast. A busy local business with 100 after-hours calls per month pays $75–$200 in overages alone. AI receptionists like Boltcall charge flat rates ($99–$299/month) with unlimited calls and actually book appointments instead of just taking messages.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can an answering service book appointments?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Most traditional answering services only take a message and promise someone will call back. Boltcall\'s AI receptionist checks real-time calendar availability and books confirmed appointments during the call — no callback needed. This dramatically improves conversion rates compared to message-taking services.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is Boltcall available 24/7 unlike answering services?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Yes. Boltcall\'s AI receptionist answers every call instantly, 24/7/365 — including weekends and holidays. Traditional answering services have shift-based coverage with hold times during peak periods. AI has no hold times, no staffing gaps, and no days off.' },
+        },
+      ],
+    });
+    document.head.appendChild(faqScript);
+
+    return () => {
+      document.head.removeChild(bcSchema);
+      document.getElementById('faq-jsonld-answering-vs-boltcall')?.remove();
+    };
   }, []);
 
   return (
@@ -82,6 +117,15 @@ const AnsweringServicesVsBoltcall: React.FC = () => {
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* AEO Answer Block */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
+          <p className="text-gray-800 text-lg leading-relaxed">
+            An answering service is a third-party staffing solution where human operators answer your calls on your behalf, take messages, and transfer calls — typically charging $0.75–$2 per minute with limited hours. Boltcall is an AI receptionist that answers calls 24/7 instantly, books confirmed appointments in real time, and charges a flat monthly rate with no per-call fees.
+          </p>
         </div>
       </section>
 
@@ -232,6 +276,33 @@ const AnsweringServicesVsBoltcall: React.FC = () => {
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Used by 500+ local businesses</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Report delivered to your inbox in minutes</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the difference between an answering service and Boltcall?</h3>
+            <p className="text-gray-600 leading-relaxed">Traditional answering services use human operators to take messages — they charge per call and only operate during set hours. Boltcall is an AI receptionist that answers 24/7 instantly, books appointments directly into your calendar, and charges a flat monthly rate with no per-call fees.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Are answering services cheaper than AI receptionists?</h3>
+            <p className="text-gray-600 leading-relaxed">Traditional answering services appear cheaper upfront, but per-call fees add up fast. A business with 100 after-hours calls per month pays $75–$200 in overages. Boltcall's flat-rate plan covers unlimited calls with appointment booking included — most businesses save money immediately after switching.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an answering service book appointments for you?</h3>
+            <p className="text-gray-600 leading-relaxed">Most traditional answering services only take a message and promise someone will call back. Boltcall's AI checks real-time calendar availability and books confirmed appointments during the call — no callback needed, no lead left waiting.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Is Boltcall available 24/7 unlike answering services?</h3>
+            <p className="text-gray-600 leading-relaxed">Yes. Boltcall answers every call instantly, 24/7/365 — including weekends and holidays. Traditional answering services have shift gaps and hold times during peak periods. AI has no hold times, no staffing gaps, and no days off.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">How quickly can I switch from an answering service to Boltcall?</h3>
+            <p className="text-gray-600 leading-relaxed">Most businesses switch in under 30 minutes. You set up your business profile, configure your call handling rules, and forward your phone number to Boltcall. No hardware required, no downtime, and you can run both services in parallel during your trial period.</p>
           </div>
         </div>
       </section>

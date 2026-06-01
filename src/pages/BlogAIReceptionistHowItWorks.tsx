@@ -81,9 +81,46 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "How AI Receptionist Works", "item": "https://boltcall.org/blog/how-ai-receptionist-works"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-how-works';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does an AI receptionist work?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist is a voice AI system that answers phone calls, understands caller intent using natural language processing, responds conversationally, and takes action — booking appointments, answering FAQs, collecting caller info, or transferring to a human. It connects to your calendar, CRM, and phone system to operate fully autonomously without any human intervention." }
+        },
+        {
+          "@type": "Question",
+          "name": "What technology powers an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists are powered by three core technologies: (1) Automatic Speech Recognition (ASR) to convert speech to text in real time, (2) Large Language Models (LLMs) to understand intent and generate appropriate responses, and (3) Text-to-Speech (TTS) with neural voice synthesis to speak back naturally. These systems work together in under 500 milliseconds — faster than a human can respond." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI receptionist understand different accents and dialects?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Modern AI receptionists use advanced ASR models trained on diverse speech data that handle a wide range of accents, speaking speeds, and dialects. They also handle background noise, phone audio compression, and interrupted speech better than early voice systems. Most platforms support multiple languages." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does an AI receptionist handle calls it doesn't understand?",
+          "acceptedAnswer": { "@type": "Answer", "text": "When an AI receptionist encounters a request it cannot fulfill — an unusual question, strong emotion, or complex situation — it transfers the caller to a human with a summary of the conversation. This fallback is configured during setup and ensures no caller is stuck or frustrated. The AI learns from these edge cases over time." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the latency of an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Leading AI receptionists respond in 400–800 milliseconds — barely perceptible to callers. Earlier systems had 2–3 second delays that felt robotic. Modern systems using real-time streaming ASR and optimized LLM inference achieve near-human conversational flow. Boltcall's average response latency is under 600ms." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-how-works')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       speakableScript.remove();

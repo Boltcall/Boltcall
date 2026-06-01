@@ -60,8 +60,45 @@ const BestAfterHoursAnsweringService: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-after-hours';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best after hours answering service for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI-powered answering services like Boltcall provide the best after-hours coverage for local businesses. Unlike traditional live answering services that charge $1–$2 per call and often have hold times, AI answers instantly 24/7, books appointments in real time, and costs $99–$299/month flat with no per-call fees." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much do after hours answering services cost?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Traditional after-hours answering services cost $0.75–$2 per minute or $50–$150 per month for basic message-taking. AI after-hours services cost $99–$299/month with unlimited calls and full appointment booking. For businesses with 10+ after-hours calls per week, AI becomes cheaper immediately while delivering dramatically better service." }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens to after-hours calls without an answering service?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Without an after-hours answering service, calls go to voicemail. Studies show 80% of callers who reach voicemail hang up without leaving a message and call a competitor instead. For local service businesses, each after-hours missed call is a lost job worth $200–$2,000+." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an after-hours answering service book appointments?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Traditional live answering services typically only take messages. AI after-hours services like Boltcall actually book confirmed appointments by integrating with your calendar in real time. Callers get a booking confirmation immediately, dramatically improving conversion rates over message-taking services." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which industries need after-hours answering services most?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Industries with the highest ROI from after-hours answering include home services (HVAC, plumbing, electrical — emergency calls), healthcare (dental, medical — urgent care inquiries), legal (personal injury, criminal defense — time-sensitive consultations), and real estate (buyer inquiries on listings). Any business where after-hours leads are high-value benefits significantly." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-after-hours')?.remove();
       document.head.removeChild(script);
     };
   }, []);

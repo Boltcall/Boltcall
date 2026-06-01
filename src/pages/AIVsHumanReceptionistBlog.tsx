@@ -67,9 +67,52 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI vs Human Receptionist", "item": "https://boltcall.org/blog/ai-vs-human-receptionist"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist better than a human receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "It depends on your business needs. AI receptionists are better for 24/7 availability, consistent response times, and cost — typically $99–$299/month vs. $35,000–$55,000/year for a full-time human. Human receptionists excel at complex emotional situations and nuanced judgment calls. Most local service businesses get the best results using AI for routine calls and after-hours coverage while reserving human staff for in-person and complex interactions." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does an AI receptionist cost compared to a human?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist costs $99–$299 per month, or roughly $1,200–$3,600 per year. A full-time human receptionist costs $35,000–$55,000 per year in salary alone, plus benefits, taxes, and training. That's a 10–20x cost difference. Even a part-time human receptionist at 20 hours/week costs $15,000–$25,000 annually." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI receptionist handle complex or sensitive calls?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists handle routine calls — booking appointments, answering FAQs, collecting caller information, and routing urgent calls — extremely well. For highly complex or emotionally sensitive situations, modern AI can detect distress signals and transfer to a human immediately. The key is setting up clear escalation rules during configuration." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does an AI receptionist sound robotic?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Modern AI receptionists using neural voice technology sound natural and conversational. Most callers cannot distinguish them from human receptionists. The AI uses natural speech patterns, pauses appropriately, and adapts its tone. Many business owners report that callers frequently compliment the 'receptionist' without realizing they spoke with AI." }
+        },
+        {
+          "@type": "Question",
+          "name": "When should a local business switch from human to AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Consider switching when you're missing more than 2–3 calls per day, spending over $2,000/month on receptionist services, or losing leads after hours. AI is especially valuable for businesses with high call volume, 24/7 demand (HVAC, plumbing, medical), or seasonal spikes. If your average job value exceeds $200, missing even one call per day justifies the AI investment." }
+        },
+        {
+          "@type": "Question",
+          "name": "How quickly can an AI receptionist be set up?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Basic setup takes under 30 minutes. You provide your business name, hours, services, and a phone number. Full customization with booking rules, FAQ scripts, and CRM integration typically takes 1–2 hours. Boltcall's setup wizard walks you through each step, and most businesses are live on the same day they sign up." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld')?.remove();
       document.head.removeChild(script);
     };
   }, []);

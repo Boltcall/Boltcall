@@ -64,9 +64,47 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Best AI Receptionist for Small Business", "item": "https://boltcall.org/blog/best-ai-receptionist-small-business"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-best-ai-small-biz';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best AI receptionist for small business in 2026?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Boltcall is the top-rated AI receptionist for small businesses in 2026, offering 24/7 call answering, automated appointment booking, and instant lead response starting at $389/month. It's purpose-built for local service businesses — plumbers, dentists, HVAC, law firms — with industry-specific scripts and calendar integration out of the box." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does an AI receptionist cost for a small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionist services for small businesses range from $99–$500 per month depending on features and call volume. Entry-level plans cover basic call answering and FAQ responses. Premium plans include calendar integration, CRM sync, SMS follow-ups, and multi-location support. Compare this to $35,000–$55,000/year for a human receptionist." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI receptionist book appointments for my small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The best AI receptionists integrate directly with Google Calendar, Calendly, and industry scheduling tools. They check real-time availability, book confirmed appointments, and send automated reminders to reduce no-shows. Customers can book 24/7 without needing to call during business hours." }
+        },
+        {
+          "@type": "Question",
+          "name": "What types of small businesses benefit most from AI receptionists?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists deliver the highest ROI for local service businesses with high call volume and appointment-based revenue: home services (plumbing, HVAC, electrical, landscaping), healthcare (dentists, chiropractors, med spas), professional services (law firms, financial advisors), and retail/beauty (salons, spas). Any business where a missed call means a lost booking benefits immediately." }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take to set up an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Most AI receptionist platforms offer same-day setup. You configure your business hours, service list, booking rules, and call scripts through a guided wizard. Advanced customization — CRM integration, custom escalation flows, multi-location routing — takes 1–3 business days. Boltcall's setup wizard gets most businesses live within 30 minutes." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-best-ai-small-biz')?.remove();
       document.head.removeChild(script);
     };
   }, []);

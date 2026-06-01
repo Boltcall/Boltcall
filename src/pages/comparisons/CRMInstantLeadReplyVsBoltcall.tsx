@@ -45,8 +45,40 @@ const CRMInstantLeadReplyVsBoltcall: React.FC = () => {
     personScript.id = 'person-schema';
     personScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "Person", "name": "Boltcall Team", "url": "https://boltcall.org/about", "worksFor": {"@type": "Organization", "name": "Boltcall", "url": "https://boltcall.org"}});
     document.head.appendChild(personScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-crm-vs-boltcall';
+    faqScript.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is the difference between CRM instant lead reply and Boltcall?',
+          acceptedAnswer: { '@type': 'Answer', text: 'CRM instant lead reply sends automated text messages after form submissions — no phone call answering. Boltcall handles both: AI answers inbound calls instantly and follows up on web leads via SMS within seconds. CRMs are built for managing existing contacts; Boltcall is built specifically for converting new inbound leads as fast as possible.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Can a CRM replace an AI receptionist for local businesses?',
+          acceptedAnswer: { '@type': 'Answer', text: 'No. CRMs manage leads after they\'re captured — they don\'t answer phone calls. For local service businesses, 60–70% of leads come via phone. An AI receptionist answers those calls, books appointments, and logs the contact in your CRM. CRM and AI receptionist are complementary tools, not alternatives.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'How fast does Boltcall respond to new leads vs a CRM?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Boltcall answers phone calls before the first ring ends — essentially 0 second response time. For web form leads, Boltcall sends an SMS within 30 seconds. CRM instant lead reply automations typically respond in 1–5 minutes depending on configuration. For speed-to-lead, every second matters: businesses responding within 60 seconds are 391% more likely to convert the lead.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does Boltcall integrate with CRMs?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Yes. Boltcall integrates with major CRMs including HubSpot, Salesforce, GoHighLevel, and Zoho. Every call answered and appointment booked by Boltcall is automatically logged in your CRM with call transcript, contact details, and booking information.' },
+        },
+      ],
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-crm-vs-boltcall')?.remove();
       document.head.removeChild(bcSchema);
       document.head.removeChild(personSchema);
     };

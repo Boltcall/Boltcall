@@ -77,9 +77,46 @@ const SpeedToLeadGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Speed to Lead Guide", "item": "https://boltcall.org/speed-to-lead-guide"}]});
     document.head.appendChild(bcScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-speed-to-lead';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is speed to lead and why does it matter?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Speed to lead is the time between a prospect submitting an inquiry or calling your business and your first response. Research from Harvard Business Review shows that businesses responding within 1 minute are 391% more likely to qualify the lead than those responding after 5 minutes. For local service businesses, speed to lead is the single highest-impact conversion variable — more important than marketing spend, reviews, or pricing." }
+        },
+        {
+          "@type": "Question",
+          "name": "How fast should a local business respond to new leads?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Local businesses should respond to new leads within 60 seconds for the highest conversion rates. The optimal response window is under 5 minutes — after that, lead conversion rates drop by over 80%. After 30 minutes, you have less than a 10% chance of making contact. AI receptionists achieve sub-second response times 24/7, making instant lead response achievable for any business." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do local businesses lose leads to slow response times?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Local businesses lose leads because inbound calls go to voicemail during busy periods, web form submissions sit unread for hours, and after-hours inquiries aren't seen until the next day. In all cases, the prospect has already called the next business on their list. Studies show that 78% of customers buy from the first business that responds to their inquiry." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does AI improve speed to lead for local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists answer every call instantly — before the first ring ends — and respond to web form submissions within seconds via SMS or email. This eliminates the response delay entirely. Boltcall customers report 3–5x higher lead conversion rates after switching to AI, primarily because every lead gets an immediate, personalized response regardless of time or call volume." }
+        },
+        {
+          "@type": "Question",
+          "name": "What industries benefit most from speed-to-lead optimization?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Industries with competitive markets and high-value jobs benefit most: home services (HVAC, plumbing, electrical), legal (personal injury, criminal defense), healthcare (dental, urgent care), real estate, and insurance. In these industries, multiple businesses are competing for the same lead simultaneously — the first to respond almost always wins the job." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-speed-to-lead')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
     };

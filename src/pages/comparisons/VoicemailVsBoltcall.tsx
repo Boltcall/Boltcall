@@ -45,8 +45,40 @@ const VoicemailVsBoltcall: React.FC = () => {
     personScript.id = 'person-schema';
     personScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "Person", "name": "Boltcall Team", "url": "https://boltcall.org/about", "worksFor": {"@type": "Organization", "name": "Boltcall", "url": "https://boltcall.org"}});
     document.head.appendChild(personScript);
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-voicemail-vs-boltcall';
+    faqScript.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'Why is voicemail bad for local service businesses?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Voicemail kills local service businesses because 80% of callers hang up without leaving a message — they call the next competitor instead. For businesses where each job is worth $300–$2,000+, sending callers to voicemail means losing revenue every day. Studies show that 78% of customers book with the first business that responds, making every unanswered call a competitive loss.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does Boltcall compare to voicemail?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Voicemail records a message and waits for someone to call back — often hours or days later. Boltcall\'s AI receptionist answers the call instantly, has a real conversation, books the appointment on the spot, and confirms with the caller immediately. No callback needed, no lead left waiting, no competitor gets the job.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'How many leads does voicemail cost a local business per month?',
+          acceptedAnswer: { '@type': 'Answer', text: 'A typical local service business with 20 after-hours or missed calls per month loses 16 potential customers to voicemail (80% hang-up rate). At a $400 average job value, that\'s $6,400 per month in lost revenue. AI receptionist captures those 16 leads; at the same conversion rate, that\'s an additional $4,800–$6,400 per month recovered.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is voicemail completely replaced by AI receptionists?',
+          acceptedAnswer: { '@type': 'Answer', text: 'For local service businesses, yes — AI receptionists are a complete replacement for voicemail. The AI answers every call, has a full conversation, books appointments, and only leaves a voicemail-style message if the caller specifically requests it. Callers get real service; businesses get real bookings instead of messages that may never be followed up.' },
+        },
+      ],
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-voicemail-vs-boltcall')?.remove();
       document.head.removeChild(bcSchema);
       document.head.removeChild(personSchema);
     };

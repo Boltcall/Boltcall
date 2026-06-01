@@ -68,9 +68,47 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Is AI Receptionist Worth It", "item": "https://boltcall.org/blog/is-ai-receptionist-worth-it"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-ai-worth-it';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist worth it for a small business?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist is worth it for most small businesses if their average job value exceeds $100 and they miss more than 2 calls per week. At $99–$299/month, recovering even one lost lead per month typically covers the entire cost. Businesses with high call volume, after-hours demand, or appointment-based revenue see the fastest ROI." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the ROI of an AI receptionist?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The average ROI for an AI receptionist is 5–15x within the first 90 days. A plumbing company with a $500 average job value that captures 3 additional calls per week generates $6,000/month in new revenue — against a $199/month AI cost. The math is compelling for any business where a single missed call exceeds the monthly software cost." }
+        },
+        {
+          "@type": "Question",
+          "name": "What does an AI receptionist cost per month?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionist services cost $99–$500 per month depending on features. Basic plans cover call answering and FAQ responses. Premium plans include appointment booking, CRM integration, SMS follow-ups, and multi-location support. This compares to $35,000–$55,000/year for a full-time human receptionist, or $15,000–$25,000/year for part-time coverage." }
+        },
+        {
+          "@type": "Question",
+          "name": "When is an AI receptionist NOT worth it?",
+          "acceptedAnswer": { "@type": "Answer", "text": "An AI receptionist may not be worth it if your average transaction value is under $50, your business receives fewer than 5 calls per day, or your calls require complex human judgment on every interaction. Businesses with primarily in-person foot traffic or walk-in models also see lower returns than appointment-based service businesses." }
+        },
+        {
+          "@type": "Question",
+          "name": "How long until an AI receptionist pays for itself?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Most businesses see the AI receptionist pay for itself within the first month. If your service is worth $300 and the AI captures one additional booking per month that would have gone to voicemail, it has already covered a $199/month subscription. Businesses with high call volume often see payback within the first week." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-ai-worth-it')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };

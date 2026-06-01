@@ -83,8 +83,45 @@ const BlogAutomaticGoogleReviews: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-google-reviews';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I automatically get more Google reviews?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The most effective way to automatically get more Google reviews is to send a review request via SMS immediately after a completed job or appointment. Text messages have a 98% open rate vs. 20% for email, and timing the request right after a positive service experience captures customers at their highest satisfaction. Automated review platforms send this message on your behalf without any manual effort." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is it against Google's policy to automate review requests?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Automating review request messages is fully compliant with Google's guidelines as long as you're asking all customers to leave an honest review — not just filtering for happy customers first. Gate-keeping (showing a satisfaction survey and only sending happy customers to Google) violates Google's policies. Sending a direct review link to all customers immediately after service is allowed and recommended." }
+        },
+        {
+          "@type": "Question",
+          "name": "When is the best time to send a Google review request?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The best time to request a Google review is within 30–60 minutes of service completion, while the experience is fresh. SMS review requests sent immediately after job completion see 3–5x higher response rates than requests sent the next day. Boltcall's AI triggers review requests automatically when a call ends or an appointment is marked complete." }
+        },
+        {
+          "@type": "Question",
+          "name": "How many more Google reviews will I get with automation?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Businesses using automated review requests typically see a 3–8x increase in monthly review volume. A plumbing company manually asking for reviews might get 2–3 per month; the same company with automated SMS requests gets 15–25 per month. More reviews improve local SEO rankings, increase click-through rates, and directly drive more inbound calls." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do Google reviews affect local business rankings?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes, Google reviews are one of the top three local SEO ranking factors. Businesses with more reviews, higher ratings, and more recent reviews rank higher in Google's local pack (the map results). Each new review signals to Google that your business is active and trusted. Getting to 50+ reviews with a 4.5+ average rating significantly increases local search visibility." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-jsonld-google-reviews')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
       const breadcrumbToRemove = document.getElementById('breadcrumb-schema');
