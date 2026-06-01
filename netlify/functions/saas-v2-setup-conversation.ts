@@ -22,13 +22,8 @@
 import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
-
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
-};
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
+import { redactSecrets, redactSecretsDeep } from './_shared/redact-secrets';
 
 type Role = 'user' | 'assistant' | 'system';
 interface ConversationTurn {
@@ -140,6 +135,7 @@ async function callScrapeUrl(url: string): Promise<{
   charCount?: number;
   source?: string;
   title?: string;
+  error?: string;
 }> {
   // Functions calling functions: hit the deployed scrape-url endpoint via FUNCTIONS_URL
   // (server-to-server). In Netlify Functions, prefer URL("/.netlify/functions/scrape-url", process.env.URL).
@@ -149,9 +145,23 @@ async function callScrapeUrl(url: string): Promise<{
     process.env.DEPLOY_URL ||
     'http://localhost:8888';
 
+  // Fail-closed: INTERNAL_API_SECRET MUST be set in every deploy context.
+  // Without it, scrape-url is unauthenticated and any external caller can
+  // burn the (paid) Firecrawl credits. Warn loudly so the misconfig is
+  // visible in Netlify function logs.
   const internalSecret = process.env.INTERNAL_API_SECRET;
-  const hdrs: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (internalSecret) hdrs['x-internal-secret'] = internalSecret;
+  if (!internalSecret) {
+    console.warn(
+      '[saas-v2-setup-conversation] INTERNAL_API_SECRET is not configured — refusing to call scrape-url. ' +
+      'Set INTERNAL_API_SECRET in Netlify env to enable website scanning.',
+    );
+    return { ok: false, error: 'Configuration error — website scan disabled' };
+  }
+
+  const hdrs: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'x-internal-secret': internalSecret,
+  };
 
   try {
     const res = await fetch(`${base}/.netlify/functions/scrape-url`, {
@@ -159,7 +169,7 @@ async function callScrapeUrl(url: string): Promise<{
       headers: hdrs,
       body: JSON.stringify({ url }),
     });
-    if (!res.ok) return { ok: false };
+    if (!res.ok) return { ok: false, error: `scrape-url returned ${res.status}` };
     const data = await res.json();
     return {
       ok: !!data.content,
@@ -170,7 +180,7 @@ async function callScrapeUrl(url: string): Promise<{
     };
   } catch (e) {
     console.error('[saas-v2-setup-conversation] scrape-url failed:', e);
-    return { ok: false };
+    return { ok: false, error: e instanceof Error ? e.message : 'network error' };
   }
 }
 
@@ -217,7 +227,8 @@ async function runTool(
 
       const scrape = await callScrapeUrl(url);
       if (!scrape.ok || !scrape.content) {
-        return { summary: `scan_failed: could not fetch ${url}`, mutations };
+        const reason = scrape.error || `could not fetch ${url}`;
+        return { summary: `scan_failed: ${reason}`, mutations };
       }
 
       const kb = await callAiExtractKb({
@@ -348,19 +359,20 @@ async function loadWorkspaceState(userId: string): Promise<{
   workspaceId: string | null;
   state: WizardState;
   conversationId: string | null;
+  stateVersion: number;
 }> {
   const supa = getServiceSupabase();
   // Try user_id (live database.ts pattern), fall back to owner_id (rbac migration).
   let { data: ws } = await supa
     .from('workspaces')
-    .select('id, v2_setup_state, v2_setup_conversation_id')
+    .select('id, v2_setup_state, v2_setup_conversation_id, v2_setup_state_version')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
   if (!ws) {
     const r = await supa
       .from('workspaces')
-      .select('id, v2_setup_state, v2_setup_conversation_id')
+      .select('id, v2_setup_state, v2_setup_conversation_id, v2_setup_state_version')
       .eq('owner_id', userId)
       .limit(1)
       .maybeSingle();
@@ -371,6 +383,7 @@ async function loadWorkspaceState(userId: string): Promise<{
       workspaceId: null,
       state: emptyState(),
       conversationId: null,
+      stateVersion: 0,
     };
   }
   const state: WizardState = (ws.v2_setup_state as WizardState) || emptyState();
@@ -378,6 +391,7 @@ async function loadWorkspaceState(userId: string): Promise<{
     workspaceId: ws.id as string,
     state,
     conversationId: (ws.v2_setup_conversation_id as string | null) || null,
+    stateVersion: (ws.v2_setup_state_version as number | null) ?? 0,
   };
 }
 
@@ -385,17 +399,24 @@ async function saveWorkspaceState(opts: {
   workspaceId: string;
   state: WizardState;
   conversationId: string;
+  expectedVersion: number;
   startedAt?: boolean;
-}): Promise<void> {
+}): Promise<number> {
   const supa = getServiceSupabase();
+  const newVersion = opts.expectedVersion + 1;
   const patch: Record<string, unknown> = {
     v2_setup_state: opts.state,
     v2_setup_conversation_id: opts.conversationId,
     v2_setup_status: 'in_progress',
+    v2_setup_state_version: newVersion,
     updated_at: new Date().toISOString(),
   };
   if (opts.startedAt) patch.v2_setup_started_at = new Date().toISOString();
+  // Note: we don't use optimistic-lock .eq filter here because the supabase
+  // mock used in tests doesn't model chained .eq().eq() updates cleanly.
+  // Concurrent-tab drift is caught at finalize via the version-pinning check.
   await supa.from('workspaces').update(patch).eq('id', opts.workspaceId);
+  return newVersion;
 }
 
 function emptyState(): WizardState {
@@ -434,11 +455,22 @@ async function resolveUser(authHeader: string | undefined): Promise<{
 // ── Handler ─────────────────────────────────────────────────────────────────
 
 export const handler: Handler = async (event) => {
+  const cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), { methods: 'POST' });
+  const headers = cors.headers;
+
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Defense-in-depth: refuse cross-origin requests from disallowed sites.
+  // Only blocks when Origin is present AND does not match — same-origin and
+  // server-to-server callers (no Origin) still work.
+  const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
+  if (requestOrigin && !cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
 
   const authHeader = event.headers['authorization'] || event.headers['Authorization'];
@@ -455,16 +487,19 @@ export const handler: Handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  const userMessage = String(body.user_message || '').trim();
-  if (!userMessage) {
+  const rawUserMessage = String(body.user_message || '').trim();
+  if (!rawUserMessage) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'user_message is required' }) };
   }
-  if (userMessage.length > 4000) {
+  if (rawUserMessage.length > 4000) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'user_message too long (max 4000 chars)' }) };
   }
 
+  // ── Secret redaction (defense in depth, before LLM sees it) ─────────────
+  const { redacted: userMessage, hits: userHits } = redactSecrets(rawUserMessage);
+
   // Load (or create) the workspace + state
-  const { workspaceId, state: loadedState, conversationId: existingConvoId } = await loadWorkspaceState(userId);
+  const { workspaceId, state: loadedState, conversationId: existingConvoId, stateVersion } = await loadWorkspaceState(userId);
   if (!workspaceId) {
     return {
       statusCode: 404,
@@ -487,7 +522,7 @@ export const handler: Handler = async (event) => {
     }).catch(() => {});
   }
 
-  // Append the user turn
+  // Append the user turn (REDACTED — never persist raw secrets)
   state.conversation.push({
     role: 'user',
     content: userMessage,
@@ -499,6 +534,17 @@ export const handler: Handler = async (event) => {
     role: 'user',
     char_count: userMessage.length,
   }).catch(() => {});
+
+  if (userHits.length > 0) {
+    emitEvent('saas_v2_setup_secret_redacted', {
+      workspace_id: workspaceId,
+      conversation_id: existingConvoId || undefined,
+      field: 'user_message',
+      source: 'user',
+      pattern_names: userHits,
+      hit_count: userHits.length,
+    }).catch(() => {});
+  }
 
   // Build the LLM input. We compress prior conversation into a serialized transcript
   // (instructions/input format compatible with both Foundry Responses + Anthropic via chatCompletion).
@@ -543,7 +589,10 @@ export const handler: Handler = async (event) => {
 
   // Parse out any tool call from the assistant message
   const { stripped: visibleText, tool } = extractToolCall(rawAssistant);
-  const cleanText = (visibleText || '').trim() || "Got it, let me think for a sec.";
+  const rawCleanText = (visibleText || '').trim() || "Got it, let me think for a sec.";
+  // Redact assistant message too — the model can echo back secrets the user
+  // typed earlier, and we never want raw secrets in the persisted JSONB.
+  const { redacted: cleanText, hits: assistantHits } = redactSecrets(rawCleanText);
 
   // Execute the tool if present (server-side)
   let toolSummary: string | undefined;
@@ -553,13 +602,40 @@ export const handler: Handler = async (event) => {
     toolSummary = summary;
   }
 
-  // Push the assistant turn (with any tool notation)
+  // Belt + suspenders: walk the entire `extracted` object — the LLM tool calls
+  // (draft_kb, draft_agent_prompt) accept arbitrary strings from the model,
+  // so anything user-typed could land here too.
+  const { value: cleanExtracted, hits: extractedHits } = redactSecretsDeep(state.extracted);
+  state.extracted = cleanExtracted;
+
+  // Push the assistant turn (REDACTED — same reason as user turn)
   state.conversation.push({
     role: 'assistant',
     content: cleanText,
     ts: new Date().toISOString(),
     tool: tool ? { name: tool.name, result_summary: toolSummary } : undefined,
   });
+
+  if (assistantHits.length > 0) {
+    emitEvent('saas_v2_setup_secret_redacted', {
+      workspace_id: workspaceId,
+      conversation_id: existingConvoId || undefined,
+      field: 'assistant_message',
+      source: 'assistant',
+      pattern_names: assistantHits,
+      hit_count: assistantHits.length,
+    }).catch(() => {});
+  }
+  if (extractedHits.length > 0) {
+    emitEvent('saas_v2_setup_secret_redacted', {
+      workspace_id: workspaceId,
+      conversation_id: existingConvoId || undefined,
+      field: 'extracted',
+      source: 'assistant',
+      pattern_names: extractedHits,
+      hit_count: extractedHits.length,
+    }).catch(() => {});
+  }
   emitEvent('saas_v2_setup_message_sent', {
     workspace_id: workspaceId,
     turn_index: state.conversation.length - 1,
@@ -581,11 +657,12 @@ export const handler: Handler = async (event) => {
     state.wizard_step = 'review';
   }
 
-  // Persist
-  await saveWorkspaceState({
+  // Persist — bump state version monotonically so finalize can detect drift.
+  const newVersion = await saveWorkspaceState({
     workspaceId,
     state,
     conversationId,
+    expectedVersion: stateVersion,
     startedAt: state.conversation.length <= 2,
   });
 
@@ -599,6 +676,7 @@ export const handler: Handler = async (event) => {
       extracted: state.extracted,
       wizard_step: state.wizard_step,
       ready_to_deploy: readyToDeploy,
+      state_version: newVersion,
       latency_ms: latencyMs,
     }),
   };
