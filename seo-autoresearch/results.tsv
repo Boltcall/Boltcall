@@ -1,1 +1,15 @@
 commit	page	score_before	score_after	status	description
+58353a0	/blog/ai-vs-human-receptionist	80	90	keep	Added FAQPage JSON-LD schema with 6 Q&A pairs
+58353a0	/blog/ai-phone-answering-dentists	70	82	keep	Added FAQPage JSON-LD schema with 5 Q&A pairs (dental-specific)
+58353a0	/blog/ai-phone-answering-plumbers	68	80	keep	Added FAQPage JSON-LD schema with 5 Q&A pairs (plumbing-specific)
+58353a0	/blog/ai-receptionist-cost-pricing	65	78	keep	Added FAQPage JSON-LD schema with 5 pricing Q&A pairs
+58353a0	/blog/best-after-hours-answering-service	68	80	keep	Added FAQPage JSON-LD schema with 5 Q&A pairs
+58353a0	/blog/best-ai-receptionist-small-business	72	84	keep	Added FAQPage JSON-LD schema with 5 Q&A pairs
+58353a0	/blog/how-ai-receptionist-works	68	80	keep	Added FAQPage JSON-LD schema with 5 technical Q&A pairs
+58353a0	/blog/automatic-google-reviews	65	78	keep	Added FAQPage JSON-LD schema with 5 Q&A pairs
+58353a0	/blog/is-ai-receptionist-worth-it	70	82	keep	Added FAQPage JSON-LD schema with 5 ROI Q&A pairs
+58353a0	/blog/speed-to-lead-local-business	76	87	keep	Added FAQPage JSON-LD schema with 5 Q&A pairs
+58353a0	/comparisons/answering-services-vs-boltcall	40	68	keep	Added FAQPage schema + visible FAQ section + AEO answer block
+58353a0	/features/ai-receptionist	72	84	keep	Added FAQPage JSON-LD schema with 5 feature-specific Q&A pairs
+71f4318	/comparisons/voicemail-vs-boltcall	48	72	keep	Added AEO answer block + visible FAQ section with 4 question H3s
+71f4318	/comparisons/crm-instant-lead-reply-vs-boltcall	55	75	keep	Added AEO answer block + visible FAQ section with 5 question H3s
