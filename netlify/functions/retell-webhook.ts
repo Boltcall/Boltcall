@@ -419,15 +419,27 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    // Step 4: Get business name for template substitution
-    const { data: profileRow } = await supabase
-      .from('business_profiles')
-      .select('business_name, phone')
-      .eq('user_id', userId)
-      .single();
+    // Step 4: Get business name + active phone for template substitution.
+    // business_profiles has no phone column — the user's callback number
+    // lives in phone_numbers (Boltcall-provisioned Twilio/Retell line).
+    const [{ data: profileRow }, { data: phoneRow }] = await Promise.all([
+      supabase
+        .from('business_profiles')
+        .select('business_name')
+        .eq('user_id', userId)
+        .maybeSingle(),
+      supabase
+        .from('phone_numbers')
+        .select('phone_number')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .order('is_primary', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
     const businessName = profileRow?.business_name || 'our business';
-    const businessPhone = profileRow?.phone || '';
+    const businessPhone = phoneRow?.phone_number || '';
 
     // Step 5: Build the SMS message
     const defaultTemplate =
