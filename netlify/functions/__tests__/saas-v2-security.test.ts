@@ -495,6 +495,144 @@ describe('saas-v2-setup-finalize: state_version pinning (Fix 4)', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// FOLLOWUP — Finalize CAS lock against concurrent Retell provisioning
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('saas-v2-setup-finalize: CAS lock against concurrent provisioning', () => {
+  let handler: any;
+  beforeAll(async () => {
+    const mod = await import('../saas-v2-setup-finalize');
+    handler = mod.handler;
+  });
+  beforeEach(resetTestState);
+
+  it('two concurrent finalize calls with same expected_state_version: one 200, one 409, Retell create_full called exactly TWICE total (not 4×)', async () => {
+    workspaceRow.current = {
+      ...(workspaceRow.current as Record<string, unknown>),
+      v2_setup_conversation_id: 'conv_race',
+      v2_setup_state_version: 5,
+      v2_setup_status: 'in_progress',
+      v2_setup_state: {
+        extracted: { businessName: 'RaceCo', industry: 'plumbing' },
+        conversation: [{ role: 'user', content: 'hi', ts: '' }],
+      },
+    };
+
+    // Mock both Retell create_full calls (inbound + speed_to_lead) and the
+    // setup-launch call. The serialized handler runs strictly second (its CAS
+    // miss returns immediately) so we only need responses for ONE successful
+    // finalize: 2× retell-agents + 1× setup-launch = 3 fetches total.
+    const fetchResponses = [
+      { ok: true, json: async () => ({ agent_id: 'agent_inbound_1', kb_folder_id: 'kb_1' }) },
+      { ok: true, json: async () => ({ agent_id: 'agent_stl_1' }) },
+      { ok: true, json: async () => ({ ok: true }) },
+    ];
+    fetchMock.mockImplementation(async () => {
+      const r = fetchResponses.shift();
+      if (!r) return { ok: true, json: async () => ({}) };
+      return r;
+    });
+
+    const event = makeEvent({
+      headers: { authorization: 'Bearer fake-jwt' },
+      body: { conversation_id: 'conv_race', expected_state_version: 5, confirm: true },
+    });
+
+    // Fire both in parallel.
+    const [r1, r2] = await Promise.all([handler(event, {} as any), handler(event, {} as any)]);
+
+    const codes = [r1.statusCode, r2.statusCode].sort();
+    // Exactly one success, one 409.
+    expect(codes).toEqual([200, 409]);
+
+    // Retell create_full was called exactly TWICE total (inbound + STL for
+    // the one successful run), not 4× (which would mean both racers
+    // provisioned billable agents).
+    const retellCalls = fetchMock.mock.calls.filter((c) =>
+      String(c[0]).includes('/.netlify/functions/retell-agents'),
+    );
+    expect(retellCalls.length).toBe(2);
+
+    // The 409 carries either deploy_in_flight (CAS missed because status
+    // already flipped to 'deploying') or state_drift (CAS missed because
+    // version already bumped) — both are correct concurrency-rejection paths.
+    const failed = r1.statusCode === 409 ? r1 : r2;
+    const failBody = JSON.parse(failed.body);
+    expect(['deploy_in_flight', 'state_drift']).toContain(failBody.code);
+  });
+
+  it('Retell create failure reverts status from deploying back to the pre-lock status', async () => {
+    workspaceRow.current = {
+      ...(workspaceRow.current as Record<string, unknown>),
+      v2_setup_conversation_id: 'conv_revert',
+      v2_setup_state_version: 2,
+      v2_setup_status: 'in_progress',
+      v2_setup_state: {
+        extracted: { businessName: 'RevertCo', industry: 'plumbing' },
+        conversation: [],
+      },
+    };
+
+    // Retell create_full fails (502 on the inbound call).
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      text: async () => 'upstream retell error',
+    });
+
+    const res = await handler(
+      makeEvent({
+        headers: { authorization: 'Bearer fake-jwt' },
+        body: { conversation_id: 'conv_revert', expected_state_version: 2, confirm: true },
+      }),
+      {} as any,
+    );
+    expect(res.statusCode).toBe(502);
+
+    // The mock applies updates in-place — the workspace row should now be
+    // back in 'in_progress' (revert) rather than stuck in 'deploying'.
+    expect((workspaceRow.current as Record<string, unknown>).v2_setup_status).toBe('in_progress');
+
+    // A revert update was logged (deploying → in_progress, filtered by status=deploying).
+    const revertUpdates = workspaceUpdateLog.filter(
+      (u) => u.patch.v2_setup_status === 'in_progress',
+    );
+    expect(revertUpdates.length).toBeGreaterThan(0);
+    expect(revertUpdates[0].filters.some((f) => f.col === 'v2_setup_status' && f.val === 'deploying')).toBe(true);
+  });
+
+  it('rejects a finalize call when the workspace is already in completed status', async () => {
+    workspaceRow.current = {
+      ...(workspaceRow.current as Record<string, unknown>),
+      v2_setup_conversation_id: 'conv_done',
+      v2_setup_state_version: 9,
+      v2_setup_status: 'completed',
+      v2_setup_state: {
+        extracted: { businessName: 'DoneCo', industry: 'plumbing' },
+        conversation: [],
+      },
+    };
+
+    const res = await handler(
+      makeEvent({
+        headers: { authorization: 'Bearer fake-jwt' },
+        body: { conversation_id: 'conv_done', expected_state_version: 9, confirm: true },
+      }),
+      {} as any,
+    );
+    expect(res.statusCode).toBe(409);
+    const body = JSON.parse(res.body);
+    expect(body.code).toBe('already_completed');
+
+    // No Retell calls.
+    const retellCalls = fetchMock.mock.calls.filter((c) =>
+      String(c[0]).includes('/.netlify/functions/retell-agents'),
+    );
+    expect(retellCalls.length).toBe(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // FOLLOWUP — Conversation lost-update (compare-and-set on v2_setup_state_version)
 // ─────────────────────────────────────────────────────────────────────────────
 

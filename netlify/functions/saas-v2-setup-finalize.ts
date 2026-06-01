@@ -105,14 +105,14 @@ export const handler: Handler = async (event) => {
   // ── Resolve workspace via user_id then owner_id ─────────────────────────
   let { data: ws } = await supa
     .from('workspaces')
-    .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at')
+    .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at, v2_setup_status')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
   if (!ws) {
     const r = await supa
       .from('workspaces')
-      .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at')
+      .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at, v2_setup_status')
       .eq('owner_id', userId)
       .limit(1)
       .maybeSingle();
@@ -168,6 +168,82 @@ export const handler: Handler = async (event) => {
   if (!extracted.industry) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing industry in wizard state' }) };
   }
+
+  // ── Compare-and-set lock — atomically flip status to 'deploying' ────────
+  // The version + conversation check above passed, but two concurrent finalize
+  // POSTs can both pass it (TOCTOU). Without this CAS, both would call Retell
+  // create_full TWICE each (2× billable inbound + 2× speed_to_lead agents per
+  // race). This UPDATE only matches the row when v2_setup_state_version still
+  // equals what we read AND status is still in the pre-deploy state
+  // ('in_progress' from the conversation handler, or 'not_started' for a
+  // direct API caller). Exactly one of two concurrent finalize calls will
+  // match → the other gets 0 rows and returns 409.
+  const currentStatus = (ws.v2_setup_status as string | null) || 'not_started';
+  if (currentStatus === 'completed' || currentStatus === 'deploying') {
+    return {
+      statusCode: 409,
+      headers,
+      body: JSON.stringify({
+        error:
+          currentStatus === 'completed'
+            ? 'Setup already completed for this workspace.'
+            : 'Another deploy is already in flight for this workspace.',
+        code: currentStatus === 'completed' ? 'already_completed' : 'deploy_in_flight',
+      }),
+    };
+  }
+
+  {
+    const { data: locked, error: lockErr } = await supa
+      .from('workspaces')
+      .update({
+        v2_setup_status: 'deploying',
+        v2_setup_state_version: currentVersion + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', workspaceId)
+      .eq('v2_setup_state_version', currentVersion)
+      .eq('v2_setup_status', currentStatus)
+      .select();
+    if (lockErr) {
+      console.error('[finalize] CAS lock query failed:', lockErr);
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Lock acquisition failed' }) };
+    }
+    if (!locked || locked.length === 0) {
+      emitEvent('saas_v2_setup_finalize_concurrent', {
+        workspace_id: workspaceId,
+        reason: 'cas_miss',
+        expected_version: currentVersion,
+        expected_status: currentStatus,
+      }).catch(() => {});
+      return {
+        statusCode: 409,
+        headers,
+        body: JSON.stringify({
+          error: 'Another deploy is already in flight for this workspace.',
+          code: 'deploy_in_flight',
+        }),
+      };
+    }
+  }
+
+  // Helper: best-effort revert status → original on Retell failure so the user
+  // can retry. Never throws — failure to revert just leaves the row in 'deploying'
+  // until the next admin sweep.
+  const revertStatusOnFailure = async (): Promise<void> => {
+    try {
+      await supa
+        .from('workspaces')
+        .update({
+          v2_setup_status: currentStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', workspaceId)
+        .eq('v2_setup_status', 'deploying');
+    } catch (e) {
+      console.error('[finalize] status revert (deploying→' + currentStatus + ') failed:', e);
+    }
+  };
 
   const businessName = extracted.businessName;
   const industry = extracted.industry.toLowerCase();
@@ -360,6 +436,8 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
   // ── Create inbound agent ────────────────────────────────────────────────
   const inboundResult = await callRetellCreateFull('inbound', agentName, null);
   if (!inboundResult.ok) {
+    // Retell failed — release the deploy lock so the user can retry.
+    await revertStatusOnFailure();
     emitEvent('saas_v2_setup_abandoned', {
       workspace_id: workspaceId,
       last_step: 'deploying',
@@ -396,6 +474,8 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
   }
 
   // ── Mark workspace as v2-completed ──────────────────────────────────────
+  // Filter on status='deploying' so we only flip the lock we acquired — if a
+  // human/admin already reverted us, we leave their decision intact.
   const startedAt = ws.v2_setup_started_at ? new Date(ws.v2_setup_started_at as string) : new Date();
   const durationSec = Math.floor((Date.now() - startedAt.getTime()) / 1000);
   try {
@@ -405,9 +485,11 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
         v2_setup_status: 'completed',
         v2_setup_completed_at: new Date().toISOString(),
         v2_setup_state: null,
+        v2_setup_state_version: currentVersion + 2,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', workspaceId);
+      .eq('id', workspaceId)
+      .eq('v2_setup_status', 'deploying');
   } catch (e) {
     console.error('[finalize] workspace status update failed:', e);
   }
