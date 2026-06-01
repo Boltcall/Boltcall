@@ -69,9 +69,46 @@ const BlogSpeed: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-jsonld-blog-speed';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does responding to leads in 60 seconds increase conversions by 391%?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Research from Harvard Business Review and MIT's Sloan School of Management found that businesses responding to inbound leads within 1 minute are 391% more likely to qualify the lead than those responding after 5 minutes. This is because most consumers contact multiple businesses simultaneously — the first to respond sets the agenda and captures the customer's full attention before competitors get a chance." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the ideal response time for local service business leads?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The ideal response time is under 60 seconds. At 1 minute, conversion rates are near maximum. At 5 minutes, you've lost over 80% of the advantage. At 30 minutes, conversion rate drops below 10% of what it would have been with an instant response. For phone leads, the ideal is answering before the first ring ends — AI receptionists achieve this automatically." }
+        },
+        {
+          "@type": "Question",
+          "name": "How much revenue does slow lead response cost local businesses?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A local service business missing 10 calls per week with a $500 average job value loses $5,000 per week in potential revenue — $260,000 per year — assuming even a 50% close rate on answered calls. Most of those missed leads go directly to competitors who pick up immediately. Speed-to-lead optimization is typically the single highest-ROI improvement a local business can make." }
+        },
+        {
+          "@type": "Question",
+          "name": "How can a local business achieve instant lead response?",
+          "acceptedAnswer": { "@type": "Answer", "text": "AI receptionists like Boltcall answer every call before the first ring ends, 24/7. For web form leads, automated SMS follow-up sends within 30 seconds of submission. This eliminates response delay entirely — every lead gets an immediate, personalized response regardless of time or call volume." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does lead response speed matter more than lead quality or marketing spend?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Studies consistently show that response speed has a larger impact on lead conversion than the source quality of the lead, the marketing channel, or the price offered. Two identical businesses responding at different speeds will see dramatically different close rates. Investing in speed-to-lead infrastructure typically delivers 3-5x more revenue than an equivalent investment in more advertising." }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-jsonld-blog-speed')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
