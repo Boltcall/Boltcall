@@ -50,6 +50,7 @@ interface TurnResponse {
   extracted: ExtractedDraft;
   wizard_step: string;
   ready_to_deploy: boolean;
+  state_version?: number;
   latency_ms?: number;
   error?: string;
   recovery?: string;
@@ -74,6 +75,7 @@ const V2SetupChat: React.FC = () => {
   );
   const [draft, setDraft] = useState('');
   const [extracted, setExtracted] = useState<ExtractedDraft>({});
+  const [stateVersion, setStateVersion] = useState<number>(0);
   const [readyToDeploy, setReadyToDeploy] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
@@ -112,6 +114,9 @@ const V2SetupChat: React.FC = () => {
               })),
             );
             setExtracted(data.extracted || {});
+            if (typeof data.state_version === 'number') {
+              setStateVersion(data.state_version);
+            }
             if (data.conversation_id) {
               setConversationId(data.conversation_id);
               sessionStorage.setItem(STORAGE_KEY, data.conversation_id);
@@ -227,6 +232,9 @@ const V2SetupChat: React.FC = () => {
         sessionStorage.setItem(STORAGE_KEY, data.conversation_id);
       }
       setExtracted(data.extracted || {});
+      if (typeof data.state_version === 'number') {
+        setStateVersion(data.state_version);
+      }
       setReadyToDeploy(!!data.ready_to_deploy);
 
       const aid = genId();
@@ -255,9 +263,23 @@ const V2SetupChat: React.FC = () => {
       const res = await authedFetch(`${FUNCTIONS_BASE}/saas-v2-setup-finalize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversation_id: conversationId, confirm: true }),
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          expected_state_version: stateVersion,
+          confirm: true,
+        }),
       });
       const data = await res.json();
+      // 409 = state drifted (another tab or attacker mutated state mid-deploy).
+      // Force the user to refresh and re-review the latest draft.
+      if (res.status === 409 || data.code === 'state_drift') {
+        setError(
+          data.error ||
+            'Setup state changed since you reviewed it. Refresh to see the latest draft, then re-confirm deploy.',
+        );
+        setIsFinalizing(false);
+        return;
+      }
       if (!res.ok || data.error) {
         setError(data.error || 'Deploy failed. Try again or use the classic setup at /setup.');
         setIsFinalizing(false);
