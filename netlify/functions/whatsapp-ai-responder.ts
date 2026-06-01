@@ -295,8 +295,13 @@ Generate a reply to the latest customer message and qualify the lead.`;
     try {
       rawResponse = await chatCompletion(systemPrompt, userPrompt, { maxTokens: 512 });
     } catch (aiErr: any) {
-      console.error('[whatsapp-ai-responder] AI error:', aiErr.message);
-      return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'AI generation failed' }) };
+      const detail = aiErr?.message || String(aiErr);
+      console.error('[whatsapp-ai-responder] AI error:', detail);
+      return {
+        statusCode: 500,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: 'AI generation failed', detail }),
+      };
     }
 
     // 9. Parse JSON from Claude response

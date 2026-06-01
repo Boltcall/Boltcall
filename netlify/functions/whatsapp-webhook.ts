@@ -160,19 +160,28 @@ export const handler: Handler = async (event) => {
             continue;
           }
 
-          // Fire-and-forget AI responder
+          // Trigger AI responder. Fire-and-forget is unreliable on Netlify
+          // (Lambda freezes the execution context on return). Await with a
+          // 12s timeout — Meta accepts up to 20s webhook ack time.
           if (userId && insertedMsg?.id) {
             const responderUrl = (process.env.URL || '') + '/.netlify/functions/whatsapp-ai-responder';
-            fetch(responderUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-internal-secret': process.env.INTERNAL_WEBHOOK_SECRET || '',
-              },
-              body: JSON.stringify({ messageId: insertedMsg.id, userId, action: 'generate' }),
-            }).catch((err) => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 12000);
+            try {
+              await fetch(responderUrl, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-internal-secret': process.env.INTERNAL_WEBHOOK_SECRET || '',
+                },
+                body: JSON.stringify({ messageId: insertedMsg.id, userId, action: 'generate' }),
+                signal: controller.signal,
+              });
+            } catch (err) {
               console.error('[whatsapp-webhook] Failed to trigger AI responder:', err);
-            });
+            } finally {
+              clearTimeout(timeoutId);
+            }
           }
         }
 

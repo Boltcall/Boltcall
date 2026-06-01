@@ -114,19 +114,38 @@ export async function chatCompletion(
   const { maxTokens = 512, heavy = false, tier } = options;
   const resolvedTier: Tier = tier ?? (heavy ? 'heavy' : 'light');
 
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const errors: string[] = [];
+
   if (isFoundryConfigured()) {
-    return foundryResponsesCompletion(systemPrompt, userPrompt, maxTokens, resolvedTier);
+    try {
+      return await foundryResponsesCompletion(systemPrompt, userPrompt, maxTokens, resolvedTier);
+    } catch (err: any) {
+      errors.push(`Foundry: ${err?.message || err}`);
+      console.warn('[chatCompletion] Foundry failed, trying next provider:', err?.message || err);
+    }
   }
 
   if (isLegacyAzureConfigured()) {
-    return legacyAzureChatCompletion(systemPrompt, userPrompt, maxTokens, resolvedTier);
+    try {
+      return await legacyAzureChatCompletion(systemPrompt, userPrompt, maxTokens, resolvedTier);
+    } catch (err: any) {
+      errors.push(`Legacy Azure: ${err?.message || err}`);
+      console.warn('[chatCompletion] Legacy Azure failed, trying next provider:', err?.message || err);
+    }
   }
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (anthropicKey) {
-    return anthropicChatCompletion(anthropicKey, systemPrompt, userPrompt, maxTokens, resolvedTier);
+    try {
+      return await anthropicChatCompletion(anthropicKey, systemPrompt, userPrompt, maxTokens, resolvedTier);
+    } catch (err: any) {
+      errors.push(`Anthropic: ${err?.message || err}`);
+    }
   }
 
+  if (errors.length > 0) {
+    throw new Error(`All AI providers failed. ${errors.join(' | ')}`);
+  }
   throw new Error(
     'No AI provider configured. Set AZURE_OPENAI_FOUNDRY_ENDPOINT + AZURE_OPENAI_FOUNDRY_KEY, or AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY, or ANTHROPIC_API_KEY.',
   );
