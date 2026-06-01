@@ -137,6 +137,11 @@ const CRMInstantLeadReplyVsBoltcall: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-16"
         >
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-6">
+            <p className="text-gray-800 text-lg leading-relaxed">
+              CRM instant lead reply is an automated messaging feature that sends a pre-written text or email when a form submission is received — it handles web leads only and does not answer phone calls. Boltcall is an AI lead engagement system that answers inbound calls in real time, follows up on web form leads within 30 seconds via SMS, and books confirmed appointments — combining phone and digital lead capture in one platform.
+            </p>
+          </div>
           <p className="text-lg text-gray-700 leading-relaxed mb-6">
             Most CRMs offer some form of automated lead response, but how do they compare to Boltcall's Instant Lead Reply? This comparison breaks down the key differences in response speed, intelligence, multi-channel capabilities, and overall effectiveness.
           </p>
@@ -797,6 +802,33 @@ const CRMInstantLeadReplyVsBoltcall: React.FC = () => {
           </p>
         </motion.section>
       </article>
+
+      {/* FAQ Section */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the difference between CRM instant lead reply and Boltcall?</h3>
+            <p className="text-gray-600 leading-relaxed">CRM instant lead reply sends automated text messages after form submissions but doesn't answer phone calls. Boltcall handles both: the AI answers inbound calls instantly and follows up on web leads via SMS within seconds. CRMs are built for managing existing contacts; Boltcall converts new inbound leads as fast as possible.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Can a CRM replace an AI receptionist for lead response?</h3>
+            <p className="text-gray-600 leading-relaxed">No. CRMs manage leads after they're captured — they don't answer phone calls. For local service businesses, 60–70% of leads come via phone. An AI receptionist answers those calls instantly and logs contacts in your CRM. The two tools are complementary, not alternatives.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">How fast does Boltcall respond compared to CRM automation?</h3>
+            <p className="text-gray-600 leading-relaxed">Boltcall answers phone calls before the first ring ends — 0 second response time. For web form leads, Boltcall sends an SMS within 30 seconds. CRM automations typically respond in 1–5 minutes. Businesses responding within 60 seconds are 391% more likely to convert a lead than those responding after 5 minutes.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Does Boltcall integrate with my existing CRM?</h3>
+            <p className="text-gray-600 leading-relaxed">Yes. Boltcall integrates with HubSpot, Salesforce, GoHighLevel, Zoho, and other major CRMs. Every call answered and appointment booked is automatically logged with call transcript, contact details, and booking information — no manual data entry required.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Why isn't my CRM's instant reply feature good enough?</h3>
+            <p className="text-gray-600 leading-relaxed">CRM instant reply sends a generic auto-response message. Boltcall has a real two-way AI conversation that qualifies the lead, answers questions, and books the appointment on the spot. The difference is the conversion rate: auto-responses get ignored; AI conversations convert.</p>
+          </div>
+        </div>
+      </section>
 
       {/* Social Proof */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

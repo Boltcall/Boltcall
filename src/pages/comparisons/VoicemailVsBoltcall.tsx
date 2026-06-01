@@ -128,6 +128,15 @@ const VoicemailVsBoltcall: React.FC = () => {
         </div>
       </section>
 
+      {/* AEO Answer Block */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-0">
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
+          <p className="text-gray-800 text-lg leading-relaxed">
+            Voicemail is an automated phone system that records messages when calls go unanswered — passive, one-way, and frustrating for customers who expect an immediate response. Boltcall is an AI receptionist that answers calls instantly, has a two-way conversation, and books appointments in real time. For local service businesses, voicemail loses leads while AI captures them.
+          </p>
+        </div>
+      </section>
+
       {/* Table of Contents */}
       <nav aria-label="Table of contents" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-2">
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-6">
@@ -341,6 +350,29 @@ const VoicemailVsBoltcall: React.FC = () => {
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Used by 500+ local businesses</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Why is voicemail bad for local service businesses?</h3>
+            <p className="text-gray-600 leading-relaxed">80% of callers hang up without leaving a voicemail and immediately call a competitor. For businesses where each job is worth $300–$2,000+, every unanswered call is a lost customer. Studies show 78% of customers book with the first business that responds — voicemail ensures you're never first.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">How much revenue does voicemail cost local businesses?</h3>
+            <p className="text-gray-600 leading-relaxed">A typical local service business loses 16 leads per month to voicemail (80% of 20 missed calls). At a $400 average job value, that's $6,400 per month in lost revenue — $76,800 per year. Boltcall captures those leads at a fraction of the cost of a human receptionist.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Can Boltcall completely replace voicemail?</h3>
+            <p className="text-gray-600 leading-relaxed">Yes. Boltcall answers every call, has a full conversation, and books appointments in real time. Callers never experience a voicemail prompt. If a caller specifically asks to leave a message, the AI can facilitate that too — but most callers prefer the immediate booking experience.</p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Does Boltcall work for after-hours calls where voicemail is typically used?</h3>
+            <p className="text-gray-600 leading-relaxed">After-hours is where Boltcall delivers its biggest ROI. The AI answers at 2 AM, weekends, and holidays — when voicemail would take the call and let it sit until morning. Emergency calls are escalated immediately; routine calls are booked for the next available slot with an instant confirmation.</p>
           </div>
         </div>
       </section>
