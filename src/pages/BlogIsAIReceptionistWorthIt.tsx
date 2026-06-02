@@ -68,9 +68,26 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Is AI Receptionist Worth It", "item": "https://boltcall.org/blog/is-ai-receptionist-worth-it"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type":"Question","name":"Is an AI receptionist worth it for a small business?","acceptedAnswer":{"@type":"Answer","text":"Yes — for most small businesses handling 20+ calls per month, an AI receptionist delivers a 20x–100x ROI. At $99–$389/month, it replaces $38,000+ in annual receptionist costs while adding 24/7 coverage, instant lead response, and automated appointment booking that human receptionists cannot match."}},
+        {"@type":"Question","name":"How long does it take for an AI receptionist to pay for itself?","acceptedAnswer":{"@type":"Answer","text":"Most businesses recoup their AI receptionist investment within the first week. If your business gets 30 calls per month and converts 30% to jobs averaging $500, recovering just one missed call pays for an entire month of service. The typical Boltcall customer sees ROI within 48 hours."}},
+        {"@type":"Question","name":"What businesses benefit most from an AI receptionist?","acceptedAnswer":{"@type":"Answer","text":"Businesses with high call volume and high job value benefit most: HVAC companies, plumbers, dentists, lawyers, med spas, and real estate agents. Any business where one missed call costs $300–$5,000 in lost revenue can immediately justify AI receptionist costs of $99–$389/month."}},
+        {"@type":"Question","name":"What are the risks of using an AI receptionist?","acceptedAnswer":{"@type":"Answer","text":"The primary risks are: (1) callers who strongly prefer human interaction may feel frustrated, (2) complex or unusual requests may need human review, and (3) initial setup requires time to configure your knowledge base correctly. These risks are minimal compared to the cost of missed calls and 24/7 coverage gaps."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -643,6 +660,31 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
             </table>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">Revenue recovered estimate assumes 30% of missed calls convert to booked jobs at average job values.</p>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 bg-white border-t border-gray-100" id="faq">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions: Is an AI Receptionist Worth It?</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Is an AI receptionist worth it for a small business?</h3>
+              <p className="text-gray-600">Yes — for most small businesses handling 20+ calls per month, an AI receptionist delivers a 20x–100x ROI. At $99–$389/month, it replaces $38,000+ in annual receptionist costs while adding 24/7 coverage, instant lead response, and automated appointment booking that human receptionists cannot match.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does it take for an AI receptionist to pay for itself?</h3>
+              <p className="text-gray-600">Most businesses recoup their AI receptionist investment within the first week. If your business gets 30 calls per month and converts 30% to jobs averaging $500, recovering just one missed call pays for an entire month of service. The typical Boltcall customer sees ROI within 48 hours of going live.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What businesses benefit most from an AI receptionist?</h3>
+              <p className="text-gray-600">Businesses with high call volume and high job value benefit most: HVAC companies, plumbers, dentists, lawyers, med spas, and real estate agents. Any business where one missed call costs $300–$5,000 in lost revenue can immediately justify AI receptionist costs of $99–$389/month.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What are the risks of using an AI receptionist?</h3>
+              <p className="text-gray-600">The primary risks are: (1) callers who strongly prefer human interaction may feel frustrated, (2) complex or unusual requests may need human review, and (3) initial setup requires time to configure your knowledge base correctly. These risks are minimal compared to the cost of missed calls and after-hours coverage gaps with Boltcall's escalation features.</p>
+            </div>
+          </div>
         </div>
       </section>
 

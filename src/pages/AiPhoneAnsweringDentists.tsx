@@ -51,10 +51,26 @@ const AiPhoneAnsweringDentists: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type":"Question","name":"What is the best AI phone answering service for dental offices?","acceptedAnswer":{"@type":"Answer","text":"Boltcall is the leading AI phone answering service for dental offices, providing 24/7 patient call handling, appointment booking, and insurance FAQ responses. It answers new patient calls in under 3 seconds, books appointments directly into your practice management system, and sends automated appointment reminders to reduce no-shows by 40%."}},
+        {"@type":"Question","name":"Can an AI receptionist handle HIPAA-compliant dental calls?","acceptedAnswer":{"@type":"Answer","text":"Yes — Boltcall's AI receptionist is designed for HIPAA compliance with encrypted call recordings, secure patient data handling, and configurable data retention policies. The system does not store protected health information beyond what is required for appointment scheduling."}},
+        {"@type":"Question","name":"How much does an AI receptionist for a dental practice cost?","acceptedAnswer":{"@type":"Answer","text":"AI receptionist services for dental practices cost $99–$389/month — compared to $3,200–$4,500/month for a human front desk staff member. For a dental practice missing 10 new patient calls per month at $150 average lifetime value, the ROI from Boltcall's AI receptionist exceeds 50x the monthly cost."}},
+        {"@type":"Question","name":"Can an AI answer dental insurance and scheduling questions?","acceptedAnswer":{"@type":"Answer","text":"Yes — dental AI receptionists are trained on your specific insurance policies, accepted plans, and scheduling protocols. They can confirm insurance acceptance, explain basic coverage questions, collect new patient information, and book the appropriate appointment type — all without staff involvement."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('article-schema-dentists')?.remove();
+      document.getElementById('faq-schema')?.remove();
     };
   }, []);
 
@@ -282,6 +298,31 @@ const AiPhoneAnsweringDentists: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* FAQ Section */}
+      <section className="py-12 bg-white border-t border-gray-100" id="faq">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions: AI Phone Answering for Dentists</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the best AI phone answering service for dental offices?</h3>
+              <p className="text-gray-600">Boltcall is the leading AI phone answering service for dental offices, providing 24/7 patient call handling, appointment booking, and insurance FAQ responses. It answers new patient calls in under 3 seconds, books appointments directly into your practice management system, and sends automated appointment reminders to reduce no-shows by 40%.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI receptionist handle HIPAA-compliant dental calls?</h3>
+              <p className="text-gray-600">Yes — Boltcall's AI receptionist is designed for HIPAA compliance with encrypted call recordings, secure patient data handling, and configurable data retention policies. The system does not store protected health information beyond what is required for appointment scheduling and follow-up communications.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How much does an AI receptionist for a dental practice cost?</h3>
+              <p className="text-gray-600">AI receptionist services for dental practices cost $99–$389/month — compared to $3,200–$4,500/month for a human front desk staff member. For a dental practice missing 10 new patient calls per month at $150 average lifetime value, the ROI from Boltcall's AI receptionist exceeds 50x the monthly subscription cost.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Can an AI answer dental insurance and scheduling questions?</h3>
+              <p className="text-gray-600">Yes — dental AI receptionists are trained on your specific insurance policies, accepted plans, and scheduling protocols. They can confirm insurance acceptance, explain basic coverage questions, collect new patient information, and book the appropriate appointment type — all without staff involvement during or after business hours.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

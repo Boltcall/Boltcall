@@ -77,9 +77,26 @@ const SpeedToLeadGuide: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Speed to Lead Guide", "item": "https://boltcall.org/speed-to-lead-guide"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type":"Question","name":"What is speed to lead and why does it matter?","acceptedAnswer":{"@type":"Answer","text":"Speed to lead is the time between when a prospect submits a lead and when a business first responds. Research from Harvard Business Review shows businesses that respond within 5 minutes are 21x more likely to convert leads than those responding after 30 minutes. For local service businesses, speed to lead is the single biggest factor in winning jobs."}},
+        {"@type":"Question","name":"How quickly should a local business respond to leads?","acceptedAnswer":{"@type":"Answer","text":"Local businesses should respond to leads within 1–5 minutes. 78% of customers buy from the first company that responds. After 30 minutes, lead conversion rates drop by over 90%. Boltcall's AI receptionist responds to every inbound call and form in under 60 seconds — 24 hours a day."}},
+        {"@type":"Question","name":"How can local businesses improve their speed to lead?","acceptedAnswer":{"@type":"Answer","text":"The most effective ways to improve speed to lead are: (1) use an AI receptionist to answer all calls instantly, (2) set up automated SMS responses for web form submissions, (3) enable after-hours coverage so no lead waits until morning. Boltcall automates all three in a single platform."}},
+        {"@type":"Question","name":"What is the cost of slow lead response for local businesses?","acceptedAnswer":{"@type":"Answer","text":"A typical local service business loses $75,000+ annually from missed and delayed lead responses. With an average job value of $300–$2,000 and 30% of calls going unanswered, the revenue impact is immediate. Businesses using Boltcall recover an average of $12,000–$54,000 in previously missed revenue within 90 days."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
       speakableScript.remove();
     };
@@ -694,6 +711,31 @@ const SpeedToLeadGuide: React.FC = () => {
             </table>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">Source: Lead Response Management / Harvard Business Review study of 100,000+ B2C leads across service industries.</p>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 bg-white border-t border-gray-100" id="faq">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions: Speed to Lead for Local Businesses</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is speed to lead and why does it matter?</h3>
+              <p className="text-gray-600">Speed to lead is the time between when a prospect submits a lead and when a business first responds. Research from Harvard Business Review shows businesses that respond within 5 minutes are 21x more likely to convert leads than those responding after 30 minutes. For local service businesses, speed to lead is the single biggest factor in winning jobs over competitors.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How quickly should a local business respond to leads?</h3>
+              <p className="text-gray-600">Local businesses should respond to leads within 1–5 minutes. 78% of customers buy from the first company that responds. After 30 minutes, lead conversion rates drop by over 90%. Boltcall's AI receptionist responds to every inbound call and form submission in under 60 seconds — 24 hours a day, 365 days a year.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How can local businesses improve their speed to lead?</h3>
+              <p className="text-gray-600">The most effective ways to improve speed to lead are: (1) use an AI receptionist to answer all calls instantly, (2) set up automated SMS responses for web form submissions within 60 seconds, (3) enable after-hours coverage so no lead waits until morning. Boltcall automates all three in a single platform with no technical setup required.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is the cost of slow lead response for local businesses?</h3>
+              <p className="text-gray-600">A typical local service business loses $75,000+ annually from missed and delayed lead responses. With an average job value of $300–$2,000 and 30% of calls going unanswered, the revenue impact is immediate. Businesses using Boltcall recover an average of $12,000–$54,000 in previously missed revenue within 90 days of activation.</p>
+            </div>
+          </div>
         </div>
       </section>
 

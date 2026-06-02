@@ -68,9 +68,26 @@ const BlogSEO: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Complete Guide to SEO", "item": "https://boltcall.org/blog/complete-guide-to-seo"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type":"Question","name":"What is SEO and how does it work for local businesses?","acceptedAnswer":{"@type":"Answer","text":"SEO (Search Engine Optimization) is the process of optimizing your website to rank higher in search engine results pages. For local businesses, SEO focuses on Google local pack rankings, Google Business Profile optimization, and local keyword targeting. Effective local SEO drives phone calls and form submissions from customers in your service area."}},
+        {"@type":"Question","name":"How long does SEO take to show results for a local business?","acceptedAnswer":{"@type":"Answer","text":"Local SEO typically shows measurable results in 3–6 months for competitive keywords. Google Business Profile optimizations and citation building can improve local pack rankings in 4–8 weeks. Content and link building takes 6–12 months for significant organic ranking improvements."}},
+        {"@type":"Question","name":"What is AEO and how is it different from SEO?","acceptedAnswer":{"@type":"Answer","text":"AEO (Answer Engine Optimization) is the practice of optimizing content to be cited by AI search engines like ChatGPT, Perplexity, and Google AI Overviews. Unlike traditional SEO which targets keyword rankings, AEO focuses on structured Q&A content, FAQPage schema markup, and authoritative direct answers that AI engines extract and cite."}},
+        {"@type":"Question","name":"What are the most important local SEO ranking factors?","acceptedAnswer":{"@type":"Answer","text":"The top local SEO ranking factors are: Google Business Profile completeness and reviews (25%), on-page optimization with local keywords (15%), link authority from local sources (15%), NAP citation consistency (10%), and behavioral signals like click-through rate (10%). Review volume and recency are increasingly important as AI engines weight them heavily."}}
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -569,6 +586,31 @@ const BlogSEO: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-12 bg-white border-t border-gray-100" id="faq">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">Frequently Asked Questions: SEO and AEO for Local Businesses</h2>
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is SEO and how does it work for local businesses?</h3>
+              <p className="text-gray-600">SEO (Search Engine Optimization) is the process of optimizing your website to rank higher in search engine results. For local businesses, SEO focuses on Google local pack rankings, Google Business Profile optimization, and local keyword targeting. Effective local SEO drives phone calls and form submissions from customers in your service area.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">How long does SEO take to show results for a local business?</h3>
+              <p className="text-gray-600">Local SEO typically shows measurable results in 3–6 months for competitive keywords. Google Business Profile optimizations and citation building can improve local pack rankings in 4–8 weeks. Content and link building takes 6–12 months for significant organic ranking improvements on high-volume terms.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What is AEO and how is it different from SEO?</h3>
+              <p className="text-gray-600">AEO (Answer Engine Optimization) is the practice of optimizing content to be cited by AI search engines like ChatGPT, Perplexity, and Google AI Overviews. Unlike traditional SEO which targets keyword rankings, AEO focuses on structured Q&A content, FAQPage schema markup, and authoritative direct answers that AI engines extract and cite.</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">What are the most important local SEO ranking factors?</h3>
+              <p className="text-gray-600">The top local SEO ranking factors are: Google Business Profile completeness and reviews (25%), on-page optimization with local keywords (15%), link authority from local sources (15%), NAP citation consistency (10%), and behavioral signals like click-through rate (10%). Review volume and recency are increasingly important as AI engines weight them heavily when citing local businesses.</p>
+            </div>
           </div>
         </div>
       </section>
