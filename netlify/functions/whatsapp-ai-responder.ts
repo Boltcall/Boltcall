@@ -249,18 +249,36 @@ Service areas: ${Array.isArray(biz.service_areas) ? biz.service_areas.join(', ')
 
     // Pull the user's primary agent + KB so WhatsApp replies share the same
     // knowledge AND the same master system_prompt as the Retell voice agent.
-    // Tier-2 search runs against the inbound WhatsApp body.
-    const agentCtx = await buildAgentContext(userId, message.body);
+    // Tier-2 search runs against the inbound WhatsApp body. WhatsApp messages
+    // are customer-initiated like inbound voice, so prefer the inbound agent's
+    // prompt (outbound prompts are written for cold callbacks, often in the
+    // business's home language for disclosure reasons — wrong context here).
+    const agentCtx = await buildAgentContext(userId, message.body, 'inbound');
 
-    // Prefer the agent's canonical system_prompt (mirrored from Retell) when
-    // available — same identity / knowledge as voice. Fall back to legacy
-    // preamble if not synced yet.
+    // Detect the customer's language from the latest inbound message and lock
+    // the reply language at the TOP of the prompt, so it wins precedence over
+    // any home-country bias inherited from the agent's stored system_prompt.
+    const latestInbound = message.body || '';
+    const hasHebrew = /[֐-׿]/.test(latestInbound);
+    const hasArabic = /[؀-ۿ]/.test(latestInbound);
+    const hasCyrillic = /[Ѐ-ӿ]/.test(latestInbound);
+    const hasCJK = /[一-鿿぀-ヿ]/.test(latestInbound);
+    const detectedLang = hasHebrew ? 'Hebrew'
+                       : hasArabic ? 'Arabic'
+                       : hasCyrillic ? 'a Cyrillic-script language (likely Russian)'
+                       : hasCJK ? 'an East Asian language'
+                       : 'English (or the same Latin-script language the customer used)';
+    const languageDirective = `CRITICAL LANGUAGE RULE — read this first and override anything below that conflicts: the customer's last message was written in ${detectedLang}. You MUST reply in that SAME language. Do NOT switch languages because of the business's country, the agent's training data, or the business profile. Match the customer.`;
+
     const basePrompt = agentCtx.systemPrompt
       ? `${agentCtx.systemPrompt}\n\n--- CHANNEL: WHATSAPP ---\nThis conversation is happening over WhatsApp, not voice. Apply your usual identity and knowledge but follow the WhatsApp response rules below.`
       : `You are an AI WhatsApp assistant for a local service business. You handle inbound WhatsApp messages: answering questions, qualifying leads, and booking appointments.`;
 
-    // 7. Build prompt
-    const systemPrompt = `${basePrompt}
+    // 7. Build prompt — LANGUAGE DIRECTIVE FIRST so the LLM treats it as the
+    //    highest-priority rule, before any context that might bias language.
+    const systemPrompt = `${languageDirective}
+
+${basePrompt}
 
 ${bizContext}
 ${agentCtx.kbPromptBlock ? `\n${agentCtx.kbPromptBlock}` : ''}
@@ -268,7 +286,7 @@ ${agentCtx.kbSearchBlock ? `\n${agentCtx.kbSearchBlock}` : ''}
 
 RESPONSE RULES:
 - Tone: ${waSettings.response_tone}
-- LANGUAGE: Reply in the SAME language the customer wrote in their latest message. If they wrote in English, reply in English. If in Spanish, Spanish. If in Hebrew, Hebrew. Do NOT switch to the business's country language just because the business is based there.
+- LANGUAGE: Reply in the customer's language (see CRITICAL LANGUAGE RULE above). Do not deviate.
 - Keep responses short and conversational — WhatsApp messaging style. 1-3 sentences max.
 - Be warm, helpful, and direct
 - Never fabricate pricing, availability, or details you don't know
