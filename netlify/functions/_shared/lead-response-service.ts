@@ -78,11 +78,27 @@ async function emitLifecycleEvent(
 }
 
 async function findRetellConfig(deps: LeadResponseDeps, userId: string) {
-  const [{ data: agentRow }, { data: phoneRow }] = await Promise.all([
+  // Prefer the dedicated outbound speed-to-lead agent. The inbound receptionist
+  // exists for a different purpose (answering calls, not initiating them); its
+  // prompt assumes the lead called us, not the other way around. Fall back to
+  // any active agent for users who haven't provisioned a speed_to_lead agent yet.
+  const SPEED_TO_LEAD_TYPES = ['speed_to_lead', 'outbound_speed_to_lead'];
+  const [{ data: preferredAgent }, { data: fallbackAgent }, { data: phoneRow }] = await Promise.all([
     deps.supabase
       .from('agents')
       .select('retell_agent_id, api_keys')
       .eq('user_id', userId)
+      .eq('status', 'active')
+      .in('agent_type', SPEED_TO_LEAD_TYPES)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    deps.supabase
+      .from('agents')
+      .select('retell_agent_id, api_keys')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
     deps.supabase
@@ -94,6 +110,7 @@ async function findRetellConfig(deps: LeadResponseDeps, userId: string) {
       .maybeSingle(),
   ]);
 
+  const agentRow = preferredAgent || fallbackAgent;
   return {
     agentId: agentRow?.retell_agent_id || agentRow?.api_keys?.retell_agent_id || null,
     fromNumber: phoneRow?.phone_number || null,

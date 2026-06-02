@@ -268,6 +268,7 @@ ${agentCtx.kbSearchBlock ? `\n${agentCtx.kbSearchBlock}` : ''}
 
 RESPONSE RULES:
 - Tone: ${waSettings.response_tone}
+- LANGUAGE: Reply in the SAME language the customer wrote in their latest message. If they wrote in English, reply in English. If in Spanish, Spanish. If in Hebrew, Hebrew. Do NOT switch to the business's country language just because the business is based there.
 - Keep responses short and conversational — WhatsApp messaging style. 1-3 sentences max.
 - Be warm, helpful, and direct
 - Never fabricate pricing, availability, or details you don't know
