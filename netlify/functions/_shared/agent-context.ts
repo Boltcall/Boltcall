@@ -41,20 +41,49 @@ const EMPTY: AgentContext = {
 export async function buildAgentContext(
   userId: string,
   inboundMessage?: string,
+  preferredType?: 'inbound' | 'outbound' | 'speed_to_lead',
 ): Promise<AgentContext> {
   if (!userId) return EMPTY;
 
   const supabase = getSupabase();
 
-  // 1. Find the user's primary active agent (most recently updated wins).
-  const { data: agent } = await supabase
-    .from('agents')
-    .select('id, name, agent_type, retell_agent_id, system_prompt')
-    .eq('user_id', userId)
-    .eq('status', 'active')
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // 1. Find the user's primary active agent. When a preferred type is given
+  //    (e.g. WhatsApp prefers inbound because messages are customer-initiated),
+  //    pick that type first; fall back to most-recently-updated active agent.
+  //    Without preference, "most recently updated wins" — but that can pick a
+  //    Hebrew-flavoured outbound prompt for what should be an English inbound
+  //    reply, so callers should be explicit when they know the channel.
+  const PREFERRED_TYPE_MAP: Record<string, string[]> = {
+    inbound: ['inbound'],
+    outbound: ['speed_to_lead', 'outbound_speed_to_lead', 'outbound'],
+    speed_to_lead: ['speed_to_lead', 'outbound_speed_to_lead'],
+  };
+  const typeFilter = preferredType ? PREFERRED_TYPE_MAP[preferredType] : null;
+
+  let agent: { id?: string; name?: string; agent_type?: string; retell_agent_id?: string; system_prompt?: string } | null = null;
+  if (typeFilter) {
+    const { data } = await supabase
+      .from('agents')
+      .select('id, name, agent_type, retell_agent_id, system_prompt')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .in('agent_type', typeFilter)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    agent = data;
+  }
+  if (!agent?.id) {
+    const { data } = await supabase
+      .from('agents')
+      .select('id, name, agent_type, retell_agent_id, system_prompt')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    agent = data;
+  }
 
   if (!agent?.id) {
     return EMPTY;
