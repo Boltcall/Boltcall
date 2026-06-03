@@ -20,7 +20,26 @@ interface AgentInfo {
   status: string;
   voice_id?: string;
   created_at?: string;
+  agent_type?: string;
   type?: string;
+}
+
+const AGENT_TYPE_LABELS: Record<string, string> = {
+  inbound: 'Inbound Receptionist',
+  outbound: 'Outbound Caller',
+  speed_to_lead: 'Speed-to-Lead Follow-Up',
+  outbound_speed_to_lead: 'Speed-to-Lead Follow-Up',
+  reactivation: 'Lead Reactivation',
+  outbound_reactivation: 'Lead Reactivation',
+  reminder: 'Appointment Reminder',
+  outbound_reminder: 'Appointment Reminder',
+  review: 'Review Request',
+  outbound_review: 'Review Request',
+};
+
+function getAgentTypeLabel(agentType?: string): string {
+  if (!agentType) return 'AI Agent';
+  return AGENT_TYPE_LABELS[agentType] || 'AI Agent';
 }
 
 const SETUP_STEPS = [
@@ -66,24 +85,19 @@ const AIReceptionistDashboardPage: React.FC = () => {
     if (!user) return;
     (async () => {
       try {
-        const [agentRes, featuresRes] = await Promise.all([
-          supabase
-            .from('agents')
-            .select('id, name, status, voice_id, created_at')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('business_features')
-            .select('voice_agent_enabled')
-            .eq('user_id', user.id)
-            .maybeSingle()
-        ]);
+        const { data: agentData } = await supabase
+          .from('agents')
+          .select('id, name, status, voice_id, created_at, agent_type')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
 
-        if (agentRes.data) {
-          setAgents(agentRes.data);
-        }
-        if (featuresRes.data) {
-          setIsEnabled(featuresRes.data.voice_agent_enabled ?? false);
+        if (agentData) {
+          setAgents(agentData);
+          // Derive enabled state from actual agent presence — the
+          // business_features.voice_agent_enabled column is never written by
+          // the wizard, so it sat false forever and made the page show
+          // "Inactive" even when fully provisioned agents existed.
+          setIsEnabled(agentData.some((a) => a.status === 'active'));
         }
       } catch (err) {
         console.error('Failed to load receptionist data:', err);
@@ -153,7 +167,7 @@ const AIReceptionistDashboardPage: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 dark:text-white">{agent.name}</p>
-                    <p className="text-xs text-gray-500">AI Receptionist</p>
+                    <p className="text-xs text-gray-500">{getAgentTypeLabel(agent.agent_type)}</p>
                     {(agent.created_at || agent.voice_id) && (
                       <p className="text-xs text-gray-400 mt-0.5">
                         {agent.created_at && (
