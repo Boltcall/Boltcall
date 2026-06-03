@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
-import { getCorsHeaders } from './_shared/cors';
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 
 /**
  * saas-v2-settings-update — Wave 3 Page 5.
@@ -133,13 +133,21 @@ async function emitEvent(
 }
 
 export const handler: Handler = async (event) => {
-  const cors = {
-    ...getCorsHeaders(event.headers.origin || event.headers.Origin),
-    'Content-Type': 'application/json',
-  };
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const cors = v2cors.headers;
 
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: cors, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
+  }
+  // Write endpoint: fail-closed on disallowed origin (defense in depth on top of JWT).
+  if (
+    getRequestOrigin(event.headers as Record<string, string>) &&
+    !v2cors.allowed
+  ) {
+    return { statusCode: 403, headers: cors, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
