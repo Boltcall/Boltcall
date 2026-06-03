@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
-import { getCorsHeaders } from './_shared/cors';
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 
 /**
  * saas-v2-settings-update — Wave 3 Page 5.
@@ -12,7 +12,7 @@ import { getCorsHeaders } from './_shared/cors';
  * Returns: { workspace }
  * Emits:   saas_v2_settings_updated with { changed_keys } (best-effort).
  *
- * Auth pattern: JWT → user → workspaces.owner_id. Patch keys are validated
+ * Auth pattern: JWT → user → workspaces.user_id. Patch keys are validated
  * against an allowlist — id, created_at, owner_id, v2_enabled CANNOT be
  * edited here (V2 opt-in flips happen in saas-v2-toggle).
  */
@@ -133,13 +133,21 @@ async function emitEvent(
 }
 
 export const handler: Handler = async (event) => {
-  const cors = {
-    ...getCorsHeaders(event.headers.origin || event.headers.Origin),
-    'Content-Type': 'application/json',
-  };
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const cors = v2cors.headers;
 
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: cors, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
+  }
+  // Write endpoint: fail-closed on disallowed origin (defense in depth on top of JWT).
+  if (
+    getRequestOrigin(event.headers as Record<string, string>) &&
+    !v2cors.allowed
+  ) {
+    return { statusCode: 403, headers: cors, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -211,7 +219,7 @@ export const handler: Handler = async (event) => {
   const { data: updatedRows, error: upErr } = await supa
     .from('workspaces')
     .update(filtered)
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .select(RETURN_COLUMNS);
 
   if (upErr) {

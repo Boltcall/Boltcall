@@ -64,7 +64,7 @@ export const handler: Handler = async (event) => {
     const r = await supa
       .from('workspaces')
       .select('id, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at')
-      .eq('owner_id', userId)
+      .eq('user_id', userId)
       .limit(1)
       .maybeSingle();
     ws = r.data || null;

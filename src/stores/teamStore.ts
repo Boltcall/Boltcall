@@ -462,7 +462,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
       const { data, error } = await supabase
         .from('workspaces')
         .select('*')
-        .eq('owner_id', userId)
+        .eq('user_id', userId)
         .maybeSingle();
 
       if (error) throw error;

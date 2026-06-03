@@ -12,7 +12,6 @@ import {
   ThumbsDown,
   Minus,
 } from 'lucide-react';
-import V2OptInGate from '../../components/v2/V2OptInGate';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 
@@ -553,10 +552,6 @@ const V2ReputationPageInner: React.FC = () => {
   );
 };
 
-const V2ReputationPage: React.FC = () => (
-  <V2OptInGate>
-    <V2ReputationPageInner />
-  </V2OptInGate>
-);
-
-export default V2ReputationPage;
+// The V2OptInGate wrapper is applied by the parent /v2 route in AppRoutes.tsx —
+// double-wrapping caused a nested loading flash. Export the inner component directly.
+export default V2ReputationPageInner;

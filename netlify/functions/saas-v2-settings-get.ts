@@ -1,7 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
-import { getCorsHeaders } from './_shared/cors';
-
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
  * saas-v2-settings-get — Wave 3 Page 5.
  *
@@ -11,7 +10,7 @@ import { getCorsHeaders } from './_shared/cors';
  * Returns: { workspace, current_user_role, team, cold_start, signals }
  * Emits:   saas_v2_settings_rendered (best-effort, soft-fail)
  *
- * Auth pattern: JWT → user → workspaces.owner_id (no body-supplied workspace_id).
+ * Auth pattern: JWT → user → workspaces.user_id (no body-supplied workspace_id).
  */
 
 const EDITABLE_COLUMNS = [
@@ -50,13 +49,14 @@ async function emitEvent(supa: ReturnType<typeof getServiceSupabase>, p: EventPa
 }
 
 export const handler: Handler = async (event) => {
-  const cors = {
-    ...getCorsHeaders(event.headers.origin || event.headers.Origin),
-    'Content-Type': 'application/json',
-  };
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
 
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: cors, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -87,7 +87,7 @@ export const handler: Handler = async (event) => {
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
     .select(RETURN_COLUMNS)
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (wsErr) {

@@ -47,14 +47,8 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 
-const HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 const FAIL_THRESHOLD = 6.0;
 const DEFAULT_MAX_SCORE = 5.0;
 
@@ -103,13 +97,18 @@ function avg(nums: number[]): number | null {
 }
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: HEADERS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -121,7 +120,7 @@ export const handler: Handler = async (event) => {
   if (!token) {
     return {
       statusCode: 401,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Missing bearer token' }),
     };
   }
@@ -131,7 +130,7 @@ export const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) {
     return {
       statusCode: 401,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Invalid or expired token' }),
     };
   }
@@ -141,20 +140,20 @@ export const handler: Handler = async (event) => {
   const { data: workspaceRow, error: wsErr } = await supa
     .from('workspaces')
     .select('id')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
   if (wsErr) {
     console.warn(`[saas-v2-qa-list] workspace lookup failed user=${userId}: ${wsErr.message}`);
     return {
       statusCode: 500,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Workspace lookup failed' }),
     };
   }
   if (!workspaceRow) {
     return {
       statusCode: 404,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'No workspace owned by this user' }),
     };
   }
@@ -191,7 +190,7 @@ export const handler: Handler = async (event) => {
     console.warn(`[saas-v2-qa-list] list query failed: ${listErr.message}`);
     return {
       statusCode: 200,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({
         kpi: { avg_score: null, scored_count: 0, failing_count: 0, trend_pct: null },
         calls: [],
@@ -300,7 +299,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers: HEADERS,
+    headers: cors,
     body: JSON.stringify({ kpi, calls, total: calls.length }),
   };
 };

@@ -39,14 +39,8 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { chatCompletion, isAzureConfigured } from './_shared/azure-ai';
 
-const CORS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 type Urgency = 'low' | 'medium' | 'high';
 
 interface Suggestion {
@@ -495,30 +489,49 @@ async function aiSuggestions(
 
 // ─── Handler ──────────────────────────────────────────────────────────────
 
-function unauthorized(message: string) {
-  return {
-    statusCode: 401,
-    headers: CORS,
-    body: JSON.stringify({ error: message }),
-  };
-}
 
-function serverError(message: string) {
-  return {
-    statusCode: 500,
-    headers: CORS,
-    body: JSON.stringify({ error: message }),
-  };
-}
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
+
+  function unauthorized(message: string) {
+
+    return {
+
+      statusCode: 401,
+
+      headers: cors,
+
+      body: JSON.stringify({ error: message }),
+
+    };
+
+  }
+
+  function serverError(message: string) {
+
+    return {
+
+      statusCode: 500,
+
+      headers: cors,
+
+      body: JSON.stringify({ error: message }),
+
+    };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -543,7 +556,7 @@ export const handler: Handler = async (event) => {
     const { data: wsRow } = await supa
       .from('workspaces')
       .select('id, created_at')
-      .eq('owner_id', userId)
+      .eq('user_id', userId)
       .limit(1)
       .maybeSingle();
     workspaceId = (wsRow as { id?: string } | null)?.id ?? null;
@@ -560,7 +573,7 @@ export const handler: Handler = async (event) => {
   if (!workspaceId) {
     return {
       statusCode: 404,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({
         error: 'No workspace owned by this user. Run the workspace migration.',
       }),
@@ -591,7 +604,7 @@ export const handler: Handler = async (event) => {
   if (cold_start) {
     return {
       statusCode: 200,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ suggestions: [], cold_start: true }),
     };
   }
@@ -653,7 +666,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers: CORS,
+    headers: cors,
     body: JSON.stringify({ suggestions, cold_start: false }),
   };
 };

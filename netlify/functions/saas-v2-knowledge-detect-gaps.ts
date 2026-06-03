@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
  * saas-v2-knowledge-detect-gaps.ts
  *
@@ -29,15 +30,9 @@ import { chatCompletion } from './_shared/azure-ai';
  * via a single insert when the shared emitter exposes a batch method).
  */
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-};
 
 function unauthorized(msg: string) {
-  return { statusCode: 401, headers, body: JSON.stringify({ error: msg }) };
+  return { statusCode: 401, cors, body: JSON.stringify({ error: msg }) };
 }
 
 interface Gap {
@@ -204,14 +199,14 @@ async function extractGaps(
 
 const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
+    return { statusCode: 204, cors, body: '' };
   }
 
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
+  const authHeader = event.cors['authorization'] || event.cors['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) return unauthorized('Missing bearer token');
 
@@ -223,7 +218,7 @@ const handler: Handler = async (event) => {
   const { data: ws } = await supa
     .from('workspaces')
     .select('id')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
   const workspaceId = ws?.id || userId;
@@ -238,7 +233,7 @@ const handler: Handler = async (event) => {
     if (calls.length < 5) {
       return {
         statusCode: 200,
-        headers,
+        cors,
         body: JSON.stringify({
           gaps: [],
           cold_start: true,
@@ -253,7 +248,7 @@ const handler: Handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers,
+      cors,
       body: JSON.stringify({
         gaps,
         cold_start: false,
@@ -264,7 +259,7 @@ const handler: Handler = async (event) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[saas-v2-knowledge-detect-gaps] handler error:', msg);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
+    return { statusCode: 500, cors, body: JSON.stringify({ error: msg }) };
   }
 };
 

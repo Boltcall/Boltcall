@@ -4,7 +4,7 @@
  * V2 dashboard calls list. JWT-scoped to the caller's workspace.
  *
  * Auth pattern (mirrors saas-v2-toggle.ts):
- *   1. Read Authorization: Bearer <jwt> from headers (401 if missing).
+ *   1. Read Authorization: Bearer <jwt> from cors (401 if missing).
  *   2. supa.auth.getUser(token) -> userId (401 if invalid).
  *   3. SELECT workspaces WHERE owner_id = userId  (RLS-safe primary filter).
  *
@@ -44,13 +44,8 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 // ── Types ────────────────────────────────────────────────────────────────
 type CallRow = {
   id: string;
@@ -242,24 +237,29 @@ async function batchSummarize(
 
 // ── Handler ──────────────────────────────────────────────────────────────
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return { statusCode: 204, cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   // ── Auth (exact pattern from saas-v2-toggle.ts) ────────────────────────
-  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
+  const authHeader = event.cors['authorization'] || event.cors['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Missing bearer token' }) };
+    return { statusCode: 401, cors, body: JSON.stringify({ error: 'Missing bearer token' }) };
   }
 
   const supa = getServiceSupabase();
   const { data: userResult, error: authErr } = await supa.auth.getUser(token);
   if (authErr || !userResult?.user) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid token' }) };
+    return { statusCode: 401, cors, body: JSON.stringify({ error: 'Invalid token' }) };
   }
   const userId = userResult.user.id;
 
@@ -267,14 +267,14 @@ export const handler: Handler = async (event) => {
   const { data: workspaceRow, error: wsErr } = await supa
     .from('workspaces')
     .select('id, v2_enabled')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
   if (wsErr) {
     console.error('[saas-v2-calls] workspace lookup failed', wsErr);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Workspace lookup failed' }) };
+    return { statusCode: 500, cors, body: JSON.stringify({ error: 'Workspace lookup failed' }) };
   }
   if (!workspaceRow) {
-    return { statusCode: 404, headers, body: JSON.stringify({ error: 'Workspace not found' }) };
+    return { statusCode: 404, cors, body: JSON.stringify({ error: 'Workspace not found' }) };
   }
   const workspaceId = workspaceRow.id as string;
 
@@ -318,7 +318,7 @@ export const handler: Handler = async (event) => {
     console.error('[saas-v2-calls] retell_calls query failed', qErr);
     return {
       statusCode: 500,
-      headers,
+      cors,
       body: JSON.stringify({ error: 'Calls query failed', details: qErr.message }),
     };
   }
@@ -377,7 +377,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers,
+    cors,
     body: JSON.stringify({
       calls,
       total: count ?? calls.length,
