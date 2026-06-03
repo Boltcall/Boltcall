@@ -237,7 +237,26 @@ export const handler: Handler = async (event) => {
     return badRequest('Missing lead_id');
   }
 
-  // 3. Map Google's cell-array → flat lead shape.
+  // 3. Dedup the common case: sequential Google retry (we already accepted
+  //    this lead_id, Google didn't get our 200 in time, retried). The unique
+  //    index `leads_google_lead_id_uidx` covers the rare concurrent race,
+  //    but handleInboundLead swallows that as outcome.status='failed' rather
+  //    than throwing, so this pre-SELECT is the cleaner way to surface the
+  //    dedup hit as a 200 to Google.
+  const { data: existing } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('source', 'google_lead_form')
+    .filter('raw_data->>google_lead_id', 'eq', String(leadId))
+    .limit(1)
+    .maybeSingle();
+  if (existing?.id) {
+    console.log(`[google-leads-webhook] ${reqId} dedup hit for lead ${leadId}`);
+    return ok({ ok: true, deduped: true });
+  }
+
+  // 4. Map Google's cell-array → flat lead shape.
   const flat = flattenUserColumnData(payload.user_column_data);
 
   // 4. If no email AND no phone, the lead is uncontactable. handleInboundLead
