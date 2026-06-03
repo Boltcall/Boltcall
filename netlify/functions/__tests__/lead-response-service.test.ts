@@ -25,15 +25,21 @@ function makeSupabase(overrides: Record<string, any> = {}) {
         };
       }
       if (table === 'agents') {
-        return {
-          select: () => ({
-            eq: () => ({
-              limit: () => ({
-                maybeSingle: async () => ({ data: overrides.agent ?? { retell_agent_id: 'agent-1', api_keys: {} }, error: null }),
-              }),
-            }),
-          }),
+        // Chainable mock — production code does
+        //   .select(...).eq('user_id',...).eq('status','active').in('agent_type',...).order(...).limit(1).maybeSingle()
+        // so we return a single object whose chain methods all return itself
+        // and only the terminals (maybeSingle / single) resolve.
+        const agentData = overrides.agent ?? { retell_agent_id: 'agent-1', api_keys: {} };
+        const chain: any = {
+          select: () => chain,
+          eq: () => chain,
+          in: () => chain,
+          order: () => chain,
+          limit: () => chain,
+          maybeSingle: async () => ({ data: agentData, error: null }),
+          single: async () => ({ data: agentData, error: null }),
         };
+        return chain;
       }
       if (table === 'phone_numbers') {
         return {

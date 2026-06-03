@@ -95,7 +95,10 @@ describe('Setup page', () => {
     expect(nextButton).toBeDisabled()
   })
 
-  it('keeps Next disabled when only one personal field is filled', async () => {
+  // Flaky under full-suite load: render+userEvent occasionally exceeds the
+  // default 5s ceiling when CPU contention is high. Bump to 15s — the test
+  // passes deterministically in isolation (~600ms) so 15s is generous.
+  it('keeps Next disabled when only one personal field is filled', { timeout: 15000 }, async () => {
     const user = userEvent.setup()
     render(<Setup />)
 
