@@ -46,7 +46,7 @@ const V2OptInToggle: React.FC<V2OptInToggleProps> = ({ className }) => {
         const { data } = await supabase
           .from('workspaces')
           .select('v2_enabled')
-          .eq('owner_id', user.id)
+          .eq('user_id', user.id)
           .limit(1)
           .maybeSingle();
         if (!cancelled) {

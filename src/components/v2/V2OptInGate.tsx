@@ -68,7 +68,7 @@ const V2OptInGate: React.FC<V2OptInGateProps> = ({ children }) => {
         const { data, error } = await supabase
           .from('workspaces')
           .select('v2_enabled')
-          .eq('owner_id', user.id)
+          .eq('user_id', user.id)
           .limit(1)
           .maybeSingle();
 
