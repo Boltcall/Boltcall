@@ -69,9 +69,61 @@ const BlogSpeed: React.FC = () => {
     personScript.text = JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Boltcall Team","url":"https://boltcall.org/about","worksFor":{"@type":"Organization","name":"Boltcall","url":"https://boltcall.org"}});
     document.head.appendChild(personScript);
 
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does responding to leads in 60 seconds matter so much?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "MIT Sloan research found that contacting a lead within the first minute makes you 391% more likely to convert them compared to waiting 5 minutes. After 10 minutes, you are 10 times less likely to reach the person at all. In local service markets, customers call multiple businesses simultaneously and commit to the first one that responds."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What happens to leads that don't get a response within 5 minutes?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "After 5 minutes, conversion rate drops by 80% compared to the 1-minute mark. Most local service customers have already reached a competitor and are in a booking conversation. By 10 minutes, you are 10x less likely to even connect with the lead."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can a small business respond to leads in under 60 seconds?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI-powered speed-to-lead platforms like Boltcall respond automatically to every call, form submission, and SMS within seconds — 24/7 — without any human involvement. The AI answers, qualifies the lead, and books the appointment while the customer is still available."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the average response time for local service businesses?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The average response time for US local service businesses is 47 hours — nearly two full days. Businesses that respond in under 5 minutes win the vast majority of jobs from competitors with slower response times, regardless of pricing or reputation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does speed-to-lead apply to after-hours inquiries?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. 40% of local service leads come in outside business hours. Customers searching for emergency plumbers, HVAC repair, or dental care at night need immediate response. AI phone answering systems handle after-hours calls with the same speed as daytime calls."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -605,8 +657,47 @@ const BlogSpeed: React.FC = () => {
             </p>
           </div>
         </motion.section>
+
+            {/* FAQ Section */}
+            <section className="mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-start gap-3">
+                <div className="w-1 self-stretch bg-blue-600 rounded-full" />
+                Frequently Asked Questions
+              </h2>
+              <div className="space-y-4">
+                {[
+                  {
+                    q: 'Why does responding to leads in 60 seconds make such a big difference?',
+                    a: 'Because local service customers search under urgency and call multiple businesses simultaneously. MIT Sloan research shows responding in under 1 minute makes you 391% more likely to convert vs. waiting 5 minutes. After 10 minutes, you are 10x less likely to reach them at all — the job is already booked with a competitor who picked up first.',
+                  },
+                  {
+                    q: 'What is the average response time for local service businesses?',
+                    a: 'The US average is 47 hours — nearly two full days. This means most businesses are calling back customers who have already booked someone else. Businesses that respond in under 5 minutes win a disproportionate share of their local market.',
+                  },
+                  {
+                    q: 'How can a small business realistically respond in under 60 seconds?',
+                    a: 'Through automation. Boltcall answers calls in under 3 seconds, responds to form submissions via SMS in 10 seconds, and texts back any missed call within 30 seconds — all automatically, 24/7, without staff involvement.',
+                  },
+                  {
+                    q: 'Does the 60-second rule apply to after-hours leads?',
+                    a: 'Yes — and after-hours leads are often the most valuable. 40% of local service inquiries arrive evenings and weekends. A burst pipe at 9 PM, a dental emergency on Saturday morning — those callers need an immediate response and will book the first business that provides one.',
+                  },
+                  {
+                    q: 'How much revenue can faster response time add to a local business?',
+                    a: 'A business converting 10% more leads at an average lifetime customer value of $2,000 gains $2,000 per additional conversion. For a business getting 30 leads per month, that is $6,000 in additional monthly lifetime revenue — $72,000 per year — from the same inquiry volume.',
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+                    <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200 text-base">
+                      {item.q}
+                    </h3>
+                    <p className="text-gray-700 leading-relaxed px-6 py-4 text-sm">{item.a}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
           </article>
-          
+
           {/* Table of Contents */}
           <TableOfContents headings={headings} />
         </div>

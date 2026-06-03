@@ -67,9 +67,62 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "AI vs Human Receptionist", "item": "https://boltcall.org/blog/ai-vs-human-receptionist"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist better than a human receptionist for a local business?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For local service businesses, AI receptionists outperform humans on speed (under 3 second pickup vs. 20–30 seconds), availability (24/7 vs. business hours), and cost ($99–$249/month vs. $35,000–$55,000/year). Human receptionists are better for complex relationship management and highly nuanced calls."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does an AI receptionist cost compared to a human?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A human receptionist costs $35,000–$55,000 per year in salary plus benefits and training. An AI receptionist like Boltcall costs $99–$249 per month — roughly $1,200–$3,000 per year. The AI also works 24/7 with no sick days or overtime."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can an AI receptionist book appointments for a local business?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Modern AI receptionists integrate with scheduling systems and can check real-time availability, confirm appointment slots, and send SMS confirmations during the call — exactly what a human receptionist would do, but available 24/7 at a fraction of the cost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will customers notice or mind if they talk to an AI receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "For routine calls — booking appointments, checking hours, answering common questions — most customers do not notice or mind. Modern AI voices are natural and conversational. What customers respond to most is fast, helpful service, which AI delivers consistently."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to choose between AI and a human receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Most local businesses use AI to handle routine calls and after-hours volume, with a human for complex situations or in-person patient/client interaction. Boltcall handles the calls your front desk cannot answer, so your human staff can focus on higher-value tasks."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       document.head.removeChild(script);
     };
   }, []);
@@ -669,6 +722,42 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          {[
+            {
+              q: 'Is an AI receptionist better than a human for a local business?',
+              a: 'For routine call handling, booking, and after-hours coverage — yes. AI receptionists answer every call in under 3 seconds, 24/7, at $99–$249/month vs. $38,000–$54,000/year for a full-time human. Humans are still valuable for complex relationship management and in-person interactions.',
+            },
+            {
+              q: 'How much does an AI receptionist cost compared to hiring a person?',
+              a: 'A human receptionist costs $38,400–$54,000 per year plus benefits and training. An AI receptionist like Boltcall costs $99–$249 per month — approximately $1,200–$3,000 per year — with no sick days, no overtime, and 24/7 availability included.',
+            },
+            {
+              q: 'Will my customers notice they are talking to an AI?',
+              a: 'For routine calls — appointment booking, hours, common questions — most customers do not notice or mind. What customers respond to is fast, accurate service. AI delivers that consistently. You can also configure the AI to disclose it is automated if preferred.',
+            },
+            {
+              q: 'Can an AI receptionist actually book appointments for my business?',
+              a: 'Yes. Boltcall integrates with scheduling systems and books appointments directly during the call — checking real availability, confirming the slot, and sending an SMS confirmation. No callback needed.',
+            },
+            {
+              q: 'Do I need to choose between AI and a human receptionist?',
+              a: 'No. Most local businesses use Boltcall to handle calls their front desk cannot answer — after hours, during peak periods, and on weekends. The AI handles the volume your human staff cannot cover, so nothing is missed.',
+            },
+          ].map((item, i) => (
+            <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+              <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200 text-base">
+                {item.q}
+              </h3>
+              <p className="text-gray-700 leading-relaxed px-6 py-4 text-sm">{item.a}</p>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -27,6 +27,9 @@ const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
 const BlogNeverMissCallAfterHours = React.lazy(() => import('../pages/BlogNeverMissCallAfterHours'));
 const BlogWhatsAppAppointmentBookingPlumbers = React.lazy(() => import('../pages/BlogWhatsAppAppointmentBookingPlumbers'));
+const BlogResponseTimeJobWinner = React.lazy(() => import('../pages/BlogResponseTimeJobWinner'));
+const BlogFastestDentistMissedCalls = React.lazy(() => import('../pages/BlogFastestDentistMissedCalls'));
+const BlogLocalBusinessesLoseCustomers = React.lazy(() => import('../pages/BlogLocalBusinessesLoseCustomers'));
 const BlogAIReceptionistDentists = React.lazy(() => import('../pages/BlogAIReceptionistDentists'));
 const BlogAIReceptionistLawFirms = React.lazy(() => import('../pages/BlogAIReceptionistLawFirms'));
 // ── Auth pages — lazy-loaded (not on typical landing path) ──────────────
@@ -458,6 +461,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/instant-lead-reply-guide" element={<BlogWhatDoesInstantLeadReplyMean />} />
         <Route path="/blog/hvac-ai-lead-response" element={<BlogHVACAILeadResponse />} />
         <Route path="/blog/dental-ai-lead-response" element={<BlogDentalAILeadResponse />} />
+        <Route path="/blog/does-response-time-affect-local-business-results" element={<BlogResponseTimeJobWinner />} />
+        <Route path="/blog/fastest-way-dentist-respond-missed-calls" element={<BlogFastestDentistMissedCalls />} />
+        <Route path="/blog/why-local-businesses-lose-customers-slow-response" element={<BlogLocalBusinessesLoseCustomers />} />
         <Route path="/blog/ai-receptionist-real-estate-agents" element={<BlogAIReceptionistRealEstate />} />
         <Route path="/blog/ai-appointment-scheduling-hvac" element={<BlogAIAppointmentSchedulingHVAC />} />
         <Route path="/blog/setup-instant-lead-reply" element={<BlogHowToSetUpInstantLeadReply />} />

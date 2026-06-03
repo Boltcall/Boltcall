@@ -68,9 +68,62 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
     bcScript.id = 'breadcrumb-jsonld';
     bcScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://boltcall.org"}, {"@type": "ListItem", "position": 2, "name": "Blog", "item": "https://boltcall.org/blog"}, {"@type": "ListItem", "position": 3, "name": "Is AI Receptionist Worth It", "item": "https://boltcall.org/blog/is-ai-receptionist-worth-it"}]});
     document.head.appendChild(bcScript);
+
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.id = 'faq-schema';
+    faqScript.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is an AI receptionist worth it for a small local business?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, for most local service businesses. An AI receptionist costs $99–$249/month and works 24/7. A single additional booking per month — at typical local service lifetime values of $800–$3,000 per customer — covers the full annual cost. Businesses that respond faster to leads convert more, making the ROI immediate."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the ROI of an AI receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The ROI depends on how many leads you currently miss or respond to slowly. A business getting 30 inbound leads per month that converts 10% more of them (3 additional customers) at $1,500 average lifetime value generates $4,500/month in additional revenue vs. $149/month for the AI tool — a 30x return."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the main benefits of an AI receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The main benefits are: 24/7 availability (handles after-hours calls that represent 30–40% of all inquiries), instant response (answers in under 3 seconds vs. average hold times), automated booking (books directly into your calendar), and cost savings (10–15x cheaper than a human receptionist)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the downsides of an AI receptionist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI receptionists are not ideal for highly complex calls that require deep relationship context, emotionally sensitive situations, or nuanced negotiation. For routine booking, qualification, and after-hours coverage — the majority of local service calls — AI handles the job better than a human because of speed and availability."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How quickly does an AI receptionist pay for itself?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most local service businesses recover the full monthly cost from a single additional booking. At Boltcall's pricing, you need one additional customer per month to break even. Most businesses see multiple additional bookings within the first week of going live."
+          }
+        }
+      ]
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       document.getElementById('breadcrumb-jsonld')?.remove();
       document.getElementById('person-schema')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -590,6 +643,45 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
             </div>
           </div>
         </motion.div>
+
+        {/* FAQ Section */}
+        <section className="mb-14">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-start gap-3">
+            <div className="w-1 self-stretch bg-blue-600 rounded-full" />
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-4">
+            {[
+              {
+                q: 'Is an AI receptionist worth it for a small local business?',
+                a: 'Yes, for most local service businesses. At $99–$249/month, one additional booking per month covers the full annual cost. Businesses that respond faster convert more leads. The ROI is immediate for any business getting 10+ inbound inquiries per month.',
+              },
+              {
+                q: 'How quickly does an AI receptionist pay for itself?',
+                a: 'Most local service businesses see their first AI-booked appointment within hours of going live. At a typical service value of $800–$1,500 per new customer, Boltcall pays for itself within the first week for most businesses.',
+              },
+              {
+                q: 'What are the main advantages of an AI receptionist?',
+                a: '24/7 availability (30–40% of calls come after hours), instant answer speed (under 3 seconds vs. typical hold times), automated booking (no callback needed), and cost savings of 10–15x compared to a human receptionist.',
+              },
+              {
+                q: 'What types of businesses benefit most from AI receptionists?',
+                a: 'Local service businesses where speed-to-lead matters most: dental and medical practices, HVAC and plumbing companies, law firms, home services, med spas, and any business where customers call multiple providers and book the first to respond.',
+              },
+              {
+                q: 'Can Boltcall work alongside a human front desk?',
+                a: 'Yes. Most businesses use Boltcall to handle after-hours calls, overflow during peak periods, and weekend inquiries. The AI covers what your human staff cannot, so no lead goes unanswered.',
+              },
+            ].map((item, i) => (
+              <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+                <h3 className="font-semibold text-gray-900 px-6 py-4 bg-gray-50 border-b border-gray-200 text-base">
+                  {item.q}
+                </h3>
+                <p className="text-gray-700 leading-relaxed px-6 py-4 text-sm">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* Related Reading */}
         <div className="bg-gray-50 rounded-xl p-6 mb-12">
