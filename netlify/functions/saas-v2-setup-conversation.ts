@@ -217,7 +217,16 @@ async function runTool(
   tool: ToolCall,
   state: WizardState,
   userId: string,
+  workspaceId: string,
 ): Promise<{ summary: string; mutations: Partial<WizardState> }> {
+  // Defense in depth: fail loud if the caller leaked the legacy placeholder
+  // string instead of the resolved workspace id. Prevents the telemetry
+  // payload-poison bug we saw in the v7 audit.
+  if (workspaceId === '__filled_by_caller__' || !workspaceId) {
+    throw new Error(
+      'runTool: workspaceId placeholder leaked — caller must pass the resolved workspace id',
+    );
+  }
   const mutations: Partial<WizardState> = {};
 
   switch (tool.name) {
@@ -257,7 +266,7 @@ async function runTool(
 
       // Emit telemetry (best-effort, never blocks)
       emitEvent('saas_v2_setup_kb_extracted', {
-        workspace_id: '__filled_by_caller__',
+        workspace_id: workspaceId,
         source: scrape.source || 'basic',
         scrape_chars: scrape.charCount || 0,
         services_count: servicesCount,
@@ -297,7 +306,7 @@ async function runTool(
       mutations.wizard_step = 'review';
 
       emitEvent('saas_v2_setup_agent_drafted', {
-        workspace_id: '__filled_by_caller__',
+        workspace_id: workspaceId,
         industry: state.extracted.industry || 'unknown',
         prompt_chars: 0,
         voice_id: newExtracted.agentConfig?.voiceId || '11labs-Adrian',
@@ -622,7 +631,7 @@ export const handler: Handler = async (event) => {
   // Execute the tool if present (server-side)
   let toolSummary: string | undefined;
   if (tool) {
-    const { summary, mutations } = await runTool(tool, state, userId);
+    const { summary, mutations } = await runTool(tool, state, userId, workspaceId);
     state = { ...state, ...mutations } as WizardState;
     toolSummary = summary;
   }
