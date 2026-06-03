@@ -285,7 +285,7 @@ describe('saas-v2-setup-conversation: secret redaction (Fix 2)', () => {
 
   it('redacts sk_live_... from user_message before persisting to v2_setup_state', async () => {
     chatCompletionMock.mockResolvedValueOnce('Thanks — never share keys in chat though!');
-    const secret = 'sk_live_abcdef1234567890ABCDEF12345';
+    const secret = 'sk_live_FAKE0000FAKE0000FAKE';
     const res = await handler(
       makeEvent({
         headers: { authorization: 'Bearer fake-jwt' },
@@ -316,7 +316,7 @@ describe('saas-v2-setup-conversation: secret redaction (Fix 2)', () => {
   });
 
   it('redacts assistant message containing an echoed secret', async () => {
-    const secret = 'EAA1234567890abcdefghijKLMNOP';
+    const secret = 'EAAFAKEFAKEFAKEFAKEFAKEFAKE';
     chatCompletionMock.mockResolvedValueOnce(`Just to confirm: ${secret} ?`);
     const res = await handler(
       makeEvent({
@@ -828,8 +828,8 @@ describe('scrape-url: CORS allowlist', () => {
 describe('_shared/redact-secrets', () => {
   it('redacts known patterns and returns the matched pattern names (never the value)', async () => {
     const { redactSecrets } = await import('../_shared/redact-secrets');
-    const { redacted, hits } = redactSecrets('my key is sk_live_abcdef1234567890ABCDEF12345');
-    expect(redacted).not.toContain('sk_live_abcdef');
+    const { redacted, hits } = redactSecrets('my key is sk_live_FAKE0000FAKE0000FAKE');
+    expect(redacted).not.toContain('sk_live_FAKE0000');
     expect(redacted).toContain('[REDACTED]');
     expect(hits).toContain('stripe_live_secret');
   });
