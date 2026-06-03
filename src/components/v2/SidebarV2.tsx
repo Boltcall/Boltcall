@@ -12,6 +12,12 @@
  *
  * All routes point at /v2/* paths — these are the V2 pages mounted by Day 8.
  *
+ * Polish layer (2026-06-03):
+ *   - "V2" badge upgraded to a gradient pill with Sparkles icon
+ *   - Active nav item gets a left accent bar + gradient background
+ *   - Section titles separated by a hairline divider for visual rhythm
+ *   - Footer escape hatch has a subtle elevation
+ *
  * V1 invariant: this file is brand new under src/components/v2/. It never
  * touches V1 sidebar or layout.
  */
@@ -32,6 +38,7 @@ import {
   Settings,
   Wrench,
   ArrowLeft,
+  Sparkles,
 } from 'lucide-react';
 
 interface NavItem {
@@ -116,7 +123,7 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -124,15 +131,15 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
 
       <aside
         className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-border
+          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200/80
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
         aria-label="V2 navigation"
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="px-6 pt-6 pb-4 flex items-center gap-2">
+          {/* Logo + V2 badge — gradient pill signals "this is the AI-native dashboard" */}
+          <div className="px-6 pt-6 pb-4">
             <Link to="/v2" className="flex items-center gap-2" onClick={onClose}>
               <img
                 src="/boltcall_full_logo.png"
@@ -143,19 +150,34 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
                 loading="lazy"
                 decoding="async"
               />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-blue bg-brand-blue/10 px-1.5 py-0.5 rounded">
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-white bg-gradient-to-r from-blue-600 to-blue-500 px-1.5 py-0.5 rounded shadow-[0_2px_8px_-2px_rgba(59,130,246,0.5)]"
+                title="V2 — AI-native dashboard"
+              >
+                <Sparkles className="w-2.5 h-2.5" />
                 V2
               </span>
             </Link>
           </div>
 
-          {/* Navigation — calmer density than V1 */}
+          {/* Navigation — calmer density than V1; hairline divider before each
+              section title gives visual rhythm without heavy borders. */}
           <nav className="flex-1 overflow-y-auto px-3 py-2">
-            {sections.map((section) => (
+            {sections.map((section, idx) => (
               <div key={section.title} className="mb-5">
-                <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-                  {section.title}
-                </p>
+                <div
+                  className={`flex items-center gap-2 px-3 mb-1.5 ${idx === 0 ? '' : 'pt-2'}`}
+                >
+                  {idx > 0 && (
+                    <span className="h-px flex-1 bg-slate-100" aria-hidden="true" />
+                  )}
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    {section.title}
+                  </p>
+                  {idx > 0 && (
+                    <span className="h-px flex-1 bg-slate-100" aria-hidden="true" />
+                  )}
+                </div>
                 <div className="space-y-0.5">
                   {section.items.map((item) => {
                     const active = isActive(item.to);
@@ -164,13 +186,19 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
                         key={item.to}
                         to={item.to}
                         onClick={onClose}
-                        className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors ${
+                        className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
                           active
-                            ? 'bg-brand-blue/10 text-brand-blue font-medium'
-                            : 'text-text-main hover:bg-zinc-100'
+                            ? 'bg-gradient-to-r from-blue-50 to-transparent text-blue-700 font-semibold shadow-[inset_2px_0_0_0_rgb(37,99,235)]'
+                            : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
                         }`}
                       >
-                        <span className="flex-shrink-0">{item.icon}</span>
+                        <span
+                          className={`flex-shrink-0 transition-colors ${
+                            active ? 'text-blue-600' : 'text-slate-500 group-hover:text-slate-700'
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
                         <span className="truncate">{item.label}</span>
                       </Link>
                     );
@@ -183,15 +211,15 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
           {/* Back-to-V1 escape hatch — always visible at the bottom of the sidebar.
               This is the second of two escape hatches (the other lives in the
               topbar). Redundant by design — the user must never feel trapped in V2. */}
-          <div className="border-t border-border px-3 py-3">
+          <div className="border-t border-slate-200/80 px-3 py-3 bg-slate-50/50">
             <button
               type="button"
               onClick={onBackToV1}
               disabled={backToV1Pending}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-zinc-600 hover:text-text-main hover:bg-zinc-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white hover:shadow-sm rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              {backToV1Pending ? 'Switching…' : 'Back to V1'}
+              {backToV1Pending ? 'Switching…' : 'Back to classic dashboard'}
             </button>
           </div>
         </div>
