@@ -114,23 +114,23 @@ export const handler: Handler = async (event) => {
   );
   const cors = v2cors.headers;
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, cors, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, cors, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   // ── Auth ───────────────────────────────────────────────────────────────
-  const authHeader = event.cors['authorization'] || event.cors['Authorization'] || '';
+  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) {
-    return { statusCode: 401, cors, body: JSON.stringify({ error: 'Missing bearer token' }) };
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: 'Missing bearer token' }) };
   }
 
   const supa = getServiceSupabase();
   const { data: userResult, error: authErr } = await supa.auth.getUser(token);
   if (authErr || !userResult?.user) {
-    return { statusCode: 401, cors, body: JSON.stringify({ error: 'Invalid token' }) };
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: 'Invalid token' }) };
   }
   const userId = userResult.user.id;
 
@@ -141,17 +141,17 @@ export const handler: Handler = async (event) => {
     .eq('user_id', userId)
     .maybeSingle();
   if (wsErr) {
-    return { statusCode: 500, cors, body: JSON.stringify({ error: 'Workspace lookup failed' }) };
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: 'Workspace lookup failed' }) };
   }
   if (!workspaceRow) {
-    return { statusCode: 404, cors, body: JSON.stringify({ error: 'Workspace not found' }) };
+    return { statusCode: 404, headers: cors, body: JSON.stringify({ error: 'Workspace not found' }) };
   }
   const workspaceId = workspaceRow.id as string;
 
   // ── Validate input ─────────────────────────────────────────────────────
   const callId = event.queryStringParameters?.call_id?.trim();
   if (!callId) {
-    return { statusCode: 400, cors, body: JSON.stringify({ error: 'call_id is required' }) };
+    return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'call_id is required' }) };
   }
 
   // ── Fetch the call (workspace_id filter is the security boundary) ──────
@@ -164,11 +164,11 @@ export const handler: Handler = async (event) => {
 
   if (callErr) {
     console.error('[saas-v2-call-detail] call query failed', callErr);
-    return { statusCode: 500, cors, body: JSON.stringify({ error: 'Call query failed' }) };
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: 'Call query failed' }) };
   }
   if (!callRow) {
     // Not found OR belongs to a different workspace — never differentiate.
-    return { statusCode: 404, cors, body: JSON.stringify({ error: 'Call not found' }) };
+    return { statusCode: 404, headers: cors, body: JSON.stringify({ error: 'Call not found' }) };
   }
 
   // ── Normalize the call envelope ────────────────────────────────────────
@@ -300,8 +300,7 @@ export const handler: Handler = async (event) => {
   }
 
   return {
-    statusCode: 200,
-    cors,
+    statusCode: 200, headers: cors,
     body: JSON.stringify({
       call: {
         id: callId,

@@ -31,9 +31,6 @@ import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
  */
 
 
-function unauthorized(msg: string) {
-  return { statusCode: 401, cors, body: JSON.stringify({ error: msg }) };
-}
 
 interface Gap {
   question: string;
@@ -198,15 +195,27 @@ async function extractGaps(
 }
 
 const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
+
+
+  function unauthorized(msg: string) {
+
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: msg }) };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, cors, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
 
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, cors, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const authHeader = event.cors['authorization'] || event.cors['Authorization'] || '';
+  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) return unauthorized('Missing bearer token');
 
@@ -232,8 +241,7 @@ const handler: Handler = async (event) => {
     // Cold-start guard.
     if (calls.length < 5) {
       return {
-        statusCode: 200,
-        cors,
+        statusCode: 200, headers: cors,
         body: JSON.stringify({
           gaps: [],
           cold_start: true,
@@ -247,8 +255,7 @@ const handler: Handler = async (event) => {
     await emitGaps(workspaceId, gaps);
 
     return {
-      statusCode: 200,
-      cors,
+      statusCode: 200, headers: cors,
       body: JSON.stringify({
         gaps,
         cold_start: false,
@@ -259,7 +266,7 @@ const handler: Handler = async (event) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[saas-v2-knowledge-detect-gaps] handler error:', msg);
-    return { statusCode: 500, cors, body: JSON.stringify({ error: msg }) };
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: msg }) };
   }
 };
 

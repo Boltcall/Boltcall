@@ -23,9 +23,6 @@ import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
  */
 
 
-function unauthorized(msg: string) {
-  return { statusCode: 401, cors, body: JSON.stringify({ error: msg }) };
-}
 
 interface DraftResult {
   draft_title: string;
@@ -176,15 +173,27 @@ async function generateDraft(
 }
 
 const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const cors = v2cors.headers;
+
+
+  function unauthorized(msg: string) {
+
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: msg }) };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, cors, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
 
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, cors, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const authHeader = event.cors['authorization'] || event.cors['Authorization'] || '';
+  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) return unauthorized('Missing bearer token');
 
@@ -205,14 +214,13 @@ const handler: Handler = async (event) => {
   try {
     body = JSON.parse(event.body || '{}');
   } catch {
-    return { statusCode: 400, cors, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+    return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Invalid JSON body' }) };
   }
 
   const question = sanitize(body.question, 400);
   if (!question) {
     return {
-      statusCode: 400,
-      cors,
+      statusCode: 400, headers: cors,
       body: JSON.stringify({ error: 'question is required' }),
     };
   }
@@ -226,14 +234,13 @@ const handler: Handler = async (event) => {
     await emitDraft(workspaceId, question);
 
     return {
-      statusCode: 200,
-      cors,
+      statusCode: 200, headers: cors,
       body: JSON.stringify(draft),
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[saas-v2-knowledge-draft-faq] handler error:', msg);
-    return { statusCode: 500, cors, body: JSON.stringify({ error: msg }) };
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: msg }) };
   }
 };
 
