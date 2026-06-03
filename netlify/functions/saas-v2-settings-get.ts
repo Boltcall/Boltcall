@@ -1,7 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
-import { getCorsHeaders } from './_shared/cors';
-
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
  * saas-v2-settings-get — Wave 3 Page 5.
  *
@@ -50,13 +49,14 @@ async function emitEvent(supa: ReturnType<typeof getServiceSupabase>, p: EventPa
 }
 
 export const handler: Handler = async (event) => {
-  const cors = {
-    ...getCorsHeaders(event.headers.origin || event.headers.Origin),
-    'Content-Type': 'application/json',
-  };
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
 
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: cors, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };

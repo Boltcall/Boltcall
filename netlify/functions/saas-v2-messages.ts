@@ -43,14 +43,8 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { emitSaasV2Event } from './_shared/emit-agency-event';
 import { callClaude } from './_shared/agency-agents/run-agent';
 
-const CORS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 const COLD_START_MIN_CHATS = 30;
 const COLD_START_MIN_WORKSPACE_AGE_DAYS = 14;
 const NEEDS_REPLY_MIN_AGE_MIN = 30;
@@ -91,15 +85,6 @@ interface ChatRow {
   user_id: string;
 }
 
-function unauthorized(message: string) {
-  return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function badRequest(message: string) {
-  return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function serverError(message: string) {
-  return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: message }) };
-}
 
 function inferChannel(chat: ChatRow): Channel {
   // chats.source is sometimes 'website'|'phone'|'email'|'social'|'app'.
@@ -222,13 +207,36 @@ async function summarizeBatch(
 }
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
+
+  function unauthorized(message: string) {
+
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function badRequest(message: string) {
+
+    return { statusCode: 400, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function serverError(message: string) {
+
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -304,7 +312,7 @@ export const handler: Handler = async (event) => {
     });
     return {
       statusCode: 200,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({
         threads: [],
         total: 0,
@@ -399,7 +407,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers: CORS,
+    headers: cors,
     body: JSON.stringify({
       threads: filtered,
       total: count ?? filtered.length,

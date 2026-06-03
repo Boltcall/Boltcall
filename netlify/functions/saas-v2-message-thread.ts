@@ -22,14 +22,8 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitSaasV2Event } from './_shared/emit-agency-event';
 
-const CORS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 type Channel = 'sms' | 'chat' | 'email';
 
 interface ChatHistoryEntry {
@@ -56,18 +50,6 @@ interface ChatRecord {
   created_at: string;
 }
 
-function unauthorized(message: string) {
-  return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function badRequest(message: string) {
-  return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function notFound(message: string) {
-  return { statusCode: 404, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function serverError(message: string) {
-  return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: message }) };
-}
 
 function inferChannel(chat: ChatRecord): Channel {
   if (chat.source === 'email') return 'email';
@@ -78,13 +60,42 @@ function inferChannel(chat: ChatRecord): Channel {
 }
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
+
+  function unauthorized(message: string) {
+
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function badRequest(message: string) {
+
+    return { statusCode: 400, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function notFound(message: string) {
+
+    return { statusCode: 404, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function serverError(message: string) {
+
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -224,7 +235,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers: CORS,
+    headers: cors,
     body: JSON.stringify({
       thread: threadRow,
       messages,

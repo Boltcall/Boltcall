@@ -34,14 +34,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitSaasV2Event } from './_shared/saas-v2-events';
 
-const CORS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type LeadStatus = 'new' | 'contacted' | 'booked' | 'lost';
@@ -141,15 +135,6 @@ function nextActionFor(status: LeadStatus): string {
 
 // ─── Response helpers ──────────────────────────────────────────────────────
 
-function badRequest(message: string) {
-  return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function unauthorized(message: string) {
-  return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function serverError(message: string) {
-  return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: message }) };
-}
 
 // ─── AI: batch Haiku summarization ──────────────────────────────────────────
 
@@ -413,13 +398,36 @@ function pickHotLead(
 // ─── Handler ────────────────────────────────────────────────────────────────
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
+
+  function badRequest(message: string) {
+
+    return { statusCode: 400, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function unauthorized(message: string) {
+
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function serverError(message: string) {
+
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -450,7 +458,7 @@ export const handler: Handler = async (event) => {
   if (!workspaceRow) {
     return {
       statusCode: 404,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ error: 'No workspace for this user' }),
     };
   }
@@ -458,7 +466,7 @@ export const handler: Handler = async (event) => {
   if (!(workspaceRow as { v2_enabled?: boolean }).v2_enabled) {
     return {
       statusCode: 403,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ error: 'V2 is not enabled for this workspace' }),
     };
   }
@@ -613,7 +621,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers: CORS,
+    headers: cors,
     body: JSON.stringify(response),
   };
 };

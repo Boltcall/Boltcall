@@ -26,14 +26,8 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion, generateEmbedding } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 
-const CORS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 const DOCS_BASE = 'https://boltcall.mintlify.app';
 
 interface AskBody {
@@ -157,15 +151,6 @@ const FALLBACK_DOC: HelpSource = {
   snippet: 'Full product documentation.',
 };
 
-function badRequest(message: string) {
-  return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function unauthorized(message: string) {
-  return { statusCode: 401, headers: CORS, body: JSON.stringify({ error: message }) };
-}
-function serverError(message: string) {
-  return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: message }) };
-}
 
 function pickDocs(question: string): HelpSource[] {
   const q = question.toLowerCase();
@@ -189,13 +174,36 @@ function clamp(text: string, max: number): string {
 }
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const cors = v2cors.headers;
+
+  function badRequest(message: string) {
+
+    return { statusCode: 400, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function unauthorized(message: string) {
+
+    return { statusCode: 401, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
+
+  function serverError(message: string) {
+
+    return { statusCode: 500, headers: cors, body: JSON.stringify({ error: message }) };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -240,7 +248,7 @@ export const handler: Handler = async (event) => {
   if (!wsRow) {
     return {
       statusCode: 404,
-      headers: CORS,
+      headers: cors,
       body: JSON.stringify({
         error:
           'No workspace owned by this user. Sign up creates one automatically — ' +
@@ -433,7 +441,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers: CORS,
+    headers: cors,
     body: JSON.stringify({
       answer: finalAnswer,
       sources: sources.slice(0, 3),

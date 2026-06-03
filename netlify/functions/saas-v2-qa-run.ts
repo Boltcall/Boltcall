@@ -37,14 +37,8 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 
-const HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 const CAP_PER_INVOCATION = 20;
 const DEFAULT_WINDOW_DAYS = 7;
 const FAIL_THRESHOLD = 6.0;
@@ -158,13 +152,18 @@ async function scoreOne(call: RetellCall): Promise<JudgeOutput | { error: string
 }
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const cors = v2cors.headers;
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: HEADERS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -176,7 +175,7 @@ export const handler: Handler = async (event) => {
   if (!token) {
     return {
       statusCode: 401,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Missing bearer token' }),
     };
   }
@@ -186,7 +185,7 @@ export const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) {
     return {
       statusCode: 401,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Invalid or expired token' }),
     };
   }
@@ -202,14 +201,14 @@ export const handler: Handler = async (event) => {
     console.warn(`[saas-v2-qa-run] workspace lookup failed user=${userId}: ${wsErr.message}`);
     return {
       statusCode: 500,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Workspace lookup failed' }),
     };
   }
   if (!workspaceRow) {
     return {
       statusCode: 404,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'No workspace owned by this user' }),
     };
   }
@@ -243,7 +242,7 @@ export const handler: Handler = async (event) => {
     console.warn(`[saas-v2-qa-run] candidate query failed: ${candidatesErr.message}`);
     return {
       statusCode: 500,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({ error: 'Failed to load candidate calls' }),
     };
   }
@@ -252,7 +251,7 @@ export const handler: Handler = async (event) => {
   if (candidates.length === 0) {
     return {
       statusCode: 200,
-      headers: HEADERS,
+      headers: cors,
       body: JSON.stringify({
         scored_count: 0,
         skipped_count: 0,
@@ -337,7 +336,7 @@ export const handler: Handler = async (event) => {
       }
       return {
         statusCode: 200,
-        headers: HEADERS,
+        headers: cors,
         body: JSON.stringify({
           scored_count: 0,
           skipped_count,
@@ -410,7 +409,7 @@ export const handler: Handler = async (event) => {
 
   return {
     statusCode: 200,
-    headers: HEADERS,
+    headers: cors,
     body: JSON.stringify({
       scored_count: insertRows.length,
       skipped_count,

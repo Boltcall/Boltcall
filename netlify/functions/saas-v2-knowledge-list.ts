@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
  * saas-v2-knowledge-list.ts
  *
@@ -28,15 +29,9 @@ import { chatCompletion } from './_shared/azure-ai';
  * still works in environments where wave-1's emit helper hasn't landed.
  */
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-};
 
 function unauthorized(msg: string) {
-  return { statusCode: 401, headers, body: JSON.stringify({ error: msg }) };
+  return { statusCode: 401, cors, body: JSON.stringify({ error: msg }) };
 }
 
 interface KBRow {
@@ -171,15 +166,15 @@ const handler: Handler = async (event) => {
   const t0 = Date.now();
 
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
+    return { statusCode: 204, cors, body: '' };
   }
 
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return { statusCode: 405, cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
   // ── Auth: JWT → user_id → workspace_id ────────────────────────────────
-  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
+  const authHeader = event.cors['authorization'] || event.cors['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) return unauthorized('Missing bearer token');
 
@@ -214,7 +209,7 @@ const handler: Handler = async (event) => {
       console.error('[saas-v2-knowledge-list] kb read failed:', kbErr.message);
       return {
         statusCode: 500,
-        headers,
+        cors,
         body: JSON.stringify({ error: 'Failed to load knowledge base', details: kbErr.message }),
       };
     }
@@ -246,7 +241,7 @@ const handler: Handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers,
+      cors,
       body: JSON.stringify({
         entries: enriched,
         categories: labels,
@@ -257,7 +252,7 @@ const handler: Handler = async (event) => {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('[saas-v2-knowledge-list] handler error:', msg);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: msg }) };
+    return { statusCode: 500, cors, body: JSON.stringify({ error: msg }) };
   }
 };
 

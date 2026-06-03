@@ -34,17 +34,8 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { callClaude } from './_shared/agency-agents/run-agent';
 
-const CORS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Content-Type': 'application/json',
-  'Cache-Control': 'no-store',
-};
 
-function jsonResponse(statusCode: number, body: Record<string, unknown>) {
-  return { statusCode, headers: CORS, body: JSON.stringify(body) };
-}
+import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 
 interface SuggestionsOutput {
   suggestions: Array<{
@@ -219,8 +210,19 @@ async function suggestEditsViaSonnet(
 }
 
 export const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'GET' },
+  );
+  const cors = v2cors.headers;
+
+  function jsonResponse(statusCode: number, body: Record<string, unknown>) {
+
+    return { statusCode, headers: cors, body: JSON.stringify(body) };
+
+  }
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS, body: '' };
+    return { statusCode: 204, headers: cors, body: '' };
   }
   if (event.httpMethod !== 'GET') {
     return jsonResponse(405, { error: 'Method not allowed' });
