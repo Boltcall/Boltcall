@@ -14,7 +14,6 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import V2OptInGate from '../../components/v2/V2OptInGate';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import {
@@ -496,10 +495,6 @@ const V2AnalyticsPageInner: React.FC = () => {
   );
 };
 
-const V2AnalyticsPage: React.FC = () => (
-  <V2OptInGate>
-    <V2AnalyticsPageInner />
-  </V2OptInGate>
-);
-
-export default V2AnalyticsPage;
+// The V2OptInGate wrapper is applied by the parent /v2 route in AppRoutes.tsx —
+// double-wrapping caused a nested loading flash. Export the inner component directly.
+export default V2AnalyticsPageInner;
