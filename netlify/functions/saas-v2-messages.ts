@@ -1,7 +1,7 @@
 /**
  * saas-v2-messages — GET endpoint returning the V2 unified inbox feed.
  *
- * Auth: Bearer JWT only. The JWT's user_id maps to workspaces.owner_id; we
+ * Auth: Bearer JWT only. The JWT's user_id maps to workspaces.user_id; we
  *   NEVER accept workspace_id from the query string — that's the security
  *   barrier. The kernel resolves workspace server-side.
  *
@@ -252,7 +252,7 @@ export const handler: Handler = async (event) => {
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
     .select('id, owner_id, created_at')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
 

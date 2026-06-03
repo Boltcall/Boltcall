@@ -223,7 +223,7 @@ const handler: Handler = async (event) => {
   const { data: ws } = await supa
     .from('workspaces')
     .select('id')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
   const workspaceId = ws?.id || userId;

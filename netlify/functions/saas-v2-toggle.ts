@@ -109,7 +109,7 @@ export const handler: Handler = async (event) => {
   const { data: updatedRows, error: updateErr } = await supa
     .from('workspaces')
     .update({ v2_enabled: enabled, updated_at: new Date().toISOString() })
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .select('id, v2_enabled');
 
   if (updateErr) {

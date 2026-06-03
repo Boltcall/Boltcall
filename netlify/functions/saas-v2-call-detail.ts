@@ -138,7 +138,7 @@ export const handler: Handler = async (event) => {
   const { data: workspaceRow, error: wsErr } = await supa
     .from('workspaces')
     .select('id, v2_enabled')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
   if (wsErr) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Workspace lookup failed' }) };

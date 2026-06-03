@@ -72,7 +72,7 @@ async function resolveWorkspace(
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
     .select('id')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (wsErr || !workspace?.id) {

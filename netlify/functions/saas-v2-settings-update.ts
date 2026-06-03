@@ -12,7 +12,7 @@ import { getCorsHeaders } from './_shared/cors';
  * Returns: { workspace }
  * Emits:   saas_v2_settings_updated with { changed_keys } (best-effort).
  *
- * Auth pattern: JWT → user → workspaces.owner_id. Patch keys are validated
+ * Auth pattern: JWT → user → workspaces.user_id. Patch keys are validated
  * against an allowlist — id, created_at, owner_id, v2_enabled CANNOT be
  * edited here (V2 opt-in flips happen in saas-v2-toggle).
  */
@@ -211,7 +211,7 @@ export const handler: Handler = async (event) => {
   const { data: updatedRows, error: upErr } = await supa
     .from('workspaces')
     .update(filtered)
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .select(RETURN_COLUMNS);
 
   if (upErr) {

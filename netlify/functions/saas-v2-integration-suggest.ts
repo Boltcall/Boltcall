@@ -543,7 +543,7 @@ export const handler: Handler = async (event) => {
     const { data: wsRow } = await supa
       .from('workspaces')
       .select('id, created_at')
-      .eq('owner_id', userId)
+      .eq('user_id', userId)
       .limit(1)
       .maybeSingle();
     workspaceId = (wsRow as { id?: string } | null)?.id ?? null;

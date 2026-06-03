@@ -373,7 +373,7 @@ async function loadWorkspaceState(userId: string): Promise<{
     const r = await supa
       .from('workspaces')
       .select('id, v2_setup_state, v2_setup_conversation_id, v2_setup_state_version')
-      .eq('owner_id', userId)
+      .eq('user_id', userId)
       .limit(1)
       .maybeSingle();
     ws = r.data || null;

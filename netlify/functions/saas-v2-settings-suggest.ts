@@ -251,7 +251,7 @@ export const handler: Handler = async (event) => {
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
     .select(RETURN_COLUMNS)
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (wsErr || !workspace) {

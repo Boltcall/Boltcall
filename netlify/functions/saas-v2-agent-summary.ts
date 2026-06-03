@@ -203,7 +203,7 @@ export const handler: Handler = async (event) => {
   const { data: workspaceRow, error: wsErr } = await supa
     .from('workspaces')
     .select('id, vertical')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
   if (wsErr) {

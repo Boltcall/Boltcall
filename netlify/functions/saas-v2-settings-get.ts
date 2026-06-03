@@ -11,7 +11,7 @@ import { getCorsHeaders } from './_shared/cors';
  * Returns: { workspace, current_user_role, team, cold_start, signals }
  * Emits:   saas_v2_settings_rendered (best-effort, soft-fail)
  *
- * Auth pattern: JWT → user → workspaces.owner_id (no body-supplied workspace_id).
+ * Auth pattern: JWT → user → workspaces.user_id (no body-supplied workspace_id).
  */
 
 const EDITABLE_COLUMNS = [
@@ -87,7 +87,7 @@ export const handler: Handler = async (event) => {
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
     .select(RETURN_COLUMNS)
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (wsErr) {

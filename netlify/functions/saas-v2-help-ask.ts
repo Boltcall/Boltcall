@@ -231,7 +231,7 @@ export const handler: Handler = async (event) => {
   const { data: wsRow, error: wsErr } = await supa
     .from('workspaces')
     .select('id, name, default_language, default_timezone')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
   if (wsErr) {
     console.warn(`[saas-v2-help-ask] workspace lookup failed user=${userId} err=${wsErr.message}`);

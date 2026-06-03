@@ -14,7 +14,7 @@ import { chatCompletion } from './_shared/azure-ai';
  *   - Defaults to 'professional' when omitted or invalid.
  *
  * Auth — `Authorization: Bearer <jwt>` (Supabase session). The function
- *   resolves the workspace via `workspaces.owner_id = userId` and then verifies
+ *   resolves the workspace via `workspaces.user_id = userId` and then verifies
  *   the requested review belongs to that workspace BEFORE drafting (so a
  *   stolen JWT can't fish replies for other workspaces' review ids).
  *
@@ -104,13 +104,13 @@ async function resolveWorkspace(
   const withTone = await supa
     .from('workspaces')
     .select('id, name, default_language, tone_preferences')
-    .eq('owner_id', userId)
+    .eq('user_id', userId)
     .maybeSingle();
   if (withTone.error) {
     const fallback = await supa
       .from('workspaces')
       .select('id, name, default_language')
-      .eq('owner_id', userId)
+      .eq('user_id', userId)
       .maybeSingle();
     if (fallback.error || !fallback.data) {
       return { ok: false, status: 404, error: 'No workspace found for user' };
