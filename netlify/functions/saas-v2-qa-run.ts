@@ -39,7 +39,11 @@ import { emitAgencyEvent } from './_shared/emit-agency-event';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
-const CAP_PER_INVOCATION = 20;
+// Cap lowered from 20 to 10 to stay within Netlify Lambda 26s wall clock:
+// 20 calls × ~2s/LLM call would exceed the timeout for any workspace with
+// a backlog. Large workspaces should call this multiple times — the response
+// includes remaining_unscored_count so the UI can prompt re-run.
+const CAP_PER_INVOCATION = 10;
 const DEFAULT_WINDOW_DAYS = 7;
 const FAIL_THRESHOLD = 6.0;
 const MIN_TRANSCRIPT_CHARS = 50;
@@ -255,6 +259,7 @@ export const handler: Handler = async (event) => {
       body: JSON.stringify({
         scored_count: 0,
         skipped_count: 0,
+        remaining_unscored_count: 0,
         failures: [],
         average_score: null,
         low_score_count: 0,
@@ -274,6 +279,9 @@ export const handler: Handler = async (event) => {
   const unscored = candidates.filter((c) => !scoredSet.has(c.call_id));
   const toScore = unscored.slice(0, CAP_PER_INVOCATION);
   const skipped_count = candidates.length - toScore.length;
+  // Of the unscored calls in the window, how many we DIDN'T get to this round.
+  // The UI uses this to prompt "Run QA again — N calls still unscored".
+  const remaining_unscored_count = Math.max(0, unscored.length - toScore.length);
 
   // ── Score each call. Sequential to avoid burst rate-limiting the model
   //    backend; the cap of 20 keeps this well within Netlify's 26s budget.
@@ -340,6 +348,7 @@ export const handler: Handler = async (event) => {
         body: JSON.stringify({
           scored_count: 0,
           skipped_count,
+          remaining_unscored_count,
           failures,
           average_score: null,
           low_score_count: 0,
@@ -413,6 +422,7 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({
       scored_count: insertRows.length,
       skipped_count,
+      remaining_unscored_count,
       failures,
       average_score,
       low_score_count,
