@@ -219,7 +219,7 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
               className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-white hover:shadow-sm rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              {backToV1Pending ? 'Switching…' : 'Back to classic dashboard'}
+              {backToV1Pending ? 'Switching…' : 'Back to V1'}
             </button>
           </div>
         </div>
