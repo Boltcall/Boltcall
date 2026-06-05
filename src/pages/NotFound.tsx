@@ -14,7 +14,7 @@ const NotFound: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4 pb-44 sm:pb-36">
       <div className="max-w-2xl mx-auto text-center">
         {/* 404 Animation */}
         <motion.div

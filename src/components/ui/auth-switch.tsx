@@ -373,12 +373,14 @@ export default function AuthSwitch({
                     {...loginForm.register("email")}
                     type="email"
                     placeholder="Email"
+                    aria-label="Email"
                     error={loginForm.formState.errors.email?.message}
                   />
                   <PasswordInput
                     {...loginForm.register("password")}
                     placeholder="Password"
                     id="login-password"
+                    aria-label="Password"
                     showStrength={false}
                   />
                   {loginForm.formState.errors.password && (
@@ -451,12 +453,14 @@ export default function AuthSwitch({
                     {...signupForm.register("email")}
                     type="email"
                     placeholder="Email"
+                    aria-label="Email"
                     error={signupForm.formState.errors.email?.message}
                   />
                   <PasswordInput
                     {...signupForm.register("password")}
                     placeholder="Password"
                     id="signup-password"
+                    aria-label="Password"
                   />
                   {signupForm.formState.errors.password && (
                     <p className="ml-4 text-xs text-red-500 -mt-2">
