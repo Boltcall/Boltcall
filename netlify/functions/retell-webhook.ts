@@ -118,9 +118,18 @@ export const handler: Handler = async (event) => {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Webhook signature required' }) };
   }
 
+  let payload: any;
   try {
-    const payload = JSON.parse(event.body || '{}');
+    payload = JSON.parse(event.body || '{}');
+  } catch {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'Invalid JSON body' }),
+    };
+  }
 
+  try {
     // Retell sends { event: "call_ended", call: { ... } }
     // Some Retell versions send the call object directly
     const call = payload.call || payload;
