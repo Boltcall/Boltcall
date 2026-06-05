@@ -31,6 +31,11 @@ const __v2State = vi.hoisted(() => ({
   mode: 'enabled' as 'enabled' | 'disabled',
 }));
 
+const __authState = vi.hoisted(() => ({
+  isAuthenticated: true,
+  isLoading: false,
+}));
+
 // ── Global mocks (all before any page imports) ─────────────────────────────
 
 // framer-motion — Proxy-based motion shim that strips animation props
@@ -63,8 +68,8 @@ vi.mock('framer-motion', () => ({
 vi.mock('../../../contexts/AuthContext', () => ({
   useAuth: () => ({
     user: { id: 'test-user', email: 'test@test.com', name: 'Test User' },
-    isAuthenticated: true,
-    isLoading: false,
+    isAuthenticated: __authState.isAuthenticated,
+    isLoading: __authState.isLoading,
   }),
 }));
 
@@ -260,6 +265,8 @@ describe('V2 pages — smoke tests', () => {
   beforeEach(() => {
     // Default: gate is OPEN so render tests see page content.
     __v2State.mode = 'enabled';
+    __authState.isAuthenticated = true;
+    __authState.isLoading = false;
     // Fresh global fetch mock per test so prior calls don't leak.
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -316,6 +323,15 @@ describe('V2 pages — smoke tests', () => {
       expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
       // And the gate-disabled sentinel must NOT appear (page bypasses the gate).
       expect(screen.queryByTestId('v2-gate-disabled')).not.toBeInTheDocument();
+    });
+
+    it('V2SetupPage blocks unauthenticated users before chat fetches run', () => {
+      __authState.isAuthenticated = false;
+
+      renderInRouter(V2SetupPage);
+
+      expect(screen.getByText('Sign in before starting V2 setup')).toBeInTheDocument();
+      expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
     });
   });
 });
