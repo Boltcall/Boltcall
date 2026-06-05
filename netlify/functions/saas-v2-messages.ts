@@ -259,7 +259,7 @@ export const handler: Handler = async (event) => {
   // ─── Workspace resolution ────────────────────────────────────────────────
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
-    .select('id, owner_id, created_at')
+    .select('id, created_at')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();

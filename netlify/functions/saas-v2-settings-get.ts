@@ -13,20 +13,7 @@ import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
  * Auth pattern: JWT → user → workspaces.user_id (no body-supplied workspace_id).
  */
 
-const EDITABLE_COLUMNS = [
-  'name',
-  'vertical',
-  'default_timezone',
-  'default_language',
-  'business_hours_start',
-  'business_hours_end',
-  'notification_routing',
-  'agent_voice',
-  'agent_transfer_phone',
-  'agent_paused_until',
-] as const;
-
-const RETURN_COLUMNS = ['id', 'v2_enabled', ...EDITABLE_COLUMNS].join(', ');
+const RETURN_COLUMNS = ['id', 'name', 'v2_enabled'].join(', ');
 
 interface EventPayload {
   event_type: string;
@@ -48,6 +35,53 @@ async function emitEvent(supa: ReturnType<typeof getServiceSupabase>, p: EventPa
   }
 }
 
+function asRecord(value: unknown): Record<string, any> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, any>)
+    : {};
+}
+
+function firstBusinessHoursWindow(openingHours: unknown) {
+  const hours = asRecord(openingHours);
+  for (const value of Object.values(hours)) {
+    if (typeof value !== 'string') continue;
+    const match = value.match(/(\d{2}:\d{2})\s*[-–]\s*(\d{2}:\d{2})/);
+    if (match) return { start: match[1], end: match[2] };
+  }
+  return { start: null, end: null };
+}
+
+function composeWorkspaceSettings(args: {
+  workspace: Record<string, any>;
+  profile: Record<string, any> | null;
+  location: Record<string, any> | null;
+}) {
+  const profile = args.profile ?? {};
+  const location = args.location ?? {};
+  const preferences = asRecord(profile.user_preferences);
+  const v2Settings = asRecord(preferences.v2_settings);
+  const hours = firstBusinessHoursWindow(profile.opening_hours);
+  const languages = Array.isArray(profile.languages) ? profile.languages : [];
+
+  return {
+    id: args.workspace.id,
+    name: args.workspace.name || profile.business_name || 'Workspace',
+    v2_enabled: Boolean(args.workspace.v2_enabled),
+    vertical: v2Settings.vertical ?? profile.main_category ?? null,
+    default_timezone:
+      v2Settings.default_timezone ?? location.timezone ?? 'America/New_York',
+    default_language:
+      v2Settings.default_language ??
+      (typeof languages[0] === 'string' ? languages[0] : 'en'),
+    business_hours_start: v2Settings.business_hours_start ?? hours.start ?? '09:00',
+    business_hours_end: v2Settings.business_hours_end ?? hours.end ?? '17:00',
+    notification_routing: v2Settings.notification_routing ?? null,
+    agent_voice: v2Settings.agent_voice ?? null,
+    agent_transfer_phone: v2Settings.agent_transfer_phone ?? location.phone ?? null,
+    agent_paused_until: v2Settings.agent_paused_until ?? null,
+  };
+}
+
 export const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
@@ -62,7 +96,7 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  // ─── Auth: bearer JWT → user → owner_id ────────────────────────────────
+  // ─── Auth: bearer JWT → user → workspaces.user_id ─────────────────────
   const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) {
@@ -109,6 +143,29 @@ export const handler: Handler = async (event) => {
       body: JSON.stringify({ error: 'No workspace found for this user' }),
     };
   }
+  const workspaceId = (workspace as any).id as string;
+
+  const [{ data: profile }, { data: location }] = await Promise.all([
+    supa
+      .from('business_profiles')
+      .select('business_name, main_category, opening_hours, languages, user_preferences')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle(),
+    supa
+      .from('locations')
+      .select('timezone, phone')
+      .eq('user_id', userId)
+      .eq('is_primary', true)
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const workspaceForClient = composeWorkspaceSettings({
+    workspace: workspace as Record<string, any>,
+    profile: (profile as Record<string, any> | null) ?? null,
+    location: (location as Record<string, any> | null) ?? null,
+  });
 
   // ─── Role (current user is owner here; future: check workspace_members) ─
   const currentUserRole = 'owner';
@@ -119,7 +176,7 @@ export const handler: Handler = async (event) => {
     const { data: members } = await supa
       .from('workspace_members')
       .select('id, email, name, role, status')
-      .eq('workspace_id', (workspace as any).id)
+      .eq('workspace_id', workspaceId)
       .neq('status', 'removed')
       .limit(20);
     if (Array.isArray(members)) team = members;
@@ -155,9 +212,9 @@ export const handler: Handler = async (event) => {
   // ─── Emit ──────────────────────────────────────────────────────────────
   emitEvent(supa, {
     event_type: 'saas_v2_settings_rendered',
-    workspace_id: (workspace as any).id,
+    workspace_id: workspaceId,
     payload: {
-      workspace_id: (workspace as any).id,
+      workspace_id: workspaceId,
       cold_start: coldStart,
       calls_total: callsTotal,
       team_size: team.length,
@@ -168,7 +225,7 @@ export const handler: Handler = async (event) => {
     statusCode: 200,
     headers: cors,
     body: JSON.stringify({
-      workspace,
+      workspace: workspaceForClient,
       current_user_role: currentUserRole,
       team,
       cold_start: coldStart,

@@ -59,7 +59,6 @@ interface AgentRow {
 
 interface WorkspaceRow {
   id: string;
-  vertical: string | null;
 }
 
 interface SummaryLlmOutput {
@@ -204,7 +203,7 @@ export const handler: Handler = async (event) => {
   // ── 2. Resolve workspace from JWT (NEVER from body) ─────────────────────
   const { data: workspaceRow, error: wsErr } = await supa
     .from('workspaces')
-    .select('id, vertical')
+    .select('id')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
@@ -216,6 +215,21 @@ export const handler: Handler = async (event) => {
     return jsonResponse(404, { error: 'No workspace found for this user' });
   }
   const workspace = workspaceRow as WorkspaceRow;
+  let vertical: string | null = null;
+  try {
+    const { data: profile } = await supa
+      .from('business_profiles')
+      .select('main_category')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle();
+    vertical =
+      typeof profile?.main_category === 'string' && profile.main_category.trim()
+        ? profile.main_category.trim()
+        : null;
+  } catch (err) {
+    console.warn('[saas-v2-agent-summary] business profile vertical probe skipped', err);
+  }
 
   // ── 3. Load the canonical agent prompt ──────────────────────────────────
   // Preferred source: agents.system_prompt (per 20260507_agents_system_prompt.sql).
@@ -245,12 +259,12 @@ export const handler: Handler = async (event) => {
   // ── 4. Fallback to retell_prompt_versions (best-effort) ─────────────────
   // Column shape varies by deploy (the table was created out-of-band — see
   // recon notes). We probe gently and ignore errors.
-  if (!rawPrompt && workspace.vertical) {
+  if (!rawPrompt && vertical) {
     try {
       const { data: shadowRow } = await supa
         .from('retell_prompt_versions')
         .select('id, prompt_text')
-        .eq('vertical', workspace.vertical)
+        .eq('vertical', vertical)
         .eq('status', 'live')
         .order('id', { ascending: false })
         .limit(1)

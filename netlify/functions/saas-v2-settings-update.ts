@@ -13,7 +13,7 @@ import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
  * Emits:   saas_v2_settings_updated with { changed_keys } (best-effort).
  *
  * Auth pattern: JWT → user → workspaces.user_id. Patch keys are validated
- * against an allowlist — id, created_at, owner_id, v2_enabled CANNOT be
+ * against an allowlist — id, created_at, user_id, v2_enabled CANNOT be
  * edited here (V2 opt-in flips happen in saas-v2-toggle).
  */
 
@@ -35,18 +35,56 @@ const ALLOWED_KEYS = new Set([
 
 const RETURN_COLUMNS = [
   'id',
-  'v2_enabled',
   'name',
-  'vertical',
-  'default_timezone',
-  'default_language',
-  'business_hours_start',
-  'business_hours_end',
-  'notification_routing',
-  'agent_voice',
-  'agent_transfer_phone',
-  'agent_paused_until',
+  'v2_enabled',
 ].join(', ');
+
+function asRecord(value: unknown): Record<string, any> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, any>)
+    : {};
+}
+
+function firstBusinessHoursWindow(openingHours: unknown) {
+  const hours = asRecord(openingHours);
+  for (const value of Object.values(hours)) {
+    if (typeof value !== 'string') continue;
+    const match = value.match(/(\d{2}:\d{2})\s*[-–]\s*(\d{2}:\d{2})/);
+    if (match) return { start: match[1], end: match[2] };
+  }
+  return { start: null, end: null };
+}
+
+function composeWorkspaceSettings(args: {
+  workspace: Record<string, any>;
+  profile: Record<string, any> | null;
+  location: Record<string, any> | null;
+}) {
+  const profile = args.profile ?? {};
+  const location = args.location ?? {};
+  const preferences = asRecord(profile.user_preferences);
+  const v2Settings = asRecord(preferences.v2_settings);
+  const hours = firstBusinessHoursWindow(profile.opening_hours);
+  const languages = Array.isArray(profile.languages) ? profile.languages : [];
+
+  return {
+    id: args.workspace.id,
+    name: args.workspace.name || profile.business_name || 'Workspace',
+    v2_enabled: Boolean(args.workspace.v2_enabled),
+    vertical: v2Settings.vertical ?? profile.main_category ?? null,
+    default_timezone:
+      v2Settings.default_timezone ?? location.timezone ?? 'America/New_York',
+    default_language:
+      v2Settings.default_language ??
+      (typeof languages[0] === 'string' ? languages[0] : 'en'),
+    business_hours_start: v2Settings.business_hours_start ?? hours.start ?? '09:00',
+    business_hours_end: v2Settings.business_hours_end ?? hours.end ?? '17:00',
+    notification_routing: v2Settings.notification_routing ?? null,
+    agent_voice: v2Settings.agent_voice ?? null,
+    agent_transfer_phone: v2Settings.agent_transfer_phone ?? location.phone ?? null,
+    agent_paused_until: v2Settings.agent_paused_until ?? null,
+  };
+}
 
 function sanitizeValue(key: string, value: unknown): unknown {
   // Defensive coercion / shape checks for free-form columns.
@@ -209,6 +247,169 @@ export const handler: Handler = async (event) => {
       statusCode: 400,
       headers: cors,
       body: JSON.stringify({ error: 'No valid editable keys in patch' }),
+    };
+  }
+
+  {
+    const { data: workspace, error: wsErr } = await supa
+      .from('workspaces')
+      .select(RETURN_COLUMNS)
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle();
+
+    if (wsErr) {
+      console.warn('[saas-v2-settings-update] workspace fetch failed:', wsErr.message);
+      return {
+        statusCode: 500,
+        headers: cors,
+        body: JSON.stringify({ error: 'Failed to load workspace', supabase_error: wsErr.message }),
+      };
+    }
+    if (!workspace) {
+      return {
+        statusCode: 404,
+        headers: cors,
+        body: JSON.stringify({ error: 'No workspace found for this user' }),
+      };
+    }
+
+    const workspaceId = (workspace as any).id as string;
+    const now = new Date().toISOString();
+    const [{ data: profile }, { data: location }] = await Promise.all([
+      supa
+        .from('business_profiles')
+        .select('id, business_name, main_category, opening_hours, languages, user_preferences')
+        .eq('user_id', userId)
+        .limit(1)
+        .maybeSingle(),
+      supa
+        .from('locations')
+        .select('id, timezone, phone')
+        .eq('user_id', userId)
+        .eq('is_primary', true)
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    const workspacePatch: Record<string, unknown> = {};
+    const profilePatch: Record<string, unknown> = {};
+    const locationPatch: Record<string, unknown> = {};
+    const preferences = asRecord((profile as any)?.user_preferences);
+    const v2Settings = { ...asRecord(preferences.v2_settings) };
+
+    for (const key of changedKeys) {
+      const value = filtered[key];
+      if (key === 'name') {
+        workspacePatch.name = value;
+        continue;
+      }
+      if (key === 'vertical') profilePatch.main_category = value;
+      if (key === 'default_language') profilePatch.languages = value ? [value] : [];
+      if (key === 'default_timezone') locationPatch.timezone = value;
+      if (key === 'agent_transfer_phone') locationPatch.phone = value;
+      v2Settings[key] = value;
+    }
+
+    if (Object.keys(workspacePatch).length > 0) {
+      workspacePatch.updated_at = now;
+      const { error } = await supa.from('workspaces').update(workspacePatch).eq('id', workspaceId);
+      if (error) {
+        console.warn('[saas-v2-settings-update] workspace update failed:', error.message);
+        return {
+          statusCode: 500,
+          headers: cors,
+          body: JSON.stringify({ error: 'Failed to update workspace' }),
+        };
+      }
+    }
+
+    const profilePayload = {
+      ...profilePatch,
+      user_preferences: { ...preferences, v2_settings: v2Settings },
+      updated_at: now,
+    };
+    if ((profile as any)?.id) {
+      const { error } = await supa
+        .from('business_profiles')
+        .update(profilePayload)
+        .eq('id', (profile as any).id);
+      if (error) {
+        console.warn('[saas-v2-settings-update] profile update failed:', error.message);
+        return {
+          statusCode: 500,
+          headers: cors,
+          body: JSON.stringify({ error: 'Failed to update business profile settings' }),
+        };
+      }
+    } else {
+      const { error } = await supa.from('business_profiles').insert({
+        ...profilePayload,
+        user_id: userId,
+        workspace_id: workspaceId,
+        business_name: (workspace as any).name || 'Workspace',
+      });
+      if (error) {
+        console.warn('[saas-v2-settings-update] profile insert failed:', error.message);
+        return {
+          statusCode: 500,
+          headers: cors,
+          body: JSON.stringify({ error: 'Failed to create business profile settings' }),
+        };
+      }
+    }
+
+    if (Object.keys(locationPatch).length > 0) {
+      if ((location as any)?.id) {
+        const { error } = await supa
+          .from('locations')
+          .update({ ...locationPatch, updated_at: now })
+          .eq('id', (location as any).id);
+        if (error) console.warn('[saas-v2-settings-update] location update failed:', error.message);
+      } else if ((profile as any)?.id) {
+        const { error } = await supa.from('locations').insert({
+          ...locationPatch,
+          user_id: userId,
+          business_profile_id: (profile as any).id,
+          name: 'Main Office',
+          slug: 'main-office',
+          is_primary: true,
+          is_active: true,
+        });
+        if (error) console.warn('[saas-v2-settings-update] location insert failed:', error.message);
+      }
+    }
+
+    const [{ data: updatedWorkspace }, { data: updatedProfile }, { data: updatedLocation }] =
+      await Promise.all([
+        supa.from('workspaces').select(RETURN_COLUMNS).eq('id', workspaceId).maybeSingle(),
+        supa
+          .from('business_profiles')
+          .select('business_name, main_category, opening_hours, languages, user_preferences')
+          .eq('user_id', userId)
+          .limit(1)
+          .maybeSingle(),
+        supa
+          .from('locations')
+          .select('timezone, phone')
+          .eq('user_id', userId)
+          .eq('is_primary', true)
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+    const workspaceForClient = composeWorkspaceSettings({
+      workspace: (updatedWorkspace as Record<string, any> | null) ?? (workspace as Record<string, any>),
+      profile: (updatedProfile as Record<string, any> | null) ?? null,
+      location: (updatedLocation as Record<string, any> | null) ?? null,
+    });
+
+    emitEvent(supa, workspaceId, changedKeys).catch(() => undefined);
+
+    return {
+      statusCode: 200,
+      headers: cors,
+      body: JSON.stringify({ workspace: workspaceForClient }),
     };
   }
 

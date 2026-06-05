@@ -33,14 +33,8 @@ const ALLOWED_SUGGESTABLE_COLUMNS = new Set([
 
 const RETURN_COLUMNS = [
   'id',
-  'vertical',
-  'default_timezone',
-  'default_language',
-  'business_hours_start',
-  'business_hours_end',
-  'notification_routing',
-  'agent_voice',
-  'agent_transfer_phone',
+  'name',
+  'v2_enabled',
 ].join(', ');
 
 interface Suggestion {
@@ -67,6 +61,53 @@ async function emitEvent(
   } catch (err: any) {
     console.warn('[saas-v2-settings-suggest] emitEvent failed:', err?.message || err);
   }
+}
+
+function asRecord(value: unknown): Record<string, any> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, any>)
+    : {};
+}
+
+function firstBusinessHoursWindow(openingHours: unknown) {
+  const hours = asRecord(openingHours);
+  for (const value of Object.values(hours)) {
+    if (typeof value !== 'string') continue;
+    const match = value.match(/(\d{2}:\d{2})\s*[-–]\s*(\d{2}:\d{2})/);
+    if (match) return { start: match[1], end: match[2] };
+  }
+  return { start: null, end: null };
+}
+
+function composeWorkspaceSettings(args: {
+  workspace: Record<string, any>;
+  profile: Record<string, any> | null;
+  location: Record<string, any> | null;
+}) {
+  const profile = args.profile ?? {};
+  const location = args.location ?? {};
+  const preferences = asRecord(profile.user_preferences);
+  const v2Settings = asRecord(preferences.v2_settings);
+  const hours = firstBusinessHoursWindow(profile.opening_hours);
+  const languages = Array.isArray(profile.languages) ? profile.languages : [];
+
+  return {
+    id: args.workspace.id,
+    name: args.workspace.name || profile.business_name || 'Workspace',
+    v2_enabled: Boolean(args.workspace.v2_enabled),
+    vertical: v2Settings.vertical ?? profile.main_category ?? null,
+    default_timezone:
+      v2Settings.default_timezone ?? location.timezone ?? 'America/New_York',
+    default_language:
+      v2Settings.default_language ??
+      (typeof languages[0] === 'string' ? languages[0] : 'en'),
+    business_hours_start: v2Settings.business_hours_start ?? hours.start ?? '09:00',
+    business_hours_end: v2Settings.business_hours_end ?? hours.end ?? '17:00',
+    notification_routing: v2Settings.notification_routing ?? null,
+    agent_voice: v2Settings.agent_voice ?? null,
+    agent_transfer_phone: v2Settings.agent_transfer_phone ?? location.phone ?? null,
+    agent_paused_until: v2Settings.agent_paused_until ?? null,
+  };
 }
 
 // ─── Heuristic fallback ──────────────────────────────────────────────────────
@@ -263,6 +304,27 @@ export const handler: Handler = async (event) => {
       body: JSON.stringify({ error: 'No workspace found' }),
     };
   }
+  const workspaceId = (workspace as any).id as string;
+  const [{ data: profile }, { data: location }] = await Promise.all([
+    supa
+      .from('business_profiles')
+      .select('business_name, main_category, opening_hours, languages, user_preferences')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle(),
+    supa
+      .from('locations')
+      .select('timezone, phone')
+      .eq('user_id', userId)
+      .eq('is_primary', true)
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  const currentSettings = composeWorkspaceSettings({
+    workspace: workspace as Record<string, any>,
+    profile: (profile as Record<string, any> | null) ?? null,
+    location: (location as Record<string, any> | null) ?? null,
+  });
 
   // ─── Compute signals (best-effort) ─────────────────────────────────────
   let callsTotal = 0;
@@ -298,7 +360,7 @@ export const handler: Handler = async (event) => {
 
   // ─── Cold-start short-circuit ──────────────────────────────────────────
   if (callsTotal < 30) {
-    emitEvent(supa, (workspace as any).id, 0, 'heuristic').catch(() => undefined);
+    emitEvent(supa, workspaceId, 0, 'heuristic').catch(() => undefined);
     return {
       statusCode: 200,
       headers: cors,
@@ -310,8 +372,8 @@ export const handler: Handler = async (event) => {
     calls_total: callsTotal,
     pct_after_6pm: pctAfter6,
     pct_spanish: pctSpanish,
-    has_transfer_phone: !!(workspace as any).agent_transfer_phone,
-    current_hours_end: (workspace as any).business_hours_end || null,
+    has_transfer_phone: !!currentSettings.agent_transfer_phone,
+    current_hours_end: currentSettings.business_hours_end || null,
   };
 
   // ─── Try model first, fallback to heuristic ────────────────────────────
@@ -319,16 +381,16 @@ export const handler: Handler = async (event) => {
   let source: 'ai' | 'heuristic' = 'heuristic';
   try {
     suggestions = await modelSuggestions({
-      vertical: (workspace as any).vertical,
+      vertical: currentSettings.vertical,
       current_settings: {
-        vertical: (workspace as any).vertical,
-        default_timezone: (workspace as any).default_timezone,
-        default_language: (workspace as any).default_language,
-        business_hours_start: (workspace as any).business_hours_start,
-        business_hours_end: (workspace as any).business_hours_end,
-        notification_routing: (workspace as any).notification_routing,
-        agent_voice: (workspace as any).agent_voice,
-        agent_transfer_phone: (workspace as any).agent_transfer_phone,
+        vertical: currentSettings.vertical,
+        default_timezone: currentSettings.default_timezone,
+        default_language: currentSettings.default_language,
+        business_hours_start: currentSettings.business_hours_start,
+        business_hours_end: currentSettings.business_hours_end,
+        notification_routing: currentSettings.notification_routing,
+        agent_voice: currentSettings.agent_voice,
+        agent_transfer_phone: currentSettings.agent_transfer_phone,
       },
       usage_signals: signals,
     });
@@ -337,11 +399,11 @@ export const handler: Handler = async (event) => {
     console.warn('[saas-v2-settings-suggest] model branch errored:', err?.message);
   }
   if (!suggestions || suggestions.length === 0) {
-    suggestions = heuristicSuggestions((workspace as any).vertical, workspace, signals);
+    suggestions = heuristicSuggestions(currentSettings.vertical, currentSettings, signals);
     source = 'heuristic';
   }
 
-  emitEvent(supa, (workspace as any).id, suggestions.length, source).catch(() => undefined);
+  emitEvent(supa, workspaceId, suggestions.length, source).catch(() => undefined);
 
   return {
     statusCode: 200,
