@@ -12,6 +12,11 @@ function getSupabaseAdmin(): SupabaseClient {
   return createClient(url, key);
 }
 
+function getInternalSecretHeaders(): Record<string, string> {
+  const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || process.env.CRON_SECRET;
+  return secret ? { 'x-internal-secret': secret } : {};
+}
+
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -705,7 +710,7 @@ export const handler: Handler = async (event) => {
           // Step 5a: Register agent in Cekura
           const registerRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
             body: JSON.stringify({
               action: 'register_agent',
               retell_agent_id: agent.agent_id,
@@ -722,7 +727,7 @@ export const handler: Handler = async (event) => {
             // Step 5b: Create test evaluators (prepared, not run)
             const evalRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
               body: JSON.stringify({
                 action: 'create_evaluators',
                 cekura_agent_id: cekuraAgentId,

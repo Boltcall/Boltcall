@@ -132,6 +132,23 @@ describe('acs-numbers hardening', () => {
 });
 
 describe('public cost endpoint hardening', () => {
+  it('rejects public Cekura provider bridge calls without the internal secret', async () => {
+    delete process.env.INTERNAL_API_SECRET;
+    delete process.env.INTERNAL_WEBHOOK_SECRET;
+    delete process.env.CRON_SECRET;
+    const { handler } = await import('../cekura-test');
+
+    const res = await handler(
+      makeEvent({
+        body: { action: 'full_test', retell_agent_id: 'agent-victim', agent_name: 'Victim' },
+      }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(401);
+    expect(JSON.parse(res.body).error).toMatch(/internal/i);
+  });
+
   it('rejects cross-site PageSpeed proxy calls before using the API key', async () => {
     delete process.env.PAGESPEED_API_KEY;
     process.env.URL = 'https://boltcall.org';
