@@ -13,11 +13,15 @@ function isPrivateIp(ip: string): boolean {
     return (
       a === 10 ||
       a === 127 ||
+      (a === 100 && b >= 64 && b <= 127) ||
       (a === 169 && b === 254) ||
       (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 0) ||
       (a === 192 && b === 168) ||
+      (a === 198 && (b === 18 || b === 19)) ||
       (a === 0) ||
-      (a >= 224)
+      (a >= 224) ||
+      ip === '255.255.255.255'
     );
   }
 
@@ -31,7 +35,15 @@ function isPrivateIp(ip: string): boolean {
   );
 }
 
-export async function validateOutboundHttpsUrl(rawUrl: string): Promise<{ ok: true } | { ok: false; error: string }> {
+type UrlValidationOptions = {
+  allowHttp?: boolean;
+  label?: string;
+};
+
+export async function validatePublicHttpUrl(
+  rawUrl: string,
+  options: UrlValidationOptions = {},
+): Promise<{ ok: true } | { ok: false; error: string }> {
   let parsed: URL;
   try {
     parsed = new URL(rawUrl);
@@ -39,31 +51,40 @@ export async function validateOutboundHttpsUrl(rawUrl: string): Promise<{ ok: tr
     return { ok: false, error: 'Invalid URL' };
   }
 
-  if (parsed.protocol !== 'https:') {
-    return { ok: false, error: 'Webhook URL must use https' };
+  const label = options.label || 'URL';
+  const allowedProtocols = options.allowHttp ? new Set(['http:', 'https:']) : new Set(['https:']);
+  if (!allowedProtocols.has(parsed.protocol)) {
+    return {
+      ok: false,
+      error: options.allowHttp ? `${label} must use http or https` : `${label} must use https`,
+    };
   }
 
   if (parsed.username || parsed.password) {
-    return { ok: false, error: 'Webhook URL cannot include credentials' };
+    return { ok: false, error: `${label} cannot include credentials` };
   }
 
   const hostname = parsed.hostname.toLowerCase();
   if (BLOCKED_HOSTS.has(hostname) || hostname.endsWith('.local')) {
-    return { ok: false, error: 'Webhook URL host is not allowed' };
+    return { ok: false, error: `${label} host is not allowed` };
   }
 
   if (net.isIP(hostname) && isPrivateIp(hostname)) {
-    return { ok: false, error: 'Webhook URL cannot target private network addresses' };
+    return { ok: false, error: `${label} cannot target private network addresses` };
   }
 
   try {
     const records = await dns.lookup(hostname, { all: true, verbatim: true });
     if (records.some((record) => isPrivateIp(record.address))) {
-      return { ok: false, error: 'Webhook URL resolves to a private network address' };
+      return { ok: false, error: `${label} resolves to a private network address` };
     }
   } catch {
-    return { ok: false, error: 'Webhook URL host could not be resolved' };
+    return { ok: false, error: `${label} host could not be resolved` };
   }
 
   return { ok: true };
+}
+
+export async function validateOutboundHttpsUrl(rawUrl: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  return validatePublicHttpUrl(rawUrl, { label: 'Webhook URL' });
 }

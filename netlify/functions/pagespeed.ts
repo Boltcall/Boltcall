@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
+import { validatePublicHttpUrl } from './_shared/outbound-url';
 
 function json(headers: Record<string, string>, statusCode: number, body: Record<string, unknown>) {
   return { statusCode, headers, body: JSON.stringify(body) };
@@ -44,6 +45,11 @@ export const handler: Handler = async (event) => {
 
     if (!['http:', 'https:'].includes(target.protocol)) {
       return json(headers, 400, { error: 'Only http and https URLs are supported' });
+    }
+
+    const urlCheck = await validatePublicHttpUrl(target.toString(), { allowHttp: true, label: 'PageSpeed URL' });
+    if (!urlCheck.ok) {
+      return json(headers, 400, { error: urlCheck.error });
     }
 
     const supabase = getServiceSupabase();

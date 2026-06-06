@@ -222,6 +222,20 @@ describe('public cost endpoint hardening', () => {
     expect(JSON.parse(res.body).error).toMatch(/http/i);
   });
 
+  it('rejects private-network PageSpeed URLs before calling the provider', async () => {
+    process.env.PAGESPEED_API_KEY = 'test-pagespeed-key';
+    process.env.URL = 'https://boltcall.org';
+    const { handler } = await import('../pagespeed');
+
+    const res = await handler(
+      makeEvent({ body: { url: 'http://127.0.0.1:54321/admin' } }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body).error).toMatch(/private network/i);
+  });
+
   it('rejects cross-site Brevo subscribe calls before using Brevo credentials', async () => {
     delete process.env.BREVO_API_KEY;
     delete process.env.BREVO_LIST_ID;

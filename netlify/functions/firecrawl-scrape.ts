@@ -1,5 +1,6 @@
 import type { Handler } from '@netlify/functions';
 import { hasSharedSecret } from './_shared/user-auth';
+import { validatePublicHttpUrl } from './_shared/outbound-url';
 
 // Firecrawl API keys — waterfall: use key 1 first, if exhausted try key 2, then key 3
 const FIRECRAWL_KEYS = [
@@ -143,6 +144,11 @@ const handler: Handler = async (event) => {
 
     if (!url) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'URL is required' }) };
+    }
+
+    const urlCheck = await validatePublicHttpUrl(String(url), { allowHttp: true, label: 'Scrape URL' });
+    if (!urlCheck.ok) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
     }
 
     // Waterfall through Firecrawl keys

@@ -33,6 +33,39 @@ describe('internal provider endpoint hardening', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('rejects private-network scrape targets before calling Firecrawl or fallback providers', async () => {
+    process.env.FIRECRAWL_API_KEY_1 = 'firecrawl-test-key';
+    const { handler } = await import('../firecrawl-scrape');
+
+    const res = await handler(
+      makePost(
+        { url: 'http://127.0.0.1:54321/admin' },
+        { 'x-internal-secret': 'test-internal-secret' },
+      ),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body).error).toMatch(/private network/i);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('rejects private-network scrape-url targets before the basic fetch fallback', async () => {
+    const { handler } = await import('../scrape-url');
+
+    const res = await handler(
+      makePost(
+        { url: 'http://127.0.0.1:54321/admin' },
+        { 'x-internal-secret': 'test-internal-secret' },
+      ),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body).error).toMatch(/private network/i);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('requires an internal secret before issuing Greeninvoice documents', async () => {
     process.env.GREENINVOICE_API_KEY = 'greeninvoice-test-key';
     process.env.GREENINVOICE_SECRET = 'greeninvoice-test-secret';
