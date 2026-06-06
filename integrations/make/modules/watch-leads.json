@@ -1,0 +1,18 @@
+{
+  "name": "watchLeads",
+  "label": "Watch Leads",
+  "type": "trigger",
+  "description": "Triggers when Boltcall captures new leads.",
+  "communication": {
+    "url": "/api-leads",
+    "method": "GET",
+    "headers": {
+      "Authorization": "Bearer {{connection.apiKey}}"
+    }
+  },
+  "response": {
+    "iterate": "{{body}}",
+    "uid": "{{item.id}}",
+    "output": "{{item}}"
+  }
+}

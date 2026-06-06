@@ -77,6 +77,7 @@ const ALLOWED_INTEGRATION_IDS = [
   'gmail',
   'slack',
   'zapier',
+  'make',
   'stripe',
   'reputation-manager',
 ] as const;

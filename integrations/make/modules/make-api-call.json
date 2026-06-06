@@ -1,0 +1,44 @@
+{
+  "name": "makeApiCall",
+  "label": "Make an API Call",
+  "type": "action",
+  "description": "Calls a Boltcall integration API endpoint directly.",
+  "parameters": [
+    {
+      "name": "endpoint",
+      "type": "select",
+      "label": "Endpoint",
+      "required": true,
+      "options": [
+        { "label": "Account", "value": "/api-me" },
+        { "label": "Leads", "value": "/api-leads" },
+        { "label": "Lead Search", "value": "/api-lead-search" },
+        { "label": "Lead Webhook", "value": "/lead-webhook" }
+      ]
+    },
+    {
+      "name": "method",
+      "type": "select",
+      "label": "Method",
+      "required": true,
+      "options": [
+        { "label": "GET", "value": "GET" },
+        { "label": "POST", "value": "POST" }
+      ],
+      "default": "GET"
+    },
+    { "name": "body", "type": "json", "label": "JSON Body", "required": false }
+  ],
+  "communication": {
+    "url": "{{parameters.endpoint}}",
+    "method": "{{parameters.method}}",
+    "headers": {
+      "Authorization": "Bearer {{connection.apiKey}}",
+      "Content-Type": "application/json"
+    },
+    "body": "{{parameters.body}}"
+  },
+  "response": {
+    "output": "{{body}}"
+  }
+}

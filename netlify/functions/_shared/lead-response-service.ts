@@ -15,6 +15,7 @@ export type LeadResponseOutcome = {
   events_emitted: string[];
   warnings: string[];
   lead?: Record<string, any> | null;
+  deduped?: boolean;
 };
 
 export type LeadResponseDeps = {
@@ -36,6 +37,10 @@ export function normalizeInboundLead(body: Record<string, any> = {}, source?: st
     lastName = parts.slice(1).join(' ') || '';
   }
 
+  const rawData = { ...body };
+  if (rawData.external_id == null && body.externalId != null) rawData.external_id = body.externalId;
+  if (rawData.idempotency_key == null && body.idempotencyKey != null) rawData.idempotency_key = body.idempotencyKey;
+
   const lead: Record<string, any> = {
     first_name: firstName || null,
     last_name: lastName || null,
@@ -43,10 +48,46 @@ export function normalizeInboundLead(body: Record<string, any> = {}, source?: st
     phone: body.phone || body.phone_number || null,
     source: source || body.source || body.source_type || body.acquisition_source || 'website_form',
     status: body.status || 'pending',
-    raw_data: body,
+    raw_data: rawData,
   };
   if (body.user_id) lead.user_id = body.user_id;
   return lead;
+}
+
+function idempotencyValues(body: Record<string, any> = {}): Array<{ field: string; value: string }> {
+  const pairs = [
+    ['external_id', body.external_id || body.externalId],
+    ['idempotency_key', body.idempotency_key || body.idempotencyKey],
+  ];
+
+  return pairs
+    .filter(([, value]) => value != null && String(value).trim().length > 0)
+    .map(([field, value]) => ({ field: String(field), value: String(value).trim() }));
+}
+
+async function findExistingIdempotentLead(
+  deps: LeadResponseDeps,
+  lead: Record<string, any>,
+  originalBody: Record<string, any>,
+): Promise<Record<string, any> | null> {
+  if (!lead.user_id) return null;
+
+  for (const { field, value } of idempotencyValues(originalBody)) {
+    try {
+      const { data } = await deps.supabase
+        .from('leads')
+        .select('*')
+        .eq('user_id', lead.user_id)
+        .filter(`raw_data->>${field}`, 'eq', value)
+        .limit(1)
+        .maybeSingle();
+      if (data?.id) return data;
+    } catch {
+      // Idempotency lookup should never block lead capture.
+    }
+  }
+
+  return null;
 }
 
 async function emitLifecycleEvent(
@@ -179,6 +220,21 @@ export async function handleInboundLead(
 
   let insertedLead: Record<string, any> | null = null;
   try {
+    const existingLead = await findExistingIdempotentLead(deps, lead, input.body || {});
+    if (existingLead) {
+      warnings.push('duplicate_lead');
+      return {
+        status: 'captured',
+        lead_id: existingLead.id || null,
+        first_touch_status: 'skipped',
+        retell_call_started: false,
+        events_emitted: eventsEmitted,
+        warnings,
+        lead: existingLead,
+        deduped: true,
+      };
+    }
+
     const { data, error } = await deps.supabase
       .from('leads')
       .insert(lead)

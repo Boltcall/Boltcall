@@ -1,0 +1,39 @@
+{
+  "name": "createLead",
+  "label": "Create Lead",
+  "type": "action",
+  "description": "Creates a Boltcall lead and starts the speed-to-lead response.",
+  "parameters": [
+    { "name": "name", "type": "text", "label": "Full Name", "required": false },
+    { "name": "first_name", "type": "text", "label": "First Name", "required": false },
+    { "name": "last_name", "type": "text", "label": "Last Name", "required": false },
+    { "name": "email", "type": "email", "label": "Email", "required": false },
+    { "name": "phone", "type": "text", "label": "Phone", "required": false },
+    { "name": "source", "type": "text", "label": "Source", "required": false, "default": "make" },
+    { "name": "notes", "type": "text", "label": "Notes", "required": false },
+    { "name": "external_id", "type": "text", "label": "External ID", "required": false },
+    { "name": "idempotency_key", "type": "text", "label": "Idempotency Key", "required": false }
+  ],
+  "communication": {
+    "url": "/lead-webhook",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer {{connection.apiKey}}",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "name": "{{parameters.name}}",
+      "first_name": "{{parameters.first_name}}",
+      "last_name": "{{parameters.last_name}}",
+      "email": "{{parameters.email}}",
+      "phone": "{{parameters.phone}}",
+      "source": "{{parameters.source}}",
+      "notes": "{{parameters.notes}}",
+      "external_id": "{{parameters.external_id}}",
+      "idempotency_key": "{{parameters.idempotency_key}}"
+    }
+  },
+  "response": {
+    "output": "{{body.lead || body.outcome.lead || body}}"
+  }
+}

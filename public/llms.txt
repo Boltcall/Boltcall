@@ -2,7 +2,7 @@
 > AI speed-to-lead platform for local service businesses.
 
 Canonical: https://boltcall.org
-Last updated: 2026-05-31
+Last updated: 2026-06-06
 
 ## What is Boltcall?
 
@@ -66,6 +66,14 @@ Boltcall is an AI receptionist and speed-to-lead platform for local service busi
 - Website Widget: https://boltcall.org/features/website-widget
 - Documentation: https://boltcall.org/documentation
 - API Documentation: https://boltcall.org/api-documentation
+
+### Integration pages
+
+- Integrations hub: https://boltcall.org/integrations
+- Zapier integration: https://boltcall.org/integrations/zapier
+- Make integration: https://boltcall.org/integrations/make
+- HubSpot integration: https://boltcall.org/integrations/hubspot
+- GoHighLevel integration: https://boltcall.org/integrations/gohighlevel
 
 ### High-signal guides
 

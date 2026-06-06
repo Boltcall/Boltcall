@@ -1,0 +1,14 @@
+{
+  "name": "boltcall",
+  "label": "Boltcall",
+  "version": "1.0.0",
+  "baseUrl": "https://boltcall.org/.netlify/functions",
+  "description": "AI speed-to-lead workflows for local service businesses.",
+  "connection": "boltcallApiKey",
+  "modules": [
+    "watchLeads",
+    "createLead",
+    "findLead",
+    "makeApiCall"
+  ]
+}

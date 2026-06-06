@@ -270,6 +270,14 @@ const CATALOG: CatalogEntry[] = [
     isConnected: (c) => c.userIntegrationIds.has('zapier'),
   },
   {
+    id: 'make',
+    name: 'Make',
+    category: 'marketing',
+    description:
+      'Build visual speed-to-lead scenarios that move Boltcall leads into ads, CRM, sheets, and team workflows.',
+    isConnected: (c) => c.userIntegrationIds.has('make'),
+  },
+  {
     id: 'stripe',
     name: 'Stripe',
     category: 'marketing',

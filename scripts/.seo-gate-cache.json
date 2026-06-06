@@ -79,6 +79,11 @@
     "/funnel-optimizer",
     "/giveaway",
     "/help-center",
+    "/integrations",
+    "/integrations/gohighlevel",
+    "/integrations/hubspot",
+    "/integrations/make",
+    "/integrations/zapier",
     "/lead-magnet",
     "/lead-magnet/ai-receptionist-buyers-guide",
     "/lead-magnet/claude-code-overnight-kit",
@@ -110,5 +115,5 @@
     "/tools/solar-sales-closer",
     "/tools/vet-clinic-revenue-calculator"
   ],
-  "updatedAt": "2026-05-31T11:00:03.246Z"
+  "updatedAt": "2026-06-06T07:58:40.095Z"
 }

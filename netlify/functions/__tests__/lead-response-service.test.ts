@@ -10,6 +10,16 @@ function makeSupabase(overrides: Record<string, any> = {}) {
     from(table: string) {
       if (table === 'leads') {
         return {
+          select() {
+            const chain: any = {
+              eq: () => chain,
+              or: () => chain,
+              filter: () => chain,
+              limit: () => chain,
+              maybeSingle: async () => ({ data: overrides.existingLead ?? null, error: null }),
+            };
+            return chain;
+          },
           insert(row: any) {
             inserted.push(row);
             return {
@@ -100,6 +110,75 @@ describe('handleInboundLead', () => {
       to_number: '+15551112222',
       agent_id: 'agent-1',
     }));
+  });
+
+  it('returns the existing lead for a repeated external id without starting first touch again', async () => {
+    const h = makeSupabase({
+      existingLead: {
+        id: 'lead-existing',
+        first_name: 'Jane',
+        last_name: 'Doe',
+        email: 'jane@example.com',
+        phone: '+15551112222',
+        source: 'zapier',
+        status: 'pending',
+        user_id: 'user-1',
+        raw_data: { external_id: 'zap-123' },
+        created_at: '2026-06-06T10:00:00.000Z',
+      },
+    });
+    const fireWebhooks = vi.fn();
+    const syncCrm = vi.fn();
+    const retell = { call: { createPhoneCall: vi.fn() } };
+
+    const result = await handleInboundLead({
+      body: {
+        first_name: 'Jane',
+        last_name: 'Doe',
+        email: 'jane@example.com',
+        phone: '+15551112222',
+        source: 'zapier',
+        user_id: 'user-1',
+        external_id: 'zap-123',
+      },
+      source: 'zapier',
+    }, {
+      supabase: h.supabase as any,
+      retellFactory: () => retell as any,
+      retellApiKey: 'retell-key',
+      fireWebhooks,
+      syncCrm,
+    });
+
+    expect(result.status).toBe('captured');
+    expect(result.lead_id).toBe('lead-existing');
+    expect(result.first_touch_status).toBe('skipped');
+    expect(result.retell_call_started).toBe(false);
+    expect(result.deduped).toBe(true);
+    expect(result.warnings).toContain('duplicate_lead');
+    expect(h.inserted).toHaveLength(0);
+    expect(fireWebhooks).not.toHaveBeenCalled();
+    expect(syncCrm).not.toHaveBeenCalled();
+    expect(retell.call.createPhoneCall).not.toHaveBeenCalled();
+  });
+
+  it('normalizes camelCase idempotency fields into raw_data', async () => {
+    const h = makeSupabase();
+
+    const result = await handleInboundLead({
+      body: {
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        user_id: 'user-1',
+        externalId: 12345,
+        idempotencyKey: 'retry-key-1',
+      },
+      source: 'make',
+    }, { supabase: h.supabase as any });
+
+    expect(result.status).toBe('captured');
+    expect(h.inserted[0].raw_data.external_id).toBe(12345);
+    expect(h.inserted[0].raw_data.idempotency_key).toBe('retry-key-1');
   });
 
   it('rejects leads without email or phone', async () => {

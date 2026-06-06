@@ -19,6 +19,31 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
+function formatLead(row: Record<string, any>) {
+  const first = row.first_name || '';
+  const last = row.last_name || '';
+  const name = [first, last].filter(Boolean).join(' ') || row.raw_data?.name || row.raw_data?.full_name || '';
+
+  return {
+    id: row.id,
+    first_name: row.first_name || '',
+    last_name: row.last_name || '',
+    name,
+    email: row.email || '',
+    phone: row.phone || '',
+    source: row.source || '',
+    status: row.status || '',
+    call_status: row.call_status || null,
+    call_duration: row.call_duration || null,
+    sms_sent: Boolean(row.sms_sent),
+    created_at: row.created_at || '',
+    first_touch_status: row.raw_data?.first_touch_status || null,
+    retell_call_started: Boolean(row.raw_data?.retell_call_started),
+    external_id: row.raw_data?.external_id || null,
+    idempotency_key: row.raw_data?.idempotency_key || null,
+  };
+}
+
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
@@ -60,7 +85,7 @@ export const handler: Handler = async (event) => {
   const { data: leads, error } = await supabase
     .from('leads')
     .select(
-      'id, first_name, last_name, email, phone, source, status, call_status, call_duration, sms_sent, created_at'
+      'id, first_name, last_name, email, phone, source, status, call_status, call_duration, sms_sent, created_at, raw_data'
     )
     .eq('user_id', validation.userId)
     .order('created_at', { ascending: false })
@@ -79,6 +104,6 @@ export const handler: Handler = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify(leads || []),
+    body: JSON.stringify((leads || []).map(formatLead)),
   };
 };
