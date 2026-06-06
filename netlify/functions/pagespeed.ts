@@ -25,11 +25,6 @@ export const handler: Handler = async (event) => {
     return json(headers, 405, { error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.PAGESPEED_API_KEY;
-  if (!apiKey) {
-    return json(headers, 500, { error: 'PageSpeed API key not configured on server' });
-  }
-
   try {
     const { url, strategy } = JSON.parse(event.body || '{}');
     if (!url) {
@@ -50,6 +45,11 @@ export const handler: Handler = async (event) => {
     const urlCheck = await validatePublicHttpUrl(target.toString(), { allowHttp: true, label: 'PageSpeed URL' });
     if (!urlCheck.ok) {
       return json(headers, 400, { error: urlCheck.error });
+    }
+
+    const apiKey = process.env.PAGESPEED_API_KEY || process.env.GOOGLE_PAGESPEED_API_KEY;
+    if (!apiKey) {
+      return json(headers, 500, { error: 'PageSpeed API key not configured on server' });
     }
 
     const supabase = getServiceSupabase();

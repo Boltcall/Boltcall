@@ -223,7 +223,8 @@ describe('public cost endpoint hardening', () => {
   });
 
   it('rejects private-network PageSpeed URLs before calling the provider', async () => {
-    process.env.PAGESPEED_API_KEY = 'test-pagespeed-key';
+    delete process.env.PAGESPEED_API_KEY;
+    delete process.env.GOOGLE_PAGESPEED_API_KEY;
     process.env.URL = 'https://boltcall.org';
     const { handler } = await import('../pagespeed');
 
