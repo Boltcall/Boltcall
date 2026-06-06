@@ -95,3 +95,24 @@ describe('chatkit-session hardening', () => {
     expect(JSON.parse(res.body).error).toMatch(/disabled/i);
   });
 });
+
+describe('break-my-ai legacy endpoint hardening', () => {
+  it('does not accept the old public fallback code when no challenge secret is configured', async () => {
+    delete process.env.BREAK_MY_AI_CODE;
+    delete process.env.BREAK_MY_AI_SALT;
+    delete process.env.CHALLENGE_SECRET_WORD;
+    process.env.URL = 'https://boltcall.org';
+
+    const { handler } = await import('../break-my-ai');
+    const res = await handler(
+      makeEvent({
+        path: '/.netlify/functions/break-my-ai/submit',
+        body: { name: 'Noam', email: 'noam@example.com', code: 'boltcall' },
+      }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(503);
+    expect(JSON.parse(res.body).error).toMatch(/not configured/i);
+  });
+});
