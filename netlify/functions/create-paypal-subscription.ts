@@ -13,10 +13,10 @@
 // the BILLING.SUBSCRIPTION.ACTIVATED webhook persists the subscription row.
 
 import type { Handler } from '@netlify/functions';
-import { createClient } from '@supabase/supabase-js';
 import { paypalFetch } from './_shared/paypal-client';
 import { isAllowedRedirect } from './_shared/redirect-allowlist';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { getServiceSupabase } from './_shared/token-utils';
 
 const isSandbox = process.env.PAYPAL_MODE === 'sandbox';
 
@@ -63,15 +63,13 @@ const handler: Handler = async (event) => {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Authentication required' }) };
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) {
+  let supabase;
+  try {
+    supabase = getServiceSupabase();
+  } catch {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Supabase not configured' }) };
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
   const token = authHeader.substring(7);
   const { data: { user }, error: authError } = await supabase.auth.getUser(token);
   if (authError || !user) {

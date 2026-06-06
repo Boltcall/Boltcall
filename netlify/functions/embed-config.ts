@@ -2,7 +2,7 @@ import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY || '';
 
 export const handler: Handler = async (event) => {
   const headers = {
@@ -32,7 +32,7 @@ export const handler: Handler = async (event) => {
   }
 
   if (!supabaseKey) {
-    console.error('embed-config: Missing SUPABASE_SERVICE_KEY or VITE_SUPABASE_ANON_KEY');
+    console.error('embed-config: Missing SUPABASE_SERVICE_KEY');
     return {
       statusCode: 500,
       headers,

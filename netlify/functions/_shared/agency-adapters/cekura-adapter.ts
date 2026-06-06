@@ -37,7 +37,8 @@
  * `cekura_batch_completed` event per run with cost + duration.
  */
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getServiceSupabase } from '../token-utils';
 import {
   emitAgencyEvent,
   type AgencyEventType,
@@ -142,9 +143,7 @@ export interface AgentConfig {
 // ─── Internal helpers ───────────────────────────────────────────────────────
 
 function getSupabase(): SupabaseClient {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+  return getServiceSupabase();
 }
 
 async function cekuraFetch(path: string, method: string, body?: any) {

@@ -39,7 +39,7 @@
 
 import type { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import path from 'node:path';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 import {
   runAgent,
@@ -54,6 +54,7 @@ import {
 } from './_shared/agency-adapters/cekura-adapter';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { getServiceSupabase } from './_shared/token-utils';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -798,12 +799,7 @@ function loadOutputSchema(skill_dir: string): JsonSchemaObject {
 // ─── Supabase access ────────────────────────────────────────────────────────
 
 function getServiceClient(): SupabaseClient {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !key) {
-    throw new Error('SUPABASE_URL/SUPABASE_SERVICE_KEY not configured');
-  }
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+  return getServiceSupabase();
 }
 
 interface LoadedContext {
