@@ -9,7 +9,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
       'content-type': 'application/json',
     },
     body: typeof overrides.body === 'string' ? overrides.body : JSON.stringify(overrides.body || {}),
-    queryStringParameters: null,
+    queryStringParameters: (overrides.queryStringParameters as Record<string, string>) || null,
     path: (overrides.path as string) || '/.netlify/functions/test',
   } as unknown;
 }
@@ -93,6 +93,41 @@ describe('chatkit-session hardening', () => {
 
     expect(res.statusCode).toBe(403);
     expect(JSON.parse(res.body).error).toMatch(/disabled/i);
+  });
+});
+
+describe('acs-numbers hardening', () => {
+  it('rejects unauthenticated phone-number administration requests', async () => {
+    process.env.URL = 'https://boltcall.org';
+    const { handler } = await import('../acs-numbers');
+
+    const res = await handler(
+      makeEvent({
+        httpMethod: 'GET',
+        queryStringParameters: { action: 'available' },
+      }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(401);
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('*');
+  });
+
+  it('rejects disallowed browser origins before phone-provider access', async () => {
+    process.env.URL = 'https://boltcall.org';
+    const { handler } = await import('../acs-numbers');
+
+    const res = await handler(
+      makeEvent({
+        httpMethod: 'GET',
+        headers: { origin: 'https://attacker.example', 'content-type': 'application/json' },
+        queryStringParameters: { action: 'available' },
+      }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(403);
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('https://attacker.example');
   });
 });
 

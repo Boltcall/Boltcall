@@ -1,4 +1,4 @@
-import { Handler } from '@netlify/functions';
+import { Handler, HandlerEvent } from '@netlify/functions';
 import {
   listAcsNumbers,
   releaseAcsNumber,
@@ -7,6 +7,9 @@ import {
   getAcsCredentials,
   buildAcsAuthHeaders,
 } from './_shared/acs-sdk';
+import { getServiceSupabase } from './_shared/token-utils';
+import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { getHeader, hasSharedSecret } from './_shared/user-auth';
 
 /**
  * ACS Phone Numbers — replaces twilio-numbers.ts
@@ -18,14 +21,50 @@ import {
  * GET  /acs-numbers?action=operation&id=... — poll search/purchase operation status
  */
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Content-Type': 'application/json',
-};
-
 const NUMBERS_API_VERSION = '2022-12-01';
+
+function json(headers: Record<string, string>, statusCode: number, body: Record<string, unknown>) {
+  return { statusCode, headers, body: JSON.stringify(body) };
+}
+
+async function requireNumberAdmin(event: HandlerEvent, headers: Record<string, string>) {
+  if (hasSharedSecret(event)) {
+    return { ok: true as const, source: 'internal' as const };
+  }
+
+  const authHeader = getHeader(event, 'authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return { ok: false as const, response: json(headers, 401, { error: 'Authentication required' }) };
+  }
+
+  const token = authHeader.slice('Bearer '.length);
+  const supabase = getServiceSupabase();
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data.user) {
+    return { ok: false as const, response: json(headers, 401, { error: 'Invalid or expired token' }) };
+  }
+
+  const role = (data.user.app_metadata as { role?: string } | undefined)?.role;
+  if (role === 'founder') {
+    return { ok: true as const, source: 'founder' as const };
+  }
+
+  if (data.user.email) {
+    const { data: adminRow } = await supabase
+      .from('platform_admins')
+      .select('id')
+      .eq('email', data.user.email)
+      .maybeSingle();
+
+    if (adminRow) return { ok: true as const, source: 'platform_admin' as const };
+  }
+
+  return {
+    ok: false as const,
+    response: json(headers, 403, { error: 'Forbidden - phone-number administration required' }),
+  };
+}
 
 async function getOperationStatus(operationId: string): Promise<any> {
   const { endpoint, key } = getAcsCredentials();
@@ -41,8 +80,21 @@ async function getOperationStatus(operationId: string): Promise<any> {
 }
 
 export const handler: Handler = async (event) => {
+  const origin = getRequestOrigin(event.headers as Record<string, string | undefined>);
+  const cors = getV2CorsHeaders(origin, { methods: 'GET, POST' });
+  const headers = cors.headers;
+
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return { statusCode: 204, headers, body: '' };
+  }
+
+  if (origin && !cors.allowed) {
+    return json(headers, 403, { error: 'Origin not allowed' });
+  }
+
+  const auth = await requireNumberAdmin(event, headers);
+  if (!auth.ok) {
+    return auth.response;
   }
 
   try {
@@ -69,7 +121,7 @@ export const handler: Handler = async (event) => {
       if (action === 'operation') {
         const operationId = event.queryStringParameters?.id;
         if (!operationId) {
-          return { statusCode: 400, headers, body: JSON.stringify({ error: 'id required' }) };
+          return json(headers, 400, { error: 'id required' });
         }
         const status = await getOperationStatus(operationId);
         const numbers = (status.phoneNumbers || []).map((n: any) => ({
@@ -102,7 +154,7 @@ export const handler: Handler = async (event) => {
       if (postAction === 'purchase') {
         const { search_id } = body;
         if (!search_id) {
-          return { statusCode: 400, headers, body: JSON.stringify({ error: 'search_id required (operationId from a completed search)' }) };
+          return json(headers, 400, { error: 'search_id required (operationId from a completed search)' });
         }
         const operationId = await purchaseAcsNumbers(search_id);
         return {
@@ -119,7 +171,7 @@ export const handler: Handler = async (event) => {
       if (postAction === 'release') {
         const { phone_number } = body;
         if (!phone_number) {
-          return { statusCode: 400, headers, body: JSON.stringify({ error: 'phone_number required' }) };
+          return json(headers, 400, { error: 'phone_number required' });
         }
         await releaseAcsNumber(phone_number);
         return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
@@ -139,10 +191,10 @@ export const handler: Handler = async (event) => {
         };
       }
 
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid action. Use: purchase, release, or configure' }) };
+      return json(headers, 400, { error: 'Invalid action. Use: purchase, release, or configure' });
     }
 
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return json(headers, 405, { error: 'Method not allowed' });
   } catch (error) {
     console.error('[acs-numbers] Error:', error);
     return {
