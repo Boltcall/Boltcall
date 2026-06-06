@@ -193,7 +193,12 @@ export const handler: Handler = async (event) => {
       const sendUrl = (process.env.URL || '') + '/.netlify/functions/whatsapp-send';
       const res = await fetch(sendUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+            ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+            : {}),
+        },
         body: JSON.stringify({
           userId,
           to: testPhone,

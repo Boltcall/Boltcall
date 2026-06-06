@@ -1,10 +1,11 @@
 import type { Handler } from '@netlify/functions';
 import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
+import { requireInternalOrMatchingUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Internal-Secret, X-Cron-Secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
@@ -24,6 +25,9 @@ const handler: Handler = async (event) => {
     if (!content) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Content is required' }) };
     }
+
+    const auth = await requireInternalOrMatchingUser(event, userId, headers);
+    if (!auth.ok) return auth.response;
 
     // Token gate: deduct before calling Claude
     if (userId) {

@@ -1,6 +1,8 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
+import { authorizeRunner } from './_shared/agency-runner-auth';
+import { requireMatchingUser } from './_shared/user-auth';
 
 /**
  * SMS Sequence Processor — Executes follow-up drip sequences via SMS.
@@ -44,10 +46,22 @@ export const handler: Handler = async (event) => {
 
     // ─── Handle enrollment action ───────────────────────────────────
     if (body.action === 'enroll') {
+      const auth = await requireMatchingUser(event, body.userId, CORS_HEADERS);
+      if (!auth.ok) return auth.response;
+      body.userId = auth.userId;
       return await handleEnroll(supabase, body);
     }
 
     // ─── Process pending sequence steps ─────────────────────────────
+    const authz = await authorizeRunner(event);
+    if (!authz.ok) {
+      return {
+        statusCode: authz.status,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ error: authz.message }),
+      };
+    }
+
     const now = new Date().toISOString();
 
     // Find all active enrollments that are due

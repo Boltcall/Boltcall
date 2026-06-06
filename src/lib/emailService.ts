@@ -3,6 +3,8 @@
  * Calls email-actions and email-ai-responder Netlify functions.
  */
 
+import { authedFetch } from './authedFetch';
+
 const BASE = '/.netlify/functions';
 
 interface EmailAccount {
@@ -71,7 +73,7 @@ interface ThreadsResponse {
 // ─── API Calls ──────────────────────────────────────────────────────────
 
 async function callEmailActions(body: Record<string, unknown>) {
-  const res = await fetch(`${BASE}/email-actions`, {
+  const res = await authedFetch(`${BASE}/email-actions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -104,7 +106,7 @@ export async function updateEmailSettings(
 // ─── OAuth Flows ────────────────────────────────────────────────────────
 
 export async function startGmailAuth(userId: string): Promise<void> {
-  const res = await fetch(`${BASE}/gmail-auth-start?user_id=${userId}`);
+  const res = await authedFetch(`${BASE}/gmail-auth-start?user_id=${userId}`);
   const data = await res.json();
   if (data.url) {
     window.location.href = data.url;
@@ -114,7 +116,7 @@ export async function startGmailAuth(userId: string): Promise<void> {
 }
 
 export async function startOutlookAuth(userId: string): Promise<void> {
-  const res = await fetch(`${BASE}/outlook-auth-start?user_id=${userId}`);
+  const res = await authedFetch(`${BASE}/outlook-auth-start?user_id=${userId}`);
   const data = await res.json();
   if (data.url) {
     window.location.href = data.url;
@@ -176,7 +178,7 @@ export async function generateDraft(
   accountId: string,
   action: 'generate' | 'regenerate' = 'generate'
 ): Promise<{ success: boolean; draftStatus: string; messageId: string }> {
-  const res = await fetch(`${BASE}/email-ai-responder`, {
+  const res = await authedFetch(`${BASE}/email-ai-responder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ threadId, userId, accountId, action }),

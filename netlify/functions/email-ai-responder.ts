@@ -1,9 +1,10 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, deductTokens } from './_shared/token-utils';
+import { getServiceSupabase, deductTokens } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { getValidAccessToken, type EmailAccount } from './_shared/email-token-refresh';
 import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
+import { requireInternalOrMatchingUser } from './_shared/user-auth';
 
 /**
  * Email AI Responder — Generates AI draft responses for inbound email threads.
@@ -56,7 +57,10 @@ export const handler: Handler = async (event) => {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'threadId and userId required' }) };
   }
 
-  const supabase = getSupabase();
+  const auth = await requireInternalOrMatchingUser(event, userId, CORS_HEADERS);
+  if (!auth.ok) return auth.response;
+
+  const supabase = getServiceSupabase();
 
   try {
     // 1. Fetch thread + messages
@@ -64,6 +68,7 @@ export const handler: Handler = async (event) => {
       .from('email_threads')
       .select('*, email_accounts!inner(settings, email_address)')
       .eq('id', threadId)
+      .eq('user_id', userId)
       .single();
 
     if (!thread) {
@@ -74,6 +79,7 @@ export const handler: Handler = async (event) => {
       .from('email_messages')
       .select('*')
       .eq('thread_id', threadId)
+      .eq('user_id', userId)
       .order('received_at', { ascending: true })
       .limit(5);
 
@@ -109,6 +115,7 @@ export const handler: Handler = async (event) => {
         .from('leads')
         .select('name, email, phone, source, status, tags')
         .eq('id', thread.lead_id)
+        .eq('user_id', userId)
         .single();
 
       if (lead) {
@@ -206,7 +213,8 @@ Draft a response to the latest message from ${latestInbound.from_address}.`;
         ai_draft_status: draftStatus,
         ai_draft_generated_at: new Date().toISOString(),
       })
-      .eq('id', latestInbound.id);
+      .eq('id', latestInbound.id)
+      .eq('user_id', userId);
 
     // 9. Deduct tokens for AI generation
     await deductTokens(userId, AI_DRAFT_TOKEN_COST, 'email_sent', `AI email draft for thread ${threadId}`, {
@@ -222,6 +230,7 @@ Draft a response to the latest message from ${latestInbound.from_address}.`;
           .from('email_accounts')
           .select('*')
           .eq('id', accountId || thread.email_account_id)
+          .eq('user_id', userId)
           .single();
 
         if (emailAccount) {
@@ -254,7 +263,8 @@ Draft a response to the latest message from ${latestInbound.from_address}.`;
             await supabase
               .from('email_threads')
               .update({ status: 'replied', updated_at: new Date().toISOString() })
-              .eq('id', threadId);
+              .eq('id', threadId)
+              .eq('user_id', userId);
 
             // Deduct send tokens
             await deductTokens(userId, 3, 'email_sent', `Email sent via ${emailAccount.provider} for thread ${threadId}`);
@@ -266,7 +276,8 @@ Draft a response to the latest message from ${latestInbound.from_address}.`;
         await supabase
           .from('email_messages')
           .update({ ai_draft_status: 'pending' })
-          .eq('id', latestInbound.id);
+          .eq('id', latestInbound.id)
+          .eq('user_id', userId);
       }
     }
 

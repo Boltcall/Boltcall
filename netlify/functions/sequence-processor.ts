@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -16,7 +17,16 @@ function getServiceClient() {
  * into scheduled_messages (which the message-dispatcher will then send), and
  * advances the enrollment to the next step.
  */
-export const handler: Handler = async () => {
+export const handler: Handler = async (event) => {
+  if (event.httpMethod && !['GET', 'POST'].includes(event.httpMethod)) {
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return { statusCode: authz.status, body: JSON.stringify({ error: authz.message }) };
+  }
+
   const supabase = getServiceClient();
 
   try {

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowUp, Zap, BarChart2, Globe, Activity, CheckCircle2, Paperclip } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { authedFetch } from '../../lib/authedFetch';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -163,7 +164,7 @@ const BoltcallAgentPage: React.FC = () => {
           content: m.content,
         }));
 
-        const res = await fetch('/.netlify/functions/ai-assistant', {
+        const res = await authedFetch('/.netlify/functions/ai-assistant', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: history, userId: user?.id }),

@@ -22,6 +22,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { PageSkeleton } from '../../../components/ui/loading-skeleton';
 import { FUNCTIONS_BASE } from '../../../lib/api';
+import { authedFetch } from '../../../lib/authedFetch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -150,7 +151,7 @@ const CrmSyncTab: React.FC = () => {
   const loadIntegrations = useCallback(async () => {
     if (!user) return;
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'list', userId: user.id }),
@@ -168,7 +169,7 @@ const CrmSyncTab: React.FC = () => {
   const loadHistory = useCallback(async (provider?: string) => {
     if (!user) return;
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'sync_history', userId: user.id, provider, limit: 50 }),
@@ -220,7 +221,7 @@ const CrmSyncTab: React.FC = () => {
     if (!user || !formApiKey) return;
     setConnecting(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -249,7 +250,7 @@ const CrmSyncTab: React.FC = () => {
   const handleDisconnect = async (crm: CrmProvider) => {
     if (!user) return;
     try {
-      await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'disconnect', userId: user.id, provider: crm.id }),
@@ -266,7 +267,7 @@ const CrmSyncTab: React.FC = () => {
     if (!user) return;
     setSavingSettings(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -297,7 +298,7 @@ const CrmSyncTab: React.FC = () => {
     if (!user) return;
     setSyncing(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import type { HandlerEvent } from '@netlify/functions';
 
 /**
  * Constant-time HMAC-SHA256 signature verification.
@@ -20,6 +21,43 @@ function timingSafeHexEqual(expectedHex: string, providedHex: string): boolean {
   } catch {
     return false;
   }
+}
+
+function timingSafeBase64Equal(expected: string, provided: string): boolean {
+  if (expected.length !== provided.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(provided));
+  } catch {
+    return false;
+  }
+}
+
+function header(headers: Record<string, string | undefined>, name: string): string | undefined {
+  const lower = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === lower) return value;
+  }
+  return undefined;
+}
+
+function eventUrlCandidates(event: HandlerEvent): string[] {
+  const candidates = new Set<string>();
+  const eventWithRaw = event as HandlerEvent & { rawUrl?: string; rawQuery?: string };
+  const query = eventWithRaw.rawQuery ? `?${eventWithRaw.rawQuery}` : '';
+  if (eventWithRaw.rawUrl) candidates.add(eventWithRaw.rawUrl);
+
+  const siteUrl = process.env.URL || process.env.DEPLOY_URL || process.env.SITE_URL || '';
+  if (siteUrl && event.path) {
+    candidates.add(`${siteUrl.replace(/\/$/, '')}${event.path}${query}`);
+  }
+
+  const proto = header(event.headers as Record<string, string | undefined>, 'x-forwarded-proto') || 'https';
+  const host = header(event.headers as Record<string, string | undefined>, 'host');
+  if (host && event.path) {
+    candidates.add(`${proto}://${host}${event.path}${query}`);
+  }
+
+  return [...candidates];
 }
 
 /**
@@ -50,6 +88,32 @@ export function verifyRetellSignature(
   // Some Retell versions prefix with `sha256=` — strip it.
   const cleaned = provided.startsWith('sha256=') ? provided.slice(7) : provided;
   return timingSafeHexEqual(expected, cleaned) ? 'valid' : 'invalid';
+}
+
+/**
+ * Verify a Twilio webhook signature.
+ *
+ * Twilio signs the exact public URL plus POST parameters with HMAC-SHA1 using
+ * the account auth token, then base64-encodes the result in X-Twilio-Signature.
+ */
+export function verifyTwilioSignature(event: HandlerEvent): SigResult {
+  const secret = process.env.TWILIO_AUTH_TOKEN;
+  if (!secret) return 'missing';
+
+  const headers = event.headers as Record<string, string | undefined>;
+  const provided = header(headers, 'x-twilio-signature') || '';
+  if (!provided) return 'missing';
+
+  const params = new URLSearchParams(event.body || '');
+  const sortedParams = [...params.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const suffix = sortedParams.map(([key, value]) => `${key}${value}`).join('');
+
+  for (const url of eventUrlCandidates(event)) {
+    const expected = crypto.createHmac('sha1', secret).update(`${url}${suffix}`).digest('base64');
+    if (timingSafeBase64Equal(expected, provided)) return 'valid';
+  }
+
+  return 'invalid';
 }
 
 /**

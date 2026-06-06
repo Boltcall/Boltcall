@@ -4,6 +4,7 @@ import Retell from 'retell-sdk';
 import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { chatCompletion, getAzureDeployment } from './_shared/azure-ai';
+import { requireMatchingUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -783,15 +784,14 @@ const handler: Handler = async (event) => {
     if (!messages?.length) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Messages required' }) };
     }
+    const auth = await requireMatchingUser(event, userId, headers);
+    if (!auth.ok) return auth.response;
 
     const openai = getOpenAIClient();
     const deployment = getAzureDeployment(false);
 
     // Fetch user context
-    let ctx: any = { userId };
-    if (userId) {
-      ctx = await getBusinessContext(userId);
-    }
+    let ctx: any = await getBusinessContext(auth.userId);
 
     const contextStr = contextToString(ctx);
     const systemContent = contextStr
@@ -863,7 +863,7 @@ const handler: Handler = async (event) => {
     if (userId) {
       try {
         await deductTokens(
-          userId,
+          auth.userId,
           TOKEN_COSTS.ai_chat_message,
           'ai_chat_message',
           `AI assistant message (${actionsTaken.length} actions)`,

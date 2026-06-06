@@ -180,6 +180,7 @@ async function postToCreativeFoundry(client_id: string): Promise<{ ok: boolean; 
       headers: {
         'Content-Type': 'application/json',
         'X-Cron-Trigger': 'monday-creative-refresh',
+        ...(process.env.CRON_SECRET ? { 'x-cron-secret': process.env.CRON_SECRET } : {}),
       },
       body: JSON.stringify({ client_id }),
       signal: controller.signal,

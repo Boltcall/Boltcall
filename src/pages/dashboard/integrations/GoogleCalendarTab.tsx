@@ -22,6 +22,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { PageSkeleton } from '../../../components/ui/loading-skeleton';
 import { FUNCTIONS_BASE } from '../../../lib/api';
+import { authedFetch } from '../../../lib/authedFetch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -87,7 +88,7 @@ const GoogleCalendarTab: React.FC = () => {
   const loadIntegration = useCallback(async () => {
     if (!user) return;
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'list', userId: user.id }),
@@ -114,7 +115,7 @@ const GoogleCalendarTab: React.FC = () => {
   const loadHistory = useCallback(async () => {
     if (!user) return;
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'sync_history', userId: user.id, provider: 'google_calendar', limit: 50 }),
@@ -154,7 +155,7 @@ const GoogleCalendarTab: React.FC = () => {
     if (!user) return;
     setConnecting(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/google-calendar-auth-start?user_id=${user.id}`);
+      const res = await authedFetch(`${FUNCTIONS_BASE}/google-calendar-auth-start?user_id=${user.id}`);
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -172,7 +173,7 @@ const GoogleCalendarTab: React.FC = () => {
   const handleDisconnect = async () => {
     if (!user) return;
     try {
-      await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'disconnect', userId: user.id, provider: 'google_calendar' }),
@@ -200,7 +201,7 @@ const GoogleCalendarTab: React.FC = () => {
         buffer_time_minutes: bufferTime,
       };
 
-      await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -212,7 +213,7 @@ const GoogleCalendarTab: React.FC = () => {
         }),
       });
 
-      await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -238,7 +239,7 @@ const GoogleCalendarTab: React.FC = () => {
     if (!user) return;
     setSyncing(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

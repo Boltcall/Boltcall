@@ -152,6 +152,7 @@ async function postToQaAuditor(client_id: string): Promise<{ ok: boolean; status
       headers: {
         'Content-Type': 'application/json',
         'X-Cron-Trigger': 'daily-qa-audit',
+        ...(process.env.CRON_SECRET ? { 'x-cron-secret': process.env.CRON_SECRET } : {}),
       },
       body: JSON.stringify({ client_id }),
       signal: controller.signal,

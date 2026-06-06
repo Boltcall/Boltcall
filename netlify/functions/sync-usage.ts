@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { getSupabase, deductTokensBatch, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
+import { requireInternalOrMatchingUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -292,6 +293,9 @@ export const handler: Handler = async (event) => {
     if (!user_id) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'user_id is required' }) };
     }
+
+    const auth = await requireInternalOrMatchingUser(event, user_id, headers);
+    if (!auth.ok) return auth.response;
 
     if (!action || !['sync_retell', 'sync_twilio', 'sync_all'].includes(action)) {
       return {

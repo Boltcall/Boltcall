@@ -1,8 +1,10 @@
 import { Handler } from '@netlify/functions';
 import crypto from 'crypto';
 import { notifyError } from './_shared/notify';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { authenticateApiKey } from './_shared/validate-api-key';
+import { hasSharedSecret, requireMatchingUser } from './_shared/user-auth';
+import { validateOutboundHttpsUrl } from './_shared/outbound-url';
 
 /**
  * Webhook Manager Function
@@ -106,6 +108,16 @@ async function sendWebhook(
   payload: object,
   secret?: string | null
 ): Promise<{ statusCode: number; body: string; durationMs: number; success: boolean }> {
+  const urlCheck = await validateOutboundHttpsUrl(url);
+  if (!urlCheck.ok) {
+    return {
+      statusCode: 0,
+      body: urlCheck.error,
+      durationMs: 0,
+      success: false,
+    };
+  }
+
   const bodyStr = JSON.stringify(payload);
   const reqHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -162,15 +174,24 @@ export const handler: Handler = async (event) => {
   try {
     const body = JSON.parse(event.body || '{}');
     const { action } = body;
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
 
-    // Resolve userId: API key auth takes priority, then body.userId
-    const auth = await authenticateApiKey(event.headers as Record<string, string>, event.queryStringParameters);
-    if (auth.hasKey && !auth.userId) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: auth.error || 'Invalid API key' }) };
+    // Resolve userId: API key auth takes priority, then internal secret/JWT.
+    if (action !== 'sample_payload') {
+      const apiAuth = await authenticateApiKey(event.headers as Record<string, string>, event.queryStringParameters);
+      if (apiAuth.hasKey && !apiAuth.userId) {
+        return { statusCode: 401, headers, body: JSON.stringify({ error: apiAuth.error || 'Invalid API key' }) };
+      }
+      if (apiAuth.userId) {
+        body.userId = apiAuth.userId;
+      } else if (action === 'fire' && hasSharedSecret(event)) {
+        // Internal fan-out keeps the request user scoped by its signed body.
+      } else {
+        const userAuth = await requireMatchingUser(event, body.userId, headers);
+        if (!userAuth.ok) return userAuth.response;
+        body.userId = userAuth.userId;
+      }
     }
-    // Inject resolved userId into body so all downstream destructuring picks it up
-    if (auth.userId) body.userId = auth.userId;
 
     // ─── LIST ────────────────────────────────────────────────────────
     if (action === 'list') {
@@ -195,6 +216,10 @@ export const handler: Handler = async (event) => {
       }
       if (!TRIGGER_EVENTS.includes(triggerEvent)) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: `Invalid trigger. Must be: ${TRIGGER_EVENTS.join(', ')}` }) };
+      }
+      const urlCheck = await validateOutboundHttpsUrl(url);
+      if (!urlCheck.ok) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
       }
 
       // Generate a signing secret
@@ -225,7 +250,13 @@ export const handler: Handler = async (event) => {
 
       const updates: Record<string, any> = { updated_at: new Date().toISOString() };
       if (name !== undefined) updates.name = name;
-      if (url !== undefined) updates.url = url;
+      if (url !== undefined) {
+        const urlCheck = await validateOutboundHttpsUrl(url);
+        if (!urlCheck.ok) {
+          return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
+        }
+        updates.url = url;
+      }
       if (triggerEvent !== undefined) updates.trigger_event = triggerEvent;
       if (isActive !== undefined) updates.is_active = isActive;
 

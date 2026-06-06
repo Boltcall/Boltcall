@@ -8,6 +8,22 @@ const mockSupabase = {
 
 vi.mock('../_shared/token-utils', () => ({
   getSupabase: () => mockSupabase,
+  getServiceSupabase: () => mockSupabase,
+}));
+
+vi.mock('../_shared/user-auth', () => ({
+  requireInternalOrMatchingUser: vi.fn(async (_event, userId, headers) => (
+    userId
+      ? { ok: true, user: null, userId }
+      : {
+          ok: false,
+          response: {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({ error: 'userId is required' }),
+          },
+        }
+  )),
 }));
 
 import { handler } from '../record-usage';

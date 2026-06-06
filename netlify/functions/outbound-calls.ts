@@ -1,10 +1,8 @@
 import { Handler } from '@netlify/functions';
-import { createClient } from '@supabase/supabase-js';
 import Retell from 'retell-sdk';
-import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
-
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
+import { requireMatchingUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -12,12 +10,6 @@ const headers = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
-
-function getServiceClient() {
-  return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY!, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
 
 function getRetellClient() {
   const apiKey = process.env.RETELL_API_KEY;
@@ -34,11 +26,14 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const supabase = getServiceClient();
-
   try {
     const body = JSON.parse(event.body || '{}');
     const action = body.action;
+    const auth = await requireMatchingUser(event, body.userId, headers);
+    if (!auth.ok) return auth.response;
+    body.userId = auth.userId;
+
+    const supabase = getServiceSupabase();
 
     // ─── CREATE CAMPAIGN ──────────────────────────────────────────
     if (action === 'create_campaign') {

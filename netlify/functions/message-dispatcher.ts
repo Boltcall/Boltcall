@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import Retell from 'retell-sdk';
 import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 const TWILIO_API_BASE = 'https://api.twilio.com/2010-04-01';
@@ -53,13 +54,12 @@ export const handler: Handler = async (event) => {
   }
 
   // Auth check for manual calls — require secret header (skip for scheduled invocations)
-  if (event.httpMethod === 'POST' && event.body) {
-    const dispatcherKey = process.env.DISPATCHER_SECRET;
-    if (dispatcherKey) {
-      const providedKey = event.headers['x-dispatcher-key'] || event.headers['X-Dispatcher-Key'];
-      if (providedKey !== dispatcherKey) {
-        return { statusCode: 401, body: JSON.stringify({ error: 'Unauthorized' }) };
-      }
+  const dispatcherKey = process.env.DISPATCHER_SECRET;
+  const providedKey = event.headers['x-dispatcher-key'] || event.headers['X-Dispatcher-Key'];
+  if (!dispatcherKey || providedKey !== dispatcherKey) {
+    const authz = await authorizeRunner(event);
+    if (!authz.ok) {
+      return { statusCode: authz.status, body: JSON.stringify({ error: authz.message }) };
     }
   }
 

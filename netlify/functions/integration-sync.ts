@@ -1,6 +1,8 @@
 import { Handler } from '@netlify/functions';
 import { notifyError, notifyInfo } from './_shared/notify';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
+import { hasSharedSecret, requireMatchingUser } from './_shared/user-auth';
+import { validateOutboundHttpsUrl } from './_shared/outbound-url';
 
 /**
  * Integration Sync Function
@@ -207,6 +209,9 @@ async function syncToPipedrive(apiToken: string, lead: any): Promise<{ success: 
 
 async function syncToZapier(webhookUrl: string, lead: any, eventType: string): Promise<{ success: boolean; error?: string }> {
   try {
+    const urlCheck = await validateOutboundHttpsUrl(webhookUrl);
+    if (!urlCheck.ok) return { success: false, error: urlCheck.error };
+
     const res = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -645,7 +650,19 @@ export const handler: Handler = async (event) => {
   try {
     const body = JSON.parse(event.body || '{}');
     const { action } = body;
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
+
+    if (action === 'sync_lead') {
+      if (!hasSharedSecret(event)) {
+        const auth = await requireMatchingUser(event, body.userId, headers);
+        if (!auth.ok) return auth.response;
+        body.userId = auth.userId;
+      }
+    } else {
+      const auth = await requireMatchingUser(event, body.userId, headers);
+      if (!auth.ok) return auth.response;
+      body.userId = auth.userId;
+    }
 
     // ─── LIST: Get all integrations for a user ──────────────────────
     if (action === 'list') {
@@ -667,6 +684,12 @@ export const handler: Handler = async (event) => {
       const { userId, provider, apiKey: integrationApiKey, webhookUrl, config } = body;
       if (!userId || !provider) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'userId and provider required' }) };
+      }
+      if (webhookUrl) {
+        const urlCheck = await validateOutboundHttpsUrl(webhookUrl);
+        if (!urlCheck.ok) {
+          return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
+        }
       }
 
       // Check if exists
@@ -763,6 +786,8 @@ export const handler: Handler = async (event) => {
 
       if (provider === 'zapier') {
         if (!testWebhookUrl) return { statusCode: 400, headers, body: JSON.stringify({ error: 'webhookUrl required for Zapier' }) };
+        const urlCheck = await validateOutboundHttpsUrl(testWebhookUrl);
+        if (!urlCheck.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
         const result = await syncToZapier(testWebhookUrl, { name: 'Test Lead', email: 'test@boltcall.org', phone: '+447700000000', source: 'test' }, 'test');
         return { statusCode: 200, headers, body: JSON.stringify(result) };
       }
@@ -836,6 +861,8 @@ export const handler: Handler = async (event) => {
 
       if (provider === 'make') {
         if (!testWebhookUrl) return { statusCode: 400, headers, body: JSON.stringify({ error: 'webhookUrl required for Make.com' }) };
+        const urlCheck = await validateOutboundHttpsUrl(testWebhookUrl);
+        if (!urlCheck.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
         const result = await syncToZapier(testWebhookUrl, { name: 'Test Lead', email: 'test@boltcall.org', phone: '+447700000000', source: 'test' }, 'test');
         return { statusCode: 200, headers, body: JSON.stringify(result) };
       }

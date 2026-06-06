@@ -39,7 +39,7 @@ export interface SmsMessage {
  * Send a single SMS
  */
 export async function sendSms(to: string, message: string, from?: string): Promise<SendSmsResult> {
-  const response = await fetch(`${FUNCTIONS_BASE}/twilio-sms`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/twilio-sms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'send', to, message, from }),
@@ -60,7 +60,7 @@ export async function sendBulkSms(
   messages: Array<{ to: string; message: string }>,
   from?: string
 ): Promise<BulkSmsResult> {
-  const response = await fetch(`${FUNCTIONS_BASE}/twilio-sms`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/twilio-sms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'send_bulk', messages, from }),
@@ -83,7 +83,7 @@ export async function getSmsHistory(params?: {
   date_sent?: string;
   limit?: number;
 }): Promise<{ messages: SmsMessage[]; total: number }> {
-  const response = await fetch(`${FUNCTIONS_BASE}/twilio-sms`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/twilio-sms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'list', ...params }),
@@ -132,7 +132,7 @@ export async function generateSmsAiReply(
   userId: string,
   action: 'generate' | 'regenerate' = 'generate'
 ): Promise<SmsAiResponse> {
-  const response = await fetch(`${FUNCTIONS_BASE}/sms-ai-responder`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/sms-ai-responder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messageId, userId, action }),
@@ -150,7 +150,7 @@ export async function generateSmsAiReply(
  * Approve an AI-generated SMS draft and send it
  */
 export async function approveSmsAiDraft(messageId: string, userId: string): Promise<{ success: boolean; sid?: string }> {
-  const response = await fetch(`${FUNCTIONS_BASE}/sms-ai-responder`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/sms-ai-responder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messageId, userId, action: 'approve' }),
@@ -168,7 +168,7 @@ export async function approveSmsAiDraft(messageId: string, userId: string): Prom
  * Reject an AI-generated SMS draft
  */
 export async function rejectSmsAiDraft(messageId: string, userId: string): Promise<{ success: boolean }> {
-  const response = await fetch(`${FUNCTIONS_BASE}/sms-ai-responder`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/sms-ai-responder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messageId, userId, action: 'reject' }),
@@ -193,7 +193,7 @@ export async function enrollInSequence(params: {
   userId: string;
   leadId?: string;
 }): Promise<{ success: boolean; enrollmentId?: string; nextStepAt?: string }> {
-  const response = await fetch(`${FUNCTIONS_BASE}/sms-sequence-processor`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/sms-sequence-processor`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'enroll', ...params }),
@@ -211,7 +211,7 @@ export async function enrollInSequence(params: {
  * Manually trigger sequence processing
  */
 export async function processSequences(): Promise<{ processed: number; failed: number }> {
-  const response = await fetch(`${FUNCTIONS_BASE}/sms-sequence-processor`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/sms-sequence-processor`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'process' }),

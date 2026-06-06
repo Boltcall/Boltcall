@@ -561,10 +561,10 @@ const KnowledgeBasePage: React.FC = () => {
         setKbScanning(false);
         return;
       }
-      const extractRes = await fetch(`${FUNCTIONS_BASE}/ai-extract-kb`, {
+      const extractRes = await authedFetch(`${FUNCTIONS_BASE}/ai-extract-kb`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, businessName: knowledgeBaseName, category: businessIndustry }),
+        body: JSON.stringify({ content, businessName: knowledgeBaseName, category: businessIndustry, userId: user!.id }),
       });
       if (extractRes.ok) {
         const extracted = await extractRes.json();

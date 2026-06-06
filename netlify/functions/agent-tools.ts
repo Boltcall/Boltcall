@@ -1,6 +1,8 @@
-import { Handler } from '@netlify/functions';
+import { Handler, HandlerEvent } from '@netlify/functions';
+import * as crypto from 'crypto';
 import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
+import { verifyRetellSignature } from './_shared/verify-signatures';
 
 /**
  * Agent Tools Webhook
@@ -20,10 +22,40 @@ const TWILIO_API_BASE = 'https://api.twilio.com/2010-04-01';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Retell-Signature, X-Agent-Tools-Secret, X-Retell-Tool-Secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
+
+function getHeader(event: HandlerEvent, name: string): string | undefined {
+  const lower = name.toLowerCase();
+  for (const [key, value] of Object.entries((event.headers || {}) as Record<string, string | undefined>)) {
+    if (key.toLowerCase() === lower) return value;
+  }
+  return undefined;
+}
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
+
+function isAuthorizedToolRequest(event: HandlerEvent): boolean {
+  const retellSig = verifyRetellSignature(event.body || '', event.headers as Record<string, string | undefined>);
+  if (retellSig === 'valid') return true;
+  if (retellSig === 'invalid') return false;
+
+  const sharedSecret = process.env.AGENT_TOOLS_SHARED_SECRET || process.env.RETELL_TOOL_SECRET || '';
+  if (sharedSecret) {
+    const provided =
+      getHeader(event, 'x-agent-tools-secret') ||
+      getHeader(event, 'x-retell-tool-secret') ||
+      '';
+    return Boolean(provided) && safeEqual(sharedSecret, provided);
+  }
+
+  return process.env.NODE_ENV !== 'production';
+}
 
 // ── Cal.com helpers ──
 
@@ -764,6 +796,15 @@ export const handler: Handler = async (event) => {
 
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  if (!isAuthorizedToolRequest(event)) {
+    console.warn('[agent-tools] Rejected unauthenticated Retell tool request');
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({ tool_call_id: '', content: 'Unauthorized tool request.' }),
+    };
   }
 
   try {

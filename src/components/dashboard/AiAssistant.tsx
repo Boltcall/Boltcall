@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, CheckCircle2, MessageCircle, HelpCircle, Wand2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
+import { authedFetch } from '../../lib/authedFetch';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -40,7 +41,7 @@ const AiAssistant: React.FC = () => {
   const callAssistant = useCallback(async (msgList: Message[]) => {
     setIsLoading(true);
     try {
-      const res = await fetch('/.netlify/functions/ai-assistant', {
+      const res = await authedFetch('/.netlify/functions/ai-assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { FUNCTIONS_BASE } from '../../lib/api';
+import { authedFetch } from '../../lib/authedFetch';
 
 type ReviewStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 type CallType = 'success' | 'failure';
@@ -167,11 +168,9 @@ export default function QAReviewPage() {
     }
     setActionLoading(prev => ({ ...prev, [review.id]: true }));
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      const res = await fetch(`${FUNCTIONS_BASE}/agent-self-heal`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/agent-self-heal`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'revert-fix', healLogId: review.heal_log_id, userId: user!.id }),
       });
       if (!res.ok) {

@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import { Input } from '../ui/input';
 import Card from '../ui/Card';
 import { useAuth } from '../../contexts/AuthContext';
+import { authedFetch } from '../../lib/authedFetch';
 
 interface ClonedVoice {
   id: string;
@@ -86,7 +87,7 @@ const VoiceClone: React.FC = () => {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const res = await fetch(`${FUNC_BASE}/elevenlabs-clone-voice?userId=${encodeURIComponent(user.id)}`);
+      const res = await authedFetch(`${FUNC_BASE}/elevenlabs-clone-voice?userId=${encodeURIComponent(user.id)}`);
       if (res.ok) setVoices((await res.json()).voices || []);
     } catch (err) {
       console.error('Failed to load cloned voices', err);
@@ -175,7 +176,7 @@ const VoiceClone: React.FC = () => {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`${FUNC_BASE}/elevenlabs-clone-voice`, {
+      const res = await authedFetch(`${FUNC_BASE}/elevenlabs-clone-voice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -205,7 +206,7 @@ const VoiceClone: React.FC = () => {
   const remove = async (id: string) => {
     if (!user?.id) return;
     if (!confirm('Delete this cloned voice? Agents using it will fall back to the default voice.')) return;
-    const res = await fetch(
+    const res = await authedFetch(
       `${FUNC_BASE}/elevenlabs-clone-voice?id=${encodeURIComponent(id)}&userId=${encodeURIComponent(user.id)}`,
       { method: 'DELETE' },
     );

@@ -1,5 +1,6 @@
-import { Handler } from '@netlify/functions';
+import { Handler, HandlerEvent } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import * as crypto from 'crypto';
 import { notifyError } from './_shared/notify';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
@@ -12,6 +13,33 @@ function getServiceClient() {
 
 function buildThreadId(phone1: string, phone2: string): string {
   return [phone1, phone2].sort().join('_');
+}
+
+function getHeader(headers: Record<string, string | undefined>, name: string): string | undefined {
+  const lower = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === lower) return value;
+  }
+  return undefined;
+}
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
+
+function validateAcsSecret(event: HandlerEvent): boolean {
+  const expected = process.env.ACS_EVENTGRID_SECRET || process.env.AZURE_EVENTGRID_WEBHOOK_SECRET || '';
+  if (!expected) return process.env.NODE_ENV !== 'production';
+
+  const headers = event.headers as Record<string, string | undefined>;
+  const provided =
+    getHeader(headers, 'x-acs-webhook-secret') ||
+    getHeader(headers, 'x-eventgrid-secret') ||
+    event.queryStringParameters?.secret ||
+    '';
+
+  return Boolean(provided) && safeEqual(expected, provided);
 }
 
 /**
@@ -49,6 +77,11 @@ export const handler: Handler = async (event) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ validationResponse: validationCode }),
     };
+  }
+
+  if (!validateAcsSecret(event)) {
+    console.warn('[acs-inbound-sms] Rejecting request without valid ACS Event Grid secret');
+    return { statusCode: 403, body: 'Forbidden' };
   }
 
   const supabase = getServiceClient();
@@ -143,7 +176,12 @@ export const handler: Handler = async (event) => {
           if (siteUrl) {
             fetch(`${siteUrl}/.netlify/functions/sms-ai-responder`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+                  ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+                  : {}),
+              },
               body: JSON.stringify({ messageId: insertedMsg.id, userId, action: 'generate' }),
             }).catch(err => {
               console.error('[acs-inbound-sms] Failed to trigger AI responder:', err);

@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import crypto from 'crypto';
+import { createOAuthState } from './_shared/oauth-state';
+import { requireMatchingUser } from './_shared/user-auth';
 
 /**
  * Facebook OAuth — Step 1: Generate the OAuth authorization URL.
@@ -50,8 +51,9 @@ export const handler: Handler = async (event) => {
 
   // Embed user_id in the state param so the callback can associate the connection
   const userId = event.queryStringParameters?.user_id || '';
-  const csrfToken = crypto.randomBytes(16).toString('hex');
-  const state = Buffer.from(JSON.stringify({ csrf: csrfToken, user_id: userId })).toString('base64');
+  const auth = await requireMatchingUser(event, userId, headers);
+  if (!auth.ok) return auth.response;
+  const state = createOAuthState('facebook', auth.userId);
 
   const url =
     `https://www.facebook.com/v20.0/dialog/oauth` +
@@ -63,6 +65,6 @@ export const handler: Handler = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ url, state }),
+    body: JSON.stringify({ url }),
   };
 };

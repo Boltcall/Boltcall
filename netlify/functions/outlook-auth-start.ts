@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import crypto from 'crypto';
+import { createOAuthState } from './_shared/oauth-state';
+import { requireMatchingUser } from './_shared/user-auth';
 
 /**
  * Outlook OAuth — Step 1: Generate the Microsoft OAuth authorization URL.
@@ -48,12 +49,13 @@ export const handler: Handler = async (event) => {
   }
 
   const userId = event.queryStringParameters?.user_id || '';
+  const auth = await requireMatchingUser(event, userId, headers);
+  if (!auth.ok) return auth.response;
+
   const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
   const redirectUri = `${baseUrl}/.netlify/functions/outlook-auth-callback`;
 
-  // Encode user_id + nonce in state for CSRF protection and user association
-  const nonce = crypto.randomBytes(16).toString('hex');
-  const state = Buffer.from(JSON.stringify({ userId, nonce })).toString('base64url');
+  const state = createOAuthState('outlook', auth.userId);
 
   const tenant = process.env.MICROSOFT_TENANT_ID || 'common';
 
@@ -71,6 +73,6 @@ export const handler: Handler = async (event) => {
   return {
     statusCode: 200,
     headers,
-    body: JSON.stringify({ url, state: nonce }),
+    body: JSON.stringify({ url }),
   };
 };

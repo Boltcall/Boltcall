@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
+import { verifyTwilioSignature } from './_shared/verify-signatures';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -30,6 +31,16 @@ export const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 200,
+      headers: { 'Content-Type': 'text/xml' },
+      body: '<Response/>',
+    };
+  }
+
+  const sigResult = verifyTwilioSignature(event);
+  if (sigResult === 'invalid' || (sigResult === 'missing' && process.env.NODE_ENV === 'production' && process.env.TWILIO_AUTH_TOKEN)) {
+    console.warn(`[twilio-inbound-sms] Rejecting ${sigResult} Twilio signature`);
+    return {
+      statusCode: 403,
       headers: { 'Content-Type': 'text/xml' },
       body: '<Response/>',
     };
@@ -149,7 +160,12 @@ export const handler: Handler = async (event) => {
           // Fire-and-forget — don't await, don't block TwiML response
           fetch(`${siteUrl}/.netlify/functions/sms-ai-responder`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+                ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+                : {}),
+            },
             body: JSON.stringify({
               messageId: insertedMsg.id,
               userId,

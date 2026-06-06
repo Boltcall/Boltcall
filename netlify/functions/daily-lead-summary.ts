@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 /**
  * daily-lead-summary
@@ -160,7 +161,12 @@ async function sendBrevoEmail(to: string, subject: string, htmlContent: string):
   }
 }
 
-export const handler: Handler = async () => {
+export const handler: Handler = async (event) => {
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return { statusCode: authz.status, body: JSON.stringify({ error: authz.message }) };
+  }
+
   try {
     const summaries = await getUserSummaries();
 

@@ -1,9 +1,10 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
+import { getServiceSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
 import { sendAcsSms } from './_shared/acs-sdk';
+import { requireInternalOrMatchingUser } from './_shared/user-auth';
 
 /**
  * SMS AI Responder — Generates AI-powered responses for inbound SMS.
@@ -44,17 +45,20 @@ export const handler: Handler = async (event) => {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'messageId and userId required' }) };
   }
 
-  const supabase = getSupabase();
+  const auth = await requireInternalOrMatchingUser(event, userId, CORS_HEADERS);
+  if (!auth.ok) return auth.response;
+
+  const supabase = getServiceSupabase();
 
   try {
     if (action === 'approve') return await handleApprove(supabase, messageId, userId);
     if (action === 'reject') {
-      await supabase.from('sms_conversations').update({ ai_draft_status: 'rejected' }).eq('id', messageId);
+      await supabase.from('sms_conversations').update({ ai_draft_status: 'rejected' }).eq('id', messageId).eq('user_id', userId);
       return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, status: 'rejected' }) };
     }
 
     const { data: message, error: msgErr } = await supabase
-      .from('sms_conversations').select('*').eq('id', messageId).single();
+      .from('sms_conversations').select('*').eq('id', messageId).eq('user_id', userId).single();
     if (msgErr || !message) {
       return { statusCode: 404, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Message not found' }) };
     }
@@ -64,13 +68,13 @@ export const handler: Handler = async (event) => {
 
     const threadId = buildThreadId(message.from_number, message.to_number);
     if (!message.thread_id) {
-      await supabase.from('sms_conversations').update({ thread_id: threadId }).eq('id', messageId);
+      await supabase.from('sms_conversations').update({ thread_id: threadId }).eq('id', messageId).eq('user_id', userId);
     }
 
     const { data: history } = await supabase
       .from('sms_conversations')
       .select('direction, from_number, body, created_at, qualification')
-      .eq('thread_id', threadId).order('created_at', { ascending: true }).limit(20);
+      .eq('thread_id', threadId).eq('user_id', userId).order('created_at', { ascending: true }).limit(20);
 
     const { data: settings } = await supabase.from('sms_settings').select('*').eq('user_id', userId).maybeSingle();
     const smsSettings = settings || {
@@ -184,7 +188,8 @@ RESPOND IN THIS EXACT JSON FORMAT:
     const draftStatus = smsSettings.auto_reply_enabled ? 'auto_sent' : 'pending';
     await supabase.from('sms_conversations')
       .update({ ai_draft: replyText, ai_draft_status: draftStatus, qualification, thread_id: threadId, lead_id: leadId })
-      .eq('id', messageId);
+      .eq('id', messageId)
+      .eq('user_id', userId);
 
     if (!existingLead && qualification.score >= 30) {
       const { data: newLead } = await supabase.from('leads').insert({
@@ -194,7 +199,7 @@ RESPOND IN THIS EXACT JSON FORMAT:
       }).select('id').single();
       if (newLead) {
         leadId = newLead.id;
-        await supabase.from('sms_conversations').update({ lead_id: leadId }).eq('id', messageId);
+        await supabase.from('sms_conversations').update({ lead_id: leadId }).eq('id', messageId).eq('user_id', userId);
       }
     } else if (existingLead && qualification.score > (existingLead.score || 0)) {
       await supabase.from('leads').update({
@@ -214,12 +219,13 @@ RESPOND IN THIS EXACT JSON FORMAT:
         });
         await supabase.from('sms_conversations')
           .update({ ai_responded_at: new Date().toISOString(), ai_draft_status: 'auto_sent' })
-          .eq('id', messageId);
+          .eq('id', messageId)
+          .eq('user_id', userId);
         await deductTokens(userId, SMS_AI_TOKEN_COST + TOKEN_COSTS.sms_sent, 'sms_sent', `AI SMS reply to ${message.from_number}`, { message_id: messageId, thread_id: threadId });
         await notifyInfo(`📱 *SMS Auto\\-Reply Sent*\nTo: ${message.from_number}\nIntent: ${qualification.intent} (${qualification.score}/100)\nReply: ${replyText.slice(0, 100)}`);
       } else {
         console.error('[sms-ai-responder] Failed to send SMS:', sendResult.error);
-        await supabase.from('sms_conversations').update({ ai_draft_status: 'pending' }).eq('id', messageId);
+        await supabase.from('sms_conversations').update({ ai_draft_status: 'pending' }).eq('id', messageId).eq('user_id', userId);
       }
     } else {
       await deductTokens(userId, SMS_AI_TOKEN_COST, 'sms_sent', `AI SMS draft for ${message.from_number}`, { message_id: messageId, thread_id: threadId });
@@ -231,7 +237,8 @@ RESPOND IN THIS EXACT JSON FORMAT:
     if (booking?.wants_to_book && smsSettings.booking_enabled && smsSettings.calcom_event_slug && booking.suggested_slot) {
       await supabase.from('sms_conversations')
         .update({ qualification: { ...qualification, booking_intent: true, suggested_slot: booking.suggested_slot, service_requested: booking.service_requested } })
-        .eq('id', messageId);
+        .eq('id', messageId)
+        .eq('user_id', userId);
     }
 
     return {
@@ -247,7 +254,7 @@ RESPOND IN THIS EXACT JSON FORMAT:
 };
 
 async function handleApprove(supabase: any, messageId: string, userId: string) {
-  const { data: msg } = await supabase.from('sms_conversations').select('*').eq('id', messageId).single();
+  const { data: msg } = await supabase.from('sms_conversations').select('*').eq('id', messageId).eq('user_id', userId).single();
   if (!msg || !msg.ai_draft) {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'No draft to approve' }) };
   }
@@ -264,7 +271,8 @@ async function handleApprove(supabase: any, messageId: string, userId: string) {
   });
   await supabase.from('sms_conversations')
     .update({ ai_draft_status: 'approved', ai_responded_at: new Date().toISOString() })
-    .eq('id', messageId);
+    .eq('id', messageId)
+    .eq('user_id', userId);
   await deductTokens(userId, TOKEN_COSTS.sms_sent, 'sms_sent', `Approved SMS to ${msg.from_number}`, { message_id: messageId });
   return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ success: true, status: 'approved', sid: sendResult.messageId }) };
 }

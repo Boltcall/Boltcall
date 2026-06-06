@@ -51,7 +51,10 @@ const inner: Handler = async (event: HandlerEvent) => {
   try {
     const res = await fetch(target, {
       method: 'GET',
-      headers: { 'X-Cron-Trigger': 'hourly-delivery-monitor' },
+      headers: {
+        'X-Cron-Trigger': 'hourly-delivery-monitor',
+        ...(process.env.CRON_SECRET ? { 'x-cron-secret': process.env.CRON_SECRET } : {}),
+      },
       signal: controller.signal,
     });
     status = res.status;

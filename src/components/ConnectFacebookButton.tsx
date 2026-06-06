@@ -1,6 +1,7 @@
 import React from 'react';
 import Button from './ui/Button';
 import { useAuth } from '../contexts/AuthContext';
+import { authedFetch } from '../lib/authedFetch';
 
 interface ConnectFacebookButtonProps {
   onClick?: () => void;
@@ -16,7 +17,7 @@ const ConnectFacebookButton: React.FC<ConnectFacebookButtonProps> = ({
   const handleConnect = async () => {
     try {
       const userId = user?.id || '';
-      const response = await fetch(`/.netlify/functions/facebook-auth-start?user_id=${encodeURIComponent(userId)}`);
+      const response = await authedFetch(`/.netlify/functions/facebook-auth-start?user_id=${encodeURIComponent(userId)}`);
       const { url } = await response.json();
 
       if (url) {

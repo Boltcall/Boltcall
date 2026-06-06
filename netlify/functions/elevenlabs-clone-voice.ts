@@ -1,7 +1,8 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
+import { requireMatchingUser } from './_shared/user-auth';
 
 /**
  * ElevenLabs Voice Cloning + Retell custom voice registration.
@@ -35,7 +36,7 @@ export const handler: Handler = async (event) => {
   if (!elevenKey) return json(500, { error: 'ELEVENLABS_API_KEY not configured' });
   if (!retellKey) return json(500, { error: 'RETELL_API_KEY not configured' });
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const retell = new Retell({ apiKey: retellKey });
 
   try {
@@ -43,6 +44,8 @@ export const handler: Handler = async (event) => {
     if (event.httpMethod === 'GET') {
       const userId = event.queryStringParameters?.userId;
       if (!userId) return json(400, { error: 'userId required' });
+      const auth = await requireMatchingUser(event, userId, headers);
+      if (!auth.ok) return auth.response;
 
       const { data, error } = await supabase
         .from('cloned_voices')
@@ -59,14 +62,16 @@ export const handler: Handler = async (event) => {
       const id = event.queryStringParameters?.id;
       const userId = event.queryStringParameters?.userId;
       if (!id || !userId) return json(400, { error: 'id and userId required' });
+      const auth = await requireMatchingUser(event, userId, headers);
+      if (!auth.ok) return auth.response;
 
       const { data: row, error: fetchErr } = await supabase
         .from('cloned_voices')
         .select('eleven_voice_id, retell_voice_id, user_id')
         .eq('id', id)
+        .eq('user_id', userId)
         .single();
       if (fetchErr || !row) return json(404, { error: 'Voice not found' });
-      if (row.user_id !== userId) return json(403, { error: 'Forbidden' });
 
       // Best-effort cleanup with ElevenLabs + Retell, then DB row
       await fetch(`${ELEVEN_API}/voices/${row.eleven_voice_id}`, {
@@ -101,6 +106,8 @@ export const handler: Handler = async (event) => {
     } = body;
 
     if (!userId) return json(400, { error: 'userId required' });
+    const auth = await requireMatchingUser(event, userId, headers);
+    if (!auth.ok) return auth.response;
     if (!name || typeof name !== 'string') return json(400, { error: 'name required' });
     if (!audio_base64) return json(400, { error: 'audio_base64 required' });
     if (!consent_confirmed) {

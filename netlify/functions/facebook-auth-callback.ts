@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
+import { verifyOAuthState } from './_shared/oauth-state';
 
 /**
  * Facebook OAuth — Step 2: Exchange the authorization code for tokens, store page connection.
@@ -53,14 +54,10 @@ export const handler: Handler = async (event) => {
     return redirect('/dashboard/instant-lead-reply?fb=missing_code');
   }
 
-  // Extract user_id from the state parameter (base64-encoded JSON)
-  let userId: string | undefined;
-  try {
-    const stateData = JSON.parse(Buffer.from(params.state || '', 'base64').toString('utf-8'));
-    userId = stateData.user_id;
-  } catch {
-    // Fallback to query param if state parsing fails
-    userId = params.user_id;
+  const state = verifyOAuthState(params.state, 'facebook');
+  const userId = state?.userId;
+  if (!userId) {
+    return redirect('/dashboard/instant-lead-reply?fb=missing_user');
   }
 
   const appId = process.env.FB_APP_ID;
@@ -107,7 +104,7 @@ export const handler: Handler = async (event) => {
       return redirect('/dashboard/instant-lead-reply?fb=no_pages');
     }
 
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
 
     // Step 3: Store each page connection and subscribe to leadgen
     const connectedPages: string[] = [];

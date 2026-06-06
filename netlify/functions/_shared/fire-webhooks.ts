@@ -16,7 +16,12 @@ export function fireWebhooks(
 ): void {
   fetch(`${BASE_URL}/.netlify/functions/webhook-manager`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+        ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+        : {}),
+    },
     body: JSON.stringify({ action: 'fire', userId, triggerEvent, payload }),
   }).catch(err => {
     console.error(`[fire-webhooks] Failed to fire ${triggerEvent} webhooks (non-blocking):`, err);

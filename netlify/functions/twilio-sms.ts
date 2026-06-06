@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
-import { deductTokens, deductTokensBatch, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, deductTokensBatch, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { authenticateApiKey } from './_shared/validate-api-key';
+import { requireUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -44,6 +45,25 @@ async function twilioRequest(path: string, method: string, body?: Record<string,
   return data;
 }
 
+async function getOwnedPhoneNumbers(userId: string): Promise<string[]> {
+  const supabase = getServiceSupabase();
+  const { data } = await supabase
+    .from('phone_numbers')
+    .select('phone_number')
+    .eq('user_id', userId)
+    .eq('status', 'active');
+
+  return (data || []).map((row: any) => row.phone_number).filter(Boolean);
+}
+
+async function resolveFromNumber(userId: string, requestedFrom?: string): Promise<string | null> {
+  const ownedNumbers = await getOwnedPhoneNumbers(userId);
+  if (requestedFrom) {
+    return ownedNumbers.includes(requestedFrom) ? requestedFrom : null;
+  }
+  return ownedNumbers[0] || null;
+}
+
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
@@ -58,11 +78,17 @@ export const handler: Handler = async (event) => {
     const { action } = body;
 
     // Resolve userId from API key if present (Zapier)
-    const auth = await authenticateApiKey(event.headers as Record<string, string>, event.queryStringParameters);
-    if (auth.hasKey && !auth.userId) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: auth.error || 'Invalid API key' }) };
+    const apiAuth = await authenticateApiKey(event.headers as Record<string, string>, event.queryStringParameters);
+    if (apiAuth.hasKey && !apiAuth.userId) {
+      return { statusCode: 401, headers, body: JSON.stringify({ error: apiAuth.error || 'Invalid API key' }) };
     }
-    if (auth.userId) body.user_id = auth.userId;
+    if (apiAuth.userId) {
+      body.user_id = apiAuth.userId;
+    } else {
+      const userAuth = await requireUser(event, headers);
+      if (!userAuth.ok) return userAuth.response;
+      body.user_id = userAuth.userId;
+    }
 
     // Send a single SMS
     if (action === 'send') {
@@ -75,13 +101,12 @@ export const handler: Handler = async (event) => {
         };
       }
 
-      // Use provided from number or fall back to first purchased number
-      const fromNumber = from || process.env.TWILIO_FROM_NUMBER;
+      const fromNumber = await resolveFromNumber(body.user_id, from);
       if (!fromNumber) {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: 'from number required. Set TWILIO_FROM_NUMBER env var or pass from in body' }),
+          body: JSON.stringify({ error: 'No active sending number found for this user' }),
         };
       }
 
@@ -130,7 +155,14 @@ export const handler: Handler = async (event) => {
         };
       }
 
-      const fromNumber = body.from || process.env.TWILIO_FROM_NUMBER;
+      const fromNumber = await resolveFromNumber(body.user_id, body.from);
+      if (!fromNumber) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'No active sending number found for this user' }),
+        };
+      }
       const results = await Promise.allSettled(
         messages.map((msg: { to: string; message: string }) =>
           twilioRequest('/Messages.json', 'POST', {
@@ -186,23 +218,36 @@ export const handler: Handler = async (event) => {
       const authToken = process.env.TWILIO_AUTH_TOKEN;
       const auth = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
 
-      const params = new URLSearchParams({ PageSize: String(body.limit || 50) });
-      if (body.to) params.set('To', body.to);
-      if (body.from) params.set('From', body.from);
-      if (body.date_sent) params.set('DateSent', body.date_sent);
+      const ownedNumbers = await getOwnedPhoneNumbers(body.user_id);
+      const requestedFrom = body.from as string | undefined;
+      const requestedTo = body.to as string | undefined;
+      if ((requestedFrom && !ownedNumbers.includes(requestedFrom)) || (requestedTo && !ownedNumbers.includes(requestedTo))) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Requested number does not belong to this user' }) };
+      }
 
-      const url = `${TWILIO_API_BASE}/Accounts/${accountSid}/Messages.json?${params.toString()}`;
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Basic ${auth}` },
-      });
-      const data = await response.json();
+      const numbersToQuery = requestedFrom || requestedTo ? [requestedFrom || requestedTo] : ownedNumbers;
+      const messagesBySid = new Map<string, any>();
+      for (const ownedNumber of numbersToQuery.filter(Boolean) as string[]) {
+        for (const directionField of ['From', 'To']) {
+          const params = new URLSearchParams({ PageSize: String(body.limit || 50), [directionField]: ownedNumber });
+          if (body.date_sent) params.set('DateSent', body.date_sent);
+
+          const url = `${TWILIO_API_BASE}/Accounts/${accountSid}/Messages.json?${params.toString()}`;
+          const response = await fetch(url, { headers: { 'Authorization': `Basic ${auth}` } });
+          const data = await response.json();
+          for (const message of data.messages || []) {
+            if (message.sid) messagesBySid.set(message.sid, message);
+          }
+        }
+      }
+      const messages = Array.from(messagesBySid.values()).slice(0, body.limit || 50);
 
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
-          messages: data.messages || [],
-          total: data.total || 0,
+          messages,
+          total: messages.length,
         }),
       };
     }

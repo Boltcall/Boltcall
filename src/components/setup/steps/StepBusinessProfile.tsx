@@ -8,9 +8,10 @@ import { validatePhoneNumber, type PhoneValidationResult } from '../../../lib/ce
 import StyledInput from '../../ui/StyledInput';
 import Button from '../../ui/Button';
 import { FUNCTIONS_BASE } from '../../../lib/api';
+import { authedFetch } from '../../../lib/authedFetch';
 
 const StepBusinessProfile: React.FC = () => {
-  const { businessProfile, updateBusinessProfile, knowledgeBase, updateKnowledgeBase } = useSetupStore();
+  const { account, businessProfile, updateBusinessProfile, knowledgeBase, updateKnowledgeBase } = useSetupStore();
   const [errors] = useState<Record<string, string>>({});
   const [isValidatingPhone, setIsValidatingPhone] = useState(false);
   const [phoneValidation, setPhoneValidation] = useState<PhoneValidationResult | null>(null);
@@ -42,13 +43,14 @@ const StepBusinessProfile: React.FC = () => {
         return;
       }
 
-      const extractRes = await fetch(`${FUNCTIONS_BASE}/ai-extract-kb`, {
+      const extractRes = await authedFetch(`${FUNCTIONS_BASE}/ai-extract-kb`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content,
           businessName: businessProfile.businessName,
           category: businessProfile.mainCategory,
+          userId: account.userId,
         }),
       });
 
@@ -87,7 +89,7 @@ const StepBusinessProfile: React.FC = () => {
     } finally {
       setScanning(false);
     }
-  }, [businessProfile.websiteUrl, businessProfile.businessName, businessProfile.mainCategory, knowledgeBase, updateKnowledgeBase]);
+  }, [account.userId, businessProfile.websiteUrl, businessProfile.businessName, businessProfile.mainCategory, knowledgeBase, updateKnowledgeBase]);
 
   // Validate business phone with Cekura on blur
   const handlePhoneBlur = useCallback(async () => {

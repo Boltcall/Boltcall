@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { inferVertical } from './_shared/vertical-utils';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 /**
  * retell-shadow-promote
@@ -39,6 +40,10 @@ async function retellFetch(path: string, options: RequestInit = {}) {
 export const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return { statusCode: authz.status, headers: HEADERS, body: JSON.stringify({ error: authz.message }) };
   }
 
   let version_id: string;

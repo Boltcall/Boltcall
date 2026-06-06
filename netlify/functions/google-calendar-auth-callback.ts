@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
+import { verifyOAuthState } from './_shared/oauth-state';
 
 /**
  * Google Calendar OAuth — Step 2: Exchange the authorization code for tokens.
@@ -46,15 +47,10 @@ export const handler: Handler = async (event) => {
     return redirect('/dashboard/integrations?gcal=missing_code');
   }
 
-  // Decode user_id from state
-  let userId: string | null = null;
-  if (params.state) {
-    try {
-      const decoded = JSON.parse(Buffer.from(params.state, 'base64url').toString());
-      userId = decoded.userId || null;
-    } catch {
-      console.error('Failed to decode state');
-    }
+  const state = verifyOAuthState(params.state, 'google_calendar');
+  const userId = state?.userId || null;
+  if (!userId) {
+    return redirect('/dashboard/integrations?gcal=missing_user');
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -126,7 +122,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Step 4: Store in Supabase
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
     const config = {
       calendar_id: calendarId,
       calendar_name: calendarName,
