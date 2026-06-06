@@ -44,7 +44,7 @@ module.exports = {
       { key: 'status', label: 'Status' },
       { key: 'created_at', label: 'Created At' },
       { key: 'first_touch_status', label: 'First Touch Status' },
-      { key: 'retell_call_started', label: 'Call Started' },
+      { key: 'retell_call_started', label: 'Call Started', type: 'boolean' },
       { key: 'external_id', label: 'External ID' },
       { key: 'idempotency_key', label: 'Idempotency Key' },
     ],

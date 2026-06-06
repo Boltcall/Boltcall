@@ -9,7 +9,7 @@
     "validate": "zapier validate",
     "push": "zapier push"
   },
-  "devDependencies": {
-    "zapier-platform-core": "^17.5.0"
+  "dependencies": {
+    "zapier-platform-core": "19.0.0"
   }
 }

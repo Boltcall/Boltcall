@@ -6,6 +6,9 @@ const findLead = require('./searches/find_lead');
 module.exports = {
   version: '1.0.0',
   platformVersion: require('zapier-platform-core').version,
+  flags: {
+    cleanInputData: false,
+  },
   authentication,
   beforeRequest: [
     (request) => {
