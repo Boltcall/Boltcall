@@ -1,13 +1,24 @@
 import { lookup } from 'dns/promises';
-import { isIP } from 'net';
 
 const BLOCKED_HOSTS = new Set([
   'localhost',
   'metadata.google.internal',
 ]);
 
-function isPrivateIp(ip: string): boolean {
-  if (isIP(ip) === 4) {
+function getIpVersion(rawIp: string): 0 | 4 | 6 {
+  const ip = rawIp.replace(/^\[|\]$/g, '');
+  const parts = ip.split('.');
+  if (parts.length === 4 && parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) >= 0 && Number(part) <= 255)) {
+    return 4;
+  }
+
+  return ip.includes(':') ? 6 : 0;
+}
+
+function isPrivateIp(rawIp: string): boolean {
+  const ip = rawIp.replace(/^\[|\]$/g, '').toLowerCase();
+
+  if (getIpVersion(ip) === 4) {
     const parts = ip.split('.').map(Number);
     const [a, b] = parts;
     return (
@@ -25,14 +36,11 @@ function isPrivateIp(ip: string): boolean {
     );
   }
 
-  const normalized = ip.toLowerCase();
-  return (
-    normalized === '::1' ||
-    normalized.startsWith('fc') ||
-    normalized.startsWith('fd') ||
-    normalized.startsWith('fe80:') ||
-    normalized === '::'
-  );
+  if (getIpVersion(ip) !== 6) {
+    return false;
+  }
+
+  return ip === '::1' || ip.startsWith('fc') || ip.startsWith('fd') || ip.startsWith('fe80:') || ip === '::';
 }
 
 type UrlValidationOptions = {
@@ -65,16 +73,17 @@ export async function validatePublicHttpUrl(
   }
 
   const hostname = parsed.hostname.toLowerCase();
+  const lookupHostname = hostname.replace(/^\[|\]$/g, '');
   if (BLOCKED_HOSTS.has(hostname) || hostname.endsWith('.local')) {
     return { ok: false, error: `${label} host is not allowed` };
   }
 
-  if (isIP(hostname) && isPrivateIp(hostname)) {
+  if (getIpVersion(hostname) && isPrivateIp(hostname)) {
     return { ok: false, error: `${label} cannot target private network addresses` };
   }
 
   try {
-    const records = await lookup(hostname, { all: true, verbatim: true });
+    const records = await lookup(lookupHostname, { all: true, verbatim: true });
     if (records.some((record) => isPrivateIp(record.address))) {
       return { ok: false, error: `${label} resolves to a private network address` };
     }

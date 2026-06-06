@@ -16,6 +16,13 @@ describe('outbound URL validation', () => {
     });
   });
 
+  it('blocks IPv6 loopback targets for public scrape URLs', async () => {
+    await expect(validatePublicHttpUrl('http://[::1]:54321', { allowHttp: true, label: 'Scrape URL' })).resolves.toEqual({
+      ok: false,
+      error: 'Scrape URL cannot target private network addresses',
+    });
+  });
+
   it('blocks carrier-grade NAT targets for public scrape URLs', async () => {
     await expect(validatePublicHttpUrl('http://100.64.0.1', { allowHttp: true, label: 'Scrape URL' })).resolves.toEqual({
       ok: false,
