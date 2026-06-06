@@ -131,6 +131,57 @@ describe('acs-numbers hardening', () => {
   });
 });
 
+describe('public cost endpoint hardening', () => {
+  it('rejects cross-site PageSpeed proxy calls before using the API key', async () => {
+    delete process.env.PAGESPEED_API_KEY;
+    process.env.URL = 'https://boltcall.org';
+    const { handler } = await import('../pagespeed');
+
+    const res = await handler(
+      makeEvent({
+        headers: { origin: 'https://attacker.example', 'content-type': 'application/json' },
+        body: { url: 'https://example.com' },
+      }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(403);
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('https://attacker.example');
+  });
+
+  it('rejects non-http PageSpeed URLs before calling the provider', async () => {
+    process.env.PAGESPEED_API_KEY = 'test-pagespeed-key';
+    process.env.URL = 'https://boltcall.org';
+    const { handler } = await import('../pagespeed');
+
+    const res = await handler(
+      makeEvent({ body: { url: 'file:///etc/passwd' } }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body).error).toMatch(/http/i);
+  });
+
+  it('rejects cross-site Brevo subscribe calls before using Brevo credentials', async () => {
+    delete process.env.BREVO_API_KEY;
+    delete process.env.BREVO_LIST_ID;
+    process.env.URL = 'https://boltcall.org';
+    const { handler } = await import('../brevo-subscribe');
+
+    const res = await handler(
+      makeEvent({
+        headers: { origin: 'https://attacker.example', 'content-type': 'application/json' },
+        body: { email: 'lead@example.com' },
+      }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(403);
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('https://attacker.example');
+  });
+});
+
 describe('break-my-ai legacy endpoint hardening', () => {
   it('does not accept the old public fallback code when no challenge secret is configured', async () => {
     delete process.env.BREAK_MY_AI_CODE;
