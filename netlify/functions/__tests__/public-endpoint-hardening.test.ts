@@ -132,6 +132,20 @@ describe('acs-numbers hardening', () => {
 });
 
 describe('public cost endpoint hardening', () => {
+  it('does not create challenge Retell agents when the admin token is missing', async () => {
+    delete process.env.ADMIN_API_TOKEN;
+    process.env.RETELL_API_KEY = 'test-retell-key';
+    const { handler } = await import('../create-challenge-agent');
+
+    const res = await handler(
+      makeEvent({ body: {} }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(500);
+    expect(JSON.parse(res.body).error).toMatch(/admin api token/i);
+  });
+
   it('rejects public Cekura provider bridge calls without the internal secret', async () => {
     delete process.env.INTERNAL_API_SECRET;
     delete process.env.INTERNAL_WEBHOOK_SECRET;
@@ -147,6 +161,21 @@ describe('public cost endpoint hardening', () => {
 
     expect(res.statusCode).toBe(401);
     expect(JSON.parse(res.body).error).toMatch(/internal/i);
+  });
+
+  it('rejects unauthenticated Cekura phone verification provider calls', async () => {
+    process.env.CEKURA_API_KEY = 'test-cekura-key';
+    const { handler } = await import('../cekura-verify');
+
+    const res = await handler(
+      makeEvent({
+        body: { action: 'validate', phone_number: '+15551234567' },
+      }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(401);
+    expect(JSON.parse(res.body).error).toMatch(/authentication/i);
   });
 
   it('rejects unauthenticated Retell voice provider listing calls', async () => {

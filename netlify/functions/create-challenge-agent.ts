@@ -107,9 +107,12 @@ const handler: Handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const authHeader = event.headers.authorization;
+  const authHeader = event.headers.authorization || event.headers.Authorization;
   const expectedToken = process.env.ADMIN_API_TOKEN;
-  if (expectedToken && authHeader !== `Bearer ${expectedToken}`) {
+  if (!expectedToken) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Admin API token not configured' }) };
+  }
+  if (authHeader !== `Bearer ${expectedToken}`) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 

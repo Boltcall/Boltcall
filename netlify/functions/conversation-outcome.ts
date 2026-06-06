@@ -3,6 +3,7 @@ import { notifyError, notifyInfo } from './_shared/notify';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import { userOwnsAgent } from './_shared/require-auth';
 
 /**
  * Universal Post-Conversation Outcome Evaluator
@@ -128,6 +129,13 @@ export const handler: Handler = async (event) => {
 
     const auth = await requireInternalOrMatchingUser(event, userId, headers);
     if (!auth.ok) return auth.response;
+    if (!(await userOwnsAgent(userId, agentId))) {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ error: 'Not authorized to access this agent' }),
+      };
+    }
 
     const evaluation = await evaluateOutcome(transcript, channel || 'unknown', callAnalysis);
 

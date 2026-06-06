@@ -62,15 +62,18 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  // Verify Cal.com signature when configured. In dev (no secret) or when
-  // Cal.com sends no signature header, log and continue. In production with
-  // CALCOM_WEBHOOK_SECRET set, any missing/invalid signature is rejected.
+  // Verify Cal.com signature. Missing configuration must fail closed because
+  // this handler writes appointments and can trigger customer reminders.
+  if (!process.env.CALCOM_WEBHOOK_SECRET) {
+    console.warn('[appointment-handler] CALCOM_WEBHOOK_SECRET not configured — rejecting');
+    return { statusCode: 500, body: JSON.stringify({ error: 'Webhook secret not configured' }) };
+  }
   const sigResult = verifyCalcomSignature(event.body || '', event.headers as Record<string, string | undefined>);
   if (sigResult === 'invalid') {
     console.warn('[appointment-handler] Invalid Cal.com signature — rejecting');
     return { statusCode: 401, body: JSON.stringify({ error: 'Invalid webhook signature' }) };
   }
-  if (sigResult === 'missing' && process.env.NODE_ENV === 'production' && process.env.CALCOM_WEBHOOK_SECRET) {
+  if (sigResult === 'missing') {
     console.warn('[appointment-handler] Missing Cal.com signature in production — rejecting');
     return { statusCode: 401, body: JSON.stringify({ error: 'Webhook signature required' }) };
   }

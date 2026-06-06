@@ -3,6 +3,7 @@ import { notifyError, notifyInfo } from './_shared/notify';
 import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { requireInternalOrMatchingUser, requireUser } from './_shared/user-auth';
+import { userOwnsAgent } from './_shared/require-auth';
 
 /**
  * Agent Self-Healing Pipeline
@@ -30,6 +31,17 @@ const headers = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
+
+async function requireAgentOwnership(userId: string, agentId: string) {
+  if (await userOwnsAgent(userId, agentId)) {
+    return null;
+  }
+  return {
+    statusCode: 403,
+    headers,
+    body: JSON.stringify({ error: 'Not authorized to access this agent' }),
+  };
+}
 
 async function retellFetch(path: string, options: RequestInit = {}) {
   const res = await fetch(`${RETELL_API}${path}`, {
@@ -330,6 +342,8 @@ export const handler: Handler = async (event) => {
       }
       const auth = await requireInternalOrMatchingUser(event, userId, headers);
       if (!auth.ok) return auth.response;
+      const ownershipError = await requireAgentOwnership(userId, agentId);
+      if (ownershipError) return ownershipError;
 
       const supabase = getServiceSupabase();
       const startTime = Date.now();
@@ -594,6 +608,10 @@ export const handler: Handler = async (event) => {
         : await requireUser(event, headers);
       if (!auth.ok) return auth.response;
       const effectiveUserId = userId || auth.userId;
+      if (agentId) {
+        const ownershipError = await requireAgentOwnership(effectiveUserId, agentId);
+        if (ownershipError) return ownershipError;
+      }
       const supabase = getServiceSupabase();
 
       let query = supabase
@@ -619,6 +637,8 @@ export const handler: Handler = async (event) => {
       }
       const auth = await requireInternalOrMatchingUser(event, userId, headers);
       if (!auth.ok) return auth.response;
+      const ownershipError = await requireAgentOwnership(userId, agentId);
+      if (ownershipError) return ownershipError;
 
       const supabase = getServiceSupabase();
 
@@ -727,6 +747,8 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
       }
 
       const { agent_id: agentId, original_prompt: storedOriginalPrompt } = healLog;
+      const ownershipError = await requireAgentOwnership(userId, agentId);
+      if (ownershipError) return ownershipError;
 
       const voiceAgent = await retellFetch(`/get-agent/${agentId}`);
       const llmId = voiceAgent.response_engine?.llm_id;

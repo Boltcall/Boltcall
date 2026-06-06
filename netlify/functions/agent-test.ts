@@ -1,5 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
+import { userOwnsAgent } from './_shared/require-auth';
+import { requireUser } from './_shared/user-auth';
 
 const RETELL_API = 'https://api.retellai.com';
 const RETELL_KEY = process.env.RETELL_API_KEY || '';
@@ -235,10 +237,15 @@ export const handler: Handler = async (event) => {
   try {
     const body = JSON.parse(event.body || '{}');
     const { action, agentId, scenarios: customScenarios } = body;
+    const auth = await requireUser(event, headers);
+    if (!auth.ok) return auth.response;
 
     if (action === 'run-tests') {
       if (!agentId) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId is required' }) };
+      }
+      if (!(await userOwnsAgent(auth.userId, agentId))) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to access this agent' }) };
       }
 
       // Step 1: Create temp chat agent (and possibly a temp LLM for custom-llm)
@@ -285,6 +292,9 @@ export const handler: Handler = async (event) => {
     if (action === 'run-single') {
       if (!agentId || !body.scenario) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId and scenario are required' }) };
+      }
+      if (!(await userOwnsAgent(auth.userId, agentId))) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to access this agent' }) };
       }
 
       const { chatAgentId, tempLlmId } = await createTempChatAgent(agentId);

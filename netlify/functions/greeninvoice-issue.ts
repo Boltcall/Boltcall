@@ -1,4 +1,5 @@
 import type { Handler } from '@netlify/functions';
+import { hasSharedSecret } from './_shared/user-auth';
 
 /**
  * Greeninvoice integration — issues Israeli tax invoices (חשבונית מס) for ILS payments.
@@ -20,7 +21,7 @@ const GREENINVOICE_BASE = process.env.GREENINVOICE_SANDBOX === 'true'
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Internal-Secret, X-Cron-Secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json; charset=utf-8',
 };
@@ -45,6 +46,16 @@ export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  const hasSecretConfigured = Boolean(
+    process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || process.env.CRON_SECRET,
+  );
+  if (!hasSecretConfigured) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal API secret not configured' }) };
+  }
+  if (!hasSharedSecret(event)) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Forbidden' }) };
   }
 
   if (!process.env.GREENINVOICE_API_KEY || !process.env.GREENINVOICE_SECRET) {

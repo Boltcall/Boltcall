@@ -30,6 +30,42 @@ const headers = {
   'Content-Type': 'application/json; charset=utf-8',
 };
 
+async function userOwnsRow(supabase: any, table: string, id: string, userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from(table)
+    .select('id')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) {
+    console.warn(`[kb-search] Ownership check failed for ${table}:`, error.message || error);
+    return false;
+  }
+  return Boolean(data?.id);
+}
+
+async function requireOwnedAgent(supabase: any, userId: string, agentId: string) {
+  if (await userOwnsRow(supabase, 'agents', agentId, userId)) {
+    return null;
+  }
+  return {
+    statusCode: 403,
+    headers,
+    body: JSON.stringify({ error: 'Agent not found' }),
+  };
+}
+
+async function requireOwnedFolder(supabase: any, userId: string, kbFolderId: string) {
+  if (await userOwnsRow(supabase, 'kb_folders', kbFolderId, userId)) {
+    return null;
+  }
+  return {
+    statusCode: 403,
+    headers,
+    body: JSON.stringify({ error: 'KB folder not found' }),
+  };
+}
+
 // Generate embedding via Azure (text-embedding-3-large, 3072-dim).
 // Falls back to Supabase Edge Function if Azure not configured or fails.
 async function getEmbedding(text: string): Promise<number[] | null> {
@@ -81,6 +117,7 @@ export const handler: Handler = async (event) => {
     // action below.
     body.userId = authedUserId;
     const { action } = body;
+    const userId = authedUserId;
     const supabase = getSupabase();
 
     // ─── SEARCH: Vector similarity search ───────────────────────────
@@ -223,6 +260,9 @@ export const handler: Handler = async (event) => {
 
       // If agentId provided, scope to that agent's folders
       if (agentId) {
+        const ownershipError = await requireOwnedAgent(supabase, userId, agentId);
+        if (ownershipError) return ownershipError;
+
         const { data: folderLinks } = await supabase
           .from('agent_kb_folders')
           .select('kb_folder_id')
@@ -386,8 +426,9 @@ A: ${content}
       if (folderIds.length > 0) {
         const { data: links } = await supabase
           .from('agent_kb_folders')
-          .select('kb_folder_id, agent_id, agents(id, name)')
-          .in('kb_folder_id', folderIds);
+          .select('kb_folder_id, agent_id, agents!inner(id, name, user_id)')
+          .in('kb_folder_id', folderIds)
+          .eq('agents.user_id', userId);
 
         if (links) {
           for (const link of links) {
@@ -532,6 +573,10 @@ A: ${content}
       if (!agentId || !kbFolderId) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId and kbFolderId required' }) };
       }
+      const agentOwnershipError = await requireOwnedAgent(supabase, userId, agentId);
+      if (agentOwnershipError) return agentOwnershipError;
+      const folderOwnershipError = await requireOwnedFolder(supabase, userId, kbFolderId);
+      if (folderOwnershipError) return folderOwnershipError;
 
       const { error } = await supabase
         .from('agent_kb_folders')
@@ -547,6 +592,10 @@ A: ${content}
       if (!agentId || !kbFolderId) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId and kbFolderId required' }) };
       }
+      const agentOwnershipError = await requireOwnedAgent(supabase, userId, agentId);
+      if (agentOwnershipError) return agentOwnershipError;
+      const folderOwnershipError = await requireOwnedFolder(supabase, userId, kbFolderId);
+      if (folderOwnershipError) return folderOwnershipError;
 
       const { error } = await supabase
         .from('agent_kb_folders')
@@ -564,6 +613,8 @@ A: ${content}
       if (!agentId) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId required' }) };
       }
+      const ownershipError = await requireOwnedAgent(supabase, userId, agentId);
+      if (ownershipError) return ownershipError;
 
       const { data, error } = await supabase
         .from('agent_kb_folders')

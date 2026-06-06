@@ -582,7 +582,7 @@ export const handler: Handler = async (event) => {
             const scrapeBaseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
             const scrapeRes = await fetch(`${scrapeBaseUrl}/.netlify/functions/firecrawl-scrape`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
               body: JSON.stringify({ url: body.website_url }),
             });
 
