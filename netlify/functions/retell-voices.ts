@@ -1,21 +1,29 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
+import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { requireUser } from './_shared/user-auth';
 
-export const handler: Handler = async (event, context) => {
-  // Enable CORS
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Content-Type': 'application/json',
-  };
+export const handler: Handler = async (event) => {
+  const cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string | undefined>),
+    { methods: 'GET' },
+  );
+  const headers = cors.headers;
 
   // Handle preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
-      statusCode: 200,
+      statusCode: 204,
       headers,
       body: '',
+    };
+  }
+
+  if (getRequestOrigin(event.headers as Record<string, string | undefined>) && !cors.allowed) {
+    return {
+      statusCode: 403,
+      headers,
+      body: JSON.stringify({ error: 'Origin not allowed' }),
     };
   }
 
@@ -28,6 +36,9 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
+    const auth = await requireUser(event, headers);
+    if (!auth.ok) return auth.response;
+
     const apiKey = process.env.RETELL_API_KEY;
     
     if (!apiKey) {

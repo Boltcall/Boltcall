@@ -1,8 +1,10 @@
 // Retell voices — fetched via Netlify function (API key stays server-side)
 
+import { authedFetch } from '../../lib/authedFetch';
+
 export async function getVoices() {
   try {
-    const response = await fetch('/.netlify/functions/retell-voices');
+    const response = await authedFetch('/.netlify/functions/retell-voices');
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

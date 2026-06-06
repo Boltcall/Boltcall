@@ -149,6 +149,19 @@ describe('public cost endpoint hardening', () => {
     expect(JSON.parse(res.body).error).toMatch(/internal/i);
   });
 
+  it('rejects unauthenticated Retell voice provider listing calls', async () => {
+    process.env.URL = 'https://boltcall.org';
+    const { handler } = await import('../retell-voices');
+
+    const res = await handler(
+      makeEvent({ httpMethod: 'GET' }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(401);
+    expect(res.headers['Access-Control-Allow-Origin']).not.toBe('*');
+  });
+
   it('rejects cross-site PageSpeed proxy calls before using the API key', async () => {
     delete process.env.PAGESPEED_API_KEY;
     process.env.URL = 'https://boltcall.org';
