@@ -16,6 +16,7 @@ import type { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { paypalFetch } from './_shared/paypal-client';
 import { isAllowedRedirect } from './_shared/redirect-allowlist';
+import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 
 const isSandbox = process.env.PAYPAL_MODE === 'sandbox';
 
@@ -40,15 +41,18 @@ const PLAN_MAP: Record<string, string | undefined> = {
     : process.env.PAYPAL_PLAN_ULTIMATE_YEARLY,
 };
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
 const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const headers = v2cors.headers;
+
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return { statusCode: 204, headers, body: '' };
+  }
+  if (getRequestOrigin(event.headers as Record<string, string>) && !v2cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -106,7 +110,8 @@ const handler: Handler = async (event) => {
     };
   }
 
-  const origin = event.headers.origin || 'https://boltcall.org';
+  const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
+  const origin = requestOrigin && isAllowedRedirect(requestOrigin) ? requestOrigin : 'https://boltcall.org';
   const returnUrl = successUrl || `${origin}/dashboard/settings/plan-billing?paypal=success`;
   const cancelReturnUrl = cancelUrl || `${origin}/dashboard/settings/plan-billing?paypal=cancelled`;
 

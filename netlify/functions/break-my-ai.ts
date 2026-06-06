@@ -52,9 +52,9 @@ function getCurrentWeek(): string {
 async function ensureTable(supabase: ReturnType<typeof createClient>) {
   // Try a simple select — if it fails, table doesn't exist
   const { error } = await supabase.from('challenge_attempts').select('id').limit(1);
-  if (error && error.code === '42P01') {
+  if (false && error && error.code === '42P01') {
     // Table doesn't exist — create it via raw SQL
-    const { error: createError } = await supabase.rpc('exec_sql', {
+    const { error: createError } = await supabase.rpc('table_create_disabled', {
       sql: `
         CREATE TABLE IF NOT EXISTS challenge_attempts (
           id UUID DEFAULT gen_random_uuid() PRIMARY KEY,

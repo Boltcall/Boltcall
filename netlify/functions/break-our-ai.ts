@@ -1,55 +1,79 @@
 import { Handler } from '@netlify/functions';
-import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabase } from './_shared/token-utils';
+import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { getStrongEnvSecret, verifyJsonToken } from './_shared/signed-token';
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
-};
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function getSupabase() {
-  // challenge_winners is service-role-only by design (no anon/authenticated grants).
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+function clean(value: unknown, maxLength: number): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed.slice(0, maxLength) : null;
 }
 
 const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const headers = v2cors.headers;
+
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
+  if (getRequestOrigin(event.headers as Record<string, string>) && !v2cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
+  }
 
   const path = event.path
     .replace('/.netlify/functions/break-our-ai', '')
     .replace(/^\//, '');
 
-  // ── POST /winner — Save winner prize claim details ────────────────────────
   if (event.httpMethod === 'POST' && path === 'winner') {
     try {
       const body = JSON.parse(event.body || '{}');
-      const { name, email, businessName, businessType, websiteUrl, phone, city, biggestChallenge } = body;
+      const name = clean(body.name, 120);
+      const email = clean(body.email, 254)?.toLowerCase();
+      const businessName = clean(body.businessName, 160);
+      const businessType = clean(body.businessType, 80);
+      const websiteUrl = clean(body.websiteUrl, 300);
+      const phone = clean(body.phone, 40);
+      const city = clean(body.city, 120);
+      const biggestChallenge = clean(body.biggestChallenge, 1000);
+      const claimToken = clean(body.claimToken, 2048);
 
-      if (!name || !email || !businessName || !businessType) {
+      if (!name || !email || !EMAIL_RE.test(email) || !businessName || !businessType || !claimToken) {
         return {
           statusCode: 400,
           headers,
-          body: JSON.stringify({ error: 'name, email, businessName, and businessType are required' }),
+          body: JSON.stringify({ error: 'valid claim token, name, email, businessName, and businessType are required' }),
         };
       }
 
-      const supabase = getSupabase();
-      if (supabase) {
-        await supabase.from('challenge_winners').insert({
-          name: name.trim(),
-          email: email.trim(),
-          business_name: businessName.trim(),
-          business_type: businessType,
-          website_url: websiteUrl?.trim() || null,
-          phone: phone?.trim() || null,
-          city: city?.trim() || null,
-          biggest_challenge: biggestChallenge?.trim() || null,
-          created_at: new Date().toISOString(),
-        });
+      const claimSecret = getStrongEnvSecret('CHALLENGE_CLAIM_SECRET', 'INTERNAL_API_SECRET');
+      if (!claimSecret) {
+        return { statusCode: 503, headers, body: JSON.stringify({ error: 'Prize claim is not configured' }) };
+      }
+
+      const claim = verifyJsonToken<{ name: string; email: string; challenge: string }>(claimToken, claimSecret);
+      if (!claim || claim.challenge !== 'break-our-ai' || claim.email !== email) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Invalid or expired prize claim' }) };
+      }
+
+      const supabase = getServiceSupabase();
+      const { error } = await supabase.from('challenge_winners').insert({
+        name,
+        email,
+        business_name: businessName,
+        business_type: businessType,
+        website_url: websiteUrl,
+        phone,
+        city,
+        biggest_challenge: biggestChallenge,
+        created_at: new Date().toISOString(),
+      });
+
+      if (error) {
+        console.error('Winner submission insert error:', error);
+        return { statusCode: 502, headers, body: JSON.stringify({ error: 'Could not save prize claim' }) };
       }
 
       return {
@@ -59,12 +83,10 @@ const handler: Handler = async (event) => {
       };
     } catch (err: any) {
       console.error('Winner submission error:', err);
-      // Return 200 so the frontend still shows the thank-you state.
-      // Winner data can be recovered from logs if needed.
       return {
-        statusCode: 200,
+        statusCode: 500,
         headers,
-        body: JSON.stringify({ success: true }),
+        body: JSON.stringify({ error: 'Something went wrong' }),
       };
     }
   }

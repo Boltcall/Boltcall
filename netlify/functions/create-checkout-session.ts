@@ -1,6 +1,7 @@
 import type { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-04-30.basil',
@@ -49,14 +50,18 @@ function isAllowedRedirect(url: string | undefined): boolean {
 }
 
 const handler: Handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const headers = v2cors.headers;
 
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return { statusCode: 204, headers, body: '' };
+  }
+
+  if (getRequestOrigin(event.headers as Record<string, string>) && !v2cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
 
   if (event.httpMethod !== 'POST') {
@@ -118,12 +123,17 @@ const handler: Handler = async (event) => {
     const userId = authUser.id;
     const email = authUser.email || undefined;
 
+    const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
+    const fallbackOrigin = requestOrigin && isAllowedRedirect(requestOrigin)
+      ? requestOrigin
+      : 'https://boltcall.org';
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: successUrl || `${event.headers.origin || 'https://boltcall.org'}/dashboard/settings/plan-billing?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: cancelUrl || `${event.headers.origin || 'https://boltcall.org'}/pricing?canceled=true`,
+      success_url: successUrl || `${fallbackOrigin}/dashboard/settings/plan-billing?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: cancelUrl || `${fallbackOrigin}/pricing?canceled=true`,
       metadata: {
         userId,
         plan,

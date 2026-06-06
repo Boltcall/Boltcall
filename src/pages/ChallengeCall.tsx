@@ -128,10 +128,16 @@ const ChallengeCall: React.FC = () => {
       });
 
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong. Please try again.');
+      }
 
       if (data.winner) {
         // Save for the winner page
         sessionStorage.setItem('challenge_winner_word', word.trim());
+        if (data.claim_token) {
+          sessionStorage.setItem('challenge_claim_token', data.claim_token);
+        }
         navigate('/challenge/winner');
       } else {
         setStep('wrong');
