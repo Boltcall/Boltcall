@@ -29,6 +29,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SITEMAP_GEN = resolve(__dirname, 'generate-sitemap.mjs');
+const HEADERS_FILE = resolve(__dirname, '../public/_headers');
 // Dedicated cache for the gate (separate from .gsc-url-cache.json so gsc-submit's
 // invariants and the gate's invariants don't tangle).
 const GATE_CACHE = resolve(__dirname, '.seo-gate-cache.json');
@@ -87,6 +88,54 @@ function matchesBlocklist(path) {
   return FORM_RESULT_BLOCKLIST.find(re => re.test(path));
 }
 
+function canonicalizeHeaderPath(path) {
+  return path === '/' ? '/' : path.replace(/\/$/, '');
+}
+
+function extractNoindexHeaderRoutes() {
+  if (!existsSync(HEADERS_FILE)) return [];
+
+  const routes = [];
+  let currentPath = null;
+
+  for (const rawLine of readFileSync(HEADERS_FILE, 'utf8').split(/\r?\n/)) {
+    const trimmed = rawLine.trim();
+
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    if (!rawLine.startsWith(' ') && !rawLine.startsWith('\t')) {
+      currentPath = trimmed;
+      continue;
+    }
+
+    if (
+      currentPath &&
+      /^x-robots-tag:\s*noindex\b/i.test(trimmed) &&
+      !currentPath.includes('*')
+    ) {
+      routes.push(canonicalizeHeaderPath(currentPath));
+    }
+  }
+
+  return [...new Set(routes)];
+}
+
+function validateNoindexHeaders() {
+  const badRoutes = extractNoindexHeaderRoutes().filter(path => !matchesBlocklist(path));
+
+  if (badRoutes.length === 0) return;
+
+  console.error('');
+  console.error('✗ seo-precommit-check FAILED');
+  console.error('');
+  console.error('The following public routes are configured with X-Robots-Tag: noindex in public/_headers:');
+  for (const path of badRoutes) console.error(`  ${path}`);
+  console.error('');
+  console.error('Only private funnel/result/login states should use header-level noindex.');
+  console.error('Remove these routes from public/_headers before publishing.');
+  process.exit(1);
+}
+
 // Walk src/ and concatenate all .tsx/.ts/.jsx/.js file contents once.
 // Then count inbound link references via regex. Avoids shelling out, which
 // mangles regex pipe chars on Windows.
@@ -136,6 +185,7 @@ function countInboundLinks(routePath) {
 
 function main() {
   const routes = extractRoutes();
+  validateNoindexHeaders();
   const known = loadCache();
 
   // First run: initialize cache with all current routes and exit successfully.
