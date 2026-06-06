@@ -1,12 +1,14 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireAuth, getUserAgentIds, userOwnsAgent } from './_shared/require-auth';
 
-function getSupabaseAdmin() {
+function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) {
+    throw new Error('SUPABASE_URL/SUPABASE_SERVICE_KEY not configured');
+  }
   return createClient(url, key);
 }
 
@@ -116,6 +118,118 @@ function buildResponseEngine(body: any) {
     return { type: 'custom-llm' as const, llm_websocket_url: wsUrl };
   }
   return null;
+}
+
+async function userOwnsLlm(client: Retell, userId: string, llmId: string): Promise<boolean> {
+  const ownedAgentIds = await getUserAgentIds(userId);
+  const agentsForUser = await Promise.all(
+    ownedAgentIds.map((id) => client.agent.retrieve(id).catch(() => null)),
+  );
+  return agentsForUser.some((agent: any) => agent?.response_engine?.llm_id === llmId);
+}
+
+async function userOwnsKnowledgeBase(client: Retell, userId: string, knowledgeBaseId: string): Promise<boolean> {
+  const ownedAgentIds = await getUserAgentIds(userId);
+  const agentsForUser = await Promise.all(
+    ownedAgentIds.map((id) => client.agent.retrieve(id).catch(() => null)),
+  );
+
+  for (const agent of agentsForUser) {
+    const engine = (agent as any)?.response_engine;
+    if (Array.isArray(engine?.knowledge_base_ids) && engine.knowledge_base_ids.includes(knowledgeBaseId)) {
+      return true;
+    }
+
+    if (engine?.llm_id) {
+      const llm = await client.llm.retrieve(engine.llm_id).catch(() => null);
+      if (Array.isArray((llm as any)?.knowledge_base_ids) && (llm as any).knowledge_base_ids.includes(knowledgeBaseId)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+async function userOwnsAllKnowledgeBases(client: Retell, userId: string, knowledgeBaseIds: unknown): Promise<boolean> {
+  if (!Array.isArray(knowledgeBaseIds)) return false;
+  for (const id of knowledgeBaseIds) {
+    if (typeof id !== 'string' || !(await userOwnsKnowledgeBase(client, userId, id))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function isPlatformRetellAdmin(
+  event: Parameters<Handler>[0],
+  supabase: SupabaseClient,
+): Promise<boolean> {
+  const authHeader = event.headers.authorization || event.headers.Authorization;
+  if (!authHeader?.startsWith('Bearer ')) return false;
+
+  const token = authHeader.slice('Bearer '.length);
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) return false;
+
+  const role = (data.user.app_metadata as { role?: string } | undefined)?.role;
+  if (role === 'founder') return true;
+
+  if (data.user.email) {
+    const { data: adminRow, error: adminErr } = await supabase
+      .from('platform_admins')
+      .select('id')
+      .eq('email', data.user.email)
+      .maybeSingle();
+    if (adminErr) throw adminErr;
+    return Boolean(adminRow);
+  }
+
+  return false;
+}
+
+async function validateOwnedSetupReferences(
+  supabase: SupabaseClient,
+  userId: string,
+  body: any,
+): Promise<{ ok: true } | { ok: false; statusCode: number; error: string }> {
+  if (body.business_profile_id) {
+    const { data, error } = await supabase
+      .from('business_profiles')
+      .select('id')
+      .eq('id', body.business_profile_id)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+      return {
+        ok: false,
+        statusCode: 403,
+        error: 'business_profile_id does not belong to the authenticated user',
+      };
+    }
+  }
+
+  if (body.kb_folder_id) {
+    const { data, error } = await supabase
+      .from('kb_folders')
+      .select('id')
+      .eq('id', body.kb_folder_id)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) {
+      return {
+        ok: false,
+        statusCode: 403,
+        error: 'kb_folder_id does not belong to the authenticated user',
+      };
+    }
+  }
+
+  return { ok: true };
 }
 
 // Build general_tools array for LLM creation/update
@@ -358,6 +472,23 @@ export const handler: Handler = async (event) => {
     if (event.httpMethod === 'POST') {
       const body = JSON.parse(event.body || '{}');
       const { action } = body;
+      const requestedUserId = body.user_id == null ? null : String(body.user_id);
+      if (requestedUserId && requestedUserId !== userId) {
+        return {
+          statusCode: 403,
+          headers,
+          body: JSON.stringify({ error: 'user_id does not match authenticated user' }),
+        };
+      }
+      body.user_id = userId;
+
+      if (body.llm_id && !(await userOwnsLlm(client, userId, String(body.llm_id)))) {
+        return {
+          statusCode: 404,
+          headers,
+          body: JSON.stringify({ error: 'LLM not found' }),
+        };
+      }
 
       // Create knowledge base
       if (action === 'create_kb') {
@@ -378,6 +509,14 @@ export const handler: Handler = async (event) => {
 
       // Create agent — auto-creates LLM if no llm_id or llm_websocket_url provided
       if (action === 'create_agent') {
+        if (body.knowledge_base_ids && !(await userOwnsAllKnowledgeBases(client, userId, body.knowledge_base_ids))) {
+          return {
+            statusCode: 403,
+            headers,
+            body: JSON.stringify({ error: 'Not authorized to attach this knowledge base' }),
+          };
+        }
+
         let responseEngine = buildResponseEngine(body);
 
         const webhookBaseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
@@ -422,6 +561,16 @@ export const handler: Handler = async (event) => {
 
       // Create both KB + Agent in one call
       if (action === 'create_full') {
+        const serviceSupabase = getSupabaseAdmin();
+        const ownership = await validateOwnedSetupReferences(serviceSupabase, userId, body);
+        if (!ownership.ok) {
+          return {
+            statusCode: ownership.statusCode,
+            headers,
+            body: JSON.stringify({ error: ownership.error }),
+          };
+        }
+
         // Step 0: Scrape website with Firecrawl if URL provided — adds rich content to KB
         if (body.website_url) {
           try {
@@ -605,8 +754,8 @@ export const handler: Handler = async (event) => {
         let supabaseAgentId: string | null = null;
         let kbFolderId: string | null = body.kb_folder_id || null;
 
-        const sb = getSupabaseAdmin();
-        if (sb && body.user_id) {
+        const sb = serviceSupabase;
+        if (body.user_id) {
           try {
             // 6a: Insert agent row into Supabase
             const agentDirection = (body.agent_type || 'inbound').startsWith('outbound') ? 'outbound' : 'inbound';
@@ -714,6 +863,9 @@ export const handler: Handler = async (event) => {
         if (!body.agent_id) {
           return { statusCode: 400, headers, body: JSON.stringify({ error: 'agent_id required' }) };
         }
+        if (!(await userOwnsAgent(userId, body.agent_id))) {
+          return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to create a call for this agent' }) };
+        }
         const webCall = await client.call.createWebCall({
           agent_id: body.agent_id,
           metadata: body.metadata || {},
@@ -734,6 +886,9 @@ export const handler: Handler = async (event) => {
         const { knowledge_base_id, knowledge_base_texts, knowledge_base_urls } = body;
         if (!knowledge_base_id) {
           return { statusCode: 400, headers, body: JSON.stringify({ error: 'knowledge_base_id required' }) };
+        }
+        if (!(await userOwnsKnowledgeBase(client, userId, knowledge_base_id))) {
+          return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to sync this knowledge base' }) };
         }
 
         if (!knowledge_base_texts?.length && !knowledge_base_urls?.length) {
@@ -783,8 +938,8 @@ export const handler: Handler = async (event) => {
           return { statusCode: 400, headers, body: JSON.stringify({ error: 'RETELL_LLM_WEBSOCKET_URL env var not set' }) };
         }
         const sb = getSupabaseAdmin();
-        if (!sb) {
-          return { statusCode: 500, headers, body: JSON.stringify({ error: 'Supabase not configured' }) };
+        if (!(await isPlatformRetellAdmin(event, sb))) {
+          return { statusCode: 403, headers, body: JSON.stringify({ error: 'Founder or platform admin required' }) };
         }
         const { data: agentRows, error: fetchErr } = await sb
           .from('agents')
