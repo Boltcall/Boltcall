@@ -1,5 +1,5 @@
-import dns from 'dns/promises';
-import net from 'net';
+import { lookup } from 'dns/promises';
+import { isIP } from 'net';
 
 const BLOCKED_HOSTS = new Set([
   'localhost',
@@ -7,7 +7,7 @@ const BLOCKED_HOSTS = new Set([
 ]);
 
 function isPrivateIp(ip: string): boolean {
-  if (net.isIP(ip) === 4) {
+  if (isIP(ip) === 4) {
     const parts = ip.split('.').map(Number);
     const [a, b] = parts;
     return (
@@ -69,12 +69,12 @@ export async function validatePublicHttpUrl(
     return { ok: false, error: `${label} host is not allowed` };
   }
 
-  if (net.isIP(hostname) && isPrivateIp(hostname)) {
+  if (isIP(hostname) && isPrivateIp(hostname)) {
     return { ok: false, error: `${label} cannot target private network addresses` };
   }
 
   try {
-    const records = await dns.lookup(hostname, { all: true, verbatim: true });
+    const records = await lookup(hostname, { all: true, verbatim: true });
     if (records.some((record) => isPrivateIp(record.address))) {
       return { ok: false, error: `${label} resolves to a private network address` };
     }
