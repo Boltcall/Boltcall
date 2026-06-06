@@ -37,7 +37,7 @@ export const handler: Handler = async (event) => {
   }
 
   const sigResult = verifyTwilioSignature(event);
-  if (sigResult === 'invalid' || (sigResult === 'missing' && process.env.NODE_ENV === 'production' && process.env.TWILIO_AUTH_TOKEN)) {
+  if (sigResult === 'invalid' || (sigResult === 'missing' && process.env.TWILIO_AUTH_TOKEN)) {
     console.warn(`[twilio-inbound-sms] Rejecting ${sigResult} Twilio signature`);
     return {
       statusCode: 403,

@@ -231,14 +231,16 @@ export const handler: Handler = async (event) => {
 
     // Detect Facebook leadgen webhook format
     if (body.object === 'page' && body.entry) {
-      // Verify Facebook signature when configured. Same dev-friendly fallback as retell-webhook.
+      // Verify Facebook signature when configured. Local dev may omit the app
+      // secret, but a configured secret means unsigned leadgen posts are not
+      // trusted regardless of NODE_ENV.
       const fbSig = verifyFacebookSignature(event.body || '', event.headers as Record<string, string | undefined>);
       if (fbSig === 'invalid') {
         console.warn('[lead-webhook] Invalid Facebook signature — rejecting');
         return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid X-Hub-Signature-256' }) };
       }
-      if (fbSig === 'missing' && process.env.NODE_ENV === 'production') {
-        console.warn('[lead-webhook] Missing FB signature in production — rejecting');
+      if (fbSig === 'missing' && (process.env.FB_APP_SECRET || process.env.NODE_ENV === 'production')) {
+        console.warn('[lead-webhook] Missing Facebook signature while webhook signing is required — rejecting');
         return { statusCode: 401, headers, body: JSON.stringify({ error: 'Webhook signature required' }) };
       }
       try {
