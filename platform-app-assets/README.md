@@ -32,6 +32,24 @@ This folder keeps the reusable assets for creating and submitting Boltcall integ
 - `gohighlevel/boltcall-preview-1.png` - preview image 1.
 - `gohighlevel/boltcall-preview-2.png` - preview image 2.
 - `gohighlevel/boltcall-preview-3.png` - preview image 3.
+- `gohighlevel/boltcall-preview-1-640.jpg` - smaller fallback preview image 1.
+- `gohighlevel/boltcall-preview-2-640.jpg` - smaller fallback preview image 2.
+- `gohighlevel/boltcall-preview-3-640.jpg` - smaller fallback preview image 3.
 - Listing source: `integrations/gohighlevel/MARKETPLACE.md`
 - Setup page: `https://boltcall.org/integrations/gohighlevel`
 
+## Pipedrive
+
+- `pipedrive/boltcall-logo-512.png` - app logo.
+- `pipedrive/boltcall-preview-1.png` - preview image 1.
+- `pipedrive/boltcall-preview-2.png` - preview image 2.
+- `pipedrive/boltcall-preview-3.png` - preview image 3.
+- Listing copy: see `marketplace-copy.md`.
+
+## Zoho CRM
+
+- `zoho/boltcall-logo-512.png` - extension logo.
+- `zoho/boltcall-preview-1.png` - preview image 1.
+- `zoho/boltcall-preview-2.png` - preview image 2.
+- `zoho/boltcall-preview-3.png` - preview image 3.
+- Listing copy: see `marketplace-copy.md`.

@@ -42,3 +42,22 @@ Use Boltcall to trigger first-touch outreach, qualify intent, capture source and
 
 Core workflows include sending new contacts to Boltcall, creating or updating CRM contacts from Boltcall leads, tagging contacts with Boltcall source data, and routing urgent leads into instant AI calling or texting. The CRM stays the system of record, while Boltcall becomes the instant-response layer.
 
+## Pipedrive
+
+App name: Boltcall
+
+Short description: Instantly call and text new Pipedrive leads before competitors respond.
+
+Description: Boltcall connects Pipedrive leads, people, deals, and activities to instant AI speed-to-lead follow-up. When a new local-service opportunity appears in Pipedrive, Boltcall can start phone and SMS outreach, capture first-touch status, and help the team book the lead while intent is still high.
+
+Best workflows include new Pipedrive lead to Boltcall, new deal to Boltcall, Boltcall outcome to Pipedrive activity, and lead source/status updates for sales teams that need immediate response.
+
+## Zoho CRM
+
+App name: Boltcall
+
+Short description: Trigger instant speed-to-lead calling and SMS from Zoho CRM leads.
+
+Description: Boltcall helps Zoho CRM users respond to new local-service leads immediately. Send new leads or contacts from Zoho CRM into Boltcall, trigger instant phone and SMS follow-up, and keep source, status, and outcome fields aligned so sales teams know which leads were contacted, qualified, booked, or still need attention.
+
+Best workflows include new Zoho lead to Boltcall, Zoho contact update to Boltcall, Boltcall outcome back to Zoho CRM, and instant follow-up for form, ad, and imported lead sources.
