@@ -43,6 +43,6 @@ test.describe('Pricing Page', () => {
   });
 
   test('pricing section has "Pricing That" heading text', async ({ page }) => {
-    await expect(page.getByText('Pricing That').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Pricing\s*That\s*Scales\s*With\s*You/i })).toBeVisible();
   });
 });

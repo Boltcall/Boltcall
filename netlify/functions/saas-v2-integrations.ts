@@ -35,7 +35,7 @@
  *   newly-signed-up user with zero rows returns the catalog with all-false
  *   connected flags in <100ms.
  *
- * Auth: Bearer JWT only — workspace_id is derived from owner_id, never
+ * Auth: Bearer JWT only — workspace_id is derived from user_id, never
  *   accepted from the request. Mirrors saas-v2-toggle's pattern exactly.
  *
  * Event emission: best-effort `saas_v2_integrations_list_rendered`. Skipped
@@ -509,7 +509,7 @@ export const handler: Handler = async (event) => {
   }
   const userId = userResult.user.id;
 
-  // ── 2. Resolve workspace owner_id == userId ────────────────────────────
+  // ── 2. Resolve workspace user_id == userId ────────────────────────────
   let workspaceId: string | null = null;
   let workspaceCreatedAt: string | null = null;
   try {

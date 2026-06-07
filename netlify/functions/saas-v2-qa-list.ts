@@ -6,7 +6,7 @@
  * Auth pattern (mirrors saas-v2-toggle.ts + saas-v2-calls.ts):
  *   1. Read Authorization: Bearer <jwt> (401 if missing).
  *   2. supa.auth.getUser(token) -> userId (401 if invalid).
- *   3. SELECT workspaces WHERE owner_id = userId (the security barrier).
+ *   3. SELECT workspaces WHERE user_id = userId (the security barrier).
  *
  * Query string:
  *   date_from    ISO date YYYY-MM-DD (defaults to 7 days ago)

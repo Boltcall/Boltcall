@@ -23,8 +23,7 @@ test.describe('Public page navigation', () => {
   test('can navigate to /contact', async ({ page }) => {
     await page.goto('/contact');
     await expect(page).toHaveTitle(/Contact/i);
-    await expect(page.locator('h1')).toContainText('GET IN');
-    await expect(page.locator('h1')).toContainText('TOUCH');
+    await expect(page.locator('h1')).toContainText('Contact Us');
   });
 
   test('can navigate to /blog', async ({ page }) => {

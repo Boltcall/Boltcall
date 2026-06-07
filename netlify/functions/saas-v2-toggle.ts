@@ -122,7 +122,7 @@ export const handler: Handler = async (event) => {
   const enabled = parsed.enabled;
 
   // ─── 3. Owner-of-workspace check + update ────────────────────────────────
-  // Scope the UPDATE to (owner_id = userId) so a non-owner with a stolen JWT
+  // Scope the UPDATE to (user_id = userId) so a non-owner with a stolen JWT
   // can't toggle someone else's workspace. The .eq() is the security barrier;
   // RLS is the second line. We use returning='representation' to confirm the
   // update actually matched a row.

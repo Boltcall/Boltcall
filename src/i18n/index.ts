@@ -109,11 +109,11 @@ i18n
     },
     ns: [...NAMESPACES],
     defaultNS: 'common',
-    lng: localStorage.getItem('i18nextLng')?.split('-')[0] || undefined,
+    lng: localStorage.getItem('i18nextLng')?.split('-')[0] || 'en',
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
     },

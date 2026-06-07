@@ -6,7 +6,7 @@
  * Auth pattern (mirrors saas-v2-toggle.ts):
  *   1. Read Authorization: Bearer <jwt> from cors (401 if missing).
  *   2. supa.auth.getUser(token) -> userId (401 if invalid).
- *   3. SELECT workspaces WHERE owner_id = userId  (RLS-safe primary filter).
+ *   3. SELECT workspaces WHERE user_id = userId  (RLS-safe primary filter).
  *
  * Query string:
  *   status      one of retell_calls.call_status (e.g. ended | error | booked | ...)
@@ -263,7 +263,7 @@ export const handler: Handler = async (event) => {
   }
   const userId = userResult.user.id;
 
-  // ── Resolve workspace (owner_id filter is the primary security boundary) ─
+  // ── Resolve workspace (user_id filter is the primary security boundary) ─
   const { data: workspaceRow, error: wsErr } = await supa
     .from('workspaces')
     .select('id, v2_enabled')

@@ -46,7 +46,7 @@ test.describe('Demo flow page', () => {
   });
 
   test('source nodes are visible - Ads', async ({ page }) => {
-    await expect(page.getByText('Ads')).toBeVisible();
+    await expect(page.getByText('Ads', { exact: true })).toBeVisible();
     await expect(page.getByText('Lead ads')).toBeVisible();
   });
 
@@ -71,6 +71,6 @@ test.describe('Demo flow page', () => {
 
   test('center Boltcall AI Agent node is visible', async ({ page }) => {
     await expect(page.getByText('Boltcall').first()).toBeVisible();
-    await expect(page.getByText('AI Agent')).toBeVisible();
+    await expect(page.getByText('AI Agent', { exact: true })).toBeVisible();
   });
 });

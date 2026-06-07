@@ -1,7 +1,7 @@
 /**
  * saas-v2-message-thread — GET a single thread's full history + lead context.
  *
- * Auth: Bearer JWT only. Workspace resolved server-side from JWT → owner_id.
+ * Auth: Bearer JWT only. Workspace resolved server-side from JWT → user_id.
  * Param: thread_id (uuid) via querystring.
  *
  * Verifies that the thread belongs to the calling user's workspace (defense in
@@ -116,7 +116,7 @@ export const handler: Handler = async (event) => {
   // ─── Workspace ───────────────────────────────────────────────────────────
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
-    .select('id, owner_id')
+    .select('id')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();

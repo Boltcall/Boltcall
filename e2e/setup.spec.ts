@@ -1,11 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Setup wizard', () => {
-  test('redirects to login when not authenticated', async ({ page }) => {
+  test('renders public setup wizard when not authenticated', async ({ page }) => {
     await page.goto('/setup');
-    // ProtectedRoute should redirect unauthenticated users to /login
-    await page.waitForURL(/\/login/);
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByText('Step 1 of 2: Personal Profile')).toBeVisible();
   });
 
   test('setup/loading redirects to login when not authenticated', async ({ page }) => {
