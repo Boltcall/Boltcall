@@ -4,7 +4,7 @@ const sendLead = require('./creates/send_lead');
 const findLead = require('./searches/find_lead');
 
 module.exports = {
-  version: '1.0.0',
+  version: '1.0.1',
   platformVersion: require('zapier-platform-core').version,
   flags: {
     cleanInputData: false,

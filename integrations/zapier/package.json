@@ -1,6 +1,6 @@
 {
   "name": "boltcall-zapier",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Boltcall Zapier integration for speed-to-lead workflows.",
   "main": "index.js",
   "private": true,
