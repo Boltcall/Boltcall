@@ -134,6 +134,7 @@ const Privacy: React.FC = () => {
                 <tr><td className="p-3">ElevenLabs</td><td className="p-3">AI voice synthesis</td><td className="p-3">US</td></tr>
                 <tr><td className="p-3">OpenAI</td><td className="p-3">Language model inference</td><td className="p-3">US</td></tr>
                 <tr><td className="p-3">Google Analytics / GTM</td><td className="p-3">Web analytics (consent-gated)</td><td className="p-3">US</td></tr>
+                <tr><td className="p-3">Microsoft Clarity</td><td className="p-3">Public-site heatmaps and session behavior analytics (consent-gated)</td><td className="p-3">US</td></tr>
                 <tr><td className="p-3">Greeninvoice</td><td className="p-3">Israeli tax invoice issuance</td><td className="p-3">Israel</td></tr>
               </tbody>
             </table>
@@ -221,7 +222,7 @@ const Privacy: React.FC = () => {
             <p>We use a consent banner to obtain explicit permission before placing non-essential cookies. This complies with the Israeli Privacy Protection Authority's guidance on consent.</p>
             <div className="bg-gray-50 rounded-xl p-5 space-y-2">
               <p><strong>Essential cookies:</strong> Auth session, language preference, cookie consent record. Always active.</p>
-              <p><strong>Analytics (requires consent):</strong> Google Analytics 4 (G-LY9H4ZQW81) and GTM (GTM-5LWRPT5N). Track pages and feature usage. No personal data shared for advertising.</p>
+              <p><strong>Analytics (requires consent):</strong> Google Analytics 4 (G-LY9H4ZQW81), GTM (GTM-5LWRPT5N), and Microsoft Clarity. Track pages, feature usage, heatmaps, and public-site session behavior. Clarity is not enabled on authenticated dashboard or setup areas. No personal data shared for advertising.</p>
             </div>
             <p>Withdraw consent anytime by clearing the <code className="bg-gray-100 px-1 rounded text-xs">cookie_consent</code> key in your browser's localStorage and refreshing.</p>
           </div>

@@ -1,39 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Cookie, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { loadMarketingAnalytics } from '../lib/marketingAnalytics';
 
 const CONSENT_KEY = 'cookie_consent';
 
 type ConsentChoice = 'accepted' | 'rejected';
-
-function loadAnalytics() {
-  if ((window as any)._analyticsLoaded) return;
-  (window as any)._analyticsLoaded = true;
-
-  // Google Tag Manager
-  (function (w: any, d: Document, s: string, l: string, i: string) {
-    w[l] = w[l] || [];
-    w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-    const f = d.getElementsByTagName(s)[0];
-    const j = d.createElement(s) as HTMLScriptElement;
-    const dl = l !== 'dataLayer' ? '&l=' + l : '';
-    j.async = true;
-    j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-    f.parentNode!.insertBefore(j, f);
-  })(window, document, 'script', 'dataLayer', 'GTM-5LWRPT5N');
-
-  // Google Analytics
-  const g = document.createElement('script');
-  g.async = true;
-  g.src = 'https://www.googletagmanager.com/gtag/js?id=G-LY9H4ZQW81';
-  document.head.appendChild(g);
-  g.onload = function () {
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    function gtag(...args: any[]) { (window as any).dataLayer.push(args); }
-    gtag('js', new Date());
-    gtag('config', 'G-LY9H4ZQW81');
-    (window as any).gtag = gtag;
-  };
-}
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -47,13 +18,13 @@ export default function CookieBanner() {
       return () => clearTimeout(t);
     }
     if (stored === 'accepted') {
-      loadAnalytics();
+      loadMarketingAnalytics();
     }
   }, []);
 
   function accept() {
     localStorage.setItem(CONSENT_KEY, 'accepted');
-    loadAnalytics();
+    loadMarketingAnalytics();
     setVisible(false);
   }
 
@@ -96,7 +67,7 @@ export default function CookieBanner() {
             {expanded && (
               <div className="mt-3 text-xs text-gray-600 bg-gray-50 rounded-lg p-3 space-y-1.5">
                 <p><strong>Essential cookies:</strong> Auth session, language preference, cookie consent choice. Always active — cannot be disabled.</p>
-                <p><strong>Analytics cookies (requires consent):</strong> Google Analytics & Google Tag Manager. We track pages visited and feature usage to improve the product. No personal data is shared with third parties for advertising.</p>
+                <p><strong>Analytics cookies (requires consent):</strong> Google Analytics, Google Tag Manager, and Microsoft Clarity. We track pages visited, feature usage, heatmaps, and session behavior on public pages to improve the product. No personal data is shared with third parties for advertising.</p>
                 <p>
                   See our{' '}
                   <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a>
