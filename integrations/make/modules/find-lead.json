@@ -2,6 +2,7 @@
   "name": "findLead",
   "label": "Find Lead",
   "type": "search",
+  "connection": "boltcallApiKey",
   "description": "Finds a Boltcall lead by email, phone, external ID, or idempotency key.",
   "parameters": [
     { "name": "email", "type": "email", "label": "Email", "required": false },

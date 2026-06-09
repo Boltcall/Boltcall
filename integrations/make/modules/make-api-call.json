@@ -2,6 +2,7 @@
   "name": "makeApiCall",
   "label": "Make an API Call",
   "type": "action",
+  "connection": "boltcallApiKey",
   "description": "Calls a Boltcall integration API endpoint directly.",
   "parameters": [
     {

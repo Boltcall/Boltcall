@@ -231,6 +231,7 @@ vi.mock('../_shared/cors', () => ({
 }));
 
 vi.mock('../_shared/azure-ai', () => ({
+  generateEmbedding: vi.fn(async () => [0.1, 0.2, 0.3]),
   chatCompletion: vi.fn(async (_system: string, _user: string) => {
     return 'Canned narrative reply. Two short sentences. No agency jargon.';
   }),
@@ -518,6 +519,7 @@ const endpoints: Array<{
   { name: 'saas-v2-setup-finalize', importPath: '../saas-v2-setup-finalize', method: 'POST', happyBody: { conversation_id: 'conv-1', confirm: true } },
   { name: 'saas-v2-setup-state', importPath: '../saas-v2-setup-state', method: 'GET' },
   { name: 'saas-v2-toggle', importPath: '../saas-v2-toggle', method: 'POST', happyBody: { enabled: true } },
+  { name: 'saas-v2-vertical-guardrails', importPath: '../saas-v2-vertical-guardrails', method: 'GET' },
 ];
 
 for (const ep of endpoints) {

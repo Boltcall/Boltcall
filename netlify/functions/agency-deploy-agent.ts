@@ -85,6 +85,40 @@ interface ClientRow {
   secrets: Record<string, unknown> | null;
 }
 
+interface DeploymentEnvelope {
+  prompt: string | null;
+  knowledge_base: unknown;
+  voice_id: string | null;
+  language: string | null;
+  transfer_number: string | null;
+  agent_version: string | null;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function firstString(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value;
+  }
+  return null;
+}
+
+function extractDeploymentEnvelope(content: Record<string, unknown>): DeploymentEnvelope {
+  const payload = asRecord(content.payload);
+  return {
+    prompt: firstString(content.prompt, content.agent_prompt, payload.prompt, payload.agent_prompt),
+    knowledge_base: content.knowledge_base ?? payload.knowledge_base ?? null,
+    voice_id: firstString(content.voice_id, payload.voice_id),
+    language: firstString(content.language, payload.language),
+    transfer_number: firstString(content.transfer_number, payload.transfer_number),
+    agent_version: firstString(content.agent_version, payload.agent_version),
+  };
+}
+
 /**
  * Find the Retell agent_id currently bound to a client. We look at the most
  * recently shipped agent_prompt / prompt_revision artifact and use the
@@ -190,26 +224,27 @@ export const handler: Handler = async (event) => {
 
   // ── Pull required fields from artifact content ─────────────────────────────
   const content = row.content ?? {};
-  const prompt = typeof content.prompt === 'string' ? content.prompt : null;
+  const envelope = extractDeploymentEnvelope(content);
+  const prompt = envelope.prompt;
   if (!prompt) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ error: 'artifact.content.prompt is required for agent deployment' }),
+      body: JSON.stringify({
+        error: 'artifact content must include prompt or payload.agent_prompt for agent deployment',
+      }),
     };
   }
-  const knowledge_base = content.knowledge_base ?? null;
+  const knowledge_base = envelope.knowledge_base;
   const voice_id =
-    typeof content.voice_id === 'string'
-      ? content.voice_id
+    envelope.voice_id
+      ? envelope.voice_id
       : typeof (clientRow.secrets as Record<string, unknown> | null)?.retell_voice_id === 'string'
       ? ((clientRow.secrets as Record<string, unknown>).retell_voice_id as string)
       : process.env.RETELL_DEFAULT_VOICE_ID || '11labs-Adrian';
-  const language = typeof content.language === 'string' ? content.language : 'en-US';
-  const transfer_number =
-    typeof content.transfer_number === 'string' ? content.transfer_number : undefined;
-  const agent_version =
-    typeof content.agent_version === 'string' ? content.agent_version : '1';
+  const language = envelope.language ?? 'en-US';
+  const transfer_number = envelope.transfer_number ?? undefined;
+  const agent_version = envelope.agent_version ?? '1';
 
   try {
     const existingAgentId = await findExistingAgentId(supabase, row.client_id);

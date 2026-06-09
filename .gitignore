@@ -24,6 +24,9 @@ dist-ssr
 .codex/
 .gstack/
 test-results/
+supabase/.temp/
+qa-*.png
+phase1-*.png
 
 # Editor directories and files
 .vscode/*

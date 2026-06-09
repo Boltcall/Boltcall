@@ -2,6 +2,7 @@
   "name": "watchLeads",
   "label": "Watch Leads",
   "type": "trigger",
+  "connection": "boltcallApiKey",
   "description": "Triggers when Boltcall captures new leads.",
   "communication": {
     "url": "/api-leads",

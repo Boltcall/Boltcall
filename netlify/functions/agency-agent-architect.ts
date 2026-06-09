@@ -55,6 +55,12 @@ import {
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { getServiceSupabase } from './_shared/token-utils';
+import {
+  formatVerticalContextForPrompt,
+  normalizeVerticalSlug,
+  retrieveVerticalPackContext,
+  type RetrievedVerticalChunk,
+} from './_shared/vertical-knowledge/retrieve';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -71,6 +77,11 @@ interface ArchitectInput {
   client_id: string;
   vertical: string;
   extracted_profile: Record<string, unknown>;
+  approved_vertical_context?: {
+    pack_slug: string;
+    context_block: string;
+    chunks: RetrievedVerticalChunk[];
+  } | null;
   voice_id_hint?: string;
   language_hint?: string;
   /** Populated on iteration 2+ by the iteration_check failure feedback. */
@@ -277,6 +288,38 @@ const PERSONA_SEEDS: Record<string, Record<PersonaCategory, Array<Partial<Person
       { objection_pattern: 'asks_general_legal_question', sample_dialog_seed: "Is it legal to record someone in California?" },
     ],
   },
+  solar: {
+    price_shopper: [
+      { objection_pattern: 'asks_free_solar', sample_dialog_seed: "I saw an ad saying solar is free. Is that true?" },
+      { objection_pattern: 'wants_savings_guarantee', sample_dialog_seed: "Can you guarantee my bill will go to zero?" },
+      { objection_pattern: 'compares_quotes', sample_dialog_seed: "Another company says they can save me $200 a month. Can you beat that?" },
+    ],
+    emergency: [
+      { objection_pattern: 'roof_leak_after_install', sample_dialog_seed: "I had panels installed and now my roof is leaking. What do I do?" },
+      { objection_pattern: 'utility_shutdown_notice', sample_dialog_seed: "My utility sent me a shutoff notice. Can solar fix this right away?" },
+      { objection_pattern: 'contract_deadline', sample_dialog_seed: "The sales rep said I have to sign today to get the tax credit. Is that true?" },
+    ],
+    comparison: [
+      { objection_pattern: 'asks_tax_credit', sample_dialog_seed: "Do I qualify for the federal tax credit?" },
+      { objection_pattern: 'asks_financing_terms', sample_dialog_seed: "Can you approve me for financing over the phone?" },
+      { objection_pattern: 'asks_equipment_quality', sample_dialog_seed: "What panels and inverters do you use compared with SunPower?" },
+    ],
+    hostile: [
+      { objection_pattern: 'scam_concern', sample_dialog_seed: "Solar companies keep lying to me. How do I know this is not a scam?" },
+      { objection_pattern: 'angry_about_prior_quote', sample_dialog_seed: "The last guy promised free solar and then sent a huge contract. I am done with this." },
+      { objection_pattern: 'demands_exact_savings', sample_dialog_seed: "Do not waste my time. Tell me exactly what I save or I am hanging up." },
+    ],
+    non_english: [
+      { objection_pattern: 'spanish_solar', accent_profile: 'spanish_l1_minimal_english', sample_dialog_seed: "Hola, quiero saber si puedo poner paneles solares en mi casa." },
+      { objection_pattern: 'mandarin_accent_solar', accent_profile: 'mandarin_l2_english', sample_dialog_seed: "Hello, I want know solar save money, you check my house?" },
+      { objection_pattern: 'limited_english_utility_bill', accent_profile: 'unknown_l2_english', sample_dialog_seed: "I have electric bill high. Solar help? Please explain slow." },
+    ],
+    low_info: [
+      { objection_pattern: 'renter_unclear', sample_dialog_seed: "I rent but I pay the electric bill. Can I get solar?" },
+      { objection_pattern: 'doesnt_know_roof', sample_dialog_seed: "I do not know how old my roof is. Can someone still look?" },
+      { objection_pattern: 'asks_generic_tax_question', sample_dialog_seed: "How does the tax credit work for me?" },
+    ],
+  },
   default: {
     price_shopper: [
       { objection_pattern: 'wants_quote', sample_dialog_seed: "Hi, how much do you charge for your services?" },
@@ -312,6 +355,19 @@ const PERSONA_SEEDS: Record<string, Record<PersonaCategory, Array<Partial<Person
 };
 
 // ─── Handler ────────────────────────────────────────────────────────────────
+
+function resolvePersonaSeedKey(vertical: string): keyof typeof PERSONA_SEEDS {
+  const normalized = normalizeVerticalSlug(vertical) ?? vertical;
+  if (normalized === 'law_firm') return 'legal';
+  if (normalized in PERSONA_SEEDS) return normalized as keyof typeof PERSONA_SEEDS;
+  return 'default';
+}
+
+function ensureVerticalGuardrailsInPrompt(prompt: string, verticalContextBlock: string): string {
+  if (!verticalContextBlock.trim()) return prompt;
+  if (prompt.includes('# Approved Vertical Guardrails')) return prompt;
+  return [verticalContextBlock, '# Agent Prompt', prompt].join('\n\n');
+}
 
 export const handler: Handler = async (event: HandlerEvent): Promise<HandlerResponse> => {
   if (event.httpMethod !== 'POST') {
@@ -385,8 +441,19 @@ async function runArchitect(args: RunArchitectArgs): Promise<RunArchitectResult>
   //     extracted_profile that the architect generates a prompt from.
   const { client, intake } = await loadClientAndIntake(supabase, args.client_id, args.intake_call_id);
 
-  const vertical = (client.vertical ?? 'default') as string;
-  const verticalKey = (PERSONA_SEEDS[vertical] ? vertical : 'default') as keyof typeof PERSONA_SEEDS;
+  const vertical = normalizeVerticalSlug(client.vertical) ?? (client.vertical ?? 'default');
+  const verticalKey = resolvePersonaSeedKey(vertical);
+  const verticalChunks = await retrieveVerticalPackContext({
+    vertical,
+    queryText: [
+      'agent architect prompt guardrails intake escalation disallowed claims faqs',
+      JSON.stringify(intake.extracted_profile),
+    ].join('\n'),
+    kinds: ['guardrail', 'intake_flow', 'escalation_rule', 'disallowed_claim', 'qualification_field', 'faq'],
+    limit: 18,
+    supabase,
+  });
+  const verticalContextBlock = formatVerticalContextForPrompt(verticalChunks);
 
   const fleet = buildPersonaFleet(verticalKey, args.personas_per_category);
 
@@ -407,6 +474,13 @@ async function runArchitect(args: RunArchitectArgs): Promise<RunArchitectResult>
     client_id: args.client_id,
     vertical,
     extracted_profile: intake.extracted_profile,
+    approved_vertical_context: verticalContextBlock
+      ? {
+          pack_slug: String(normalizeVerticalSlug(vertical) ?? vertical),
+          context_block: verticalContextBlock,
+          chunks: verticalChunks,
+        }
+      : null,
     voice_id_hint: '11labs-Adrian',
     language_hint: 'en-US',
   };
@@ -418,6 +492,12 @@ async function runArchitect(args: RunArchitectArgs): Promise<RunArchitectResult>
   const iteration_check = async (
     output: ArchitectOutput,
   ): Promise<IterationCheckResult> => {
+    if (verticalContextBlock) {
+      output.agent_prompt = ensureVerticalGuardrailsInPrompt(
+        output.agent_prompt,
+        verticalContextBlock,
+      );
+    }
     latestOutput = output;
     const iterationIdx = iterationHistory.length + 1;
 
@@ -517,6 +597,11 @@ async function runArchitect(args: RunArchitectArgs): Promise<RunArchitectResult>
     artifact_type: 'agent_prompt',
     ship_target: 'retell_agent',
     knowledge_k: 12,
+    knowledge_query: [
+      'services faqs policies transfer triggers client-specific facts',
+      verticalContextBlock,
+      JSON.stringify(intake.extracted_profile),
+    ].join('\n'),
     router_summary: `agent-architect generating Retell prompt for vertical=${vertical} from extracted_profile (${
       JSON.stringify(intake.extracted_profile).length
     } chars)`,
@@ -542,6 +627,7 @@ async function runArchitect(args: RunArchitectArgs): Promise<RunArchitectResult>
     simulation_passed,
     final_aggregate: latestAggregate,
     blocker_summary,
+    vertical_chunks: verticalChunks,
   });
 
   // (d) Post-ship hook: if the run passed AND the architect emitted a
@@ -868,6 +954,7 @@ interface AugmentArgs {
   simulation_passed: boolean;
   final_aggregate: SimulationBatchResult['aggregate'] | null;
   blocker_summary?: string;
+  vertical_chunks?: RetrievedVerticalChunk[];
 }
 
 async function augmentArtifactWithProof(args: AugmentArgs): Promise<void> {
@@ -876,7 +963,7 @@ async function augmentArtifactWithProof(args: AugmentArgs): Promise<void> {
   // append simulation_passed + blocker_summary + simulation_proof keys.
   const { data: existing, error: readErr } = await args.supabase
     .from('agency_artifacts')
-    .select('content, predicted_impact')
+    .select('content, predicted_impact, retrieved_context')
     .eq('id', args.artifact_id)
     .single();
   if (readErr || !existing) {
@@ -896,6 +983,7 @@ async function augmentArtifactWithProof(args: AugmentArgs): Promise<void> {
         }
       : null,
     ...(args.blocker_summary ? { blocker_summary: args.blocker_summary } : {}),
+    ...(args.vertical_chunks?.length ? { vertical_pack_context: args.vertical_chunks } : {}),
   };
 
   // Promote sim avg_qa into predicted_impact too so the queue UI can rank by it.
@@ -908,9 +996,26 @@ async function augmentArtifactWithProof(args: AugmentArgs): Promise<void> {
     simulation_passed: args.simulation_passed,
   };
 
+  const existingRetrievedContext = Array.isArray((existing as Record<string, unknown>).retrieved_context)
+    ? ((existing as Record<string, unknown>).retrieved_context as unknown[])
+    : [];
+  const verticalRetrievedContext = (args.vertical_chunks ?? []).map((chunk) => ({
+    scope: 'vertical',
+    pack_slug: chunk.pack_slug,
+    knowledge_id: chunk.knowledge_id,
+    kind: chunk.kind,
+    score: chunk.score,
+  }));
+
   const { error: updErr } = await args.supabase
     .from('agency_artifacts')
-    .update({ content: newContent, predicted_impact: enrichedImpact })
+    .update({
+      content: newContent,
+      predicted_impact: enrichedImpact,
+      ...(verticalRetrievedContext.length
+        ? { retrieved_context: [...existingRetrievedContext, ...verticalRetrievedContext] }
+        : {}),
+    })
     .eq('id', args.artifact_id);
   if (updErr) {
     console.warn(`[agent-architect] augment: artifact ${args.artifact_id} update failed: ${updErr.message}`);
