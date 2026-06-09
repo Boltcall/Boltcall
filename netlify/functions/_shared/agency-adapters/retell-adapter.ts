@@ -36,6 +36,10 @@ import {
   type AgencyEventType,
   type AgencyEventSeverity,
 } from '../emit-agency-event';
+import {
+  syncRetellKnowledgeBases,
+  type RetellKnowledgeBinding,
+} from '../retell-knowledge-sync';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -54,12 +58,16 @@ export interface CreateAgentFromArtifactOpts {
 export interface CreateAgentResult {
   agent_id: string;
   llm_id: string;
+  knowledge_base_ids?: string[];
+  knowledge_bindings?: RetellKnowledgeBinding[];
 }
 
 export interface UpdateAgentPromptOpts {
   agent_id: string;
   prompt: string;
   client_id?: string;
+  vertical?: string | null;
+  knowledge_base?: unknown;
   artifact_id?: string;
   parent_artifact_id?: string;
   reason?: string;
@@ -68,6 +76,8 @@ export interface UpdateAgentPromptOpts {
 
 export interface UpdateAgentPromptResult {
   updated_at: string;
+  knowledge_base_ids?: string[];
+  knowledge_bindings?: RetellKnowledgeBinding[];
 }
 
 export interface RevertAgentPromptOpts {
@@ -137,6 +147,10 @@ export type InjectInCallContextResult =
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
 const ADAPTER_NAME = 'retell-adapter';
+const RETELL_KB_CONFIG = {
+  top_k: 4,
+  filter_score: 0.55,
+};
 
 function getRetellClient(): Retell {
   const apiKey = process.env.RETELL_API_KEY;
@@ -265,13 +279,35 @@ async function callWithRetry<T>(
   }
 }
 
+async function syncApprovedRetellKnowledge(args: {
+  retell: Retell;
+  client_id?: string | null;
+  vertical?: string | null;
+  knowledge_base?: unknown;
+}): Promise<RetellKnowledgeBinding[]> {
+  if (!args.client_id) return [];
+  const supabase = getSupabaseAdmin();
+  if (!supabase) {
+    throw new Error('Supabase service client not configured for Retell knowledge sync');
+  }
+
+  return syncRetellKnowledgeBases({
+    supabase,
+    retell: args.retell,
+    clientId: args.client_id,
+    vertical: args.vertical,
+    clientKnowledgeBase: args.knowledge_base,
+  });
+}
+
 // ─── 1. createAgentFromArtifact ──────────────────────────────────────────────
 
 /**
  * Creates a Retell LLM + Agent pair from a pre-built artifact (prompt + KB)
  * produced by the agent-architect. The knowledge_base argument is opaque to
- * the adapter — KB persistence is the architect's job; here we only need the
- * prompt and voice config to spin up Retell objects.
+ * the adapter except for approved Retell KB sync. The prompt still carries
+ * hard compliance rules; Retell native KBs carry approved vertical/client facts
+ * for live conversation retrieval.
  *
  * Returns ONLY whitelisted identifiers. Raw Retell responses (containing
  * webhook URLs, internal config) are never bubbled up.
@@ -283,16 +319,24 @@ export async function createAgentFromArtifact(
   const baseUrl =
     process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
-  // Knowledge base contents are inlined into the prompt by the architect
-  // before the artifact is approved — the adapter just records that a KB
-  // was supplied for traceability.
-  const kbPresent = opts.knowledge_base != null;
-
   try {
+    const knowledgeBindings = await syncApprovedRetellKnowledge({
+      retell: client,
+      client_id: opts.client_id,
+      vertical: opts.vertical,
+      knowledge_base: opts.knowledge_base,
+    });
+    const knowledgeBaseIds = knowledgeBindings.map(
+      (binding) => binding.retell_knowledge_base_id,
+    );
+
     const llm = await callWithRetry('llm.create', opts.client_id, () =>
       client.llm.create({
         model: 'gpt-4o-mini',
         general_prompt: opts.prompt,
+        ...(knowledgeBaseIds.length
+          ? { knowledge_base_ids: knowledgeBaseIds, kb_config: RETELL_KB_CONFIG }
+          : {}),
       } as Parameters<typeof client.llm.create>[0]),
     );
 
@@ -323,8 +367,12 @@ export async function createAgentFromArtifact(
     });
 
     // Whitelisted return — do not expose raw Retell response.
-    void kbPresent; // retained for clarity; intentionally not emitted (not in schema)
-    return { agent_id: agent.agent_id, llm_id: llm.llm_id };
+    return {
+      agent_id: agent.agent_id,
+      llm_id: llm.llm_id,
+      ...(knowledgeBaseIds.length ? { knowledge_base_ids: knowledgeBaseIds } : {}),
+      ...(knowledgeBindings.length ? { knowledge_bindings: knowledgeBindings } : {}),
+    };
   } catch (err) {
     await emitEvent({
       client_id: opts.client_id,
@@ -364,9 +412,22 @@ export async function updateAgentPrompt(
       );
     }
 
+    const knowledgeBindings = await syncApprovedRetellKnowledge({
+      retell: client,
+      client_id: opts.client_id ?? null,
+      vertical: opts.vertical,
+      knowledge_base: opts.knowledge_base,
+    });
+    const knowledgeBaseIds = knowledgeBindings.map(
+      (binding) => binding.retell_knowledge_base_id,
+    );
+
     await callWithRetry('llm.update', opts.client_id ?? null, () =>
       client.llm.update(llmId, {
         general_prompt: opts.prompt,
+        ...(knowledgeBaseIds.length
+          ? { knowledge_base_ids: knowledgeBaseIds, kb_config: RETELL_KB_CONFIG }
+          : {}),
       } as Parameters<typeof client.llm.update>[1]),
     );
 
@@ -387,7 +448,11 @@ export async function updateAgentPrompt(
         ...(opts.source ? { source: opts.source } : {}),
       },
     });
-    return { updated_at };
+    return {
+      updated_at,
+      ...(knowledgeBaseIds.length ? { knowledge_base_ids: knowledgeBaseIds } : {}),
+      ...(knowledgeBindings.length ? { knowledge_bindings: knowledgeBindings } : {}),
+    };
   } catch (err) {
     await emitEvent({
       client_id: opts.client_id ?? null,

@@ -252,19 +252,23 @@ export const handler: Handler = async (event) => {
     let agent_id: string;
     let llm_id: string | null = null;
     let mode: 'create' | 'update';
+    let retell_knowledge_base_ids: string[] = [];
 
     if (existingAgentId) {
       mode = 'update';
-      await updateAgentPrompt({
+      const result = await updateAgentPrompt({
         agent_id: existingAgentId,
         prompt,
         client_id: row.client_id,
+        vertical: clientRow.vertical ?? undefined,
+        knowledge_base,
         artifact_id: row.id,
         parent_artifact_id: row.parent_artifact_id ?? undefined,
         reason: 'founder approved in queue',
         source: 'founder',
       });
       agent_id = existingAgentId;
+      retell_knowledge_base_ids = result.knowledge_base_ids ?? [];
     } else {
       mode = 'create';
       const result = await createAgentFromArtifact({
@@ -280,6 +284,7 @@ export const handler: Handler = async (event) => {
       });
       agent_id = result.agent_id;
       llm_id = result.llm_id;
+      retell_knowledge_base_ids = result.knowledge_base_ids ?? [];
     }
 
     // WHITELISTED ship_result — never spread the Retell SDK response.
@@ -289,6 +294,7 @@ export const handler: Handler = async (event) => {
       mode,
       voice_id,
       language,
+      ...(retell_knowledge_base_ids.length ? { retell_knowledge_base_ids } : {}),
       deployed_at: new Date().toISOString(),
     };
 
