@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
+import { requireMatchingUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -31,7 +32,11 @@ export const handler: Handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'user_id is required' }) };
     }
 
-    const supabase = getSupabase();
+    const auth = await requireMatchingUser(event, userId, headers);
+    if (!auth.ok) return auth.response;
+    userId = auth.userId;
+
+    const supabase = getServiceSupabase();
 
     // Fetch current period summary
     const { data: summary, error: summaryError } = await supabase

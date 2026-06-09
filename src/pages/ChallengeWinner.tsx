@@ -28,6 +28,7 @@ const ChallengeWinner: React.FC = () => {
 
   const name = sessionStorage.getItem('challenge_name') || '';
   const email = sessionStorage.getItem('challenge_email') || '';
+  const claimToken = sessionStorage.getItem('challenge_claim_token') || '';
 
   const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState('');
@@ -41,10 +42,10 @@ const ChallengeWinner: React.FC = () => {
 
   // Redirect if they got here without winning
   useEffect(() => {
-    if (!name || !email) {
+    if (!name || !email || !claimToken) {
       navigate('/challenge', { replace: true });
     }
-  }, [name, email, navigate]);
+  }, [name, email, claimToken, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +58,7 @@ const ChallengeWinner: React.FC = () => {
 
     try {
       // Send winner details — uses the existing break-our-ai function or a simple email webhook
-      await fetch('/.netlify/functions/break-our-ai/winner', {
+      const res = await fetch('/.netlify/functions/break-our-ai/winner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -69,8 +70,14 @@ const ChallengeWinner: React.FC = () => {
           phone: phone.trim(),
           city: city.trim(),
           biggestChallenge: biggestChallenge.trim(),
+          claimToken,
         }),
-      }).catch(() => { /* graceful — we'll follow up via email */ });
+      }).catch(() => null);
+
+      if (!res || !res.ok) {
+        const data: { error?: string } = res ? await res.json().catch(() => ({})) : {};
+        throw new Error(data.error || 'Could not save your prize claim.');
+      }
 
       setSubmitted(true);
 
@@ -78,9 +85,9 @@ const ChallengeWinner: React.FC = () => {
       sessionStorage.removeItem('challenge_name');
       sessionStorage.removeItem('challenge_email');
       sessionStorage.removeItem('challenge_winner_word');
-    } catch {
-      // Fail silently — winner data can still be recovered from Supabase logs
-      setSubmitted(true);
+      sessionStorage.removeItem('challenge_claim_token');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save your prize claim. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

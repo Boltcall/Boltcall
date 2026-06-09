@@ -138,6 +138,21 @@ const PersonalInjury = React.lazy(() => import('../pages/PersonalInjury'));
 const AiCoursePage = React.lazy(() => import('../pages/AiCoursePage'));
 const Documentation = React.lazy(() => import('../pages/Documentation'));
 const ApiDocsPage = React.lazy(() => import('../pages/ApiDocsPage'));
+const IntegrationsHubPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.IntegrationsHubPage }))
+);
+const ZapierIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.ZapierIntegrationPage }))
+);
+const MakeIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.MakeIntegrationPage }))
+);
+const HubSpotIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.HubSpotIntegrationPage }))
+);
+const GoHighLevelIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.GoHighLevelIntegrationPage }))
+);
 const NotFound = React.lazy(() => import('../pages/NotFound'));
 const AdminPanel = React.lazy(() => import('../pages/AdminPanel'));
 
@@ -644,6 +659,11 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/ai-course" element={<AiCoursePage />} />
         <Route path="/documentation" element={<Documentation />} />
         <Route path="/api-documentation" element={<ApiDocsPage />} />
+        <Route path="/integrations" element={<IntegrationsHubPage />} />
+        <Route path="/integrations/zapier" element={<ZapierIntegrationPage />} />
+        <Route path="/integrations/make" element={<MakeIntegrationPage />} />
+        <Route path="/integrations/hubspot" element={<HubSpotIntegrationPage />} />
+        <Route path="/integrations/gohighlevel" element={<GoHighLevelIntegrationPage />} />
         <Route element={<BlogSchemaWrapper />}>
         <Route path="/blog" element={<BlogCenter />} />
         <Route path="/newsletter" element={<Newsletter />} />

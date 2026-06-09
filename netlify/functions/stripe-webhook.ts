@@ -11,6 +11,11 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY || ''
 );
 
+function getInternalSecretHeaders(): Record<string, string> {
+  const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || process.env.CRON_SECRET;
+  return secret ? { 'x-internal-secret': secret } : {};
+}
+
 const handler: Handler = async (event) => {
   const sig = event.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -207,7 +212,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       const baseUrl = process.env.URL || 'https://boltcall.org';
       await fetch(`${baseUrl}/.netlify/functions/greeninvoice-issue`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
         body: JSON.stringify({
           stripeInvoiceId: invoice.id,
           userId,

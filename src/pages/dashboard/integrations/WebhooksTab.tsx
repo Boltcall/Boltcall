@@ -29,6 +29,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { PageSkeleton } from '../../../components/ui/loading-skeleton';
 import { FUNCTIONS_BASE } from '../../../lib/api';
+import { authedFetch } from '../../../lib/authedFetch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,7 +95,7 @@ const WebhooksTab: React.FC = () => {
   const loadWebhooks = useCallback(async () => {
     if (!user) return;
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'list', userId: user.id }),
@@ -110,7 +111,7 @@ const WebhooksTab: React.FC = () => {
   const loadEvents = useCallback(async (webhookId?: string) => {
     if (!user) return;
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'events', userId: user.id, webhookId, limit: 100 }),
@@ -133,7 +134,7 @@ const WebhooksTab: React.FC = () => {
     if (!user || !newUrl || !newTrigger) return;
     setCreating(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -167,7 +168,7 @@ const WebhooksTab: React.FC = () => {
     if (!user) return;
     setDeleting(webhookId);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', userId: user.id, webhookId }),
@@ -188,7 +189,7 @@ const WebhooksTab: React.FC = () => {
   const handleToggle = async (webhook: WebhookItem) => {
     if (!user) return;
     try {
-      await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -210,7 +211,7 @@ const WebhooksTab: React.FC = () => {
     if (!user) return;
     setTesting(webhookId);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'test', userId: user.id, webhookId }),
@@ -244,7 +245,7 @@ const WebhooksTab: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/webhook-manager`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/webhook-manager`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'sample_payload', triggerEvent }),

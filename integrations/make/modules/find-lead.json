@@ -1,0 +1,30 @@
+{
+  "name": "findLead",
+  "label": "Find Lead",
+  "type": "search",
+  "connection": "boltcallApiKey",
+  "description": "Finds a Boltcall lead by email, phone, external ID, or idempotency key.",
+  "parameters": [
+    { "name": "email", "type": "email", "label": "Email", "required": false },
+    { "name": "phone", "type": "text", "label": "Phone", "required": false },
+    { "name": "external_id", "type": "text", "label": "External ID", "required": false },
+    { "name": "idempotency_key", "type": "text", "label": "Idempotency Key", "required": false }
+  ],
+  "communication": {
+    "url": "/api-lead-search",
+    "method": "GET",
+    "headers": {
+      "Authorization": "Bearer {{connection.apiKey}}"
+    },
+    "qs": {
+      "email": "{{parameters.email}}",
+      "phone": "{{parameters.phone}}",
+      "external_id": "{{parameters.external_id}}",
+      "idempotency_key": "{{parameters.idempotency_key}}"
+    }
+  },
+  "response": {
+    "iterate": "{{body}}",
+    "output": "{{item}}"
+  }
+}

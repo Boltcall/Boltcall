@@ -1,7 +1,9 @@
 import { Handler } from '@netlify/functions';
 import { notifyError, notifyInfo } from './_shared/notify';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
+import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import { userOwnsAgent } from './_shared/require-auth';
 
 /**
  * Universal Post-Conversation Outcome Evaluator
@@ -18,10 +20,15 @@ import { chatCompletion } from './_shared/azure-ai';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Internal-Secret, X-Cron-Secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
+
+function internalHeaders(): Record<string, string> {
+  const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  return secret ? { 'x-internal-secret': secret } : {};
+}
 
 interface OutcomeEvaluation {
   success: boolean;
@@ -120,9 +127,19 @@ export const handler: Handler = async (event) => {
       };
     }
 
+    const auth = await requireInternalOrMatchingUser(event, userId, headers);
+    if (!auth.ok) return auth.response;
+    if (!(await userOwnsAgent(userId, agentId))) {
+      return {
+        statusCode: 403,
+        headers,
+        body: JSON.stringify({ error: 'Not authorized to access this agent' }),
+      };
+    }
+
     const evaluation = await evaluateOutcome(transcript, channel || 'unknown', callAnalysis);
 
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
 
     if (evaluation.success) {
       const { error: insertErr } = await supabase.from('conversation_wins').insert({
@@ -142,7 +159,7 @@ export const handler: Handler = async (event) => {
       const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
       fetch(`${baseUrl}/.netlify/functions/agent-self-heal`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...internalHeaders() },
         body: JSON.stringify({
           action: 'analyze-success',
           agentId,
@@ -173,7 +190,7 @@ export const handler: Handler = async (event) => {
     const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
     fetch(`${baseUrl}/.netlify/functions/agent-self-heal`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...internalHeaders() },
       body: JSON.stringify({
         action: 'heal',
         agentId,

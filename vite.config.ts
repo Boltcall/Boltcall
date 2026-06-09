@@ -171,14 +171,16 @@ export default defineConfig({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
+            const normalizedId = id.replace(/\\/g, '/');
             // React core — always needed on every page; keep as stable named chunks
             // so browsers can cache them independently across deploys.
-            if (id.includes('react-dom')) return 'react-dom';
-            if (id.includes('react-router')) return 'react-router';
+            if (normalizedId.includes('/node_modules/react/')) return 'react';
+            if (normalizedId.includes('/node_modules/react-dom/')) return 'react-dom';
+            if (normalizedId.includes('/node_modules/react-router')) return 'react-router';
             // i18n — initialised at startup on all routes
-            if (id.includes('i18next')) return 'i18n';
+            if (normalizedId.includes('i18next')) return 'i18n';
             // Lucide icons — eagerly imported by Header; needs to be stable
-            if (id.includes('lucide-react')) return 'icons';
+            if (normalizedId.includes('lucide-react')) return 'icons';
             // IMPORTANT: Do NOT name @supabase, @lottiefiles, framer-motion, or
             // @radix-ui here. Vite adds ALL named manualChunks to <link
             // rel="modulepreload"> in index.html. Those libraries are only used

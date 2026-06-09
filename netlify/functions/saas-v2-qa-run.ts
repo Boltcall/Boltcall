@@ -7,7 +7,7 @@
  * Auth (mirrors saas-v2-toggle.ts):
  *   1. Bearer JWT.
  *   2. getUser(token) -> userId.
- *   3. SELECT workspaces WHERE owner_id = userId (security barrier).
+ *   3. SELECT workspaces WHERE user_id = userId (security barrier).
  *
  * Body: { window_days?: number }   default 7
  * Cap: at most CAP_PER_INVOCATION calls scored per request (default 20) so

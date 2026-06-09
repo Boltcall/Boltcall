@@ -5,7 +5,7 @@
  *
  * Auth: Bearer JWT. workspace_id derived server-side.
  * Authorization: verify the lead's user_id matches the resolved workspace
- *   owner_id. Otherwise return 404 (not 403 — never confirm a row exists).
+ *   user_id. Otherwise return 404 (not 403 — never confirm a row exists).
  *
  * Returns:
  *   {

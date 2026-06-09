@@ -14,7 +14,7 @@ import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
  *
  * Auth — `Authorization: Bearer <jwt>` (Supabase session). The function derives
  *   `user_id` via `auth.getUser(token)` and resolves the workspace by
- *   `owner_id = userId`. workspace_id is NEVER taken from the request.
+ *   `user_id = userId`. workspace_id is NEVER taken from the request.
  *
  * Data source — reads from the `reviews` table (per recon: not yet created in
  *   migrations). If the table doesn't exist OR returns no rows, the endpoint

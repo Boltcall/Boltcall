@@ -1,6 +1,7 @@
 import { Handler, schedule } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { getValidAccessToken, shouldSkipSender, type EmailAccount } from './_shared/email-token-refresh';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 /**
  * Email Inbox Poller — Cron function that runs every 3 minutes.
@@ -388,7 +389,10 @@ async function storeMessage(supabase: any, account: EmailAccount, msg: ParsedMes
     const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
     await fetch(`${baseUrl}/.netlify/functions/email-ai-responder`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.CRON_SECRET ? { 'x-cron-secret': process.env.CRON_SECRET } : {}),
+      },
       body: JSON.stringify({
         threadId: thread.id,
         userId: account.user_id,
@@ -432,7 +436,12 @@ function stripHtml(html: string): string {
 
 // ─── Main Handler ───────────────────────────────────────────────────────
 
-const emailPoller: Handler = async () => {
+const emailPoller: Handler = async (event) => {
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return { statusCode: authz.status, body: JSON.stringify({ error: authz.message }) };
+  }
+
   const startTime = Date.now();
   const supabase = getSupabase();
 

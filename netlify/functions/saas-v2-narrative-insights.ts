@@ -13,7 +13,7 @@ import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
  *
  *  • Auth — `Authorization: Bearer <jwt>` (Supabase session). The function
  *    derives `user_id` via `auth.getUser(token)` and resolves the workspace by
- *    `owner_id = userId`. workspace_id is NEVER taken from the request.
+ *    `user_id = userId`. workspace_id is NEVER taken from the request.
  *  • Cold-start — if the workspace has <30 calls or <14 days of data, returns
  *    `{ insights: [], cold_start: true, reason }` (200, not 500).
  *  • Event — emits `saas_v2_narrative_rendered` to `agency_events` /

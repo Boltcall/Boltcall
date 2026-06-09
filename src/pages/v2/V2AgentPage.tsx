@@ -33,6 +33,7 @@ import {
   Lightbulb,
   Loader2,
   RefreshCcw,
+  ShieldCheck,
   Sparkles,
   X,
   XCircle,
@@ -95,6 +96,30 @@ type SuggestionsResponse = {
   cold_start: boolean;
 };
 
+type VerticalGuardrail = {
+  id: string;
+  pack_slug: string;
+  kind: 'guardrail' | 'intake_flow' | 'escalation_rule' | 'disallowed_claim' | 'qualification_field';
+  section: string;
+  content: {
+    summary?: string;
+    agent_rule?: string;
+    fields?: string[];
+    triggers?: string[];
+    disallowed?: string[];
+  };
+  jurisdiction: string;
+  confidence: string;
+  pack_version: number;
+};
+
+type VerticalGuardrailsResponse = {
+  vertical: string | null;
+  pack_slug: string | null;
+  guardrails: VerticalGuardrail[];
+  cold_start: boolean;
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 //   Static scenario catalog (mirrors saas-v2-agent-stress-test.ts SCENARIOS)
 // ─────────────────────────────────────────────────────────────────────────
@@ -154,6 +179,16 @@ function rubricBadge(score: number): string {
   return 'bg-rose-100 text-rose-800';
 }
 
+function guardrailBody(item: VerticalGuardrail): string {
+  const c = item.content || {};
+  if (c.summary && c.agent_rule) return `${c.summary} ${c.agent_rule}`;
+  if (c.agent_rule) return c.agent_rule;
+  if (Array.isArray(c.fields)) return `Collect: ${c.fields.join(', ')}.`;
+  if (Array.isArray(c.triggers)) return `Escalate on: ${c.triggers.join(', ')}.`;
+  if (Array.isArray(c.disallowed)) return `Do not say: ${c.disallowed.join(', ')}.`;
+  return JSON.stringify(c);
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 //   Page
 // ─────────────────────────────────────────────────────────────────────────
@@ -186,6 +221,10 @@ const V2AgentPage: React.FC = () => {
   const [appliedSuggestions, setAppliedSuggestions] = useState<Set<number>>(
     new Set(),
   );
+  const [verticalGuardrails, setVerticalGuardrails] =
+    useState<VerticalGuardrailsResponse | null>(null);
+  const [guardrailsLoading, setGuardrailsLoading] = useState(true);
+  const [guardrailsError, setGuardrailsError] = useState<string | null>(null);
 
   // ── Fetch summary on mount ───────────────────────────────────────────
   const loadSummary = useCallback(async () => {
@@ -209,6 +248,28 @@ const V2AgentPage: React.FC = () => {
   useEffect(() => {
     void loadSummary();
   }, [loadSummary]);
+
+  const loadVerticalGuardrails = useCallback(async () => {
+    setGuardrailsLoading(true);
+    setGuardrailsError(null);
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/saas-v2-vertical-guardrails`);
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`guardrails failed (${res.status}): ${txt.slice(0, 160)}`);
+      }
+      const json = (await res.json()) as VerticalGuardrailsResponse;
+      setVerticalGuardrails(json);
+    } catch (err) {
+      setGuardrailsError(err instanceof Error ? err.message : 'Failed to load guardrails');
+    } finally {
+      setGuardrailsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadVerticalGuardrails();
+  }, [loadVerticalGuardrails]);
 
   // ── Run a single scenario ────────────────────────────────────────────
   const runScenario = useCallback(async (scenarioId: ScenarioId) => {
@@ -282,6 +343,68 @@ const V2AgentPage: React.FC = () => {
   );
 
   // ── Cold-start short-circuit ─────────────────────────────────────────
+  const guardrailSection = (
+    <section>
+      <div className="flex items-baseline justify-between mb-3">
+        <h2 className="text-lg font-semibold text-slate-900">Active Vertical Guardrails</h2>
+        <button
+          type="button"
+          onClick={() => void loadVerticalGuardrails()}
+          disabled={guardrailsLoading}
+          className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 disabled:opacity-50"
+          title="Refresh guardrails"
+        >
+          <RefreshCcw className={`w-3.5 h-3.5 ${guardrailsLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4 text-xs font-medium uppercase tracking-wide text-slate-500">
+          <ShieldCheck className="w-3.5 h-3.5" />
+          {verticalGuardrails?.pack_slug
+            ? verticalGuardrails.pack_slug.replace('_', ' ')
+            : 'No pack selected'}
+        </div>
+
+        {guardrailsLoading && (
+          <div className="flex items-center gap-2 text-sm text-slate-500 py-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Loading approved guardrails...
+          </div>
+        )}
+
+        {guardrailsError && (
+          <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-md px-3 py-2">
+            {guardrailsError}
+          </div>
+        )}
+
+        {!guardrailsLoading && !guardrailsError && verticalGuardrails?.guardrails.length === 0 && (
+          <p className="text-sm text-slate-500">
+            No approved vertical guardrails are active for this workspace yet.
+          </p>
+        )}
+
+        {!guardrailsLoading && verticalGuardrails?.guardrails.length ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {verticalGuardrails.guardrails.map((item) => (
+              <div key={item.id} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="text-sm font-semibold text-slate-900">{item.section}</div>
+                  <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-500">
+                    {item.kind.replace('_', ' ')}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed">{guardrailBody(item)}</p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+
   if (!summaryLoading && summary?.cold_start) {
     return (
       <div className="space-y-6">
@@ -296,12 +419,15 @@ const V2AgentPage: React.FC = () => {
             stress tests, and suggested improvements.
           </p>
         </div>
+        {guardrailSection}
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
+      {guardrailSection}
+
       {/* ── 1. Narrative card ─────────────────────────────────────────── */}
       <section>
         <div className="flex items-baseline justify-between mb-3">

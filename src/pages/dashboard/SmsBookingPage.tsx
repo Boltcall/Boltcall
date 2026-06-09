@@ -7,6 +7,7 @@ import ModalShell from '../../components/ui/modal-shell';
 import { Magnetic } from '../../components/ui/magnetic';
 import { PopButton } from '../../components/ui/pop-button';
 import { supabase } from '../../lib/supabase';
+import { authedFetch } from '../../lib/authedFetch';
 
 /**
  * NOTE: There is no dedicated `bookings` or `sms_messages` table in Supabase yet.
@@ -94,7 +95,7 @@ const SmsBookingPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/.netlify/functions/twilio-sms', {
+      const response = await authedFetch('/.netlify/functions/twilio-sms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'list', limit: 50 }),

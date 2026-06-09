@@ -8,6 +8,7 @@ import { FileUploadCompact } from '../../ui/file-upload-compact';
 import Button from '../../ui/Button';
 import { calculateKBCompleteness } from '../kbCompleteness';
 import { FUNCTIONS_BASE } from '../../../lib/api';
+import { authedFetch } from '../../../lib/authedFetch';
 
 const StepKnowledge: React.FC = () => {
   const { businessProfile, updateBusinessProfile, knowledgeBase, updateKnowledgeBase, account } = useSetupStore();
@@ -47,13 +48,14 @@ const StepKnowledge: React.FC = () => {
       }
 
       // Use Claude to extract structured data from the scraped content
-      const extractRes = await fetch(`${FUNCTIONS_BASE}/ai-extract-kb`, {
+      const extractRes = await authedFetch(`${FUNCTIONS_BASE}/ai-extract-kb`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           content,
           businessName: businessProfile.businessName,
           category: businessProfile.mainCategory,
+          userId: account.userId,
         }),
       });
 
@@ -113,7 +115,7 @@ const StepKnowledge: React.FC = () => {
     } finally {
       setScanning(false);
     }
-  }, [businessProfile.websiteUrl, businessProfile.businessName, businessProfile.mainCategory, knowledgeBase, updateKnowledgeBase, showToast]);
+  }, [account.userId, businessProfile.websiteUrl, businessProfile.businessName, businessProfile.mainCategory, knowledgeBase, updateKnowledgeBase, showToast]);
 
   // KB Completeness
   const completeness = useMemo(

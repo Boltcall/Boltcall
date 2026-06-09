@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 /**
  * retell-benchmark-runner
@@ -180,6 +181,10 @@ async function fetchExistingRunScores(
 export const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+  const authz = await authorizeRunner(event);
+  if (!authz.ok) {
+    return { statusCode: authz.status, headers: HEADERS, body: JSON.stringify({ error: authz.message }) };
   }
 
   let body: any;

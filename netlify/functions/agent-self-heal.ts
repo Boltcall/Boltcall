@@ -1,7 +1,9 @@
 import { Handler } from '@netlify/functions';
 import { notifyError, notifyInfo } from './_shared/notify';
-import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
+import { requireInternalOrMatchingUser, requireUser } from './_shared/user-auth';
+import { userOwnsAgent } from './_shared/require-auth';
 
 /**
  * Agent Self-Healing Pipeline
@@ -25,10 +27,21 @@ const VERIFY_RUNS = 4; // 3 similar + 1 exact, all must pass
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Internal-Secret, X-Cron-Secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
+
+async function requireAgentOwnership(userId: string, agentId: string) {
+  if (await userOwnsAgent(userId, agentId)) {
+    return null;
+  }
+  return {
+    statusCode: 403,
+    headers,
+    body: JSON.stringify({ error: 'Not authorized to access this agent' }),
+  };
+}
 
 async function retellFetch(path: string, options: RequestInit = {}) {
   const res = await fetch(`${RETELL_API}${path}`, {
@@ -311,10 +324,12 @@ export const handler: Handler = async (event) => {
 
     // ─── ACTION: analyze ──────────────────────────────────────────────────────
     if (action === 'analyze') {
-      const { transcript, agentPrompt, callAnalysis } = body;
+      const { transcript, agentPrompt, callAnalysis, userId } = body;
       if (!transcript) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'transcript required' }) };
       }
+      const auth = await requireInternalOrMatchingUser(event, userId, headers);
+      if (!auth.ok) return auth.response;
       const analysis = await analyzeFailure(transcript, agentPrompt || '', callAnalysis);
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, analysis }) };
     }
@@ -322,11 +337,15 @@ export const handler: Handler = async (event) => {
     // ─── ACTION: heal ─────────────────────────────────────────────────────────
     if (action === 'heal') {
       const { agentId, callId, transcript, callAnalysis, userId } = body;
-      if (!agentId || !transcript) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId and transcript required' }) };
+      if (!agentId || !transcript || !userId) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId, transcript, and userId required' }) };
       }
+      const auth = await requireInternalOrMatchingUser(event, userId, headers);
+      if (!auth.ok) return auth.response;
+      const ownershipError = await requireAgentOwnership(userId, agentId);
+      if (ownershipError) return ownershipError;
 
-      const supabase = getSupabase();
+      const supabase = getServiceSupabase();
       const startTime = Date.now();
 
       // Daily heal cap: max 5 heals per agent per day
@@ -415,7 +434,8 @@ export const handler: Handler = async (event) => {
               system_prompt: llmAfterFix.general_prompt || '',
               system_prompt_synced_at: new Date().toISOString(),
             })
-            .eq('retell_agent_id', agentId);
+            .eq('retell_agent_id', agentId)
+            .eq('user_id', userId);
         } catch (mirrorErr) {
           console.warn('[agent-self-heal] system_prompt mirror failed:', mirrorErr instanceof Error ? mirrorErr.message : mirrorErr);
         }
@@ -471,7 +491,8 @@ export const handler: Handler = async (event) => {
           await supabase
             .from('agents')
             .update({ system_prompt: originalPrompt, system_prompt_synced_at: new Date().toISOString() })
-            .eq('retell_agent_id', agentId);
+            .eq('retell_agent_id', agentId)
+            .eq('user_id', userId);
         } catch { /* ignore */ }
       }
 
@@ -582,7 +603,16 @@ export const handler: Handler = async (event) => {
     // ─── ACTION: history ──────────────────────────────────────────────────────
     if (action === 'history') {
       const { agentId, userId, limit: queryLimit } = body;
-      const supabase = getSupabase();
+      const auth = userId
+        ? await requireInternalOrMatchingUser(event, userId, headers)
+        : await requireUser(event, headers);
+      if (!auth.ok) return auth.response;
+      const effectiveUserId = userId || auth.userId;
+      if (agentId) {
+        const ownershipError = await requireAgentOwnership(effectiveUserId, agentId);
+        if (ownershipError) return ownershipError;
+      }
+      const supabase = getServiceSupabase();
 
       let query = supabase
         .from('agent_self_heal_log')
@@ -591,7 +621,7 @@ export const handler: Handler = async (event) => {
         .limit(queryLimit || 20);
 
       if (agentId) query = query.eq('agent_id', agentId);
-      if (userId) query = query.eq('user_id', userId);
+      query = query.eq('user_id', effectiveUserId);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -605,8 +635,12 @@ export const handler: Handler = async (event) => {
       if (!transcript || !agentId || !userId) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'agentId, transcript, and userId are required' }) };
       }
+      const auth = await requireInternalOrMatchingUser(event, userId, headers);
+      if (!auth.ok) return auth.response;
+      const ownershipError = await requireAgentOwnership(userId, agentId);
+      if (ownershipError) return ownershipError;
 
-      const supabase = getSupabase();
+      const supabase = getServiceSupabase();
 
       const deductResult = await deductTokens(
         userId,
@@ -693,16 +727,19 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
     // ─── ACTION: revert-fix ───────────────────────────────────────────────────
     if (action === 'revert-fix') {
       const { healLogId, userId } = body;
-      if (!healLogId) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'healLogId is required' }) };
+      if (!healLogId || !userId) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'healLogId and userId are required' }) };
       }
+      const auth = await requireInternalOrMatchingUser(event, userId, headers);
+      if (!auth.ok) return auth.response;
 
-      const supabase = getSupabase();
+      const supabase = getServiceSupabase();
 
       const { data: healLog, error: fetchErr } = await supabase
         .from('agent_self_heal_log')
         .select('agent_id, original_prompt')
         .eq('id', healLogId)
+        .eq('user_id', userId)
         .single();
 
       if (fetchErr || !healLog) {
@@ -710,6 +747,8 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
       }
 
       const { agent_id: agentId, original_prompt: storedOriginalPrompt } = healLog;
+      const ownershipError = await requireAgentOwnership(userId, agentId);
+      if (ownershipError) return ownershipError;
 
       const voiceAgent = await retellFetch(`/get-agent/${agentId}`);
       const llmId = voiceAgent.response_engine?.llm_id;
@@ -737,6 +776,7 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
         .from('agents')
         .update({ system_prompt: restoredPrompt, system_prompt_synced_at: new Date().toISOString() })
         .eq('retell_agent_id', agentId)
+        .eq('user_id', userId)
         .then(({ error: mirrorErr }) => {
           if (mirrorErr) console.warn('[revert-fix] mirror failed:', mirrorErr.message);
         });
@@ -745,6 +785,7 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
         .from('qa_reviews')
         .update({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: userId || null })
         .eq('heal_log_id', healLogId)
+        .eq('user_id', userId)
         .then(() => {});
 
       const esc = (s: string) => s.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');

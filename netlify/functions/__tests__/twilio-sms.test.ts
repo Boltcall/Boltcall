@@ -1,10 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const mockOwnedNumbers = ['+15551234567'];
+const mockPhoneQuery: any = {
+  select: vi.fn(() => mockPhoneQuery),
+  eq: vi.fn(() => mockPhoneQuery),
+  then: (resolve: any, reject: any) =>
+    Promise.resolve({
+      data: mockOwnedNumbers.map(phone_number => ({ phone_number })),
+      error: null,
+    }).then(resolve, reject),
+};
+const mockSupabase = {
+  from: vi.fn(() => mockPhoneQuery),
+};
+
 // Mock token-utils
 vi.mock('../_shared/token-utils', () => ({
   deductTokens: vi.fn().mockResolvedValue({ success: true }),
   deductTokensBatch: vi.fn().mockResolvedValue({ success: true }),
+  getServiceSupabase: () => mockSupabase,
   TOKEN_COSTS: { sms_sent: 5 },
+}));
+
+vi.mock('../_shared/user-auth', () => ({
+  requireUser: vi.fn(async (_event, _headers) => ({
+    ok: true,
+    user: { id: 'u1' },
+    userId: 'u1',
+  })),
 }));
 
 // Mock global fetch
@@ -32,6 +55,7 @@ function makeEvent(overrides: any = {}) {
 describe('twilio-sms function', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOwnedNumbers.splice(0, mockOwnedNumbers.length, '+15551234567');
   });
 
   it('returns 200 for OPTIONS', async () => {

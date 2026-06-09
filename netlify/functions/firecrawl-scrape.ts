@@ -1,4 +1,6 @@
 import type { Handler } from '@netlify/functions';
+import { hasSharedSecret } from './_shared/user-auth';
+import { validatePublicHttpUrl } from './_shared/outbound-url';
 
 // Firecrawl API keys — waterfall: use key 1 first, if exhausted try key 2, then key 3
 const FIRECRAWL_KEYS = [
@@ -11,7 +13,7 @@ const N8N_FALLBACK_WEBHOOK = process.env.N8N_SCRAPER_WEBHOOK || 'https://n8n.srv
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Internal-Secret, X-Cron-Secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Content-Type': 'application/json',
 };
@@ -128,18 +130,25 @@ const handler: Handler = async (event) => {
 
   try {
     // Require internal secret — prevents external callers from burning Firecrawl credits
-    const internalSecret = process.env.INTERNAL_API_SECRET;
-    if (internalSecret) {
-      const callerSecret = event.headers['x-internal-secret'];
-      if (callerSecret !== internalSecret) {
-        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Forbidden' }) };
-      }
+    const hasSecretConfigured = Boolean(
+      process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || process.env.CRON_SECRET,
+    );
+    if (!hasSecretConfigured) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal API secret not configured' }) };
+    }
+    if (!hasSharedSecret(event)) {
+      return { statusCode: 403, headers, body: JSON.stringify({ error: 'Forbidden' }) };
     }
 
     const { url, user_id } = JSON.parse(event.body || '{}');
 
     if (!url) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'URL is required' }) };
+    }
+
+    const urlCheck = await validatePublicHttpUrl(String(url), { allowHttp: true, label: 'Scrape URL' });
+    if (!urlCheck.ok) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
     }
 
     // Waterfall through Firecrawl keys

@@ -192,7 +192,7 @@ const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) return unauthorized('Invalid or expired token');
   const userId = userResult.user.id;
 
-  // Resolve workspace (owner_id = userId). Falls back to userId itself for
+  // Resolve workspace (user_id = userId). Falls back to userId itself for
   // legacy single-tenant rows that pre-date workspaces.
   const { data: ws } = await supa
     .from('workspaces')

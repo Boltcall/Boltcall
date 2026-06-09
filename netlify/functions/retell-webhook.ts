@@ -64,6 +64,11 @@ function buildTranscriptText(call: any): string {
   return JSON.stringify(transcript);
 }
 
+function internalHeaders(): Record<string, string> {
+  const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  return secret ? { 'x-internal-secret': secret } : {};
+}
+
 async function triggerOutcomeEvaluation(call: any, agentId: string, userId: string | null): Promise<void> {
   // Only evaluate calls with enough substance
   if (call.call_status !== 'ended') return;
@@ -77,7 +82,7 @@ async function triggerOutcomeEvaluation(call: any, agentId: string, userId: stri
   // Fire-and-forget: conversation-outcome handles win recording OR self-heal trigger
   fetch(`${baseUrl}/.netlify/functions/conversation-outcome`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...internalHeaders() },
     body: JSON.stringify({
       channel: 'voice',
       agentId,
@@ -105,16 +110,16 @@ export const handler: Handler = async (event) => {
   }
 
   // Verify Retell signature when configured. In dev (no RETELL_API_KEY) or
-  // when Retell sends no signature header, log and continue — don't break local
-  // testing. In production both will be set, so any missing/invalid signature
-  // gets rejected.
+  // when Retell sends no signature header, log and continue for local testing.
+  // If the Retell secret exists, a missing signature is a real webhook failure
+  // regardless of NODE_ENV.
   const sigResult = verifyRetellSignature(event.body || '', event.headers as Record<string, string | undefined>);
   if (sigResult === 'invalid') {
     console.warn('[retell-webhook] Invalid signature — rejecting request');
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid webhook signature' }) };
   }
-  if (sigResult === 'missing' && process.env.NODE_ENV === 'production') {
-    console.warn('[retell-webhook] Missing signature in production — rejecting');
+  if (sigResult === 'missing' && (process.env.RETELL_API_KEY || process.env.NODE_ENV === 'production')) {
+    console.warn('[retell-webhook] Missing signature while webhook signing is required — rejecting');
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Webhook signature required' }) };
   }
 
@@ -219,7 +224,12 @@ export const handler: Handler = async (event) => {
             const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
             fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+                  ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+                  : {}),
+              },
               body: JSON.stringify({
                 action: 'sync_lead',
                 userId: agentOwner.user_id,
@@ -246,7 +256,12 @@ export const handler: Handler = async (event) => {
         const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
         fetch(`${baseUrl}/.netlify/functions/retell-call-scorer`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+              ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+              : {}),
+          },
           body: JSON.stringify({ call }),
         }).catch(err => {
           console.error('[retell-webhook] Call scorer trigger failed (non-blocking):', err);
@@ -357,7 +372,12 @@ export const handler: Handler = async (event) => {
       const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
       fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+            ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+            : {}),
+        },
         body: JSON.stringify({
           action: 'sync_lead',
           userId,

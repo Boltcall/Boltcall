@@ -186,6 +186,7 @@ async function postToOptimizationStrategist(
       headers: {
         'Content-Type': 'application/json',
         'X-Cron-Trigger': 'monthly-optimization',
+        ...(process.env.CRON_SECRET ? { 'x-cron-secret': process.env.CRON_SECRET } : {}),
       },
       body: JSON.stringify({ client_id }),
       signal: controller.signal,

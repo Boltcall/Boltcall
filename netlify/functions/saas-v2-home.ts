@@ -7,7 +7,7 @@ import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
  * saas-v2-home
  *
- * GET endpoint. Server-side derives workspace_id from JWT (owner_id lookup).
+ * GET endpoint. Server-side derives workspace_id from JWT (user_id lookup).
  * Returns: { narrative, pending_count, pending_items, ticker, kpi_today, kpi_yesterday, cold_start }
  *
  * Narrative is generated with a Sonnet-style pass + plain-English polish (Haiku-style).
@@ -291,7 +291,7 @@ export const handler: Handler = async (event) => {
   }
   const userId = userResult.user.id;
 
-  // ── Resolve workspace_id via owner_id (server-derived only) ─────────────
+  // ── Resolve workspace_id via user_id (server-derived only) ─────────────
   const { data: workspaceRow, error: wsErr } = await supa
     .from('workspaces')
     .select('id, v2_enabled, created_at')

@@ -1,21 +1,30 @@
 import { Handler } from '@netlify/functions';
-
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
-};
+import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
+import { getServiceSupabase } from './_shared/token-utils';
 
 const WORKFLOW_ID = 'wf_68e9fd4d3bc08190ba32c0dd1efa36d107c2b86288c10974';
+const DEVICE_ID_RE = /^[A-Za-z0-9_-]{8,96}$/;
 
 export const handler: Handler = async (event) => {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const headers = v2cors.headers;
 
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 204, headers, body: '' };
+  }
+  if (getRequestOrigin(event.headers as Record<string, string>) && !v2cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
+  }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  if (process.env.CHATKIT_PUBLIC_ENABLED !== 'true') {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Chat is disabled' }) };
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
@@ -29,11 +38,35 @@ export const handler: Handler = async (event) => {
 
   try {
     const { deviceId } = JSON.parse(event.body || '{}');
-    if (!deviceId) {
+    if (typeof deviceId !== 'string' || !DEVICE_ID_RE.test(deviceId)) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'deviceId is required' }),
+        body: JSON.stringify({ error: 'valid deviceId is required' }),
+      };
+    }
+
+    const supabase = getServiceSupabase();
+    const ip = getClientIp(event.headers as Record<string, string>);
+    const rateLimit = await consumePublicRateLimit(supabase, {
+      bucket: 'chatkit_session',
+      key: hashRateLimitKey([ip, deviceId]),
+      maxAttempts: 20,
+      windowSeconds: 60 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return {
+        statusCode: rateLimit.statusCode,
+        headers: {
+          ...headers,
+          ...(rateLimit.retryAfterSeconds ? { 'Retry-After': String(rateLimit.retryAfterSeconds) } : {}),
+        },
+        body: JSON.stringify({
+          error: rateLimit.statusCode === 429
+            ? 'Chat session limit reached'
+            : 'Chat rate limit unavailable',
+        }),
       };
     }
 

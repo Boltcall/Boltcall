@@ -9,7 +9,7 @@
  * locally indexed yet. Future: ingest Mintlify docs into a `boltcall_help_docs`
  * table with embeddings + nightly cron.
  *
- * Auth: Bearer JWT only. workspace_id is derived strictly from owner_id; the
+ * Auth: Bearer JWT only. workspace_id is derived strictly from user_id; the
  * client never supplies it. This matches the saas-v2-toggle template.
  *
  * Body:    { question: string, context?: { current_page?: string, recent_action?: string } }

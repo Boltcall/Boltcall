@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { PageSkeleton } from '../../../components/ui/loading-skeleton';
+import { authedFetch } from '../../../lib/authedFetch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -307,7 +308,7 @@ const IntegrationHubTab: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+    authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'list', userId: user.id }),
@@ -329,7 +330,7 @@ const IntegrationHubTab: React.FC = () => {
       showToast({ message: `${calendarName} connected!`, variant: 'success' });
       window.history.replaceState({}, '', window.location.pathname);
       if (user) {
-        fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+        authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'list', userId: user.id }),
@@ -370,11 +371,12 @@ const IntegrationHubTab: React.FC = () => {
   const handleTest = async (integration: Integration) => {
     setTesting(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'test',
+          userId: user?.id,
           provider: integration.id,
           apiKey: formApiKey,
           webhookUrl: formWebhookUrl,
@@ -412,7 +414,7 @@ const IntegrationHubTab: React.FC = () => {
 
     setConnecting(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -458,7 +460,7 @@ const IntegrationHubTab: React.FC = () => {
   const handleDisconnect = async (integration: Integration) => {
     if (!user) return;
     try {
-      await fetch(`${FUNCTIONS_BASE}/integration-sync`, {
+      await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'disconnect', userId: user.id, provider: integration.id }),
@@ -477,7 +479,7 @@ const IntegrationHubTab: React.FC = () => {
     if (!user) return;
     setConnecting(true);
     try {
-      const res = await fetch(`${FUNCTIONS_BASE}/${integration.id.replace('_', '-')}-auth-start?user_id=${user.id}`);
+      const res = await authedFetch(`${FUNCTIONS_BASE}/${integration.id.replace('_', '-')}-auth-start?user_id=${user.id}`);
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;

@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useTokens } from '../../contexts/TokenContext';
 import { supabase } from '../../lib/supabase';
+import { authedFetch } from '../../lib/authedFetch';
 
 interface FacebookConnection {
   id: string;
@@ -163,7 +164,7 @@ const AdInstantResponsePage: React.FC = () => {
     }
     setFbConnecting(true);
     try {
-      const response = await fetch(
+      const response = await authedFetch(
         `/.netlify/functions/facebook-auth-start?user_id=${encodeURIComponent(user.id)}`,
       );
       const data = await response.json();

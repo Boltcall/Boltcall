@@ -200,9 +200,13 @@ async function callAiExtractKb(opts: {
     process.env.DEPLOY_URL ||
     'http://localhost:8888';
   try {
+    const internalSecret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
     const res = await fetch(`${base}/.netlify/functions/ai-extract-kb`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(internalSecret ? { 'x-internal-secret': internalSecret } : {}),
+      },
       body: JSON.stringify(opts),
     });
     if (!res.ok) return { services: [], faqs: [], policies: null };

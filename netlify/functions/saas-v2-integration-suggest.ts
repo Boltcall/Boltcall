@@ -27,7 +27,7 @@
  * return cold_start=true with an empty suggestions array. The UI shows
  * "Unlock at 30 calls" rather than an empty card.
  *
- * Auth: Bearer JWT only — workspace_id derived from owner_id server-side.
+ * Auth: Bearer JWT only — workspace_id derived from user_id server-side.
  *
  * Event emission: one `saas_v2_integration_recommended` per suggestion,
  *   batched. Skipped silently if user is not an agency_clients row.
@@ -77,6 +77,7 @@ const ALLOWED_INTEGRATION_IDS = [
   'gmail',
   'slack',
   'zapier',
+  'make',
   'stripe',
   'reputation-manager',
 ] as const;

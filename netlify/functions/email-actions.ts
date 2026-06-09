@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, deductTokens } from './_shared/token-utils';
+import { getServiceSupabase, deductTokens } from './_shared/token-utils';
+import { requireMatchingUser } from './_shared/user-auth';
 import { getValidAccessToken, type EmailAccount } from './_shared/email-token-refresh';
 
 /**
@@ -54,7 +55,10 @@ export const handler: Handler = async (event) => {
     return json(400, { error: 'action and userId required' });
   }
 
-  const supabase = getSupabase();
+  const auth = await requireMatchingUser(event, userId, CORS_HEADERS);
+  if (!auth.ok) return auth.response;
+
+  const supabase = getServiceSupabase();
 
   try {
     switch (action) {
@@ -241,7 +245,8 @@ async function approveDraft(supabase: any, userId: string, body: any) {
   await supabase
     .from('email_messages')
     .update({ ai_draft_status: 'approved' })
-    .eq('id', messageId);
+    .eq('id', messageId)
+    .eq('user_id', userId);
 
   // Insert outbound message record
   await supabase.from('email_messages').insert({
@@ -266,7 +271,8 @@ async function approveDraft(supabase: any, userId: string, body: any) {
   await supabase
     .from('email_threads')
     .update({ status: 'replied', updated_at: new Date().toISOString() })
-    .eq('id', tid);
+    .eq('id', tid)
+    .eq('user_id', userId);
 
   return json(200, { success: true });
 }
@@ -318,7 +324,8 @@ async function editAndSend(supabase: any, userId: string, body: any) {
   await supabase
     .from('email_messages')
     .update({ ai_draft_status: 'edited' })
-    .eq('id', messageId);
+    .eq('id', messageId)
+    .eq('user_id', userId);
 
   // Insert outbound message
   await supabase.from('email_messages').insert({
@@ -340,7 +347,8 @@ async function editAndSend(supabase: any, userId: string, body: any) {
   await supabase
     .from('email_threads')
     .update({ status: 'replied', updated_at: new Date().toISOString() })
-    .eq('id', tid);
+    .eq('id', tid)
+    .eq('user_id', userId);
 
   return json(200, { success: true });
 }

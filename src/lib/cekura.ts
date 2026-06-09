@@ -1,6 +1,7 @@
 // Cekura phone verification client — proxied through Netlify function
 
 import { FUNCTIONS_BASE } from './api';
+import { authedFetch } from './authedFetch';
 
 export interface VerificationResult {
   success: boolean;
@@ -33,7 +34,7 @@ export interface CallerIdResult {
 }
 
 async function cekuraFetch(body: Record<string, any>) {
-  const response = await fetch(`${FUNCTIONS_BASE}/cekura-verify`, {
+  const response = await authedFetch(`${FUNCTIONS_BASE}/cekura-verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

@@ -96,7 +96,7 @@ const Challenge: React.FC = () => {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/.netlify/functions/break-our-ai/stats');
+      const res = await fetch('/.netlify/functions/break-my-ai/stats');
       if (res.ok) setAllTimeStats(await res.json());
     } catch { /* silent */ }
   }, []);

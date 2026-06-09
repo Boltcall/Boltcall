@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
+import { requireInternalOrMatchingUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -42,6 +43,9 @@ export const handler: Handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'user_id is required' }) };
     }
 
+    const auth = await requireInternalOrMatchingUser(event, user_id, headers);
+    if (!auth.ok) return auth.response;
+
     if (!resource_type || !VALID_RESOURCES.includes(resource_type)) {
       return {
         statusCode: 400,
@@ -52,7 +56,7 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
 
     // Use the record_usage database function which checks limits
     const { data, error } = await supabase.rpc('record_usage', {

@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
+import { verifyOAuthState } from './_shared/oauth-state';
 
 /**
  * Outlook OAuth — Step 2: Exchange the authorization code for tokens.
@@ -46,16 +47,8 @@ export const handler: Handler = async (event) => {
     return redirect('/dashboard/email?connect=missing_code');
   }
 
-  // Decode user_id from state
-  let userId: string | null = null;
-  if (params.state) {
-    try {
-      const decoded = JSON.parse(Buffer.from(params.state, 'base64url').toString());
-      userId = decoded.userId || null;
-    } catch {
-      console.error('Failed to decode state');
-    }
-  }
+  const state = verifyOAuthState(params.state, 'outlook');
+  const userId = state?.userId || null;
 
   if (!userId) {
     return redirect('/dashboard/email?connect=missing_user');
@@ -116,7 +109,7 @@ export const handler: Handler = async (event) => {
     }
 
     // Step 3: Upsert into email_accounts
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
 
     const { data: existing } = await supabase
       .from('email_accounts')

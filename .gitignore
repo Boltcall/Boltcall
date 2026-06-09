@@ -20,6 +20,14 @@ dist-ssr
 # Claude Code
 .claude/
 
+# Local agent/security artifacts
+.codex/
+.gstack/
+test-results/
+supabase/.temp/
+qa-*.png
+phase1-*.png
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

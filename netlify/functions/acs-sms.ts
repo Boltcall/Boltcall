@@ -1,8 +1,8 @@
 import { Handler } from '@netlify/functions';
-import { deductTokens, deductTokensBatch, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, deductTokensBatch, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { authenticateApiKey } from './_shared/validate-api-key';
 import { sendAcsSms } from './_shared/acs-sdk';
-import { getSupabase } from './_shared/token-utils';
+import { requireUser } from './_shared/user-auth';
 
 /**
  * ACS SMS — replaces twilio-sms.ts
@@ -19,6 +19,22 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
+async function getOwnedPhoneNumbers(userId: string): Promise<string[]> {
+  const supabase = getServiceSupabase();
+  const { data } = await supabase
+    .from('phone_numbers')
+    .select('phone_number')
+    .eq('user_id', userId)
+    .eq('status', 'active');
+  return (data || []).map((row: any) => row.phone_number).filter(Boolean);
+}
+
+async function resolveFromNumber(userId: string, requestedFrom?: string): Promise<string | null> {
+  const ownedNumbers = await getOwnedPhoneNumbers(userId);
+  if (requestedFrom) return ownedNumbers.includes(requestedFrom) ? requestedFrom : null;
+  return ownedNumbers[0] || null;
+}
+
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
@@ -33,11 +49,17 @@ export const handler: Handler = async (event) => {
     const { action } = body;
 
     // Resolve userId from API key if present
-    const auth = await authenticateApiKey(event.headers as Record<string, string>, event.queryStringParameters);
-    if (auth.hasKey && !auth.userId) {
-      return { statusCode: 401, headers, body: JSON.stringify({ error: auth.error || 'Invalid API key' }) };
+    const apiAuth = await authenticateApiKey(event.headers as Record<string, string>, event.queryStringParameters);
+    if (apiAuth.hasKey && !apiAuth.userId) {
+      return { statusCode: 401, headers, body: JSON.stringify({ error: apiAuth.error || 'Invalid API key' }) };
     }
-    if (auth.userId) body.user_id = auth.userId;
+    if (apiAuth.userId) {
+      body.user_id = apiAuth.userId;
+    } else {
+      const userAuth = await requireUser(event, headers);
+      if (!userAuth.ok) return userAuth.response;
+      body.user_id = userAuth.userId;
+    }
 
     // ── send ──────────────────────────────────────────────────────
     if (action === 'send') {
@@ -46,9 +68,9 @@ export const handler: Handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'to and message are required' }) };
       }
 
-      const fromNumber = from || process.env.ACS_FROM_NUMBER || process.env.TWILIO_FROM_NUMBER;
+      const fromNumber = await resolveFromNumber(body.user_id, from);
       if (!fromNumber) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'from number required. Set ACS_FROM_NUMBER env var or pass from in body' }) };
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'No active sending number found for this user' }) };
       }
 
       const result = await sendAcsSms(fromNumber, to, message);
@@ -76,7 +98,10 @@ export const handler: Handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'messages array required' }) };
       }
 
-      const fromNumber = body.from || process.env.ACS_FROM_NUMBER || process.env.TWILIO_FROM_NUMBER;
+      const fromNumber = await resolveFromNumber(body.user_id, body.from);
+      if (!fromNumber) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'No active sending number found for this user' }) };
+      }
 
       const results = await Promise.allSettled(
         messages.map((msg: { to: string; message: string }) =>
@@ -122,7 +147,7 @@ export const handler: Handler = async (event) => {
 
     // ── list — query from Supabase (ACS has no message history API) ──
     if (action === 'list') {
-      const supabase = getSupabase();
+      const supabase = getServiceSupabase();
       const limit = Math.min(body.limit || 50, 200);
 
       let query = supabase

@@ -12,7 +12,7 @@ test.describe('Feature Pages', () => {
   test('AI Receptionist page has hero content', async ({ page }) => {
     await page.goto('/features/ai-receptionist');
     await expect(page.getByText('Never Miss a Call')).toBeVisible();
-    await expect(page.getByText('answers calls 24/7')).toBeVisible();
+    await expect(page.getByText('Your AI receptionist answers calls 24/7')).toBeVisible();
   });
 
   test('Instant Form Reply page loads', async ({ page }) => {

@@ -1,10 +1,9 @@
 import { Handler } from '@netlify/functions';
-import { createClient } from '@supabase/supabase-js';
 import Retell from 'retell-sdk';
-import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
-
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
+import { getUserAgentIds, getUserPhoneNumbers } from './_shared/require-auth';
+import { requireMatchingUser } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -13,16 +12,27 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-function getServiceClient() {
-  return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY!, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-}
-
 function getRetellClient() {
   const apiKey = process.env.RETELL_API_KEY;
   if (!apiKey) throw new Error('RETELL_API_KEY not configured');
   return new Retell({ apiKey });
+}
+
+async function validateOutboundResources(userId: string, agentId: string, fromNumber: string) {
+  const [agentIds, phoneNumbers] = await Promise.all([
+    getUserAgentIds(userId),
+    getUserPhoneNumbers(userId),
+  ]);
+
+  if (!agentIds.includes(agentId)) {
+    return { ok: false as const, error: 'agentId does not belong to the authenticated user' };
+  }
+
+  if (!phoneNumbers.includes(fromNumber)) {
+    return { ok: false as const, error: 'fromNumber does not belong to the authenticated user' };
+  }
+
+  return { ok: true as const };
 }
 
 export const handler: Handler = async (event) => {
@@ -34,11 +44,14 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const supabase = getServiceClient();
-
   try {
     const body = JSON.parse(event.body || '{}');
     const action = body.action;
+    const auth = await requireMatchingUser(event, body.userId, headers);
+    if (!auth.ok) return auth.response;
+    body.userId = auth.userId;
+
+    const supabase = getServiceSupabase();
 
     // ─── CREATE CAMPAIGN ──────────────────────────────────────────
     if (action === 'create_campaign') {
@@ -46,6 +59,11 @@ export const handler: Handler = async (event) => {
 
       if (!userId || !name || !agentId || !fromNumber || !leads?.length) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'userId, name, agentId, fromNumber, and leads[] are required' }) };
+      }
+
+      const resources = await validateOutboundResources(userId, agentId, fromNumber);
+      if (!resources.ok) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: resources.error }) };
       }
 
       // Create campaign
@@ -108,6 +126,11 @@ export const handler: Handler = async (event) => {
 
       if (campError || !campaign) {
         return { statusCode: 404, headers, body: JSON.stringify({ error: 'Campaign not found' }) };
+      }
+
+      const resources = await validateOutboundResources(userId, campaign.agent_id, campaign.from_number);
+      if (!resources.ok) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: resources.error }) };
       }
 
       // Get pending leads (batch of 10 to avoid timeout)

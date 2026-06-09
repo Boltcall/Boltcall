@@ -10,7 +10,7 @@ test.describe('Login page', () => {
   });
 
   test('renders with email and password fields', async ({ page }) => {
-    await expect(page.getByText('Sign in')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[placeholder="Password"]')).toBeVisible();
   });
@@ -52,7 +52,7 @@ test.describe('Login page', () => {
 
   test('can switch to signup mode', async ({ page }) => {
     // The auth-switch component allows toggling between login and signup
-    const signupLink = page.getByText('Sign up');
+    const signupLink = page.getByRole('button', { name: 'Sign Up' }).first();
     await expect(signupLink).toBeVisible();
   });
 });
@@ -67,7 +67,7 @@ test.describe('Signup page', () => {
   });
 
   test('renders with email and password fields', async ({ page }) => {
-    await expect(page.getByText('Sign up')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sign up' })).toBeVisible();
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[placeholder="Password"]')).toBeVisible();
   });
@@ -87,7 +87,7 @@ test.describe('Signup page', () => {
   });
 
   test('can switch to login mode', async ({ page }) => {
-    const loginLink = page.getByText('Sign in');
+    const loginLink = page.getByRole('button', { name: 'Sign In' }).first();
     await expect(loginLink).toBeVisible();
   });
 });

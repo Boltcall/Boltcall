@@ -58,7 +58,7 @@ const FacebookIcon = () => (
 const PillInput = ({
   error: fieldError,
   rightElement,
-  className: _extraClass,
+  className,
   ...props
 }: React.InputHTMLAttributes<HTMLInputElement> & {
   icon?: React.ReactNode;
@@ -71,7 +71,8 @@ const PillInput = ({
         {...props}
         className={cn(
           "w-full px-5 py-3 bg-gray-100/80 rounded-full text-sm text-gray-800 placeholder-gray-400 border-none outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all duration-200",
-          rightElement && "pr-11"
+          rightElement && "pr-11",
+          className
         )}
       />
       {rightElement && (
@@ -368,7 +369,7 @@ export default function AuthSwitch({
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8">
                   Sign in
                 </h2>
-                <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-3 sm:space-y-4">
+                <form noValidate onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-3 sm:space-y-4">
                   <PillInput
                     {...loginForm.register("email")}
                     type="email"
@@ -448,7 +449,7 @@ export default function AuthSwitch({
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8">
                   Sign up
                 </h2>
-                <form onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-3 sm:space-y-4">
+                <form noValidate onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-3 sm:space-y-4">
                   <PillInput
                     {...signupForm.register("email")}
                     type="email"

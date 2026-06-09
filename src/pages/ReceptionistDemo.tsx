@@ -16,7 +16,7 @@ const ReceptionistDemo: React.FC = () => {
 
   const [status, setStatus] = useState<DemoStatus>('loading');
   const [businessName, setBusinessName] = useState('');
-  const [accessToken, setAccessToken] = useState('');
+  const [errorMessage, setErrorMessage] = useState('This demo link may have expired or is invalid.');
   const retellClientRef = useRef<any>(null);
 
   useEffect(() => {
@@ -26,6 +26,7 @@ const ReceptionistDemo: React.FC = () => {
 
   useEffect(() => {
     if (!demoId) {
+      setErrorMessage('This demo link is missing an id.');
       setStatus('error');
       return;
     }
@@ -33,7 +34,7 @@ const ReceptionistDemo: React.FC = () => {
     fetch(`${FUNCTIONS_BASE}/demo-web-call`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ demo_id: demoId }),
+      body: JSON.stringify({ demo_id: demoId, mode: 'preview' }),
     })
       .then(async (res) => {
         if (!res.ok) throw new Error('Demo not found');
@@ -41,17 +42,38 @@ const ReceptionistDemo: React.FC = () => {
       })
       .then((data) => {
         setBusinessName(data.business_name);
-        setAccessToken(data.access_token);
+        if (data.already_started) {
+          setErrorMessage('This demo call has already been started.');
+          setStatus('error');
+          return;
+        }
         setStatus('ready');
       })
-      .catch(() => setStatus('error'));
+      .catch(() => {
+        setErrorMessage('This demo link may have expired or is invalid.');
+        setStatus('error');
+      });
   }, [demoId]);
 
   const startCall = async () => {
-    if (!accessToken) return;
+    if (!demoId) return;
     setStatus('connecting');
 
     try {
+      const res = await fetch(`${FUNCTIONS_BASE}/demo-web-call`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ demo_id: demoId, mode: 'start' }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Could not start this demo call.');
+      }
+
+      const data = await res.json();
+      if (data.business_name) setBusinessName(data.business_name);
+
       const { RetellWebClient } = await import('retell-client-js-sdk');
       const client = new RetellWebClient();
 
@@ -66,9 +88,10 @@ const ReceptionistDemo: React.FC = () => {
       });
 
       retellClientRef.current = client;
-      await client.startCall({ accessToken });
-    } catch {
-      setStatus('ready');
+      await client.startCall({ accessToken: data.access_token });
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Could not start this demo call.');
+      setStatus('error');
     }
   };
 
@@ -104,7 +127,7 @@ const ReceptionistDemo: React.FC = () => {
               className="text-center max-w-md"
             >
               <p className="text-2xl font-semibold text-gray-900 mb-3">Demo not found</p>
-              <p className="text-gray-500 mb-6">This demo link may have expired or is invalid.</p>
+              <p className="text-gray-500 mb-6">{errorMessage}</p>
               <a
                 href="https://boltcall.org"
                 className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"

@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { authenticateApiKey } from './_shared/validate-api-key';
+import { requireInternalOrMatchingUser } from './_shared/user-auth';
 
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
@@ -78,6 +79,12 @@ export const handler: Handler = async (event) => {
       return { statusCode: 401, headers, body: JSON.stringify({ error: auth.error || 'Invalid API key' }) };
     }
     if (auth.userId) body.userId = auth.userId;
+    if (!auth.hasKey) {
+      const requestedUserId = typeof body.userId === 'string' ? body.userId : null;
+      const userAuth = await requireInternalOrMatchingUser(event, requestedUserId, headers);
+      if (!userAuth.ok) return userAuth.response;
+      if (requestedUserId) body.userId = userAuth.userId;
+    }
 
     if (action === 'send') {
       const { to, subject, htmlContent, textContent, fromName, fromEmail, userId, metadata } = body;

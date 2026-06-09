@@ -1,4 +1,5 @@
 import React, { useEffect, lazy, Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import {
@@ -22,6 +23,14 @@ const FAQ = lazy(() => import('../components/FAQ'));
 const FinalCTA = lazy(() => import('../components/FinalCTA'));
 const Footer = lazy(() => import('../components/Footer'));
 const StickyScrollSection = lazy(() => import('../components/StickyScrollSection').then(module => ({ default: module.StickyScrollSection })));
+
+const integrationLinks = [
+  { label: 'Integrations', href: '/integrations' },
+  { label: 'Zapier', href: '/integrations/zapier' },
+  { label: 'Make', href: '/integrations/make' },
+  { label: 'HubSpot', href: '/integrations/hubspot' },
+  { label: 'GoHighLevel', href: '/integrations/gohighlevel' },
+];
 
 const Home: React.FC = () => {
   // Add smooth-scroll class to body for homepage
@@ -210,6 +219,27 @@ const Home: React.FC = () => {
               </Suspense>
             </LazySection>
           </div>
+
+          <section className="relative md:-top-[255px] bg-white px-4 sm:px-8 lg:px-16 py-10">
+            <div className="mx-auto max-w-6xl border border-gray-200 bg-gray-50 p-6">
+              <p className="text-sm font-semibold uppercase text-gray-500">Automation integrations</p>
+              <h2 className="mt-2 text-2xl font-bold text-gray-900">Send every new lead into Boltcall instantly.</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">
+                Connect form fills, ad leads, CRM contacts, and spreadsheet rows to Boltcall's speed-to-lead workflow.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-3">
+                {integrationLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:border-blue-400 hover:text-blue-700"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
 
           <div className="relative md:-top-[255px] md:mt-24">
             <LazySection rootMargin="400px" minHeight="600px">

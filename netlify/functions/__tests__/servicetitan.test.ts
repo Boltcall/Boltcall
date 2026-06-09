@@ -14,7 +14,18 @@ const mockChain: any = {
 };
 const mockSupabase = { from: vi.fn(() => mockChain) };
 
-vi.mock('../_shared/token-utils', () => ({ getSupabase: () => mockSupabase }));
+vi.mock('../_shared/token-utils', () => ({
+  getSupabase: () => mockSupabase,
+  getServiceSupabase: () => mockSupabase,
+}));
+vi.mock('../_shared/user-auth', () => ({
+  hasSharedSecret: vi.fn(() => true),
+  requireMatchingUser: vi.fn(async (_event, userId, _headers) => ({
+    ok: true,
+    user: { id: userId || 'u1' },
+    userId: userId || 'u1',
+  })),
+}));
 vi.mock('../_shared/notify', () => ({ notifyError: vi.fn(), notifyInfo: vi.fn() }));
 
 process.env.SUPABASE_URL = 'https://test.supabase.co';

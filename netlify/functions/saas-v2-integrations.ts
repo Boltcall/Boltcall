@@ -35,7 +35,7 @@
  *   newly-signed-up user with zero rows returns the catalog with all-false
  *   connected flags in <100ms.
  *
- * Auth: Bearer JWT only — workspace_id is derived from owner_id, never
+ * Auth: Bearer JWT only — workspace_id is derived from user_id, never
  *   accepted from the request. Mirrors saas-v2-toggle's pattern exactly.
  *
  * Event emission: best-effort `saas_v2_integrations_list_rendered`. Skipped
@@ -270,6 +270,14 @@ const CATALOG: CatalogEntry[] = [
     isConnected: (c) => c.userIntegrationIds.has('zapier'),
   },
   {
+    id: 'make',
+    name: 'Make',
+    category: 'marketing',
+    description:
+      'Build visual speed-to-lead scenarios that move Boltcall leads into ads, CRM, sheets, and team workflows.',
+    isConnected: (c) => c.userIntegrationIds.has('make'),
+  },
+  {
     id: 'stripe',
     name: 'Stripe',
     category: 'marketing',
@@ -501,7 +509,7 @@ export const handler: Handler = async (event) => {
   }
   const userId = userResult.user.id;
 
-  // ── 2. Resolve workspace owner_id == userId ────────────────────────────
+  // ── 2. Resolve workspace user_id == userId ────────────────────────────
   let workspaceId: string | null = null;
   let workspaceCreatedAt: string | null = null;
   try {

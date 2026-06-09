@@ -156,7 +156,12 @@ function buildSyncCrm() {
     const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
     await fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
+          ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
+          : {}),
+      },
       body: JSON.stringify({
         action: 'sync_lead',
         userId,

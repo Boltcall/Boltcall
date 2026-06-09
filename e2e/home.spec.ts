@@ -1,4 +1,24 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+const scrollThroughPage = async (page: Page) => {
+  let previousHeight = 0;
+  for (let pass = 0; pass < 4; pass += 1) {
+    const scrollHeight = await page.evaluate(() => document.body.scrollHeight);
+    const step = await page.evaluate(() => Math.max(300, window.innerHeight * 0.7));
+
+    for (let y = 0; y <= scrollHeight; y += step) {
+      await page.evaluate((nextY) => window.scrollTo(0, nextY), y);
+      await page.waitForTimeout(120);
+    }
+
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(300);
+
+    const nextHeight = await page.evaluate(() => document.body.scrollHeight);
+    if (nextHeight === previousHeight) break;
+    previousHeight = nextHeight;
+  }
+};
 
 test.describe('Homepage', () => {
   test.beforeEach(async ({ page }) => {
@@ -18,7 +38,7 @@ test.describe('Homepage', () => {
 
   test('hero subheadline is visible', async ({ page }) => {
     await expect(
-      page.getByText('We answer calls 24/7, respond to website visitors instantly, and book appointments for you.')
+      page.getByText('The Speed To Lead System for local businesses')
     ).toBeVisible();
   });
 
@@ -29,24 +49,25 @@ test.describe('Homepage', () => {
   });
 
   test('CTA buttons exist', async ({ page }) => {
-    await expect(page.getByText('Learn More')).toBeVisible();
-    await expect(page.getByText('Start free')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'See How It Works' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Start For Free' })).toBeVisible();
   });
 
-  test('Learn More button scrolls or navigates', async ({ page }) => {
-    const learnMore = page.getByText('Learn More');
-    await expect(learnMore).toBeVisible();
+  test('See How It Works button scrolls or navigates', async ({ page }) => {
+    const seeHowItWorks = page.getByRole('button', { name: 'See How It Works' });
+    await expect(seeHowItWorks).toBeVisible();
     // Verify it is clickable (has a link or button role)
-    await expect(learnMore).toBeEnabled();
+    await expect(seeHowItWorks).toBeEnabled();
   });
 
-  test('Start free button is present and clickable', async ({ page }) => {
-    const startFree = page.getByText('Start free');
+  test('Start For Free button is present and clickable', async ({ page }) => {
+    const startFree = page.getByRole('link', { name: 'Start For Free' });
     await expect(startFree).toBeVisible();
     await expect(startFree).toBeEnabled();
   });
 
   test('footer is present on homepage', async ({ page }) => {
+    await scrollThroughPage(page);
     const footer = page.locator('footer');
     await expect(footer).toBeVisible();
   });
@@ -59,13 +80,13 @@ test.describe('Homepage', () => {
   });
 
   test('Pricing section loads on homepage', async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await scrollThroughPage(page);
     // The pricing section has plan names
     await expect(page.getByText('Starter').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('FAQ section loads on homepage', async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await expect(page.getByText('FAQ').first()).toBeVisible({ timeout: 10000 });
+    await scrollThroughPage(page);
+    await expect(page.getByText('What exactly does Boltcall do?').first()).toBeVisible({ timeout: 10000 });
   });
 });

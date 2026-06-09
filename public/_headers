@@ -2,13 +2,13 @@
   X-Frame-Options: DENY
   X-XSS-Protection: 1; mode=block
   X-Content-Type-Options: nosniff
+  Strict-Transport-Security: max-age=31536000
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
-# Phase 2 prune (2026-05-10): X-Robots-Tag: noindex for 25 URLs.
-# Form-result/login pages, industry-FAQ template clones, calculator template
-# clones, and off-topic generic content. See triage-100-urls.csv.
-# Reversible: delete the rule and the page becomes indexable again.
+# X-Robots-Tag: noindex rules are for private funnel states only.
+# Public blog/tool pages should not be listed here; they need crawlable HTML
+# and index/follow robots directives.
 #
 # IMPORTANT: Netlify auto-301s `/path` to `/path/` whenever a prerendered
 # directory exists at that route, and the no-slash header rule does NOT
@@ -16,7 +16,7 @@
 # `/path` (in case the user lands directly on the slash-less URL pre-301)
 # AND `/path/` (the canonical post-301 URL Google actually crawls).
 
-# Form-result / login pages (8)
+# Form-result / login pages (8): intentional noindex.
 /ai-audit/thank-you
   X-Robots-Tag: noindex
 /ai-audit/thank-you/
@@ -48,81 +48,6 @@
 /speed-test/report
   X-Robots-Tag: noindex
 /speed-test/report/
-  X-Robots-Tag: noindex
-
-# Industry-FAQ template clones (7) — Google's pSEO pattern detector flags
-# these. Phase 3 may merge into a single hub keyed by industry.
-/blog/ai-receptionist-dentist-faq
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-dentist-faq/
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-hvac-faq
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-hvac-faq/
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-lawyer-faq
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-lawyer-faq/
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-medspa-faq
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-medspa-faq/
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-plumber-faq
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-plumber-faq/
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-solar-faq
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-solar-faq/
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-vet-faq
-  X-Robots-Tag: noindex
-/blog/ai-receptionist-vet-faq/
-  X-Robots-Tag: noindex
-
-# Calculator template clones (6)
-/tools/auto-repair-missed-call-calculator
-  X-Robots-Tag: noindex
-/tools/auto-repair-missed-call-calculator/
-  X-Robots-Tag: noindex
-/tools/chiropractor-patient-recovery-calculator
-  X-Robots-Tag: noindex
-/tools/chiropractor-patient-recovery-calculator/
-  X-Robots-Tag: noindex
-/tools/cleaning-service-booking-calculator
-  X-Robots-Tag: noindex
-/tools/cleaning-service-booking-calculator/
-  X-Robots-Tag: noindex
-/tools/insurance-lead-response-scorecard
-  X-Robots-Tag: noindex
-/tools/insurance-lead-response-scorecard/
-  X-Robots-Tag: noindex
-/tools/landscaping-seasonal-revenue-calculator
-  X-Robots-Tag: noindex
-/tools/landscaping-seasonal-revenue-calculator/
-  X-Robots-Tag: noindex
-/tools/lawyer-intake-calculator
-  X-Robots-Tag: noindex
-/tools/lawyer-intake-calculator/
-  X-Robots-Tag: noindex
-
-# Off-topic / low-value generic content (4)
-/blog/answering-service-scheduling
-  X-Robots-Tag: noindex
-/blog/answering-service-scheduling/
-  X-Robots-Tag: noindex
-/blog/phone-call-scripts
-  X-Robots-Tag: noindex
-/blog/phone-call-scripts/
-  X-Robots-Tag: noindex
-/blog/tips-for-professional-telephone-etiquette
-  X-Robots-Tag: noindex
-/blog/tips-for-professional-telephone-etiquette/
-  X-Robots-Tag: noindex
-/blog/benefits-of-outsourced-reception-services
-  X-Robots-Tag: noindex
-/blog/benefits-of-outsourced-reception-services/
   X-Robots-Tag: noindex
 
 /assets/*

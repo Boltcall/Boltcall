@@ -16,6 +16,14 @@ import Pricing from '../components/Pricing';
 import AnswerBlock from '../components/seo/AnswerBlock';
 import { DollarSign, CheckCircle, Zap, Phone, Calendar, Star } from 'lucide-react';
 
+const automationIntegrationLinks = [
+  { label: 'integration hub', href: '/integrations' },
+  { label: 'Zapier guide', href: '/integrations/zapier' },
+  { label: 'Make guide', href: '/integrations/make' },
+  { label: 'HubSpot guide', href: '/integrations/hubspot' },
+  { label: 'GoHighLevel guide', href: '/integrations/gohighlevel' },
+];
+
 const PricingPage: React.FC = () => {
   usePricingVisitorTrack();
 
@@ -349,6 +357,16 @@ const PricingPage: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">How does Boltcall compare to other lead-response tools?</h3>
               <p className="text-gray-700 leading-relaxed">
                 Boltcall is purpose-built for speed-to-lead — every inbound lead gets a reply in under a minute and is booked on your calendar. We've published detailed head-to-head breakdowns, including <Link to="/compare/boltcall-vs-gohighlevel" className="text-indigo-600 hover:text-indigo-700 underline">Boltcall vs GoHighLevel</Link>, <Link to="/compare/boltcall-vs-smith-ai" className="text-indigo-600 hover:text-indigo-700 underline">Boltcall vs Smith.ai</Link>, and <Link to="/compare/boltcall-vs-birdeye" className="text-indigo-600 hover:text-indigo-700 underline">Boltcall vs BirdEye</Link>. You can browse <Link to="/comparisons" className="text-indigo-600 hover:text-indigo-700 underline">all comparisons</Link> for the full feature, pricing, and ROI matrix.
+              </p>
+              <p className="mt-3 text-gray-700 leading-relaxed">
+                If your team already works inside automation tools, start with our{' '}
+                {automationIntegrationLinks.map((link, index) => (
+                  <React.Fragment key={link.href}>
+                    <Link to={link.href} className="text-indigo-600 hover:text-indigo-700 underline">{link.label}</Link>
+                    {index < automationIntegrationLinks.length - 2 ? ', ' : index === automationIntegrationLinks.length - 2 ? ', or ' : ''}
+                  </React.Fragment>
+                ))}
+                {' '}to route new leads into Boltcall without changing your current stack.
               </p>
             </div>
 

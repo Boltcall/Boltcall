@@ -492,7 +492,7 @@ const BlogCenter: React.FC = () => {
   }, [activeCategory]);
 
   useEffect(() => {
-    document.title = 'AI Receptionist Insights & Guides | Boltcall';
+    document.title = 'AI Receptionist Blog & Guides | Boltcall';
     updateMetaDescription('Expert guides on AI receptionists, speed-to-lead, missed call recovery, and 24/7 call answering for local businesses. Learn and grow.');
 
     // Add canonical link

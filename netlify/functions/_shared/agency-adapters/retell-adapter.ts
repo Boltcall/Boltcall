@@ -29,7 +29,8 @@
  */
 
 import Retell from 'retell-sdk';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getServiceSupabase } from '../token-utils';
 import {
   emitAgencyEvent,
   type AgencyEventType,
@@ -146,11 +147,11 @@ function getRetellClient(): Retell {
 }
 
 function getSupabaseAdmin(): SupabaseClient | null {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key);
+  try {
+    return getServiceSupabase();
+  } catch {
+    return null;
+  }
 }
 
 /**

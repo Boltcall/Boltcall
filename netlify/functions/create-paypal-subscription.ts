@@ -13,9 +13,10 @@
 // the BILLING.SUBSCRIPTION.ACTIVATED webhook persists the subscription row.
 
 import type { Handler } from '@netlify/functions';
-import { createClient } from '@supabase/supabase-js';
 import { paypalFetch } from './_shared/paypal-client';
 import { isAllowedRedirect } from './_shared/redirect-allowlist';
+import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { getServiceSupabase } from './_shared/token-utils';
 
 const isSandbox = process.env.PAYPAL_MODE === 'sandbox';
 
@@ -40,15 +41,18 @@ const PLAN_MAP: Record<string, string | undefined> = {
     : process.env.PAYPAL_PLAN_ULTIMATE_YEARLY,
 };
 
-const headers = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
 const handler: Handler = async (event) => {
+  const v2cors = getV2CorsHeaders(
+    getRequestOrigin(event.headers as Record<string, string>),
+    { methods: 'POST' },
+  );
+  const headers = v2cors.headers;
+
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+    return { statusCode: 204, headers, body: '' };
+  }
+  if (getRequestOrigin(event.headers as Record<string, string>) && !v2cors.allowed) {
+    return { statusCode: 403, headers, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -59,15 +63,13 @@ const handler: Handler = async (event) => {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Authentication required' }) };
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) {
+  let supabase;
+  try {
+    supabase = getServiceSupabase();
+  } catch {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Supabase not configured' }) };
   }
 
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
   const token = authHeader.substring(7);
   const { data: { user }, error: authError } = await supabase.auth.getUser(token);
   if (authError || !user) {
@@ -106,7 +108,8 @@ const handler: Handler = async (event) => {
     };
   }
 
-  const origin = event.headers.origin || 'https://boltcall.org';
+  const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
+  const origin = requestOrigin && isAllowedRedirect(requestOrigin) ? requestOrigin : 'https://boltcall.org';
   const returnUrl = successUrl || `${origin}/dashboard/settings/plan-billing?paypal=success`;
   const cancelReturnUrl = cancelUrl || `${origin}/dashboard/settings/plan-billing?paypal=cancelled`;
 

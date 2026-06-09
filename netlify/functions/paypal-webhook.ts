@@ -1,15 +1,19 @@
 import type { Handler } from '@netlify/functions';
-import { createClient } from '@supabase/supabase-js';
 import {
   PAYPAL_API_BASE,
   PAYPAL_WEBHOOK_ID,
   getPayPalAccessToken,
 } from './_shared/paypal-client';
+import { getServiceSupabase } from './_shared/token-utils';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
-);
+type SupabaseAdmin = ReturnType<typeof getServiceSupabase>;
+
+let cachedSupabase: SupabaseAdmin | null = null;
+
+function supabaseAdmin(): SupabaseAdmin {
+  if (!cachedSupabase) cachedSupabase = getServiceSupabase();
+  return cachedSupabase;
+}
 
 // ── User lookup helper (auth.users) ──────────────────────────────────────────
 // Used as fallback when a webhook payload lacks `custom_id` (legacy
@@ -19,7 +23,7 @@ const supabase = createClient(
 async function findUserByEmail(email: string | undefined): Promise<{ id: string; email: string | undefined } | null> {
   if (!email) return null;
   try {
-    const { data, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const { data, error } = await supabaseAdmin().auth.admin.listUsers({ page: 1, perPage: 1000 });
     if (error || !data?.users) return null;
     const match = data.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
     return match ? { id: match.id, email: match.email } : null;
@@ -33,8 +37,8 @@ async function findUserByEmail(email: string | undefined): Promise<{ id: string;
 
 async function verifyWebhookSignature(event: any): Promise<boolean> {
   if (!PAYPAL_WEBHOOK_ID) {
-    console.warn('PAYPAL_WEBHOOK_ID not set — skipping verification');
-    return true;
+    console.error('PAYPAL_WEBHOOK_ID not set — rejecting PayPal webhook');
+    return false;
   }
 
   const accessToken = await getPayPalAccessToken();
@@ -83,7 +87,7 @@ async function handlePaymentCompleted(resource: any) {
   const user = await findUserByEmail(payerEmail);
 
   // Log the payment
-  const { error } = await supabase
+  const { error } = await supabaseAdmin()
     .from('paypal_payments')
     .upsert({
       order_id: orderId,
@@ -139,7 +143,7 @@ async function handleSubscriptionActivated(resource: any) {
   }
 
   if (userId) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin()
       .from('subscriptions')
       .upsert({
         user_id: userId,
@@ -176,7 +180,7 @@ async function handleSubscriptionCancelled(resource: any) {
 
   console.log(`Subscription cancelled: ${subscriptionId}`);
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin()
     .from('subscriptions')
     .update({
       status: 'canceled',
@@ -198,7 +202,7 @@ async function handleSubscriptionCancelled(resource: any) {
 async function handleSubscriptionSuspended(resource: any) {
   const subscriptionId = resource.id;
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin()
     .from('subscriptions')
     .update({
       status: 'past_due',
@@ -225,7 +229,7 @@ async function handlePaymentSaleCompleted(resource: any) {
 
   // If this is a recurring payment, update the subscription period
   if (subscriptionId) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin()
       .from('subscriptions')
       .update({
         status: 'active',

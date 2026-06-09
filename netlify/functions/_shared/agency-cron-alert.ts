@@ -23,6 +23,9 @@ import type { Handler, HandlerContext, HandlerEvent } from '@netlify/functions';
 
 import { emitAgencyEvent } from './emit-agency-event';
 import { notifyError } from './notify';
+import { authorizeRunner } from './agency-runner-auth';
+
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 /**
  * Wrap a scheduled Netlify handler with Telegram failure alerting.
@@ -34,6 +37,15 @@ import { notifyError } from './notify';
  */
 export function wrapCronWithAlert(handlerName: string, handler: Handler): Handler {
   return async (event: HandlerEvent, context: HandlerContext) => {
+    const authz = await authorizeRunner(event);
+    if (!authz.ok) {
+      return {
+        statusCode: authz.status,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ error: authz.message }),
+      };
+    }
+
     try {
       return await handler(event, context);
     } catch (err) {

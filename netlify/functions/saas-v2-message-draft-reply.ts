@@ -2,7 +2,7 @@
  * saas-v2-message-draft-reply — POST endpoint that drafts an AI reply for a
  * specific thread.
  *
- * Auth: Bearer JWT only. Workspace resolved from JWT → owner_id.
+ * Auth: Bearer JWT only. Workspace resolved from JWT → user_id.
  * Body: { thread_id: string, hint?: string }
  *
  * Verifies thread ownership (defense in depth + RLS), reads the last ~20
@@ -154,7 +154,7 @@ export const handler: Handler = async (event) => {
   // ─── Workspace + tone preferences ────────────────────────────────────────
   const { data: workspace, error: wsErr } = await supa
     .from('workspaces')
-    .select('id, owner_id, brand_voice')
+    .select('id, brand_voice')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();

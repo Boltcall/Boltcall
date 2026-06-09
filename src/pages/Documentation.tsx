@@ -382,6 +382,14 @@ const Documentation: React.FC = () => {
     { title: 'Integration Status', icon: <Database className="w-4 h-4" />, href: '/documentation#dashboard' }
   ];
 
+  const automationIntegrationLinks = [
+    { title: 'Integrations Hub', href: '/integrations' },
+    { title: 'Zapier Integration', href: '/integrations/zapier' },
+    { title: 'Make Integration', href: '/integrations/make' },
+    { title: 'HubSpot Integration', href: '/integrations/hubspot' },
+    { title: 'GoHighLevel Integration', href: '/integrations/gohighlevel' },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
@@ -504,6 +512,24 @@ const Documentation: React.FC = () => {
                   >
                     {item.label}
                   </a>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6 border border-blue-100 bg-blue-50 p-6">
+              <h2 className="text-lg font-bold text-gray-900">Speed-to-lead automation integrations</h2>
+              <p className="mt-2 text-sm leading-6 text-gray-700">
+                Use these platform setup guides when you want form fills, CRM contacts, or ad leads to trigger Boltcall immediately.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {automationIntegrationLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-medium text-blue-700 hover:text-blue-900"
+                  >
+                    {link.title}
+                  </Link>
                 ))}
               </div>
             </div>

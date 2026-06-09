@@ -37,7 +37,7 @@ async function callPageSpeed(targetUrl: string, strategy: 'mobile' | 'desktop'):
     if (response.status === 403 && errorMsg.includes('referer')) {
       errorMsg = 'API key has referer restrictions. Please configure your Google Cloud API key to allow requests from this domain, or remove referer restrictions.';
     } else if (response.status === 400 && errorMsg.includes('API key')) {
-      errorMsg = 'Invalid API key. Please check the PAGESPEED_API_KEY server environment variable.';
+      errorMsg = 'Invalid API key. Please check the PageSpeed server environment variable.';
     }
 
     throw new Error(`${strategy} test failed: ${errorMsg} (${response.status})`);

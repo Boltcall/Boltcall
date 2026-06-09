@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
+import { hasSharedSecret } from './_shared/user-auth';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -80,6 +81,14 @@ function buildDefaultEvaluators(agentName: string, businessName: string) {
 export const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
+  }
+
+  if (!hasSharedSecret(event)) {
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({ error: 'Internal authorization required' }),
+    };
   }
 
   try {
