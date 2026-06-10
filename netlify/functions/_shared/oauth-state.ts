@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 const MAX_STATE_AGE_MS = 15 * 60 * 1000;
 
-export type OAuthProvider = 'gmail' | 'outlook' | 'google_calendar' | 'facebook';
+export type OAuthProvider = 'gmail' | 'outlook' | 'google_calendar' | 'facebook' | 'hubspot' | 'pipedrive';
 
 export type OAuthStatePayload = {
   provider: OAuthProvider;

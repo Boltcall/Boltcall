@@ -65,6 +65,21 @@ describe('integration-sync automation providers', () => {
     );
   });
 
+  it('tests HubSpot OAuth contact access', async () => {
+    const res = await handler(makeEvent({
+      action: 'test',
+      provider: 'hubspot',
+      config: { access_token: 'hub-oauth-token' },
+    }), {} as any);
+    const body = JSON.parse(res!.body);
+
+    expect(body.success).toBe(true);
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.hubapi.com/crm/v3/objects/contacts?limit=1',
+      expect.objectContaining({ headers: { Authorization: 'Bearer hub-oauth-token' } }),
+    );
+  });
+
   it('tests GoHighLevel with location id and API version header', async () => {
     const res = await handler(makeEvent({
       action: 'test',
@@ -107,6 +122,27 @@ describe('integration-sync automation providers', () => {
     expect(mockFetch).toHaveBeenCalledWith(
       'https://hook.eu1.make.com/abc',
       expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('tests Pipedrive OAuth user access', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: { name: 'Noam' } }),
+      text: async () => '{}',
+    } as any);
+
+    const res = await handler(makeEvent({
+      action: 'test',
+      provider: 'pipedrive',
+      config: { access_token: 'pd-oauth-token' },
+    }), {} as any);
+    const body = JSON.parse(res!.body);
+
+    expect(body.success).toBe(true);
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.pipedrive.com/v1/users/me',
+      expect.objectContaining({ headers: { Authorization: 'Bearer pd-oauth-token' } }),
     );
   });
 });

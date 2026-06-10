@@ -85,6 +85,9 @@ async function syncToHubSpot(apiKey: string, lead: any): Promise<{ success: bool
 
 // ─── GoHighLevel Integration ────────────────────────────────────────────────
 
+// HighLevel Marketplace blocks redirect URLs containing "highlevel".
+// Use /.netlify/functions/leadconnector-auth-callback for the public OAuth app.
+
 async function syncToGoHighLevel(apiKey: string, config: any, lead: any): Promise<{ success: boolean; contactId?: string; error?: string }> {
   const locationId = config?.location_id;
   if (!locationId) return { success: false, error: 'No Location ID configured' };
@@ -155,15 +158,22 @@ async function syncToGoHighLevel(apiKey: string, config: any, lead: any): Promis
 
 // ─── Pipedrive Integration ──────────────────────────────────────────────────
 
-async function syncToPipedrive(apiToken: string, lead: any): Promise<{ success: boolean; personId?: number; error?: string }> {
+async function syncToPipedrive(apiToken: string, lead: any, authMode: 'api_token' | 'oauth' = 'api_token'): Promise<{ success: boolean; personId?: number; error?: string }> {
   try {
     const name = lead.name || [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'Unknown';
+    const authHeaders = authMode === 'oauth' ? { Authorization: `Bearer ${apiToken}` } : {};
+    const tokenQuery = authMode === 'api_token' ? `api_token=${encodeURIComponent(apiToken)}` : '';
+    const withAuth = (url: string) => {
+      if (!tokenQuery) return url;
+      return `${url}${url.includes('?') ? '&' : '?'}${tokenQuery}`;
+    };
 
     // Search for existing person by email or phone
     let existingId: number | null = null;
     if (lead.email) {
       const searchRes = await fetch(
-        `https://api.pipedrive.com/v1/persons/search?term=${encodeURIComponent(lead.email)}&fields=email&api_token=${apiToken}`
+        withAuth(`https://api.pipedrive.com/v1/persons/search?term=${encodeURIComponent(lead.email)}&fields=email`),
+        { headers: authHeaders },
       );
       if (searchRes.ok) {
         const searchData = await searchRes.json();
@@ -180,17 +190,17 @@ async function syncToPipedrive(apiToken: string, lead: any): Promise<{ success: 
     };
 
     if (existingId) {
-      const res = await fetch(`https://api.pipedrive.com/v1/persons/${existingId}?api_token=${apiToken}`, {
+      const res = await fetch(withAuth(`https://api.pipedrive.com/v1/persons/${existingId}`), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify(personData),
       });
       if (!res.ok) throw new Error(`Pipedrive update failed: ${res.status}`);
       return { success: true, personId: existingId };
     } else {
-      const res = await fetch(`https://api.pipedrive.com/v1/persons?api_token=${apiToken}`, {
+      const res = await fetch(withAuth('https://api.pipedrive.com/v1/persons'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify(personData),
       });
       if (!res.ok) {
@@ -760,9 +770,10 @@ export const handler: Handler = async (event) => {
       const { provider, apiKey: testApiKey, webhookUrl: testWebhookUrl, config: testConfig } = body;
 
       if (provider === 'hubspot') {
-        if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'apiKey required for HubSpot' }) };
+        const accessToken = testConfig?.access_token || testApiKey;
+        if (!accessToken) return { statusCode: 400, headers, body: JSON.stringify({ error: 'HubSpot OAuth connection or private app token required' }) };
         const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts?limit=1', {
-          headers: { 'Authorization': `Bearer ${testApiKey}` },
+          headers: { 'Authorization': `Bearer ${accessToken}` },
         });
         if (res.ok) {
           return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'HubSpot connection verified' }) };
@@ -849,8 +860,11 @@ export const handler: Handler = async (event) => {
       }
 
       if (provider === 'pipedrive') {
-        if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'apiKey required for Pipedrive' }) };
-        const res = await fetch(`https://api.pipedrive.com/v1/users/me?api_token=${testApiKey}`);
+        const accessToken = testConfig?.access_token || testApiKey;
+        if (!accessToken) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Pipedrive OAuth connection or API token required' }) };
+        const res = testConfig?.access_token
+          ? await fetch('https://api.pipedrive.com/v1/users/me', { headers: { Authorization: `Bearer ${accessToken}` } })
+          : await fetch(`https://api.pipedrive.com/v1/users/me?api_token=${accessToken}`);
         if (res.ok) {
           const data = await res.json();
           const userName = data.data?.name || 'User';
@@ -960,11 +974,14 @@ export const handler: Handler = async (event) => {
 
         switch (integration.provider) {
           case 'hubspot':
-            if (integration.api_key) {
-              const hubResult = await syncToHubSpot(integration.api_key, lead);
+            {
+              const hubspotToken = integration.config?.access_token || integration.api_key;
+              if (!hubspotToken) {
+                result = { success: false, error: 'No HubSpot token' };
+                break;
+              }
+              const hubResult = await syncToHubSpot(hubspotToken, lead);
               result = hubResult;
-            } else {
-              result = { success: false, error: 'No API key' };
             }
             break;
 
@@ -986,11 +1003,18 @@ export const handler: Handler = async (event) => {
             break;
 
           case 'pipedrive':
-            if (integration.api_key) {
-              const pdResult = await syncToPipedrive(integration.api_key, lead);
+            {
+              const pipedriveToken = integration.config?.access_token || integration.api_key;
+              if (!pipedriveToken) {
+                result = { success: false, error: 'No Pipedrive token' };
+                break;
+              }
+              const pdResult = await syncToPipedrive(
+                pipedriveToken,
+                lead,
+                integration.config?.access_token ? 'oauth' : 'api_token',
+              );
               result = pdResult;
-            } else {
-              result = { success: false, error: 'No API key' };
             }
             break;
 

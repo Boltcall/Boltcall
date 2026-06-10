@@ -1,0 +1,36 @@
+{
+  "uid": "boltcall_hubspot_app",
+  "type": "app",
+  "config": {
+    "description": "Boltcall helps local service businesses call, text, and book new HubSpot leads instantly with AI speed-to-lead automation.",
+    "name": "Boltcall",
+    "distribution": "marketplace",
+    "auth": {
+      "type": "oauth",
+      "redirectUrls": [
+        "https://boltcall.org/.netlify/functions/hubspot-auth-callback"
+      ],
+      "requiredScopes": [
+        "oauth",
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write"
+      ],
+      "optionalScopes": [],
+      "conditionallyRequiredScopes": []
+    },
+    "permittedUrls": {
+      "fetch": [
+        "https://api.hubapi.com",
+        "https://boltcall.org"
+      ],
+      "iframe": [],
+      "img": []
+    },
+    "support": {
+      "supportEmail": "support@boltcall.org",
+      "documentationUrl": "https://boltcall.org/integrations/hubspot",
+      "supportUrl": "https://boltcall.org/contact",
+      "supportPhone": "+19723308408"
+    }
+  }
+}

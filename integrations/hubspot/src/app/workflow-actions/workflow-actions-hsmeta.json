@@ -1,0 +1,80 @@
+{
+  "uid": "boltcall_hubspot_workflow_action",
+  "type": "workflow-action",
+  "config": {
+    "actionUrl": "https://boltcall.org/.netlify/functions/hubspot-workflow-action",
+    "isPublished": true,
+    "supportedClients": [
+      {
+        "client": "WORKFLOWS"
+      }
+    ],
+    "inputFields": [
+      {
+        "typeDefinition": {
+          "name": "leadSource",
+          "type": "string",
+          "fieldType": "text"
+        },
+        "supportedValueTypes": [
+          "STATIC_VALUE"
+        ],
+        "isRequired": false
+      }
+    ],
+    "objectRequestOptions": {
+      "properties": [
+        "email",
+        "phone",
+        "mobilephone",
+        "firstname",
+        "lastname"
+      ]
+    },
+    "outputFields": [
+      {
+        "typeDefinition": {
+          "name": "boltcall_status",
+          "type": "string",
+          "fieldType": "text"
+        }
+      },
+      {
+        "typeDefinition": {
+          "name": "boltcall_lead_id",
+          "type": "string",
+          "fieldType": "text"
+        }
+      },
+      {
+        "typeDefinition": {
+          "name": "first_touch_status",
+          "type": "string",
+          "fieldType": "text"
+        }
+      }
+    ],
+    "labels": {
+      "en": {
+        "appDisplayName": "Boltcall",
+        "actionName": "Trigger Boltcall speed-to-lead",
+        "actionDescription": "Send the enrolled HubSpot contact to Boltcall so the lead can be called, texted, and booked instantly.",
+        "actionCardContent": "Trigger Boltcall for this contact",
+        "inputFieldLabels": {
+          "leadSource": "Lead source label"
+        },
+        "inputFieldDescriptions": {
+          "leadSource": "Optional label shown in Boltcall, for example HubSpot workflow or Quote request"
+        },
+        "outputFieldLabels": {
+          "boltcall_status": "Boltcall status",
+          "boltcall_lead_id": "Boltcall lead ID",
+          "first_touch_status": "First-touch status"
+        }
+      }
+    },
+    "objectTypes": [
+      "CONTACT"
+    ]
+  }
+}
