@@ -1,6 +1,6 @@
-import { writeFileSync } from "fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BASE_URL = "https://boltcall.org";
@@ -154,17 +154,64 @@ const ROUTES = [
 // entries, wasting crawl budget.
 const canonicalPath = (p) => (p === "/" ? "/" : p.replace(/\/?$/, "/"));
 
-const xml = `<?xml version="1.0" encoding="UTF-8"?>
+export function parseMarkdownFrontmatter(raw) {
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (!match) return {};
+
+  const frontmatter = {};
+  for (const line of match[1].split(/\r?\n/)) {
+    const idx = line.indexOf(":");
+    if (idx <= 0) continue;
+    const key = line.slice(0, idx).trim();
+    const value = line.slice(idx + 1).trim().replace(/^["']|["']$/g, "");
+    frontmatter[key] = value;
+  }
+  return frontmatter;
+}
+
+export function publishedAeoRoutesFromContentDir(contentDir = resolve(__dirname, "../src/content/aeo")) {
+  if (!existsSync(contentDir)) return [];
+
+  return readdirSync(contentDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /\.mdx?$/i.test(entry.name))
+    .map((entry) => {
+      const raw = readFileSync(resolve(contentDir, entry.name), "utf-8");
+      const frontmatter = parseMarkdownFrontmatter(raw);
+      const slug = frontmatter.slug || entry.name.replace(/\.mdx?$/i, "");
+      return {
+        path: `/blog/${slug}`,
+        priority: "0.8",
+        changefreq: "weekly",
+        status: frontmatter.status || "draft",
+      };
+    })
+    .filter((route) => route.status === "published")
+    .map(({ status, ...route }) => route);
+}
+
+export function buildSitemapXml({ today = TODAY, contentDir = resolve(__dirname, "../src/content/aeo") } = {}) {
+  const byPath = new Map();
+  for (const route of [...ROUTES, ...publishedAeoRoutesFromContentDir(contentDir)]) {
+    byPath.set(canonicalPath(route.path), { ...route, path: canonicalPath(route.path) });
+  }
+  const routes = [...byPath.values()];
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${ROUTES.map(
+${routes.map(
   (r) => `  <url>
-    <loc>${BASE_URL}${canonicalPath(r.path)}</loc>
-    <lastmod>${TODAY}</lastmod>
+    <loc>${BASE_URL}${r.path}</loc>
+    <lastmod>${today}</lastmod>
     <changefreq>${r.changefreq}</changefreq>
     <priority>${r.priority}</priority>
   </url>`
 ).join("\n")}
 </urlset>`;
+}
 
-writeFileSync(resolve(__dirname, "../public/sitemap.xml"), xml, "utf-8");
-console.log(`✓ sitemap.xml generated — ${ROUTES.length} URLs (${TODAY})`);
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const xml = buildSitemapXml();
+  writeFileSync(resolve(__dirname, "../public/sitemap.xml"), xml, "utf-8");
+  const urlCount = [...xml.matchAll(/<url>/g)].length;
+  console.log(`sitemap.xml generated - ${urlCount} URLs (${TODAY})`);
+}

@@ -29,6 +29,7 @@ const BlogNeverMissCallAfterHours = React.lazy(() => import('../pages/BlogNeverM
 const BlogWhatsAppAppointmentBookingPlumbers = React.lazy(() => import('../pages/BlogWhatsAppAppointmentBookingPlumbers'));
 const BlogAIReceptionistDentists = React.lazy(() => import('../pages/BlogAIReceptionistDentists'));
 const BlogAIReceptionistLawFirms = React.lazy(() => import('../pages/BlogAIReceptionistLawFirms'));
+const AeoMarkdownArticlePage = React.lazy(() => import('../pages/AeoMarkdownArticlePage'));
 // ── Auth pages — lazy-loaded (not on typical landing path) ──────────────
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
@@ -721,6 +722,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/after-hours-lead-response-home-services" element={<BlogAfterHoursLeadResponse />} />
         <Route path="/blog/ai-receptionist-med-spas" element={<BlogAIReceptionistMedSpa />} />
         <Route path="/blog/solar-ai-lead-response" element={<BlogSolarAILeadResponse />} />
+        <Route path="/blog/:slug" element={<AeoMarkdownArticlePage />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />
         <Route path="/comparisons/call-centers-vs-boltcall" element={<TraditionalCallCentersVsBoltcall />} />
