@@ -1,6 +1,7 @@
 import type { Handler } from '@netlify/functions';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 import { validatePublicHttpUrl } from './_shared/outbound-url';
+import { requireUser } from './_shared/user-auth';
 
 // Firecrawl API keys — waterfall: use key 1 first, if exhausted try key 2, then key 3
 const FIRECRAWL_KEYS = [
@@ -10,6 +11,14 @@ const FIRECRAWL_KEYS = [
 ].filter(Boolean) as string[];
 
 const N8N_FALLBACK_WEBHOOK = process.env.N8N_SCRAPER_WEBHOOK || 'https://n8n.srv974118.hstgr.cloud/webhook/scrape-website';
+
+function getHeader(headers: Record<string, string | undefined>, name: string): string | undefined {
+  const lower = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === lower) return value;
+  }
+  return undefined;
+}
 
 // Try Firecrawl with a specific key
 async function tryFirecrawl(url: string, apiKey: string): Promise<{ success: boolean; data?: any; exhausted?: boolean }> {
@@ -152,7 +161,7 @@ const handler: Handler = async (event) => {
       );
       return { statusCode: 503, headers, body: JSON.stringify({ error: 'Service misconfigured' }) };
     }
-    const callerSecret = event.headers['x-internal-secret'];
+    const callerSecret = getHeader(event.headers as Record<string, string | undefined>, 'x-internal-secret');
     // Constant-time compare to defeat timing oracle attacks.
     let ok = false;
     if (callerSecret && typeof callerSecret === 'string' && callerSecret.length === internalSecret.length) {
@@ -164,7 +173,10 @@ const handler: Handler = async (event) => {
       }
     }
     if (!ok) {
-      return { statusCode: 403, headers, body: JSON.stringify({ error: 'Forbidden' }) };
+      const auth = await requireUser(event, headers);
+      if (!auth.ok) {
+        return { statusCode: 403, headers, body: JSON.stringify({ error: 'Forbidden' }) };
+      }
     }
 
     const { url } = JSON.parse(event.body || '{}');

@@ -65,9 +65,10 @@ interface TestRunRecord {
 // ---------------------------------------------------------------------------
 
 import { FUNCTIONS_BASE } from '../../lib/api';
+import { authedFetch } from '../../lib/authedFetch';
 
 async function runAgentTests(agentId: string): Promise<TestRunResult> {
-  const res = await fetch(`${FUNCTIONS_BASE}/agent-test`, {
+  const res = await authedFetch(`${FUNCTIONS_BASE}/agent-test`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'run-tests', agentId }),

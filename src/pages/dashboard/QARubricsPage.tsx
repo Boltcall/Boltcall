@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { FUNCTIONS_BASE } from '../../lib/api';
+import { authedFetch } from '../../lib/authedFetch';
 
 interface Agent {
   id: string;
@@ -75,12 +76,7 @@ const QARubricsPage: React.FC = () => {
 
   const fetchRubrics = useCallback(async () => {
     if (!selectedAgentId || !user) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    if (!token) return;
-    const res = await fetch(`${FUNCTIONS_BASE}/qa-rubrics?agent_id=${encodeURIComponent(selectedAgentId)}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await authedFetch(`${FUNCTIONS_BASE}/qa-rubrics?agent_id=${encodeURIComponent(selectedAgentId)}`);
     if (res.ok) {
       setRubrics(await res.json());
     }
@@ -140,16 +136,13 @@ const QARubricsPage: React.FC = () => {
 
     setSaving(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
       const payload = editingRubric
         ? { action: 'update', rubricId: editingRubric.id, name: formName, description: formDescription, criteria: validCriteria }
         : { action: 'create', agentId: selectedAgentId, name: formName, description: formDescription, criteria: validCriteria };
 
-      const res = await fetch(`${FUNCTIONS_BASE}/qa-rubrics`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/qa-rubrics`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
@@ -171,11 +164,9 @@ const QARubricsPage: React.FC = () => {
   // ── Delete rubric ────────────────────────────────────────────────────────────
 
   async function handleDelete(rubricId: string) {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    const res = await fetch(`${FUNCTIONS_BASE}/qa-rubrics`, {
+    const res = await authedFetch(`${FUNCTIONS_BASE}/qa-rubrics`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'delete', rubricId }),
     });
     if (res.ok) {
@@ -187,11 +178,9 @@ const QARubricsPage: React.FC = () => {
   // ── Toggle active ────────────────────────────────────────────────────────────
 
   async function toggleActive(rubric: Rubric) {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    await fetch(`${FUNCTIONS_BASE}/qa-rubrics`, {
+    await authedFetch(`${FUNCTIONS_BASE}/qa-rubrics`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'update', rubricId: rubric.id, is_active: !rubric.is_active }),
     });
     fetchRubrics();

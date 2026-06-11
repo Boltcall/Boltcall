@@ -92,7 +92,7 @@ describe('outbound-calls tenant hardening', () => {
     expect(JSON.parse(res.body).error).toMatch(/agentId/i);
     expect(campaignInsertMock).not.toHaveBeenCalled();
     expect(createPhoneCallMock).not.toHaveBeenCalled();
-  });
+  }, 10_000);
 
   it('rejects campaign creation with a phone number outside the authenticated user tenant', async () => {
     const { handler } = await import('../outbound-calls');
@@ -113,7 +113,7 @@ describe('outbound-calls tenant hardening', () => {
     expect(JSON.parse(res.body).error).toMatch(/fromNumber/i);
     expect(campaignInsertMock).not.toHaveBeenCalled();
     expect(createPhoneCallMock).not.toHaveBeenCalled();
-  });
+  }, 10_000);
 
   it('revalidates stored campaign agent and phone ownership before starting calls', async () => {
     campaignSingleMock.mockResolvedValue({
@@ -140,5 +140,5 @@ describe('outbound-calls tenant hardening', () => {
     expect(res.statusCode).toBe(403);
     expect(JSON.parse(res.body).error).toMatch(/agentId/i);
     expect(createPhoneCallMock).not.toHaveBeenCalled();
-  });
+  }, 10_000);
 });

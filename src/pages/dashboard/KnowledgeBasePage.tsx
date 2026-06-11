@@ -549,7 +549,7 @@ const KnowledgeBasePage: React.FC = () => {
     setKbScanning(true);
     try {
       showToast({ title: 'Scanning website...', message: 'AI is reading your website to auto-fill services & FAQs', variant: 'default', duration: 15000 });
-      const res = await fetch(`${FUNCTIONS_BASE}/scrape-url`, {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/scrape-url`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
@@ -665,7 +665,7 @@ const KnowledgeBasePage: React.FC = () => {
 
         if (doc.type === 'url' && doc.url) {
           try {
-            const res = await fetch('/.netlify/functions/scrape-url', {
+            const res = await authedFetch('/.netlify/functions/scrape-url', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ url: doc.url }),
@@ -843,7 +843,7 @@ const KnowledgeBasePage: React.FC = () => {
     showToast({ title: 'Scraping...', message: `Fetching content from ${urlInput}`, variant: 'default', duration: 5000 });
 
     try {
-      const res = await fetch('/.netlify/functions/scrape-url', {
+      const res = await authedFetch('/.netlify/functions/scrape-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: urlInput }),
