@@ -227,23 +227,21 @@ export const handler: Handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) };
     }
 
-    const supabase = getSupabase();
-
     // Detect Facebook leadgen webhook format
     if (body.object === 'page' && body.entry) {
-      // Verify Facebook signature when configured. Local dev may omit the app
-      // secret, but a configured secret means unsigned leadgen posts are not
-      // trusted regardless of NODE_ENV.
+      // Facebook leadgen webhooks are third-party write paths. Reject unsigned
+      // payloads before touching customer data or downstream services.
       const fbSig = verifyFacebookSignature(event.body || '', event.headers as Record<string, string | undefined>);
       if (fbSig === 'invalid') {
         console.warn('[lead-webhook] Invalid Facebook signature — rejecting');
         return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid X-Hub-Signature-256' }) };
       }
-      if (fbSig === 'missing' && (process.env.FB_APP_SECRET || process.env.NODE_ENV === 'production')) {
+      if (fbSig === 'missing') {
         console.warn('[lead-webhook] Missing Facebook signature while webhook signing is required — rejecting');
         return { statusCode: 401, headers, body: JSON.stringify({ error: 'Webhook signature required' }) };
       }
       try {
+        const supabase = getSupabase();
         const { results, errors } = await handleFacebookLeadgen(body, supabase);
         return {
           statusCode: 200,
@@ -267,6 +265,8 @@ export const handler: Handler = async (event) => {
         };
       }
     }
+
+    const supabase = getSupabase();
 
     // Generic / Web Form lead submission
     // Resolve userId from API key if present (Zapier sends bc_ key)

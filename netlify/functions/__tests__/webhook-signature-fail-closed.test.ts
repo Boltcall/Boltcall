@@ -58,8 +58,7 @@ describe('webhook signature fail-closed behavior', () => {
     verifyTwilioSignatureMock.mockReturnValue('valid');
   });
 
-  it('rejects unsigned Facebook leadgen webhooks when the Facebook app secret is configured', async () => {
-    vi.stubEnv('FB_APP_SECRET', 'test-facebook-secret');
+  it('rejects unsigned Facebook leadgen webhooks before touching Supabase', async () => {
     verifyFacebookSignatureMock.mockReturnValue('missing');
 
     const { handler } = await import('../lead-webhook');
@@ -67,6 +66,7 @@ describe('webhook signature fail-closed behavior', () => {
 
     expect(res.statusCode).toBe(401);
     expect(JSON.parse(res.body).error).toMatch(/signature required/i);
+    expect(getSupabaseMock).not.toHaveBeenCalled();
   });
 
   it('rejects unsigned Twilio inbound SMS webhooks when the Twilio auth token is configured', async () => {
