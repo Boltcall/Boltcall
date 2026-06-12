@@ -14,53 +14,20 @@ interface OfferSpec {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_BODY_BYTES = 24_000;
+const REQUIRED_SETUP_FIELDS = ['businessName', 'contactName', 'email', 'phone', 'businessPhone'];
 
 const offerSpecs: Record<OfferSlug, OfferSpec> = {
   'after-hours-lead-rescue': {
     path: '/after-hours-lead-rescue',
-    required: [
-      'businessName',
-      'contactName',
-      'email',
-      'phone',
-      'businessPhone',
-      'industry',
-      'currentPhoneSystem',
-      'timezone',
-      'afterHoursStart',
-      'afterHoursEnd',
-      'estimatedMissedCalls',
-      'missedCallSource',
-    ],
+    required: REQUIRED_SETUP_FIELDS,
   },
   'automatic-reviews-agent': {
     path: '/automatic-reviews-agent',
-    required: [
-      'businessName',
-      'contactName',
-      'email',
-      'phone',
-      'businessPhone',
-      'industry',
-      'googleReviewLink',
-      'contactSource',
-      'estimatedContacts',
-    ],
+    required: REQUIRED_SETUP_FIELDS,
   },
   'reminders-agent': {
     path: '/reminders-agent',
-    required: [
-      'businessName',
-      'contactName',
-      'email',
-      'phone',
-      'businessPhone',
-      'industry',
-      'reminderType',
-      'bookingLink',
-      'contactSource',
-      'estimatedContacts',
-    ],
+    required: REQUIRED_SETUP_FIELDS,
   },
 };
 
@@ -137,7 +104,7 @@ async function forwardToFulfillment(args: {
         'Next: open lead_magnet_setup_requests, run one test message, then import the first 100 contacts.',
       ].join('\n'),
     );
-    return { status: 'sent' as const };
+    return { status: 'not_configured' as const };
   }
 
   const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '';
@@ -204,7 +171,7 @@ export const handler: Handler = async (event) => {
       contact_phone: validated.fields.phone,
       business_phone: validated.fields.businessPhone,
       website: validated.fields.website || null,
-      industry: validated.fields.industry,
+      industry: validated.fields.industry || 'Not collected on public form',
       sms_consent: true,
       form_data: validated.fields,
       automation_status: 'queued',
@@ -241,6 +208,19 @@ export const handler: Handler = async (event) => {
       automationStatus = 'failed';
       automationError = handoffError instanceof Error ? handoffError.message : String(handoffError);
       console.error('[setup-request] fulfillment handoff failed:', handoffError);
+      try {
+        await notifyInfo(
+          [
+            'Boltcall setup request saved, but Fulfillment handoff failed',
+            `Offer: ${validated.offerSlug}`,
+            `Request ID: ${data.id}`,
+            `Error: ${automationError}`,
+            'Next: open lead_magnet_setup_requests, run one test message, then import the first 100 contacts.',
+          ].join('\n'),
+        );
+      } catch (notifyError) {
+        console.error('[setup-request] failure notification failed:', notifyError);
+      }
     }
 
     const { error: updateError } = await supabase

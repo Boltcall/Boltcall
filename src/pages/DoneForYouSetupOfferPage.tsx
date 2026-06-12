@@ -51,8 +51,6 @@ const commonFields: SetupField[] = [
   { name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'jordan@company.com' },
   { name: 'phone', label: 'Your mobile phone', type: 'tel', required: true, placeholder: '+1 555 123 4567' },
   { name: 'businessPhone', label: 'Business phone', type: 'tel', required: true, placeholder: '+1 555 987 6543' },
-  { name: 'website', label: 'Website', type: 'url', placeholder: 'https://yourcompany.com' },
-  { name: 'industry', label: 'Industry', type: 'text', required: true, placeholder: 'HVAC, dental, legal, med spa...' },
 ];
 
 export const doneForYouSetupOffers: Record<OfferSlug, DoneForYouSetupOffer> = {
@@ -75,21 +73,7 @@ export const doneForYouSetupOffers: Record<OfferSlug, DoneForYouSetupOffer> = {
       'Install a short SMS responder with STOP opt-out language',
       'Run one test message, then turn on the first 100 SMS',
     ],
-    fields: [
-      ...commonFields,
-      { name: 'currentPhoneSystem', label: 'Current phone system', type: 'text', required: true, placeholder: 'Twilio, RingCentral, OpenPhone, ServiceTitan...' },
-      { name: 'timezone', label: 'Timezone', type: 'text', required: true, placeholder: 'America/New_York' },
-      { name: 'afterHoursStart', label: 'After-hours start', type: 'time', required: true },
-      { name: 'afterHoursEnd', label: 'After-hours end', type: 'time', required: true },
-      { name: 'estimatedMissedCalls', label: 'Estimated missed calls per week', type: 'number', required: true, placeholder: '15' },
-      {
-        name: 'missedCallSource',
-        label: 'Missed-call source',
-        type: 'select',
-        required: true,
-        options: ['Main business line', 'Google Business Profile', 'Website number', 'Ads tracking number', 'Other'],
-      },
-    ],
+    fields: commonFields,
     metaTitle: 'Free After-Hours Lead Rescue Setup | Boltcall',
     metaDescription: 'Free 7-day setup: Boltcall installs an instant missed-call SMS responder for local service businesses. First 100 SMS included.',
   },
@@ -112,18 +96,7 @@ export const doneForYouSetupOffers: Record<OfferSlug, DoneForYouSetupOffer> = {
       'Install the review request SMS with STOP opt-out language',
       'Send one test message, then import the first 100 contacts',
     ],
-    fields: [
-      ...commonFields,
-      { name: 'googleReviewLink', label: 'Google review link', type: 'url', required: true, placeholder: 'https://g.page/r/...' },
-      {
-        name: 'contactSource',
-        label: 'Contact source',
-        type: 'select',
-        required: true,
-        options: ['Google Sheet', 'CSV export', 'CRM', 'Booking system', 'Point of sale', 'Other'],
-      },
-      { name: 'estimatedContacts', label: 'Estimated contacts ready to text', type: 'number', required: true, placeholder: '100' },
-    ],
+    fields: commonFields,
     metaTitle: 'Free Automatic Reviews Agent Setup | Boltcall',
     metaDescription: 'Free 7-day setup: Boltcall installs an SMS review request agent and texts the first 100 customers after approval.',
   },
@@ -146,25 +119,7 @@ export const doneForYouSetupOffers: Record<OfferSlug, DoneForYouSetupOffer> = {
       'Install the reminder SMS with STOP opt-out language',
       'Run one test message, then import the first 100 contacts',
     ],
-    fields: [
-      ...commonFields,
-      {
-        name: 'reminderType',
-        label: 'Reminder type',
-        type: 'select',
-        required: true,
-        options: ['Overdue follow-up', 'Upcoming appointment', 'Maintenance recall', 'Unbooked estimate', 'Other'],
-      },
-      { name: 'bookingLink', label: 'Booking link', type: 'url', required: true, placeholder: 'https://cal.com/your-company' },
-      {
-        name: 'contactSource',
-        label: 'Contact source',
-        type: 'select',
-        required: true,
-        options: ['Google Sheet', 'CSV export', 'CRM', 'Booking system', 'Point of sale', 'Other'],
-      },
-      { name: 'estimatedContacts', label: 'Estimated contacts ready to text', type: 'number', required: true, placeholder: '100' },
-    ],
+    fields: commonFields,
     metaTitle: 'Free Reminders Agent Setup | Boltcall',
     metaDescription: 'Free 7-day setup: Boltcall installs an SMS reminders agent for overdue or upcoming customers. First 100 contacts included.',
   },
@@ -305,6 +260,20 @@ function firstValidationError(fields: SetupField[], values: Record<string, strin
   return '';
 }
 
+async function readSetupResponse(response: Response) {
+  let payload: { ok?: unknown; error?: unknown } | null = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok || payload?.ok === false) {
+    const message = typeof payload?.error === 'string' ? payload.error : '';
+    throw new Error(message || 'Could not create setup request. Please try again.');
+  }
+}
+
 const fieldClass =
   'mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-3 text-sm text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100';
 
@@ -391,13 +360,15 @@ function OfferForm({ offer }: { offer: DoneForYouSetupOffer }) {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Setup request failed');
-      }
+      await readSetupResponse(response);
 
       setIsSuccess(true);
-    } catch {
-      setError('Something went wrong creating the setup. Please try again.');
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error && submitError.message
+          ? submitError.message
+          : 'Could not create setup request. Please try again.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -419,7 +390,7 @@ function OfferForm({ offer }: { offer: DoneForYouSetupOffer }) {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Done-for-you setup</p>
         <h2 className="mt-2 text-2xl font-bold text-slate-950">Create your setup request</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Tell us where to install it. We will confirm the test message before any live import.
+          Start the request. We collect the technical details after the test message is ready to approve.
         </p>
       </div>
 

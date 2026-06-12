@@ -62,13 +62,6 @@ describe('setup-request', () => {
           email: 'jordan@example.com',
           phone: '+15551234567',
           businessPhone: '+15557654321',
-          industry: 'HVAC',
-          currentPhoneSystem: 'OpenPhone',
-          timezone: 'America/New_York',
-          afterHoursStart: '17:00',
-          afterHoursEnd: '08:00',
-          estimatedMissedCalls: '12',
-          missedCallSource: 'Main business line',
         },
       }),
       {} as any,
@@ -113,11 +106,6 @@ describe('setup-request', () => {
           email: 'jordan@example.com',
           phone: '+15551234567',
           businessPhone: '+15557654321',
-          website: 'https://example.com',
-          industry: 'HVAC',
-          googleReviewLink: 'https://g.page/r/example/review',
-          contactSource: 'CSV export',
-          estimatedContacts: '100',
         },
       }),
       {} as any,
@@ -127,8 +115,37 @@ describe('setup-request', () => {
     expect(notifyInfo).toHaveBeenCalledWith(expect.stringContaining('automatic-reviews-agent'));
     expect(global.fetch).not.toHaveBeenCalled();
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
-      automation_status: 'sent',
+      automation_status: 'not_configured',
       automation_error: null,
+    }));
+  });
+
+  it('keeps the saved request and alerts internally when the automation webhook fails', async () => {
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 502, text: async () => 'bad gateway' });
+    const { notifyInfo } = await import('../_shared/notify');
+    const { handler } = await import('../setup-request');
+
+    const res = await handler(
+      makeEvent({
+        offerSlug: 'reminders-agent',
+        pagePath: '/reminders-agent',
+        smsConsent: true,
+        fields: {
+          businessName: 'Blue Star HVAC',
+          contactName: 'Jordan Lee',
+          email: 'jordan@example.com',
+          phone: '+15551234567',
+          businessPhone: '+15557654321',
+        },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(201);
+    expect(notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Fulfillment handoff failed'));
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
+      automation_status: 'failed',
+      automation_error: expect.stringContaining('Fulfillment webhook failed'),
     }));
   });
 });

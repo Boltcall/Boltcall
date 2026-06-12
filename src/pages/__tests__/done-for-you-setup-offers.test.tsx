@@ -55,14 +55,6 @@ describe('done-for-you setup offer pages', () => {
     fireEvent.change(screen.getByLabelText(/^email/i), { target: { value: 'jordan@example.com' } });
     fireEvent.change(screen.getByLabelText(/your mobile phone/i), { target: { value: '+15551234567' } });
     fireEvent.change(screen.getByLabelText(/business phone/i), { target: { value: '+15557654321' } });
-    fireEvent.change(screen.getByLabelText(/^website/i), { target: { value: 'https://example.com' } });
-    fireEvent.change(screen.getByLabelText(/industry/i), { target: { value: 'HVAC' } });
-    fireEvent.change(screen.getByLabelText(/current phone system/i), { target: { value: 'OpenPhone' } });
-    fireEvent.change(screen.getByLabelText(/timezone/i), { target: { value: 'America/New_York' } });
-    fireEvent.change(screen.getByLabelText(/after-hours start/i), { target: { value: '17:00' } });
-    fireEvent.change(screen.getByLabelText(/after-hours end/i), { target: { value: '08:00' } });
-    fireEvent.change(screen.getByLabelText(/estimated missed calls/i), { target: { value: '12' } });
-    fireEvent.change(screen.getByLabelText(/missed-call source/i), { target: { value: 'Main business line' } });
     fireEvent.click(screen.getByLabelText(/recipients can opt out with STOP/i));
 
     fireEvent.click(screen.getByRole('button', { name: /create my free setup/i }));
@@ -82,15 +74,41 @@ describe('done-for-you setup offer pages', () => {
   });
 
   it.each([
-    [AfterHoursLeadRescuePage, /Free 7-Day After-Hours Lead Rescue Setup/i, /current phone system/i],
-    [AutomaticReviewsAgentPage, /Free 7-Day Automatic Reviews Agent Setup/i, /google review link/i],
-    [RemindersAgentPage, /Free 7-Day Reminders Agent Setup/i, /reminder type/i],
-  ])('renders the public setup offer and its unique implementation field', (Page, heading, uniqueField) => {
+    [AfterHoursLeadRescuePage, /Free 7-Day After-Hours Lead Rescue Setup/i],
+    [AutomaticReviewsAgentPage, /Free 7-Day Automatic Reviews Agent Setup/i],
+    [RemindersAgentPage, /Free 7-Day Reminders Agent Setup/i],
+  ])('renders the public setup offer with only essential intake fields', (Page, heading) => {
     renderSpecificPage(Page);
 
     expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
-    expect(screen.getByLabelText(uniqueField)).toBeInTheDocument();
+    expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/contact name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/your mobile phone/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/business phone/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/current phone system/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/google review link/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/reminder type/i)).not.toBeInTheDocument();
     expect(screen.getByText(/recipients can opt out with STOP/i)).toBeInTheDocument();
+  });
+
+  it('shows the setup endpoint error when a request cannot be created', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: false,
+      json: async () => ({ error: 'Could not create setup request.' }),
+    } as Response);
+
+    renderPage();
+
+    fireEvent.change(screen.getByLabelText(/business name/i), { target: { value: 'Blue Star HVAC' } });
+    fireEvent.change(screen.getByLabelText(/contact name/i), { target: { value: 'Jordan Lee' } });
+    fireEvent.change(screen.getByLabelText(/^email/i), { target: { value: 'jordan@example.com' } });
+    fireEvent.change(screen.getByLabelText(/your mobile phone/i), { target: { value: '+15551234567' } });
+    fireEvent.change(screen.getByLabelText(/business phone/i), { target: { value: '+15557654321' } });
+    fireEvent.click(screen.getByLabelText(/recipients can opt out with STOP/i));
+    fireEvent.click(screen.getByRole('button', { name: /create my free setup/i }));
+
+    expect(await screen.findByText(/Could not create setup request/i)).toBeInTheDocument();
   });
 
   it('keeps the page direct above the fold and moves explanations into clean AEO sections', () => {
