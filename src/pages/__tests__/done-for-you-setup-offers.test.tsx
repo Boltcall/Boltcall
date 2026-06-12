@@ -92,4 +92,14 @@ describe('done-for-you setup offer pages', () => {
     expect(screen.getByLabelText(uniqueField)).toBeInTheDocument();
     expect(screen.getByText(/recipients can opt out with STOP/i)).toBeInTheDocument();
   });
+
+  it('keeps the page direct above the fold and moves explanations into clean AEO sections', () => {
+    renderPage();
+
+    expect(screen.getByText(/What this setup does/i)).toBeInTheDocument();
+    expect(screen.getByText(/How the 7-day setup works/i)).toBeInTheDocument();
+    expect(screen.getByText(/Compliance and consent/i)).toBeInTheDocument();
+    expect(screen.getByText(/Questions local businesses ask/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Ready to install the first test/i)).not.toBeInTheDocument();
+  });
 });

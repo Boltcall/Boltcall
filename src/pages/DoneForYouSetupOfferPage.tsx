@@ -1,16 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  CalendarClock,
   CheckCircle2,
-  Clock3,
   Loader2,
-  MessageSquareText,
-  PhoneCall,
-  ShieldCheck,
-  Sparkles,
-  Star,
 } from 'lucide-react';
 
 import Footer from '../components/Footer';
@@ -29,6 +21,12 @@ interface SetupField {
   required?: boolean;
   placeholder?: string;
   options?: string[];
+}
+
+interface AeoContent {
+  whatItDoes: string[];
+  whatWeNeed: string[];
+  faq: Array<{ question: string; answer: string }>;
 }
 
 export interface DoneForYouSetupOffer {
@@ -173,6 +171,102 @@ export const doneForYouSetupOffers: Record<OfferSlug, DoneForYouSetupOffer> = {
 };
 
 const successMessage = "Setup created. Next: we'll run one test message before importing the first 100 contacts.";
+
+function getAeoContent(offer: DoneForYouSetupOffer): AeoContent {
+  if (offer.slug === 'automatic-reviews-agent') {
+    return {
+      whatItDoes: [
+        'Creates a simple SMS review request workflow for customers who are already allowed to receive messages from your business.',
+        'Uses your Google review link and contact source to prepare the first 100 customer texts.',
+        'Waits for your approval on one test message before any customer list is imported.',
+      ],
+      whatWeNeed: [
+        'Your Google review link.',
+        'Where the first 100 contacts will come from, such as a CSV, CRM, booking system, or Google Sheet.',
+        'A business contact who can approve the test SMS before launch.',
+      ],
+      faq: [
+        {
+          question: 'What is the Automatic Reviews Agent setup?',
+          answer:
+            'It is a done-for-you setup where Boltcall installs an SMS review request agent, sends one test message for approval, and then prepares the first 100 customer texts.',
+        },
+        {
+          question: 'Does Boltcall import all of my customer contacts right away?',
+          answer:
+            'No. Boltcall runs one test message first. The first 100 contacts are imported only after the message and contact source are approved.',
+        },
+        {
+          question: 'What compliance language is included?',
+          answer:
+            'The SMS flow includes STOP opt-out language, and the business must confirm it can message the contacts it provides.',
+        },
+      ],
+    };
+  }
+
+  if (offer.slug === 'reminders-agent') {
+    return {
+      whatItDoes: [
+        'Creates an SMS reminder workflow for overdue customers, upcoming appointments, recalls, or unbooked estimates.',
+        'Connects the reminder message to your booking link or next-step instruction.',
+        'Runs one test message before Boltcall imports the first 100 contacts.',
+      ],
+      whatWeNeed: [
+        'The type of reminder you want to send.',
+        'Your booking link or preferred next step.',
+        'The source for the first 100 contacts, such as a CRM, CSV, booking system, or Google Sheet.',
+      ],
+      faq: [
+        {
+          question: 'What is the Reminders Agent setup?',
+          answer:
+            'It is a done-for-you SMS reminder setup for overdue or upcoming customers. Boltcall prepares the reminder flow, tests it, and then imports the first 100 contacts after approval.',
+        },
+        {
+          question: 'Can this be used for overdue customers and upcoming appointments?',
+          answer:
+            'Yes. The setup supports overdue follow-up, upcoming appointment reminders, maintenance recalls, unbooked estimates, and similar local service reminders.',
+        },
+        {
+          question: 'Can customers opt out?',
+          answer:
+            'Yes. The reminder text includes STOP opt-out language, and the business confirms it has permission to message the contacts.',
+        },
+      ],
+    };
+  }
+
+  return {
+    whatItDoes: [
+      'Creates an instant SMS response for missed calls that happen after hours or during periods your team cannot answer.',
+      'Uses your phone system, missed-call source, timezone, and after-hours window to prepare the responder.',
+      'Runs one test message before Boltcall turns on the first 100 included SMS.',
+    ],
+    whatWeNeed: [
+      'The phone system or missed-call source you use today.',
+      'Your timezone and after-hours start and end times.',
+      'A business contact who can approve the test SMS before launch.',
+    ],
+    faq: [
+      {
+        question: 'What is the After-Hours Lead Rescue setup?',
+        answer:
+          'It is a done-for-you missed-call SMS responder for local service businesses. Boltcall installs the response flow, tests one message, and then turns on the first 100 included SMS.',
+      },
+      {
+        question: 'What happens when a lead calls after hours?',
+        answer:
+          'The goal is to send an instant SMS reply so the lead knows the business received the call and has a next step instead of waiting for a voicemail callback.',
+      },
+      {
+        question: 'Does Boltcall send messages before testing?',
+        answer:
+          'No. Boltcall runs one test message first. The setup goes live only after the test is approved.',
+      },
+    ],
+  };
+}
 
 function initialValues(fields: SetupField[]) {
   return fields.reduce<Record<string, string>>((acc, field) => {
@@ -377,32 +471,50 @@ function OfferForm({ offer }: { offer: DoneForYouSetupOffer }) {
 }
 
 function JsonLd({ offer }: { offer: DoneForYouSetupOffer }) {
+  const aeo = getAeoContent(offer);
   const json = useMemo(
     () => ({
       '@context': 'https://schema.org',
-      '@type': 'Service',
-      name: offer.offer,
-      provider: {
-        '@type': 'Organization',
-        name: 'Boltcall',
-        url: 'https://boltcall.org',
-      },
-      areaServed: 'US',
-      description: offer.promise,
-      offers: {
-        '@type': 'Offer',
-        price: '0',
-        priceCurrency: 'USD',
-        description: offer.cap,
-      },
+      '@graph': [
+        {
+          '@type': 'Service',
+          name: offer.offer,
+          provider: {
+            '@type': 'Organization',
+            name: 'Boltcall',
+            url: 'https://boltcall.org',
+          },
+          areaServed: 'US',
+          description: offer.promise,
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+            description: offer.cap,
+          },
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: aeo.faq.map((item) => ({
+            '@type': 'Question',
+            name: item.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: item.answer,
+            },
+          })),
+        },
+      ],
     }),
-    [offer],
+    [aeo.faq, offer],
   );
 
   return <script type="application/ld+json">{JSON.stringify(json)}</script>;
 }
 
 function DoneForYouSetupOfferPage({ offer }: { offer: DoneForYouSetupOffer }) {
+  const aeo = getAeoContent(offer);
+
   useEffect(() => {
     document.title = offer.metaTitle;
     updateMetaDescription(offer.metaDescription);
@@ -415,107 +527,84 @@ function DoneForYouSetupOfferPage({ offer }: { offer: DoneForYouSetupOffer }) {
       <Header />
 
       <main>
-        <section className="bg-white pt-28">
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-14 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,1.05fr)] lg:px-8 lg:pb-20">
-            <div className="flex flex-col justify-center">
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-700">
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                {offer.eyebrow}
-              </div>
-
-              <h1 className="mt-6 max-w-3xl text-4xl font-black leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
+        <section className="border-b border-slate-200 bg-white pt-24">
+          <div className="mx-auto grid max-w-7xl gap-10 px-4 pb-12 sm:px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,520px)] lg:items-start lg:px-8 lg:pb-16">
+            <div className="pt-4">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-blue-700">{offer.eyebrow}</p>
+              <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight text-slate-950 sm:text-5xl">
                 {offer.offer}
               </h1>
               <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-700">{offer.promise}</p>
 
-              <div className="mt-8 grid max-w-xl grid-cols-2 gap-3">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-3xl font-black text-blue-600">{offer.heroMetric}</p>
-                  <p className="mt-1 text-xs font-medium leading-5 text-slate-600">{offer.heroMetricLabel}</p>
-                </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-lg font-black text-slate-950">{offer.cap}</p>
-                  <p className="mt-1 text-xs font-medium leading-5 text-slate-600">included before any larger rollout</p>
-                </div>
-              </div>
-
-              <div className="mt-8 flex flex-wrap gap-3 text-sm font-semibold text-slate-700">
-                <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-                  <Clock3 className="h-4 w-4 text-blue-600" aria-hidden="true" />
-                  7-day install
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-                  <MessageSquareText className="h-4 w-4 text-blue-600" aria-hidden="true" />
-                  SMS test first
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
-                  <ShieldCheck className="h-4 w-4 text-blue-600" aria-hidden="true" />
-                  STOP opt-out language
-                </span>
-              </div>
+              <ul className="mt-8 space-y-3 text-base leading-7 text-slate-800">
+                <li><strong>{offer.cap}.</strong></li>
+                <li>One test message is approved before any import or rollout.</li>
+                <li>Contacts can opt out with STOP, and your business confirms it can message them.</li>
+              </ul>
             </div>
 
             <OfferForm offer={offer} />
           </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-slate-950 py-10 text-white">
-          <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 md:grid-cols-3 lg:px-8">
-            {offer.installSteps.map((step, index) => (
-              <div key={step} className="flex gap-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500 text-sm font-black">
-                  {index + 1}
-                </div>
-                <p className="text-sm font-medium leading-6 text-slate-200">{step}</p>
+        <section className="bg-white py-14">
+          <div className="mx-auto max-w-5xl divide-y divide-slate-200 px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-6 py-8 md:grid-cols-[0.45fr_0.55fr]">
+              <h2 className="text-2xl font-black text-slate-950">What this setup does</h2>
+              <ul className="space-y-4 text-base leading-7 text-slate-700">
+                {aeo.whatItDoes.map((item) => (
+                  <li key={item} className="flex gap-3">
+                    <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="grid gap-6 py-8 md:grid-cols-[0.45fr_0.55fr]">
+              <h2 className="text-2xl font-black text-slate-950">How the 7-day setup works</h2>
+              <ol className="space-y-4 text-base leading-7 text-slate-700">
+                {offer.installSteps.map((step, index) => (
+                  <li key={step}>
+                    <span className="font-bold text-slate-950">Step {index + 1}: </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="grid gap-6 py-8 md:grid-cols-[0.45fr_0.55fr]">
+              <h2 className="text-2xl font-black text-slate-950">What we need from you</h2>
+              <ul className="space-y-4 text-base leading-7 text-slate-700">
+                {aeo.whatWeNeed.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="grid gap-6 py-8 md:grid-cols-[0.45fr_0.55fr]">
+              <h2 className="text-2xl font-black text-slate-950">Compliance and consent</h2>
+              <div className="space-y-4 text-base leading-7 text-slate-700">
+                <p>
+                  The setup includes STOP opt-out language. Your business confirms it can message the contacts it provides.
+                </p>
+                <p>
+                  Boltcall does not import the first 100 contacts or send a live batch until one test message has been approved.
+                </p>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
 
-        <section className="bg-slate-50 py-14">
-          <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Built for local operators</p>
-              <h2 className="mt-3 text-3xl font-black text-slate-950">A setup request, not another checklist</h2>
-              <p className="mt-4 text-base leading-7 text-slate-700">
-                This is for businesses that want the thing installed. Boltcall collects the exact routing,
-                consent, and source details fulfillment needs to run a safe first test.
-              </p>
+            <div className="grid gap-6 py-8 md:grid-cols-[0.45fr_0.55fr]">
+              <h2 className="text-2xl font-black text-slate-950">Questions local businesses ask</h2>
+              <div className="space-y-6">
+                {aeo.faq.map((item) => (
+                  <section key={item.question}>
+                    <h3 className="text-lg font-bold text-slate-950">{item.question}</h3>
+                    <p className="mt-2 text-base leading-7 text-slate-700">{item.answer}</p>
+                  </section>
+                ))}
+              </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {offer.bestFor.map((item) => (
-                <div key={item} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600" aria-hidden="true" />
-                  <p className="mt-4 text-sm font-semibold leading-6 text-slate-800">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-white py-12">
-          <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50">
-              {offer.slug === 'automatic-reviews-agent' ? (
-                <Star className="h-7 w-7 text-blue-600" aria-hidden="true" />
-              ) : offer.slug === 'reminders-agent' ? (
-                <CalendarClock className="h-7 w-7 text-blue-600" aria-hidden="true" />
-              ) : (
-                <PhoneCall className="h-7 w-7 text-blue-600" aria-hidden="true" />
-              )}
-            </div>
-            <h2 className="mt-5 text-3xl font-black text-slate-950">Ready to install the first test?</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-600">
-              Create the setup request above. You will see the test message before Boltcall imports the first 100 contacts.
-            </p>
-            <Link
-              to={offer.path}
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-5 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
-            >
-              Back to setup form
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
           </div>
         </section>
       </main>
