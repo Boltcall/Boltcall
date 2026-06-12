@@ -40,11 +40,31 @@ function makePost(body: Record<string, unknown>) {
   } as any;
 }
 
+function makeSupabase() {
+  const inserted: Record<string, unknown>[] = [];
+  return {
+    inserted,
+    client: {
+      from: vi.fn((table: string) => {
+        if (table !== 'conversation_wins') return {};
+        return {
+          insert: (row: Record<string, unknown>) => {
+            inserted.push(row);
+            return Promise.resolve({ data: null, error: null });
+          },
+        };
+      }),
+    },
+  };
+}
+
 describe('conversation-outcome tenant hardening', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
     vi.stubGlobal('fetch', vi.fn());
+    vi.stubEnv('INTERNAL_API_SECRET', 'test-internal-secret');
+    vi.stubEnv('URL', 'https://boltcall.test');
     requireInternalOrMatchingUserMock.mockResolvedValue({ ok: true, userId: 'user-a', user: null });
     userOwnsAgentMock.mockResolvedValue(false);
   });
@@ -70,5 +90,87 @@ describe('conversation-outcome tenant hardening', () => {
     expect(getServiceSupabaseMock).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
     expect(notifyInfoMock).not.toHaveBeenCalled();
+  });
+
+  it('records a win and triggers success analysis for successful conversations', async () => {
+    userOwnsAgentMock.mockResolvedValue(true);
+    const supabase = makeSupabase();
+    getServiceSupabaseMock.mockReturnValue(supabase.client);
+    (fetch as any).mockResolvedValue({ ok: true });
+
+    const { handler } = await import('../conversation-outcome');
+
+    const res = await handler(
+      makePost({
+        userId: 'user-a',
+        agentId: 'agent-owned',
+        channel: 'voice',
+        conversationId: 'call-win',
+        transcript: 'lead: I need help booking an appointment\nagent: You are booked for Tuesday at 10am. See you then.',
+        callAnalysis: { call_successful: true, call_summary: 'Appointment booked for Tuesday' },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body)).toMatchObject({
+      outcome: 'win',
+      healTriggered: false,
+      successAnalysisTriggered: true,
+    });
+    expect(supabase.inserted).toEqual([
+      expect.objectContaining({
+        user_id: 'user-a',
+        agent_id: 'agent-owned',
+        channel: 'voice',
+        outcome_type: 'booked',
+        conversation_id: 'call-win',
+      }),
+    ]);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://boltcall.test/.netlify/functions/agent-self-heal',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ 'x-internal-secret': 'test-internal-secret' }),
+        body: expect.stringContaining('"action":"analyze-success"'),
+      }),
+    );
+  });
+
+  it('triggers self-heal and does not record a win for failed conversations', async () => {
+    userOwnsAgentMock.mockResolvedValue(true);
+    const supabase = makeSupabase();
+    getServiceSupabaseMock.mockReturnValue(supabase.client);
+    (fetch as any).mockResolvedValue({ ok: true });
+
+    const { handler } = await import('../conversation-outcome');
+
+    const res = await handler(
+      makePost({
+        userId: 'user-a',
+        agentId: 'agent-owned',
+        channel: 'voice',
+        conversationId: 'call-fail',
+        transcript: 'lead: I need an appointment\nagent: Please call later',
+        callAnalysis: { call_successful: false, call_summary: 'Lead wanted booking but no booking was offered' },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body)).toMatchObject({
+      outcome: 'fail',
+      healTriggered: true,
+    });
+    expect(supabase.inserted).toHaveLength(0);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://boltcall.test/.netlify/functions/agent-self-heal',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ 'x-internal-secret': 'test-internal-secret' }),
+        body: expect.stringContaining('"action":"heal"'),
+      }),
+    );
+    expect(notifyInfoMock).toHaveBeenCalled();
   });
 });

@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { userOwnsAgent } from './_shared/require-auth';
 import { requireUser } from './_shared/user-auth';
+import { chatCompletion } from './_shared/azure-ai';
 
 const RETELL_API = 'https://api.retellai.com';
 const RETELL_KEY = process.env.RETELL_API_KEY || '';
@@ -195,9 +196,7 @@ async function runScenario(chatAgentId: string, scenario: typeof DEFAULT_SCENARI
     await retellFetch(`/end-chat/${chatId}`, { method: 'PATCH' });
   } catch { /* ignore */ }
 
-  // Note: Retell's post-chat analysis is not reliable synchronously; skip the wait.
-  // Pass null — the frontend shows conversation transcript which is always captured.
-  const analysis = null;
+  const analysis = await evaluateScenario(conversation, scenario);
 
   return {
     scenarioId: scenario.id,
@@ -207,6 +206,56 @@ async function runScenario(chatAgentId: string, scenario: typeof DEFAULT_SCENARI
     analysis,
     successCriteria: scenario.successCriteria,
   };
+}
+
+async function evaluateScenario(
+  conversation: Array<{ role: string; content: string }>,
+  scenario: typeof DEFAULT_SCENARIOS[0],
+) {
+  if (conversation.filter((m) => m.role === 'agent').length === 0) {
+    return {
+      call_successful: false,
+      call_summary: 'No agent response was captured, so the scenario failed closed.',
+      user_sentiment: 'unknown',
+      evaluator_reason: 'missing_agent_response',
+    };
+  }
+
+  const transcript = conversation.map((m) => `${m.role}: ${m.content}`).join('\n');
+  const systemPrompt = `You are a strict QA judge for Boltcall voice/chat agent stress tests.
+Evaluate whether the AI agent satisfied the scenario's success criteria.
+Return JSON only:
+{
+  "call_successful": true or false,
+  "call_summary": "one sentence verdict",
+  "user_sentiment": "positive|neutral|negative|unknown",
+  "evaluator_reason": "short reason tied to the success criteria"
+}`;
+  const userPrompt = `Scenario: ${scenario.name}
+Success criteria: ${scenario.successCriteria}
+
+Conversation:
+${transcript}`;
+
+  try {
+    const response = await chatCompletion(systemPrompt, userPrompt, { maxTokens: 700, tier: 'light' });
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Evaluator returned non-JSON');
+    const parsed = JSON.parse(jsonMatch[0]);
+    return {
+      call_successful: parsed.call_successful === true,
+      call_summary: String(parsed.call_summary || ''),
+      user_sentiment: String(parsed.user_sentiment || 'unknown'),
+      evaluator_reason: String(parsed.evaluator_reason || ''),
+    };
+  } catch (err) {
+    return {
+      call_successful: false,
+      call_summary: 'Automated evaluator failed, so the scenario failed closed.',
+      user_sentiment: 'unknown',
+      evaluator_reason: err instanceof Error ? err.message : 'evaluator_failed',
+    };
+  }
 }
 
 // Step 3: Tear down the temp chat agent (and the temp LLM, if we created one).

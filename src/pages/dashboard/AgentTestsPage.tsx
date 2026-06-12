@@ -283,7 +283,7 @@ const AgentTestsPage: React.FC = () => {
                     {isRunning ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Testing 12 scenarios...
+                        Testing scenarios...
                       </>
                     ) : (
                       <>
@@ -301,7 +301,7 @@ const AgentTestsPage: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                         <div>
-                          <p className="text-sm font-medium text-blue-900">Running 12 stress-test scenarios...</p>
+                          <p className="text-sm font-medium text-blue-900">Running stress-test scenarios...</p>
                           <p className="text-xs text-blue-600 mt-0.5">
                             Testing price extraction, prompt injection, social engineering, emotional escalation, and more
                           </p>

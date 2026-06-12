@@ -92,13 +92,10 @@ async function scoreCall(
     .replace('{TRANSCRIPT}', transcript.slice(0, 6000)); // cap at ~6k chars
 
   try {
-    const response = await chatCompletion([
-      { role: 'system', content: SCORING_SYSTEM_PROMPT },
-      { role: 'user', content: prompt },
-    ], { tier: 'light', maxTokens: 400 });
-
-    const text = response?.choices?.[0]?.message?.content || '';
-    const json = JSON.parse(text);
+    const response = await chatCompletion(SCORING_SYSTEM_PROMPT, prompt, { tier: 'light', maxTokens: 400 });
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Scoring response did not contain JSON');
+    const json = JSON.parse(jsonMatch[0]);
     return json;
   } catch (err) {
     console.error('[retell-call-scorer] Scoring LLM call failed:', err);

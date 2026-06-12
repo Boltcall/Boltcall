@@ -87,6 +87,10 @@ interface RubricCriterion {
   weight: number;
 }
 
+type PromptTarget =
+  | { kind: 'retell'; llmId: string; originalPrompt: string }
+  | { kind: 'custom'; agentRowId: string; originalPrompt: string };
+
 // ─── Step 1: Analyze failure ──────────────────────────────────────────────────
 
 async function analyzeFailure(
@@ -180,9 +184,40 @@ ${transcript}`;
 
 // ─── Step 3: Create/delete temp chat agent ────────────────────────────────────
 
-async function createTempChatAgent(voiceAgentId: string): Promise<{ chatAgentId: string; llmId: string }> {
+async function createTempChatAgent(voiceAgentId: string): Promise<{ chatAgentId: string; llmId: string; tempLlmId: string | null }> {
   const voiceAgent = await retellFetch(`/get-agent/${voiceAgentId}`);
-  const llmId = voiceAgent.response_engine?.llm_id;
+  const engineType = voiceAgent.response_engine?.type;
+  let llmId = voiceAgent.response_engine?.llm_id;
+  let tempLlmId: string | null = null;
+
+  if (!llmId && engineType === 'custom-llm') {
+    const supabase = getServiceSupabase();
+    const { data: agentRow } = await supabase
+      .from('agents')
+      .select('system_prompt, name')
+      .or(`retell_agent_id.eq.${voiceAgentId},api_keys->>retell_agent_id.eq.${voiceAgentId}`)
+      .limit(1)
+      .maybeSingle();
+
+    const promptFromDb = agentRow?.system_prompt || null;
+    if (!promptFromDb) {
+      throw new Error('Voice agent uses custom-llm but no mirrored system_prompt was found in agents table.');
+    }
+
+    const newLlm = await retellFetch('/create-retell-llm', {
+      method: 'POST',
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        general_prompt: promptFromDb,
+      }),
+    });
+    if (!newLlm?.llm_id) {
+      throw new Error('Failed to create temporary Retell LLM for custom-llm self-heal test');
+    }
+    llmId = newLlm.llm_id;
+    tempLlmId = newLlm.llm_id;
+  }
+
   if (!llmId) throw new Error('Voice agent has no LLM configured');
 
   const chatAgent = await retellFetch('/create-chat-agent', {
@@ -193,7 +228,7 @@ async function createTempChatAgent(voiceAgentId: string): Promise<{ chatAgentId:
     }),
   });
 
-  return { chatAgentId: chatAgent.agent_id, llmId };
+  return { chatAgentId: chatAgent.agent_id, llmId, tempLlmId };
 }
 
 async function runChatTest(
@@ -233,7 +268,10 @@ async function runChatTest(
     await retellFetch(`/end-chat/${chat.chat_id}`, { method: 'PATCH' });
   } catch { /* ignore */ }
 
-  await new Promise(r => setTimeout(r, 2000));
+  const analysisDelayMs = Number(process.env.RETELL_CHAT_ANALYSIS_DELAY_MS ?? 2000);
+  if (analysisDelayMs > 0) {
+    await new Promise(r => setTimeout(r, analysisDelayMs));
+  }
   let analysis = null;
   try {
     const chatData = await retellFetch(`/get-chat/${chat.chat_id}`);
@@ -243,10 +281,15 @@ async function runChatTest(
   return { conversation, analysis };
 }
 
-async function deleteTempChatAgent(chatAgentId: string) {
+async function deleteTempChatAgent(chatAgentId: string, tempLlmId: string | null = null) {
   try {
     await retellFetch(`/delete-chat-agent/${chatAgentId}`, { method: 'DELETE' });
   } catch { /* ignore */ }
+  if (tempLlmId) {
+    try {
+      await retellFetch(`/delete-retell-llm/${tempLlmId}`, { method: 'DELETE' });
+    } catch { /* ignore */ }
+  }
 }
 
 // ─── Rubric scoring ───────────────────────────────────────────────────────────
@@ -284,23 +327,126 @@ The overall score should reflect weighted pass/fail across all criteria.`;
   }
 }
 
+async function judgeHealScenario(
+  conversation: Array<{ role: string; content: string }>,
+  scenario: HealScenario,
+  analysis: FailureAnalysis,
+): Promise<{ passed: boolean; score: number; notes: string }> {
+  if (conversation.filter((m) => m.role === 'agent').length === 0) {
+    return { passed: false, score: 0, notes: 'No agent response was captured.' };
+  }
+
+  const systemPrompt = `You are a strict verification judge for an AI voice-agent self-healing loop.
+The original failure has been analyzed and a prompt fix was applied. Decide if the retest conversation proves the failure is fixed.
+Return JSON only:
+{
+  "passed": true or false,
+  "score": 0-100,
+  "notes": "one sentence explaining the verdict"
+}`;
+  const userPrompt = `Original failure type: ${analysis.failureType}
+Original failure summary: ${analysis.failureSummary}
+Root cause: ${analysis.rootCause}
+Scenario label: ${scenario.label}
+Scenario user messages: ${JSON.stringify(scenario.messages)}
+
+Retest conversation:
+${conversation.map((m) => `${m.role}: ${m.content}`).join('\n')}`;
+
+  try {
+    const response = await chatCompletion(systemPrompt, userPrompt, { maxTokens: 500, tier: 'light' });
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('Verification judge returned non-JSON');
+    const parsed = JSON.parse(jsonMatch[0]);
+    const score = Math.max(0, Math.min(100, Number(parsed.score) || 0));
+    return {
+      passed: parsed.passed === true && score >= 70,
+      score,
+      notes: String(parsed.notes || ''),
+    };
+  } catch (err) {
+    return {
+      passed: false,
+      score: 0,
+      notes: err instanceof Error ? err.message : 'verification_judge_failed',
+    };
+  }
+}
+
 // ─── Step 4: Apply prompt fix ─────────────────────────────────────────────────
 
+async function resolvePromptTarget(
+  voiceAgent: any,
+  agentId: string,
+  userId: string,
+  supabase: any,
+): Promise<PromptTarget> {
+  const llmId = voiceAgent.response_engine?.llm_id;
+  if (llmId) {
+    const llm = await retellFetch(`/get-retell-llm/${llmId}`);
+    return { kind: 'retell', llmId, originalPrompt: llm.general_prompt || '' };
+  }
+
+  if (voiceAgent.response_engine?.type === 'custom-llm') {
+    const { data: agentRow, error } = await supabase
+      .from('agents')
+      .select('id, system_prompt')
+      .eq('user_id', userId)
+      .or(`retell_agent_id.eq.${agentId},api_keys->>retell_agent_id.eq.${agentId}`)
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !agentRow?.id) {
+      throw new Error('Custom-LLM agent row was not found for this user.');
+    }
+    if (!agentRow.system_prompt) {
+      throw new Error('Custom-LLM agent has no mirrored system_prompt to heal.');
+    }
+    return { kind: 'custom', agentRowId: agentRow.id, originalPrompt: agentRow.system_prompt };
+  }
+
+  throw new Error('Agent has no supported LLM configuration');
+}
+
+async function setPromptTarget(
+  target: PromptTarget,
+  prompt: string,
+  supabase: any,
+  userId: string,
+  agentId: string,
+) {
+  if (target.kind === 'retell') {
+    await retellFetch(`/update-retell-llm/${target.llmId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ general_prompt: prompt }),
+    });
+  }
+
+  await supabase
+    .from('agents')
+    .update({
+      system_prompt: prompt,
+      system_prompt_synced_at: new Date().toISOString(),
+    })
+    .eq(target.kind === 'custom' ? 'id' : 'retell_agent_id', target.kind === 'custom' ? target.agentRowId : agentId)
+    .eq('user_id', userId);
+}
+
 async function applyPromptFix(
-  llmId: string,
+  target: PromptTarget,
   promptFix: string,
   iteration: number,
+  supabase: any,
+  userId: string,
+  agentId: string,
 ): Promise<{ oldPrompt: string; newPrompt: string }> {
-  const llm = await retellFetch(`/get-retell-llm/${llmId}`);
-  const oldPrompt = llm.general_prompt || '';
+  const oldPrompt = target.originalPrompt;
 
   const fixSection = `\n\n## AUTO-FIX v${iteration} (${new Date().toISOString().split('T')[0]})\n${promptFix}`;
   const newPrompt = oldPrompt + fixSection;
 
-  await retellFetch(`/update-retell-llm/${llmId}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ general_prompt: newPrompt }),
-  });
+  await setPromptTarget(target, newPrompt, supabase, userId, agentId);
+  target.originalPrompt = newPrompt;
 
   return { oldPrompt, newPrompt };
 }
@@ -372,19 +518,14 @@ export const handler: Handler = async (event) => {
 
       // Get current agent + prompt
       const voiceAgent = await retellFetch(`/get-agent/${agentId}`);
-      const llmId = voiceAgent.response_engine?.llm_id;
-      if (!llmId) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Agent has no LLM configured' }) };
-      }
-
-      const llm = await retellFetch(`/get-retell-llm/${llmId}`);
-      const originalPrompt = llm.general_prompt || '';
+      const promptTarget = await resolvePromptTarget(voiceAgent, agentId, userId, supabase);
+      const originalPrompt = promptTarget.originalPrompt;
 
       // Initial failure analysis
       let analysis = await analyzeFailure(transcript, originalPrompt, callAnalysis);
 
       // Reproduce the failure (3 quick runs)
-      const { chatAgentId: reproAgentId } = await createTempChatAgent(agentId);
+      const { chatAgentId: reproAgentId, tempLlmId: reproTempLlmId } = await createTempChatAgent(agentId);
       let reproduced = 0;
       try {
         for (let i = 0; i < 3; i++) {
@@ -392,7 +533,7 @@ export const handler: Handler = async (event) => {
           if (result.analysis && (result.analysis as any).call_successful === false) reproduced++;
         }
       } finally {
-        await deleteTempChatAgent(reproAgentId);
+        await deleteTempChatAgent(reproAgentId, reproTempLlmId);
       }
 
       // Generate 4 targeted test scenarios (3 similar + 1 exact)
@@ -423,25 +564,10 @@ export const handler: Handler = async (event) => {
         iteration++;
 
         // Apply the fix
-        const { oldPrompt } = await applyPromptFix(llmId, currentPromptFix, iteration);
-
-        // Mirror updated prompt to Supabase for text channels
-        try {
-          const llmAfterFix = await retellFetch(`/get-retell-llm/${llmId}`);
-          await supabase
-            .from('agents')
-            .update({
-              system_prompt: llmAfterFix.general_prompt || '',
-              system_prompt_synced_at: new Date().toISOString(),
-            })
-            .eq('retell_agent_id', agentId)
-            .eq('user_id', userId);
-        } catch (mirrorErr) {
-          console.warn('[agent-self-heal] system_prompt mirror failed:', mirrorErr instanceof Error ? mirrorErr.message : mirrorErr);
-        }
+        const { oldPrompt } = await applyPromptFix(promptTarget, currentPromptFix, iteration, supabase, userId, agentId);
 
         // Test all 4 scenarios — ALL must pass
-        const { chatAgentId: verifyAgentId } = await createTempChatAgent(agentId);
+        const { chatAgentId: verifyAgentId, tempLlmId: verifyTempLlmId } = await createTempChatAgent(agentId);
         passedAfterFix = 0;
         failedScenarioLabels = [];
 
@@ -453,7 +579,8 @@ export const handler: Handler = async (event) => {
               const rubricScore = await scoreWithRubric(result.conversation, activeCriteria);
               passed = rubricScore.overall >= 70;
             } else {
-              passed = result.analysis === null || (result.analysis as any).call_successful !== false;
+              const judge = await judgeHealScenario(result.conversation, scenario, analysis);
+              passed = judge.passed;
             }
             if (passed) {
               passedAfterFix++;
@@ -462,7 +589,7 @@ export const handler: Handler = async (event) => {
             }
           }
         } finally {
-          await deleteTempChatAgent(verifyAgentId);
+          await deleteTempChatAgent(verifyAgentId, verifyTempLlmId);
         }
 
         fixVerified = passedAfterFix === VERIFY_RUNS;
@@ -474,25 +601,16 @@ export const handler: Handler = async (event) => {
           currentPromptFix = analysis.promptFix;
 
           // Revert the failed fix before applying the next one
-          await retellFetch(`/update-retell-llm/${llmId}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ general_prompt: oldPrompt }),
-          });
+          await setPromptTarget(promptTarget, oldPrompt, supabase, userId, agentId);
+          promptTarget.originalPrompt = oldPrompt;
         }
       }
 
       // If still not verified after all iterations, revert to original prompt
       if (!fixVerified) {
-        await retellFetch(`/update-retell-llm/${llmId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ general_prompt: originalPrompt }),
-        });
         try {
-          await supabase
-            .from('agents')
-            .update({ system_prompt: originalPrompt, system_prompt_synced_at: new Date().toISOString() })
-            .eq('retell_agent_id', agentId)
-            .eq('user_id', userId);
+          await setPromptTarget(promptTarget, originalPrompt, supabase, userId, agentId);
+          promptTarget.originalPrompt = originalPrompt;
         } catch { /* ignore */ }
       }
 
@@ -751,35 +869,19 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
       if (ownershipError) return ownershipError;
 
       const voiceAgent = await retellFetch(`/get-agent/${agentId}`);
-      const llmId = voiceAgent.response_engine?.llm_id;
-      if (!llmId) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Agent has no LLM configured' }) };
-      }
+      const promptTarget = await resolvePromptTarget(voiceAgent, agentId, userId, supabase);
 
       let restoredPrompt: string;
       if (storedOriginalPrompt) {
         restoredPrompt = storedOriginalPrompt;
       } else {
         // Strip AUTO-FIX sections from old records that didn't store original_prompt
-        const currentLlm = await retellFetch(`/get-retell-llm/${llmId}`);
-        restoredPrompt = (currentLlm.general_prompt || '')
+        restoredPrompt = promptTarget.originalPrompt
           .replace(/\n\n## AUTO-FIX v\d+[^\n]*\n[\s\S]*?(?=\n\n## AUTO-FIX v\d|\s*$)/g, '')
           .trimEnd();
       }
 
-      await retellFetch(`/update-retell-llm/${llmId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ general_prompt: restoredPrompt }),
-      });
-
-      supabase
-        .from('agents')
-        .update({ system_prompt: restoredPrompt, system_prompt_synced_at: new Date().toISOString() })
-        .eq('retell_agent_id', agentId)
-        .eq('user_id', userId)
-        .then(({ error: mirrorErr }) => {
-          if (mirrorErr) console.warn('[revert-fix] mirror failed:', mirrorErr.message);
-        });
+      await setPromptTarget(promptTarget, restoredPrompt, supabase, userId, agentId);
 
       supabase
         .from('qa_reviews')
@@ -798,7 +900,13 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ success: true, reverted: true, agentId, llmId }),
+        body: JSON.stringify({
+          success: true,
+          reverted: true,
+          agentId,
+          llmId: promptTarget.kind === 'retell' ? promptTarget.llmId : null,
+          promptTarget: promptTarget.kind,
+        }),
       };
     }
 
