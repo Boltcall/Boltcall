@@ -203,6 +203,15 @@ const PricingPage: React.FC = () => {
           cta="Compare plans below or start free at boltcall.org/setup."
         />
 
+        <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="rounded-2xl border border-blue-100 bg-blue-50 p-6">
+            <h2 className="text-xl font-bold text-gray-900">Want a working SMS setup before picking a plan?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-gray-700">
+              Start with a focused mini-implementation: the <Link to="/after-hours-lead-rescue" className="text-indigo-600 hover:text-indigo-700 underline">After-Hours Lead Rescue setup</Link>, the <Link to="/automatic-reviews-agent" className="text-indigo-600 hover:text-indigo-700 underline">Automatic Reviews Agent setup</Link>, or the <Link to="/reminders-agent" className="text-indigo-600 hover:text-indigo-700 underline">Reminders Agent setup</Link>. Each one includes a test message before Boltcall imports the first 100 contacts.
+            </p>
+          </div>
+        </section>
+
         <Pricing />
 
         {/* Why Boltcall Pays For Itself */}

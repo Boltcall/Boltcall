@@ -57,6 +57,9 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'AI Receptionist ROI Calculator', href: '/ai-receptionist-roi' },
       { label: 'Funnel Optimizer', href: '/funnel-optimizer' },
       { label: 'Conversion Rate Optimizer', href: '/conversion-rate-optimizer' },
+      { label: 'After-Hours Lead Rescue Setup', href: '/after-hours-lead-rescue' },
+      { label: 'Automatic Reviews Agent Setup', href: '/automatic-reviews-agent' },
+      { label: 'Reminders Agent Setup', href: '/reminders-agent' },
     ],
     calculators: [
       { label: '5-Minute Response Playbook', href: '/tools/5-minute-response-playbook' },

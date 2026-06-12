@@ -42,6 +42,24 @@ const FEATURED = [
   },
 ];
 
+const SETUP_OFFERS = [
+  {
+    title: 'After-Hours Lead Rescue Setup',
+    href: '/after-hours-lead-rescue',
+    summary: 'We install an instant missed-call SMS responder for after-hours leads. First 100 SMS included.',
+  },
+  {
+    title: 'Automatic Reviews Agent Setup',
+    href: '/automatic-reviews-agent',
+    summary: 'We install a review request SMS agent and prepare the first 100 customer texts after approval.',
+  },
+  {
+    title: 'Reminders Agent Setup',
+    href: '/reminders-agent',
+    summary: 'We install an SMS reminders agent for overdue or upcoming customers. First 100 contacts included.',
+  },
+];
+
 const AUDITS = [
   { title: 'Free SEO Audit',                href: '/seo-audit',                  icon: Search,         desc: 'Crawls your site, checks 30+ ranking factors, delivers a plain-English report to your inbox.' },
   { title: 'AI Visibility Check',           href: '/ai-visibility-check',        icon: Sparkles,       desc: 'Are AI assistants like ChatGPT and Perplexity recommending you when prospects ask? Find out in 5 minutes.' },
@@ -235,6 +253,35 @@ const LeadMagnetHub: React.FC = () => {
                 </Link>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* DONE-FOR-YOU SETUP OFFERS */}
+      <section className="bg-slate-950 py-16 text-white">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Done-for-you setup offers</h2>
+            <p className="mt-2 max-w-3xl text-base text-slate-300">
+              These are not PDFs. Pick a mini-implementation and Boltcall will create the setup request for fulfillment, then run one test message before the first import.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {SETUP_OFFERS.map((offer) => (
+              <Link
+                key={offer.href}
+                to={offer.href}
+                className="group rounded-xl border border-white/10 bg-white/5 p-5 transition hover:border-blue-300 hover:bg-white/10"
+              >
+                <h3 className="text-lg font-bold text-white">{offer.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">{offer.summary}</p>
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-300 group-hover:gap-2.5 transition-all">
+                  Create setup request
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

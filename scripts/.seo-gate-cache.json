@@ -2,6 +2,7 @@
   "knownRoutes": [
     "/",
     "/about",
+    "/after-hours-lead-rescue",
     "/ai-audit",
     "/ai-course",
     "/ai-guide-for-businesses",
@@ -13,6 +14,7 @@
     "/ai-revenue-audit",
     "/ai-visibility-check",
     "/api-documentation",
+    "/automatic-reviews-agent",
     "/blog",
     "/blog/5-signs-you-need-ai-receptionist",
     "/blog/after-hours-lead-response-home-services",
@@ -92,6 +94,7 @@
     "/pricing",
     "/privacy-policy",
     "/rank-on-google-offer",
+    "/reminders-agent",
     "/seo-aeo-audit",
     "/seo-audit",
     "/solar",
@@ -115,5 +118,5 @@
     "/tools/solar-sales-closer",
     "/tools/vet-clinic-revenue-calculator"
   ],
-  "updatedAt": "2026-06-06T07:58:40.095Z"
+  "updatedAt": "2026-06-12T10:59:19.973Z"
 }
