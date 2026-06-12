@@ -115,8 +115,14 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
+  let body: any;
   try {
-    const body = JSON.parse(event.body || '{}');
+    body = JSON.parse(event.body || '{}');
+  } catch {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+  }
+
+  try {
     const { channel, agentId, userId, conversationId, transcript, callAnalysis } = body;
 
     if (!transcript || !agentId || !userId) {

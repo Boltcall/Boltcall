@@ -187,6 +187,21 @@ describe('agent-self-heal tenant hardening', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('returns 400 for malformed JSON before auth or provider work', async () => {
+    const { handler } = await import('../agent-self-heal');
+
+    const res = await handler(
+      { httpMethod: 'POST', headers: { 'content-type': 'application/json' }, body: '{' } as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body)).toEqual({ error: 'Invalid JSON body' });
+    expect(requireInternalOrMatchingUserMock).not.toHaveBeenCalled();
+    expect(requireUserMock).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('rejects success analysis for agents outside the requested user tenant before charging tokens', async () => {
     const { handler } = await import('../agent-self-heal');
 

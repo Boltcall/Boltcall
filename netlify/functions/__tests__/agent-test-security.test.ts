@@ -67,6 +67,20 @@ describe('agent-test tenant hardening', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('returns 400 for malformed JSON before auth or Retell work', async () => {
+    const { handler } = await import('../agent-test');
+
+    const res = await handler(
+      { httpMethod: 'POST', headers: { 'content-type': 'application/json' }, body: '{' } as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body)).toEqual({ error: 'Invalid JSON body' });
+    expect(requireUserMock).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('rejects full test runs for agents outside the authenticated user tenant', async () => {
     const { handler } = await import('../agent-test');
 

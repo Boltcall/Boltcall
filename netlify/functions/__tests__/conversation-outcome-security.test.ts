@@ -92,6 +92,21 @@ describe('conversation-outcome tenant hardening', () => {
     expect(notifyInfoMock).not.toHaveBeenCalled();
   });
 
+  it('returns 400 for malformed JSON before auth or persistence work', async () => {
+    const { handler } = await import('../conversation-outcome');
+
+    const res = await handler(
+      { httpMethod: 'POST', headers: { 'content-type': 'application/json' }, body: '{' } as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body)).toEqual({ error: 'Invalid JSON body' });
+    expect(requireInternalOrMatchingUserMock).not.toHaveBeenCalled();
+    expect(getServiceSupabaseMock).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('records a win and triggers success analysis for successful conversations', async () => {
     userOwnsAgentMock.mockResolvedValue(true);
     const supabase = makeSupabase();
