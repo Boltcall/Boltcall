@@ -72,9 +72,12 @@ export default defineConfig({
         ],
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         globIgnores: ['**/*.lottie', '**/Loading_animation_blue.json', '**/retell-voices.json'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        skipWaiting: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/auth\/.*/i,

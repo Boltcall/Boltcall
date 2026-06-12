@@ -98,13 +98,20 @@ async function forwardToFulfillment(args: {
   if (!webhookUrl) {
     await notifyInfo(
       [
-        'New Boltcall setup request',
+        'New Boltcall setup request - fallback fulfillment handoff',
         `Offer: ${args.offerSlug}`,
         `Request ID: ${args.requestId}`,
+        `Page: ${args.pagePath}`,
+        `Business: ${args.fields.businessName}`,
+        `Contact: ${args.fields.contactName}`,
+        `Email: ${args.fields.email}`,
+        `Mobile: ${args.fields.phone}`,
+        `Business phone: ${args.fields.businessPhone}`,
+        `SMS consent: ${args.smsConsent ? 'yes' : 'no'}`,
         'Next: open lead_magnet_setup_requests, run one test message, then import the first 100 contacts.',
       ].join('\n'),
     );
-    return { status: 'not_configured' as const };
+    return { status: 'sent' as const };
   }
 
   const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '';

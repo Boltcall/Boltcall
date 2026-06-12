@@ -89,7 +89,7 @@ describe('setup-request', () => {
     }));
   });
 
-  it('notifies the founder channel when no dedicated fulfillment webhook is configured', async () => {
+  it('automatically hands off to the founder fulfillment channel when no dedicated webhook is configured', async () => {
     delete process.env.SETUP_REQUEST_FULFILLMENT_WEBHOOK_URL;
     delete process.env.LEAD_MAGNET_SETUP_WEBHOOK_URL;
     const { notifyInfo } = await import('../_shared/notify');
@@ -113,9 +113,12 @@ describe('setup-request', () => {
 
     expect(res.statusCode).toBe(201);
     expect(notifyInfo).toHaveBeenCalledWith(expect.stringContaining('automatic-reviews-agent'));
+    expect(notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Blue Star HVAC'));
+    expect(notifyInfo).toHaveBeenCalledWith(expect.stringContaining('jordan@example.com'));
+    expect(notifyInfo).toHaveBeenCalledWith(expect.stringContaining('+15557654321'));
     expect(global.fetch).not.toHaveBeenCalled();
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
-      automation_status: 'not_configured',
+      automation_status: 'sent',
       automation_error: null,
     }));
   });

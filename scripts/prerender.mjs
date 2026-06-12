@@ -52,6 +52,9 @@ const ROUTES = [
   '/lead-magnet/claude-code-overnight-kit',
   '/lead-magnet/ai-receptionist-buyers-guide',
   '/lead-magnet/speed-to-lead-stack',
+  '/after-hours-lead-rescue',
+  '/automatic-reviews-agent',
+  '/reminders-agent',
   '/lead-response-scorecard',
   // Lead magnets & tools (top-level)
   '/seo-audit',
@@ -229,7 +232,21 @@ function startServer() {
 }
 
 async function prerender() {
-  console.log(`Prerendering ${ROUTES.length} routes...\n`);
+  const requestedRoutes = (process.env.PRERENDER_ROUTES || '')
+    .split(',')
+    .map((route) => route.trim())
+    .filter(Boolean);
+  const routesToRender = requestedRoutes.length > 0
+    ? ROUTES.filter((route) => requestedRoutes.includes(route))
+    : ROUTES;
+  const missingRoutes = requestedRoutes.filter((route) => !ROUTES.includes(route));
+
+  if (missingRoutes.length > 0) {
+    console.error(`Unknown prerender route(s): ${missingRoutes.join(', ')}`);
+    process.exit(1);
+  }
+
+  console.log(`Prerendering ${routesToRender.length} routes...\n`);
 
   const server = await startServer();
   // Resolve Chromium executable — use @sparticuz/chromium on CI, local Chrome otherwise
@@ -273,7 +290,7 @@ async function prerender() {
   let failed = 0;
   const retryRoutes = [];
 
-  for (const route of ROUTES) {
+  for (const route of routesToRender) {
     try {
       const page = await browser.newPage();
 
@@ -326,7 +343,7 @@ async function prerender() {
       await writeFile(join(outDir, 'index.html'), html);
 
       success++;
-      process.stdout.write(`  [${success + failed}/${ROUTES.length}] ${route}\r`);
+      process.stdout.write(`  [${success + failed}/${routesToRender.length}] ${route}\r`);
 
       await page.close();
     } catch (err) {
@@ -384,10 +401,10 @@ async function prerender() {
 
   server.close();
 
-  console.log(`\nPrerender complete: ${success} success, ${failed} failed out of ${ROUTES.length} routes.`);
+  console.log(`\nPrerender complete: ${success} success, ${failed} failed out of ${routesToRender.length} routes.`);
 
   // Don't fail the build for a few broken pages — log them and continue
-  if (failed > 0 && failed > ROUTES.length * 0.2) {
+  if (failed > 0 && failed > routesToRender.length * 0.2) {
     console.error('Too many failures (>20%). Failing build.');
     process.exit(1);
   }
