@@ -153,6 +153,9 @@ export default defineConfig({
           /^\/api/,
           /^\/.netlify/,
           /^\/auth\/callback/,
+          /^\/after-hours-lead-rescue\/?$/,
+          /^\/automatic-reviews-agent\/?$/,
+          /^\/reminders-agent\/?$/,
         ],
       },
       devOptions: {

@@ -77,6 +77,42 @@
   force = true
 
 [[redirects]]
+  from = "/after-hours-lead-rescue"
+  to = "/after-hours-lead-rescue/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/after-hours-lead-rescue/"
+  to = "/after-hours-lead-rescue/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/automatic-reviews-agent"
+  to = "/automatic-reviews-agent/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/automatic-reviews-agent/"
+  to = "/automatic-reviews-agent/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/reminders-agent"
+  to = "/reminders-agent/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/reminders-agent/"
+  to = "/reminders-agent/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
