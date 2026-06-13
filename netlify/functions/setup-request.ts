@@ -83,6 +83,17 @@ function hashIp(headers: Record<string, string | undefined>) {
     .digest('hex');
 }
 
+function getFulfillmentWebhookUrl() {
+  const configuredUrl =
+    process.env.SETUP_REQUEST_FULFILLMENT_WEBHOOK_URL ||
+    process.env.LEAD_MAGNET_SETUP_WEBHOOK_URL ||
+    '';
+  if (configuredUrl) return configuredUrl;
+
+  const siteUrl = (process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org').replace(/\/$/, '');
+  return `${siteUrl}/.netlify/functions/setup-request-fulfillment`;
+}
+
 async function forwardToFulfillment(args: {
   requestId: string;
   offerSlug: OfferSlug;
@@ -90,31 +101,13 @@ async function forwardToFulfillment(args: {
   fields: Record<string, string>;
   smsConsent: boolean;
 }) {
-  const webhookUrl =
-    process.env.SETUP_REQUEST_FULFILLMENT_WEBHOOK_URL ||
-    process.env.LEAD_MAGNET_SETUP_WEBHOOK_URL ||
-    '';
-
-  if (!webhookUrl) {
-    await notifyInfo(
-      [
-        'New Boltcall setup request - fallback fulfillment handoff',
-        `Offer: ${args.offerSlug}`,
-        `Request ID: ${args.requestId}`,
-        `Page: ${args.pagePath}`,
-        `Business: ${args.fields.businessName}`,
-        `Contact: ${args.fields.contactName}`,
-        `Email: ${args.fields.email}`,
-        `Mobile: ${args.fields.phone}`,
-        `Business phone: ${args.fields.businessPhone}`,
-        `SMS consent: ${args.smsConsent ? 'yes' : 'no'}`,
-        'Next: open lead_magnet_setup_requests, run one test message, then import the first 100 contacts.',
-      ].join('\n'),
-    );
-    return { status: 'sent' as const };
-  }
+  const webhookUrl = getFulfillmentWebhookUrl();
 
   const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '';
+  if (!secret) {
+    throw new Error('Internal secret is not configured for setup request fulfillment.');
+  }
+
   const response = await fetch(webhookUrl, {
     method: 'POST',
     headers: {
@@ -182,9 +175,7 @@ export const handler: Handler = async (event) => {
       sms_consent: true,
       form_data: validated.fields,
       automation_status: 'queued',
-      fulfillment_webhook_configured: Boolean(
-        process.env.SETUP_REQUEST_FULFILLMENT_WEBHOOK_URL || process.env.LEAD_MAGNET_SETUP_WEBHOOK_URL,
-      ),
+      fulfillment_webhook_configured: true,
       source_ip_hash: hashIp(event.headers as Record<string, string | undefined>),
       user_agent: clean(getHeader(event.headers as Record<string, string | undefined>, 'user-agent'), 500) || null,
     };
@@ -258,4 +249,5 @@ export const handler: Handler = async (event) => {
 export const __internals = {
   validateBody,
   offerSpecs,
+  getFulfillmentWebhookUrl,
 };
