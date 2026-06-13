@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 
 const AeoGlobalIntro: React.FC = () => {
   const location = useLocation();
   const path = location.pathname;
+  const [footerPortalHost, setFooterPortalHost] = useState<HTMLElement | false | null>(null);
   const titleOverrides: Record<string, string> = {
     '/blog/ai-phone-answering-plumbers': 'AI Phone Answering for Plumbers | Boltcall',
     '/tools/cleaning-service-booking-calculator': 'Cleaning Service Booking Calculator | Boltcall',
@@ -90,6 +92,32 @@ const AeoGlobalIntro: React.FC = () => {
     month: 'long',
     day: 'numeric',
   });
+
+  useEffect(() => {
+    if (!shouldShow) {
+      setFooterPortalHost(null);
+      return;
+    }
+
+    const siteFooter = Array.from(document.querySelectorAll('footer')).find((footer) => {
+      const text = footer.textContent || '';
+      return text.includes('All rights reserved.');
+    });
+
+    if (!siteFooter?.parentElement) {
+      setFooterPortalHost(false);
+      return;
+    }
+
+    const host = document.createElement('div');
+    host.setAttribute('data-aeo-global-intro-host', 'true');
+    siteFooter.parentElement.insertBefore(host, siteFooter);
+    setFooterPortalHost(host);
+
+    return () => {
+      host.remove();
+    };
+  }, [path, shouldShow]);
 
   useEffect(() => {
     const overrideTitle = titleOverrides[path];
@@ -302,7 +330,7 @@ const AeoGlobalIntro: React.FC = () => {
     return null;
   }
 
-  return (
+  const content = (
     <section className="bg-white border-b border-gray-200">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {isComparisonsRoute && (
@@ -420,6 +448,16 @@ const AeoGlobalIntro: React.FC = () => {
       </div>
     </section>
   );
+
+  if (footerPortalHost === null) {
+    return null;
+  }
+
+  if (footerPortalHost) {
+    return createPortal(content, footerPortalHost);
+  }
+
+  return content;
 };
 
 export default AeoGlobalIntro;
