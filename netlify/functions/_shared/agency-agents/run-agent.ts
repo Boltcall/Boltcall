@@ -577,7 +577,7 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     agent_name,
     artifact_type,
     model: lastModel,
-    output,
+    output: output as Record<string, unknown> & CrossCuttingArtifactFields,
     cost_usd: totalCost,
     latency_ms,
     confidence,
@@ -599,7 +599,7 @@ export async function runAgent<TInput, TOutput extends CrossCuttingArtifactField
     latency_ms,
     confidence,
     model: lastModel,
-    output,
+    output: output as Record<string, unknown> & CrossCuttingArtifactFields,
   });
 
   return {

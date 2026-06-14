@@ -118,7 +118,7 @@ async function collectSignals(
   ).toISOString();
 
   const safeCount = async (
-    p: Promise<{ count: number | null; error: unknown }>,
+    p: PromiseLike<{ count: number | null; error: unknown }>,
   ): Promise<number> => {
     try {
       const { count } = await p;
@@ -129,7 +129,7 @@ async function collectSignals(
   };
 
   const safeArray = async <T,>(
-    p: Promise<{ data: T[] | null; error: unknown }>,
+    p: PromiseLike<{ data: T[] | null; error: unknown }>,
   ): Promise<T[]> => {
     try {
       const { data } = await p;

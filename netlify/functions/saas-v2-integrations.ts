@@ -306,7 +306,9 @@ async function loadConnectionContext(
   // Each query is fire-and-forget with a try/catch wrapper so a missing
   // table (e.g. fresh project where a migration hasn't run) just yields an
   // empty set — never a 500. The connected-flag is a best-effort UX hint.
-  const safeArray = async <T,>(p: Promise<{ data: T[] | null; error: unknown }>): Promise<T[]> => {
+  const safeArray = async <T,>(
+    p: PromiseLike<{ data: T[] | null; error: unknown }>,
+  ): Promise<T[]> => {
     try {
       const { data } = await p;
       return Array.isArray(data) ? data : [];

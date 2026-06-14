@@ -548,7 +548,7 @@ const saasV2MessagesListRenderedSchema = z.object({
   workspace_id: z.string(),
   count: z.number().int().nonnegative(),
   needs_reply_count: z.number().int().nonnegative().optional(),
-  channel_breakdown: z.record(z.number().int().nonnegative()).optional(),
+  channel_breakdown: z.record(z.string(), z.number().int().nonnegative()).optional(),
   latency_ms: z.number().int().nonnegative().optional(),
 }).strict();
 

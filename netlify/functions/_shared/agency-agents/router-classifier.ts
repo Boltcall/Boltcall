@@ -177,6 +177,7 @@ async function getEmitAgencyEvent(): Promise<EmitAgencyEventFn | null> {
   if (emitAgencyEventCached !== undefined) return emitAgencyEventCached;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // @ts-expect-error Optional legacy telemetry shim; missing module is handled below.
     const mod: any = await import('./events');
     const fn = (mod?.emitAgencyEvent ?? mod?.default ?? null) as EmitAgencyEventFn | null;
     emitAgencyEventCached = fn;

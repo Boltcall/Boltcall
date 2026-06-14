@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.functions.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Netlify bundles these functions with esbuild. */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /*
+     * Baseline serverless guard.
+     * Keep this looser than the app config so legacy strictness cleanup does
+     * not block deploys, while still catching missing modules, undefined names,
+     * syntax errors, and deploy-breaking function type mistakes.
+     */
+    "strict": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    /* Path mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  /*
+   * Start with the customer-facing V2 serverless surface. Older Agency/Retell
+   * functions still have legacy type debt; add them here as they are cleaned.
+   */
+  "include": ["netlify/functions/saas-v2-*.ts"],
+  "exclude": [
+    "netlify/functions/**/__tests__/**",
+    "netlify/functions/**/*.test.ts",
+    "netlify/functions/**/*.spec.ts"
+  ]
+}

@@ -71,9 +71,16 @@ function ticketSelect() {
   ].join(', ');
 }
 
-function counts(tickets: Array<Record<string, unknown>>) {
+interface SupportTicketSummary {
+  total: number;
+  urgent: number;
+  high: number;
+  normal: number;
+}
+
+function counts(tickets: Array<Record<string, unknown>>): SupportTicketSummary {
   return tickets.reduce(
-    (acc, ticket) => {
+    (acc: SupportTicketSummary, ticket) => {
       acc.total += 1;
       const priority = String(ticket.priority || 'normal');
       if (priority === 'urgent') acc.urgent += 1;
@@ -129,7 +136,9 @@ export const handler: Handler = async (event) => {
       return json(cors, 500, { error: 'Failed to load support tickets' });
     }
 
-    const tickets = Array.isArray(data) ? data : [];
+    const tickets: Array<Record<string, unknown>> = Array.isArray(data)
+      ? (data as unknown as Array<Record<string, unknown>>)
+      : [];
     return json(cors, 200, { tickets, counts: counts(tickets), statuses });
   }
 

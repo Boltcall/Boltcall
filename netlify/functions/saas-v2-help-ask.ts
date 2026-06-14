@@ -519,6 +519,10 @@ export const handler: Handler = async (event) => {
     };
   }
   const workspaceId = wsRow.id as string;
+  const workspaceLanguage =
+    typeof (wsRow as Record<string, unknown>).default_language === 'string'
+      ? String((wsRow as Record<string, unknown>).default_language)
+      : 'en';
 
   // ── 4. Pull candidate docs (static map) + workspace KB chunks (pgvector) ─
   // Docs map is deterministic and cheap; KB search is best-effort. Either may
@@ -598,7 +602,7 @@ export const handler: Handler = async (event) => {
   ].join(' ');
 
   const userPrompt = [
-    `WORKSPACE: ${wsRow.name || 'My Workspace'} (lang=${wsRow.default_language || 'en'})`,
+    `WORKSPACE: ${wsRow.name || 'My Workspace'} (lang=${workspaceLanguage})`,
     ctx.current_page ? `CURRENT PAGE: ${ctx.current_page}` : null,
     ctx.recent_action ? `RECENT ACTION: ${ctx.recent_action}` : null,
     '',
