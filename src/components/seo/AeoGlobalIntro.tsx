@@ -79,6 +79,7 @@ const AeoGlobalIntro: React.FC = () => {
   const isBlogRoute = path === '/blog' || path.startsWith('/blog/');
   const shouldShow =
     articleExact.has(path) || articlePrefixes.some((prefix) => path.startsWith(prefix));
+  const shouldRenderFooterContent = isComparisonsRoute;
 
   const title = isComparisonsRoute ? 'Comparison Summary' : 'Page Summary';
 
@@ -94,7 +95,7 @@ const AeoGlobalIntro: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!shouldShow) {
+    if (!shouldRenderFooterContent) {
       setFooterPortalHost(null);
       return;
     }
@@ -117,7 +118,7 @@ const AeoGlobalIntro: React.FC = () => {
     return () => {
       host.remove();
     };
-  }, [path, shouldShow]);
+  }, [path, shouldRenderFooterContent]);
 
   useEffect(() => {
     const overrideTitle = titleOverrides[path];
@@ -326,7 +327,7 @@ const AeoGlobalIntro: React.FC = () => {
     };
   }, [path]);
 
-  if (!shouldShow) {
+  if (!shouldRenderFooterContent) {
     return null;
   }
 
