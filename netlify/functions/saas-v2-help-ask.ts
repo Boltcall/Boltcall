@@ -211,6 +211,150 @@ function buildSupportEscalationMessage(args: {
     .join('\n');
 }
 
+function rowValue(row: Record<string, any> | null | undefined, keys: string[]): string {
+  if (!row) return '';
+  for (const key of keys) {
+    const value = row[key];
+    if (value !== null && value !== undefined && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
+  return '';
+}
+
+function settledData<T>(result: PromiseSettledResult<any>, fallback: T): T {
+  if (result.status !== 'fulfilled') return fallback;
+  if (result.value?.error) return fallback;
+  return (result.value?.data ?? fallback) as T;
+}
+
+function fmtDate(value: unknown): string {
+  if (!value) return 'unknown time';
+  const date = new Date(String(value));
+  return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
+}
+
+async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<string> {
+  try {
+    const [
+      profileResult,
+      agentsResult,
+      phoneNumbersResult,
+      leadsResult,
+      messagesResult,
+      facebookResult,
+    ] = await Promise.allSettled([
+      supa
+        .from('business_profiles')
+        .select('business_name, industry, phone, website')
+        .eq('user_id', userId)
+        .maybeSingle(),
+      supa
+        .from('agents')
+        .select('id, name, status, agent_type, retell_agent_id, updated_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supa
+        .from('phone_numbers')
+        .select('phone_number, status, phone_type, assigned_agent_id, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supa
+        .from('leads')
+        .select('id, source, status, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supa
+        .from('scheduled_messages')
+        .select('channel, type, status, scheduled_at, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supa
+        .from('facebook_page_connections')
+        .select('page_id, page_name, created_at')
+        .eq('user_id', userId)
+        .limit(3),
+    ]);
+
+    const profile = settledData<Record<string, any> | null>(profileResult, null);
+    const agents = settledData<Record<string, any>[]>(agentsResult, []);
+    const phoneNumbers = settledData<Record<string, any>[]>(phoneNumbersResult, []);
+    const leads = settledData<Record<string, any>[]>(leadsResult, []);
+    const messages = settledData<Record<string, any>[]>(messagesResult, []);
+    const facebookPages = settledData<Record<string, any>[]>(facebookResult, []);
+
+    const lines: string[] = [];
+    if (profile) {
+      lines.push(
+        `Business: ${rowValue(profile, ['business_name']) || 'unknown'} | ` +
+          `industry=${rowValue(profile, ['industry']) || 'unknown'} | ` +
+          `phone=${rowValue(profile, ['phone']) || 'unknown'} | ` +
+          `website=${rowValue(profile, ['website']) || 'unknown'}`,
+      );
+    } else {
+      lines.push('Business: no business profile found');
+    }
+
+    lines.push(`Agents: ${agents.length}`);
+    for (const agent of agents.slice(0, 5)) {
+      lines.push(
+        `- ${rowValue(agent, ['name']) || agent.id || 'agent'} | ` +
+          `type=${rowValue(agent, ['agent_type']) || 'unknown'} | ` +
+          `status=${rowValue(agent, ['status']) || 'unknown'} | ` +
+          `retell=${rowValue(agent, ['retell_agent_id']) ? 'configured' : 'missing'} | ` +
+          `updated=${fmtDate(agent.updated_at)}`,
+      );
+    }
+
+    lines.push(`Phone numbers: ${phoneNumbers.length}`);
+    for (const phone of phoneNumbers.slice(0, 5)) {
+      lines.push(
+        `- ${rowValue(phone, ['phone_number']) || 'unknown'} | ` +
+          `status=${rowValue(phone, ['status']) || 'unknown'} | ` +
+          `type=${rowValue(phone, ['phone_type']) || 'unknown'} | ` +
+          `assigned_agent=${rowValue(phone, ['assigned_agent_id']) || 'none'}`,
+      );
+    }
+
+    lines.push(`Recent leads: ${leads.length}`);
+    for (const lead of leads.slice(0, 5)) {
+      lines.push(
+        `- source=${rowValue(lead, ['source']) || 'unknown'} | ` +
+          `status=${rowValue(lead, ['status']) || 'unknown'} | ` +
+          `created=${fmtDate(lead.created_at)}`,
+      );
+    }
+
+    lines.push(`Scheduled messages: ${messages.length}`);
+    for (const msg of messages.slice(0, 5)) {
+      lines.push(
+        `- channel=${rowValue(msg, ['channel']) || 'unknown'} | ` +
+          `type=${rowValue(msg, ['type']) || 'unknown'} | ` +
+          `status=${rowValue(msg, ['status']) || 'unknown'} | ` +
+          `scheduled=${fmtDate(msg.scheduled_at || msg.created_at)}`,
+      );
+    }
+
+    lines.push(`Facebook pages connected: ${facebookPages.length}`);
+    for (const page of facebookPages.slice(0, 3)) {
+      lines.push(`- ${rowValue(page, ['page_name']) || rowValue(page, ['page_id']) || 'connected page'}`);
+    }
+
+    return lines.join('\n');
+  } catch (err) {
+    console.warn(
+      `[saas-v2-help-ask] diagnostics failed user=${userId} err=${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+    return 'Diagnostics unavailable.';
+  }
+}
+
 export const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
@@ -358,11 +502,14 @@ export const handler: Handler = async (event) => {
           .join('\n\n')
       : '(no workspace knowledge base matches)';
 
+  const diagnosticsContext = await loadWorkspaceDiagnostics(supa, userId);
+
   const systemPrompt = [
     'You are the Boltcall help assistant inside the V2 dashboard.',
     'Boltcall is a speed-to-lead platform for local service businesses — every inbound lead gets responded to instantly and booked.',
     'Answer the user\'s question in 2-3 short paragraphs (4-8 sentences total).',
-    'Ground your answer in the provided BOLTCALL DOCS and WORKSPACE KNOWLEDGE BASE. Do not invent features, prices, or settings.',
+    'Ground your answer in the provided BOLTCALL DOCS, WORKSPACE KNOWLEDGE BASE, and WORKSPACE DIAGNOSTICS. Do not invent features, prices, or settings.',
+    'Use WORKSPACE DIAGNOSTICS for practical troubleshooting: agent status, phone numbers, recent leads, scheduled messages, and connected pages.',
     'When you use a fact from BOLTCALL DOCS or WORKSPACE KB, mention the source naturally (e.g., "see the billing docs").',
     'If the question is outside scope (general programming, weather, etc.), say so briefly and suggest emailing support@boltcall.org.',
     'Never mention model names, tokens, retrieval mechanics, or "context provided to you".',
@@ -380,6 +527,9 @@ export const handler: Handler = async (event) => {
     '',
     'WORKSPACE KNOWLEDGE BASE:',
     kbContext,
+    '',
+    'WORKSPACE DIAGNOSTICS:',
+    diagnosticsContext,
     '',
     'QUESTION:',
     question,

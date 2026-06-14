@@ -8,7 +8,8 @@
  *   2. Legacy resource     AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY
  *      → uses chat/completions at /openai/deployments/<name>/chat/completions
  *      → model selected via deployment-name in URL (gpt-4o, gpt-4o-mini)
- *   3. Anthropic fallback  ANTHROPIC_API_KEY (disaster recovery only)
+ *   3. OpenAI fallback     OPENAI_API_KEY (production fallback for shared SaaS helpers)
+ *   4. Anthropic fallback  ANTHROPIC_API_KEY (disaster recovery only)
  *
  * Env vars:
  *   AZURE_OPENAI_FOUNDRY_ENDPOINT       https://<resource>.cognitiveservices.azure.com  [Foundry]
@@ -28,6 +29,11 @@
  *   AZURE_OPENAI_API_KEY            legacy API key
  *   AZURE_OPENAI_API_VERSION        legacy api-version, defaults to 2024-02-01
  *   AZURE_OPENAI_IMAGE_DEPLOYMENT   image deployment  [default: gpt-image-2]
+ *
+ *   OPENAI_API_KEY                  OpenAI API key fallback
+ *   OPENAI_MODEL                    light tier fallback [default: gpt-4o-mini]
+ *   OPENAI_MODEL_HEAVY              heavy tier fallback [default: gpt-4o]
+ *   OPENAI_EMBEDDING_MODEL          embedding fallback [default: text-embedding-3-large]
  */
 
 const FOUNDRY_API_VERSION =
@@ -48,6 +54,10 @@ function isLegacyAzureConfigured(): boolean {
   return !!(
     process.env.AZURE_OPENAI_ENDPOINT && process.env.AZURE_OPENAI_API_KEY
   );
+}
+
+function isOpenAIConfigured(): boolean {
+  return !!process.env.OPENAI_API_KEY;
 }
 
 export function isAzureConfigured(): boolean {
@@ -113,7 +123,8 @@ export function getAzureDeployment(
 
 /**
  * Simple chat completion — returns raw text.
- * Routes through Foundry Responses API when configured, else legacy chat/completions, else Anthropic.
+ * Routes through Foundry Responses API when configured, else legacy chat/completions,
+ * else OpenAI Responses, else Anthropic.
  */
 export async function chatCompletion(
   systemPrompt: string,
@@ -144,6 +155,15 @@ export async function chatCompletion(
     }
   }
 
+  if (isOpenAIConfigured()) {
+    try {
+      return await openAIResponsesCompletion(systemPrompt, userPrompt, maxTokens, resolvedTier);
+    } catch (err: any) {
+      errors.push(`OpenAI: ${err?.message || err}`);
+      console.warn('[chatCompletion] OpenAI failed, trying next provider:', err?.message || err);
+    }
+  }
+
   if (anthropicKey) {
     try {
       return await anthropicChatCompletion(anthropicKey, systemPrompt, userPrompt, maxTokens, resolvedTier);
@@ -156,8 +176,28 @@ export async function chatCompletion(
     throw new Error(`All AI providers failed. ${errors.join(' | ')}`);
   }
   throw new Error(
-    'No AI provider configured. Set AZURE_OPENAI_FOUNDRY_ENDPOINT + AZURE_OPENAI_FOUNDRY_KEY, or AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY, or ANTHROPIC_API_KEY.',
+    'No AI provider configured. Set AZURE_OPENAI_FOUNDRY_ENDPOINT + AZURE_OPENAI_FOUNDRY_KEY, AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY.',
   );
+}
+
+function getOpenAIModel(tier: Tier): string {
+  if (tier === 'heavy' || tier === 'codex') {
+    return process.env.OPENAI_MODEL_HEAVY || process.env.OPENAI_MODEL || 'gpt-4o';
+  }
+  return process.env.OPENAI_MODEL || 'gpt-4o-mini';
+}
+
+function extractResponsesText(data: any): string {
+  const output = data.output;
+  if (!Array.isArray(output)) return '';
+  for (const item of output) {
+    if (item?.type === 'message' && Array.isArray(item.content)) {
+      for (const c of item.content) {
+        if (c?.type === 'output_text' && typeof c.text === 'string') return c.text;
+      }
+    }
+  }
+  return '';
 }
 
 async function foundryResponsesCompletion(
@@ -191,17 +231,39 @@ async function foundryResponsesCompletion(
   }
 
   const data = await res.json();
-  // Responses API returns { output: [{ type: 'message', content: [{ type: 'output_text', text: '...' }] }] }
-  const output = data.output;
-  if (!Array.isArray(output)) return '';
-  for (const item of output) {
-    if (item?.type === 'message' && Array.isArray(item.content)) {
-      for (const c of item.content) {
-        if (c?.type === 'output_text' && typeof c.text === 'string') return c.text;
-      }
-    }
+  return extractResponsesText(data);
+}
+
+async function openAIResponsesCompletion(
+  systemPrompt: string,
+  userPrompt: string,
+  maxTokens: number,
+  tier: Tier,
+): Promise<string> {
+  const apiKey = process.env.OPENAI_API_KEY!;
+  const model = getOpenAIModel(tier);
+
+  const res = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      instructions: systemPrompt,
+      input: userPrompt,
+      max_output_tokens: maxTokens,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`OpenAI Responses error ${res.status}: ${err}`);
   }
-  return '';
+
+  const data = await res.json();
+  return extractResponsesText(data);
 }
 
 async function legacyAzureChatCompletion(
@@ -251,9 +313,13 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   const apiKey =
     process.env.AZURE_OPENAI_FOUNDRY_KEY || process.env.AZURE_OPENAI_API_KEY;
 
+  if (!(endpoint && apiKey) && process.env.OPENAI_API_KEY) {
+    return openAIEmbedding(text);
+  }
+
   if (!endpoint || !apiKey) {
     throw new Error(
-      'Azure not configured for embeddings. Set AZURE_OPENAI_FOUNDRY_ENDPOINT + AZURE_OPENAI_FOUNDRY_KEY (preferred) or AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY.',
+      'No embedding provider configured. Set AZURE_OPENAI_FOUNDRY_ENDPOINT + AZURE_OPENAI_FOUNDRY_KEY (preferred), AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY, or OPENAI_API_KEY.',
     );
   }
 
@@ -276,6 +342,32 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   const emb = data.data?.[0]?.embedding;
   if (!Array.isArray(emb)) {
     throw new Error('Azure embedding response missing data[0].embedding');
+  }
+  return emb;
+}
+
+async function openAIEmbedding(text: string): Promise<number[]> {
+  const res = await fetch('https://api.openai.com/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-large',
+      input: text,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`OpenAI embedding error ${res.status}: ${err}`);
+  }
+
+  const data = await res.json();
+  const emb = data.data?.[0]?.embedding;
+  if (!Array.isArray(emb)) {
+    throw new Error('OpenAI embedding response missing data[0].embedding');
   }
   return emb;
 }

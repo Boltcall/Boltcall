@@ -44,12 +44,86 @@ function chain(result: unknown) {
     select: vi.fn(() => q),
     eq: vi.fn(() => q),
     limit: vi.fn(() => q),
+    order: vi.fn(() => q),
     maybeSingle: vi.fn(async () => result),
+    then: (resolve: (value: unknown) => unknown) => Promise.resolve(result).then(resolve),
   };
   return q;
 }
 
-function makeSupabase() {
+function makeSupabase(overrides: Record<string, unknown> = {}) {
+  const defaults: Record<string, unknown> = {
+    workspaces: {
+      data: {
+        id: 'workspace-1',
+        name: 'Blue Star HVAC',
+        default_language: 'en',
+        default_timezone: 'America/New_York',
+      },
+      error: null,
+    },
+    agency_clients: { data: null, error: null },
+    business_profiles: {
+      data: {
+        business_name: 'Blue Star HVAC',
+        industry: 'HVAC',
+        phone: '+15551234567',
+        website: 'https://bluestar.example',
+      },
+      error: null,
+    },
+    agents: {
+      data: [
+        {
+          id: 'agent-1',
+          name: 'Main Speed-to-Lead Agent',
+          status: 'active',
+          agent_type: 'speed_to_lead',
+          retell_agent_id: 'retell-agent-1',
+          updated_at: '2026-06-14T08:00:00Z',
+        },
+      ],
+      error: null,
+    },
+    phone_numbers: {
+      data: [
+        {
+          phone_number: '+13613044585',
+          status: 'active',
+          phone_type: 'main',
+          assigned_agent_id: 'agent-1',
+          created_at: '2026-06-14T08:00:00Z',
+        },
+      ],
+      error: null,
+    },
+    leads: {
+      data: [
+        {
+          id: 'lead-1',
+          name: 'Pat Customer',
+          source: 'google_lead_form',
+          status: 'new',
+          created_at: '2026-06-14T08:30:00Z',
+        },
+      ],
+      error: null,
+    },
+    scheduled_messages: {
+      data: [
+        {
+          channel: 'sms',
+          type: 'followup',
+          status: 'scheduled',
+          scheduled_at: '2026-06-14T09:00:00Z',
+        },
+      ],
+      error: null,
+    },
+    facebook_page_connections: { data: [], error: null },
+  };
+  const tableResults = { ...defaults, ...overrides };
+
   return {
     auth: {
       getUser: vi.fn(async () => ({
@@ -58,21 +132,7 @@ function makeSupabase() {
       })),
     },
     from: vi.fn((table: string) => {
-      if (table === 'workspaces') {
-        return chain({
-          data: {
-            id: 'workspace-1',
-            name: 'Blue Star HVAC',
-            default_language: 'en',
-            default_timezone: 'America/New_York',
-          },
-          error: null,
-        });
-      }
-      if (table === 'agency_clients') {
-        return chain({ data: null, error: null });
-      }
-      return chain({ data: null, error: null });
+      return chain(tableResults[table] || { data: null, error: null });
     }),
     rpc: vi.fn(async () => ({ data: [], error: null })),
   };
@@ -117,5 +177,21 @@ describe('saas-v2-help-ask support escalation', () => {
     expect(body.support.message).toContain('support');
     expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Support escalation'));
     expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Blue Star HVAC'));
+  });
+
+  it('adds a live workspace diagnostic snapshot to the support prompt', async () => {
+    const { handler } = await import('../saas-v2-help-ask');
+
+    await handler(makeEvent('Why are calls failing for my phone number?'), {} as any);
+
+    const userPrompt = mocks.chatCompletion.mock.calls[0][1] as string;
+    expect(userPrompt).toContain('WORKSPACE DIAGNOSTICS:');
+    expect(userPrompt).toContain('Business: Blue Star HVAC');
+    expect(userPrompt).toContain('Agents: 1');
+    expect(userPrompt).toContain('Main Speed-to-Lead Agent');
+    expect(userPrompt).toContain('Phone numbers: 1');
+    expect(userPrompt).toContain('+13613044585');
+    expect(userPrompt).toContain('Recent leads: 1');
+    expect(userPrompt).toContain('google_lead_form');
   });
 });
