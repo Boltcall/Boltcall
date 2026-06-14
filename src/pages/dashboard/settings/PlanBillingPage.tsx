@@ -6,7 +6,12 @@ import { PageSkeleton } from '../../../components/ui/loading-skeleton';
 import { useTranslation } from 'react-i18next';
 import { getUserSubscription, getUserInvoices, type PlanLevel } from '../../../lib/stripe';
 import { openCustomerPortal } from '../../../lib/stripe-checkout';
-import { redirectToPayPalCheckout } from '../../../lib/paypal-checkout';
+import {
+  capturePayPalTestPayment,
+  redirectToPayPalCheckout,
+  redirectToPayPalTestPayment,
+} from '../../../lib/paypal-checkout';
+import { supabase } from '../../../lib/supabase';
 import { TOKEN_PLANS } from '../../../lib/tokens';
 import { useTokens } from '../../../contexts/TokenContext';
 
@@ -42,12 +47,72 @@ const PlanBillingPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [isFounder, setIsFounder] = useState(false);
+  const [paypalTestLoading, setPaypalTestLoading] = useState(false);
+  const [paypalTestStatus, setPaypalTestStatus] = useState<{
+    type: 'success' | 'error' | 'info';
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('success') === 'true') {
       window.history.replaceState({}, '', window.location.pathname);
     }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
+      const role = (data.session?.user?.app_metadata as Record<string, unknown> | null)?.role;
+      setIsFounder(role === 'founder');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paypalTest = params.get('paypal_test');
+    const token = params.get('token');
+
+    if (paypalTest === 'cancelled') {
+      setPaypalTestStatus({ type: 'info', message: 'PayPal test payment was cancelled.' });
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
+    if (paypalTest !== 'success' || !token) return;
+
+    let cancelled = false;
+    setPaypalTestLoading(true);
+    setPaypalTestStatus({ type: 'info', message: 'Capturing PayPal test payment...' });
+
+    capturePayPalTestPayment(token)
+      .then((result) => {
+        if (cancelled) return;
+        setPaypalTestStatus({
+          type: 'success',
+          message: `Captured ${result.currency} ${result.amount} via PayPal (${result.paypalMode}).`,
+        });
+        window.history.replaceState({}, '', window.location.pathname);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setPaypalTestStatus({
+          type: 'error',
+          message: error instanceof Error ? error.message : 'PayPal test capture failed.',
+        });
+      })
+      .finally(() => {
+        if (!cancelled) setPaypalTestLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -284,6 +349,63 @@ const PlanBillingPage: React.FC = () => {
                 <span className="text-xs text-gray-500">
                   Update payment method, cancel, or change plan
                 </span>
+              </div>
+            )}
+
+            {isFounder && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Live PayPal test payment</p>
+                    <p className="text-xs text-gray-500">
+                      Creates a real $2.00 PayPal order, returns here, captures it, and logs it in Boltcall.
+                    </p>
+                  </div>
+                  <PopButton
+                    color="default"
+                    size="sm"
+                    disabled={paypalTestLoading}
+                    onClick={async () => {
+                      setPaypalTestLoading(true);
+                      setPaypalTestStatus(null);
+                      try {
+                        await redirectToPayPalTestPayment();
+                      } catch (error) {
+                        setPaypalTestLoading(false);
+                        setPaypalTestStatus({
+                          type: 'error',
+                          message: error instanceof Error ? error.message : 'PayPal test payment failed.',
+                        });
+                      }
+                    }}
+                    className="gap-2"
+                  >
+                    {paypalTestLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Processing...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <CreditCard className="w-3.5 h-3.5" />
+                        Pay $2 test
+                      </span>
+                    )}
+                  </PopButton>
+                </div>
+                {paypalTestStatus && (
+                  <p
+                    className={`mt-3 text-xs ${
+                      paypalTestStatus.type === 'success'
+                        ? 'text-green-700'
+                        : paypalTestStatus.type === 'error'
+                        ? 'text-red-700'
+                        : 'text-gray-600'
+                    }`}
+                  >
+                    {paypalTestStatus.message}
+                  </p>
+                )}
               </div>
             )}
           </div>

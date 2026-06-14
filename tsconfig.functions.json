@@ -33,7 +33,11 @@
    * Start with the customer-facing V2 serverless surface. Older Agency/Retell
    * functions still have legacy type debt; add them here as they are cleaned.
    */
-  "include": ["netlify/functions/saas-v2-*.ts"],
+  "include": [
+    "netlify/functions/saas-v2-*.ts",
+    "netlify/functions/create-paypal-test-order.ts",
+    "netlify/functions/capture-paypal-test-order.ts"
+  ],
   "exclude": [
     "netlify/functions/**/__tests__/**",
     "netlify/functions/**/*.test.ts",
