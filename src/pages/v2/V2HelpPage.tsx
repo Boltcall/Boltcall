@@ -12,10 +12,21 @@
  *
  * V1 invariant: never touches V1 FAQ or V1 dashboard. Pure /v2/help surface.
  */
-import React, { useEffect, useRef, useState } from 'react';
-import { Sparkles, Send, ExternalLink, Loader2, LifeBuoy } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock3,
+  ExternalLink,
+  LifeBuoy,
+  Loader2,
+  RefreshCw,
+  Send,
+  Sparkles,
+} from 'lucide-react';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 import { Card, CardContent } from '../../components/ui/card-shadcn';
 import { Button } from '../../components/ui/button-shadcn';
 
@@ -35,6 +46,27 @@ interface AskResponse {
     message: string;
     ticket_id?: string;
   };
+  error?: string;
+}
+
+interface SupportTicket {
+  id: string;
+  workspace_name: string;
+  user_email?: string | null;
+  status: 'open' | 'in_progress' | 'resolved' | 'closed';
+  priority: 'normal' | 'high' | 'urgent';
+  current_page?: string | null;
+  question: string;
+  answer_preview?: string | null;
+  diagnostics_snapshot?: string | null;
+  assigned_to?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface SupportTicketsResponse {
+  tickets: SupportTicket[];
+  counts: { total: number; urgent: number; high: number; normal: number };
   error?: string;
 }
 
@@ -66,10 +98,31 @@ function newId(): string {
   return `t_${Math.random().toString(36).slice(2, 10)}_${Date.now().toString(36)}`;
 }
 
+function formatAgo(iso: string): string {
+  const then = Date.parse(iso);
+  if (!Number.isFinite(then)) return 'unknown';
+  const minutes = Math.max(0, Math.round((Date.now() - then) / 60_000));
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
+
+function priorityClass(priority: SupportTicket['priority']): string {
+  if (priority === 'urgent') return 'border-red-200 bg-red-50 text-red-700';
+  if (priority === 'high') return 'border-amber-200 bg-amber-50 text-amber-700';
+  return 'border-zinc-200 bg-zinc-50 text-zinc-600';
+}
+
 const V2HelpPage: React.FC = () => {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [isFounder, setIsFounder] = useState(false);
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
+  const [supportCounts, setSupportCounts] = useState<SupportTicketsResponse['counts'] | null>(null);
+  const [supportLoading, setSupportLoading] = useState(false);
+  const [supportError, setSupportError] = useState<string | null>(null);
   const scrollAnchor = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll the chat surface as new turns land so the user always lands
@@ -80,6 +133,68 @@ const V2HelpPage: React.FC = () => {
       scrollAnchor.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, [turns]);
+
+  const loadSupportTickets = useCallback(async () => {
+    setSupportLoading(true);
+    try {
+      const res = await authedFetch(
+        `${FUNCTIONS_BASE}/saas-v2-support-tickets?status=open,in_progress&limit=25`,
+      );
+      const data: SupportTicketsResponse = await res.json().catch(() => ({
+        tickets: [],
+        counts: { total: 0, urgent: 0, high: 0, normal: 0 },
+        error: 'Bad response',
+      }));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      setSupportTickets(Array.isArray(data.tickets) ? data.tickets : []);
+      setSupportCounts(data.counts);
+      setSupportError(null);
+    } catch (err) {
+      setSupportError(err instanceof Error ? err.message : 'Failed to load support tickets');
+    } finally {
+      setSupportLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkFounder() {
+      const { data, error } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (error || !data.session) {
+        setIsFounder(false);
+        return;
+      }
+      const role = (data.session.user.app_metadata as Record<string, unknown> | null)?.role;
+      const founder = role === 'founder';
+      setIsFounder(founder);
+      if (founder) void loadSupportTickets();
+    }
+    void checkFounder();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadSupportTickets]);
+
+  const updateSupportTicket = async (
+    ticketId: string,
+    status: SupportTicket['status'],
+  ): Promise<void> => {
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/saas-v2-support-tickets`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket_id: ticketId, status, assigned_to: 'Founder' }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(body.slice(0, 160) || `HTTP ${res.status}`);
+      }
+      await loadSupportTickets();
+    } catch (err) {
+      setSupportError(err instanceof Error ? err.message : 'Failed to update support ticket');
+    }
+  };
 
   const askQuestion = async (question: string): Promise<void> => {
     const trimmed = question.trim();
@@ -183,6 +298,107 @@ const V2HelpPage: React.FC = () => {
           workspace settings.
         </p>
       </div>
+
+      {isFounder && (
+        <section className="rounded-lg border border-zinc-200 bg-white">
+          <div className="flex flex-col gap-3 border-b border-zinc-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
+                <LifeBuoy className="h-4 w-4 text-brand-blue" />
+                Support queue
+              </div>
+              <div className="mt-0.5 text-xs text-zinc-500">
+                {supportCounts
+                  ? `${supportCounts.total} open, ${supportCounts.urgent} urgent, ${supportCounts.high} high`
+                  : 'Live escalations from customer help'}
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => void loadSupportTickets()}
+              disabled={supportLoading}
+              className="h-8 self-start sm:self-auto"
+            >
+              {supportLoading ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              Refresh
+            </Button>
+          </div>
+          <div className="divide-y divide-zinc-100">
+            {supportError && (
+              <div className="flex items-start gap-2 px-4 py-3 text-xs text-red-700">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                {supportError}
+              </div>
+            )}
+            {!supportLoading && supportTickets.length === 0 && !supportError && (
+              <div className="px-4 py-4 text-sm text-zinc-500">No open support escalations.</div>
+            )}
+            {supportTickets.map((ticket) => (
+              <article key={ticket.id} className="px-4 py-3">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${priorityClass(ticket.priority)}`}>
+                        {ticket.priority}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-zinc-500">
+                        <Clock3 className="h-3 w-3" />
+                        {formatAgo(ticket.created_at)}
+                      </span>
+                      <span className="text-xs font-medium text-zinc-700">
+                        {ticket.workspace_name || 'Workspace'}
+                      </span>
+                      {ticket.user_email && (
+                        <span className="text-xs text-zinc-400">{ticket.user_email}</span>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium text-zinc-900">{ticket.question}</p>
+                    {ticket.answer_preview && (
+                      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-zinc-500">
+                        {ticket.answer_preview}
+                      </p>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-zinc-500">
+                      <span>status: {ticket.status}</span>
+                      {ticket.current_page && <span>page: {ticket.current_page}</span>}
+                      {ticket.assigned_to && <span>owner: {ticket.assigned_to}</span>}
+                      <span>ref: {ticket.id}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-shrink-0 gap-2">
+                    {ticket.status === 'open' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8"
+                        onClick={() => void updateSupportTicket(ticket.id, 'in_progress')}
+                      >
+                        Start
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => void updateSupportTicket(ticket.id, 'resolved')}
+                    >
+                      <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                      Resolve
+                    </Button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Chat surface */}
       <Card className="overflow-hidden">
