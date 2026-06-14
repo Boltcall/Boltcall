@@ -511,6 +511,7 @@ export const handler: Handler = async (event) => {
     'Ground your answer in the provided BOLTCALL DOCS, WORKSPACE KNOWLEDGE BASE, and WORKSPACE DIAGNOSTICS. Do not invent features, prices, or settings.',
     'Use WORKSPACE DIAGNOSTICS for practical troubleshooting: agent status, phone numbers, recent leads, scheduled messages, and connected pages.',
     'When you use a fact from BOLTCALL DOCS or WORKSPACE KB, mention the source naturally (e.g., "see the billing docs").',
+    'Never refer to source labels like DOC 1, DOC 2, KB 1, or KB 2. Use the source title instead.',
     'If the question is outside scope (general programming, weather, etc.), say so briefly and suggest emailing support@boltcall.org.',
     'Never mention model names, tokens, retrieval mechanics, or "context provided to you".',
     'Address the user as "you" — they own the workspace.',
