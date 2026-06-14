@@ -26,6 +26,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion, generateEmbedding } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { notifyInfo } from './_shared/notify';
+import { redactSecrets } from './_shared/redact-secrets';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -199,9 +200,11 @@ function buildSupportEscalationMessage(args: {
   userEmail?: string;
   question: string;
   currentPage?: string;
+  ticketId?: string;
 }): string {
   return [
     'Support escalation',
+    args.ticketId ? `Ticket: ${args.ticketId}` : null,
     `Workspace: ${notifyText(args.workspaceName, 120)} (${args.workspaceId})`,
     `User: ${args.userEmail || args.userId}`,
     args.currentPage ? `Page: ${notifyText(args.currentPage, 160)}` : null,
@@ -209,6 +212,82 @@ function buildSupportEscalationMessage(args: {
   ]
     .filter(Boolean)
     .join('\n');
+}
+
+function supportPriority(question: string): 'normal' | 'high' | 'urgent' {
+  const q = question.toLowerCase();
+  if (/\b(urgent|emergency|critical|asap|production|customer live|calls stopped|lead stopped)\b/.test(q)) {
+    return 'urgent';
+  }
+  if (/\b(broken|down|not working|failing|failed|stuck|can't|cannot|billing|refund|charged)\b/.test(q)) {
+    return 'high';
+  }
+  return 'normal';
+}
+
+function redactedText(text: string): { text: string; hits: string[] } {
+  const { redacted, hits } = redactSecrets(text || '');
+  return { text: redacted, hits };
+}
+
+async function createSupportTicket(args: {
+  supa: any;
+  workspaceId: string;
+  workspaceName: string;
+  userId: string;
+  userEmail?: string;
+  question: string;
+  answer: string;
+  diagnosticsContext: string;
+  currentPage?: string;
+  recentAction?: string;
+  sourceCount: number;
+}): Promise<string | undefined> {
+  const question = redactedText(args.question);
+  const answer = redactedText(clamp(args.answer, 1200));
+  const diagnostics = redactedText(clamp(args.diagnosticsContext, 6000));
+  const currentPage = redactedText(args.currentPage || '');
+  const recentAction = redactedText(args.recentAction || '');
+  const redactionHits = Array.from(
+    new Set([
+      ...question.hits,
+      ...answer.hits,
+      ...diagnostics.hits,
+      ...currentPage.hits,
+      ...recentAction.hits,
+    ]),
+  );
+
+  const { data, error } = await args.supa
+    .from('saas_v2_support_tickets')
+    .insert({
+      workspace_id: args.workspaceId,
+      workspace_name: args.workspaceName,
+      user_id: args.userId,
+      user_email: args.userEmail || null,
+      status: 'open',
+      priority: supportPriority(args.question),
+      source: 'v2_help',
+      current_page: currentPage.text || null,
+      recent_action: recentAction.text || null,
+      question: question.text,
+      answer_preview: answer.text,
+      diagnostics_snapshot: diagnostics.text,
+      metadata: {
+        source_count: args.sourceCount,
+        redaction_hits: redactionHits,
+      },
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.warn(
+      `[saas-v2-help-ask] support ticket insert failed user=${args.userId} workspace=${args.workspaceId} err=${error.message}`,
+    );
+    return undefined;
+  }
+  return data?.id ? String(data.id) : undefined;
 }
 
 function rowValue(row: Record<string, any> | null | undefined, keys: string[]): string {
@@ -568,12 +647,30 @@ export const handler: Handler = async (event) => {
 
   const finalAnswer = clamp(answer.trim(), 2400) || 'No answer available.';
   const needsSupport = asksForHumanSupport(question);
+  const ticketId = needsSupport
+    ? await createSupportTicket({
+        supa,
+        workspaceId,
+        workspaceName: String(wsRow.name || 'Workspace'),
+        userId,
+        userEmail,
+        question,
+        answer: finalAnswer,
+        diagnosticsContext,
+        currentPage: ctx.current_page,
+        recentAction: ctx.recent_action,
+        sourceCount: docSources.length + kbChunks.length,
+      })
+    : undefined;
   const support = needsSupport
     ? {
         escalated: true,
         channel: 'internal_support',
+        ticket_id: ticketId,
         message:
-          'I flagged this for Boltcall support. A human can use your workspace context and question to follow up.',
+          ticketId
+            ? `I flagged this for Boltcall support. Ticket ${ticketId} includes your workspace context and question.`
+            : 'I flagged this for Boltcall support. A human can use your workspace context and question to follow up.',
       }
     : {
         escalated: false,
@@ -592,6 +689,7 @@ export const handler: Handler = async (event) => {
           userEmail,
           question,
           currentPage: ctx.current_page,
+          ticketId,
         }),
       );
     } catch (supportNotifyErr) {

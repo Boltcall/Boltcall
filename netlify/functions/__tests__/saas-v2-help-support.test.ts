@@ -39,12 +39,17 @@ function makeEvent(question: string) {
   } as any;
 }
 
-function chain(result: unknown) {
+function chain(result: unknown, onInsert?: (payload: unknown) => void) {
   const q: any = {
     select: vi.fn(() => q),
     eq: vi.fn(() => q),
     limit: vi.fn(() => q),
     order: vi.fn(() => q),
+    insert: vi.fn((payload: unknown) => {
+      onInsert?.(payload);
+      return q;
+    }),
+    single: vi.fn(async () => result),
     maybeSingle: vi.fn(async () => result),
     then: (resolve: (value: unknown) => unknown) => Promise.resolve(result).then(resolve),
   };
@@ -52,6 +57,7 @@ function chain(result: unknown) {
 }
 
 function makeSupabase(overrides: Record<string, unknown> = {}) {
+  const supportTicketInserts: unknown[] = [];
   const defaults: Record<string, unknown> = {
     workspaces: {
       data: {
@@ -121,10 +127,12 @@ function makeSupabase(overrides: Record<string, unknown> = {}) {
       error: null,
     },
     facebook_page_connections: { data: [], error: null },
+    saas_v2_support_tickets: { data: { id: 'ticket-1' }, error: null },
   };
   const tableResults = { ...defaults, ...overrides };
 
   return {
+    supportTicketInserts,
     auth: {
       getUser: vi.fn(async () => ({
         data: { user: { id: 'user-1', email: 'owner@example.com' } },
@@ -132,7 +140,12 @@ function makeSupabase(overrides: Record<string, unknown> = {}) {
       })),
     },
     from: vi.fn((table: string) => {
-      return chain(tableResults[table] || { data: null, error: null });
+      return chain(
+        tableResults[table] || { data: null, error: null },
+        table === 'saas_v2_support_tickets'
+          ? (payload) => supportTicketInserts.push(payload)
+          : undefined,
+      );
     }),
     rpc: vi.fn(async () => ({ data: [], error: null })),
   };
@@ -161,6 +174,8 @@ describe('saas-v2-help-ask support escalation', () => {
   });
 
   it('alerts internal support when the customer asks for urgent human help', async () => {
+    const supabase = makeSupabase();
+    mocks.getServiceSupabase.mockReturnValue(supabase);
     const { handler } = await import('../saas-v2-help-ask');
 
     const res = await handler(
@@ -175,8 +190,25 @@ describe('saas-v2-help-ask support escalation', () => {
       channel: 'internal_support',
     }));
     expect(body.support.message).toContain('support');
+    expect(body.support.ticket_id).toBe('ticket-1');
+    expect(supabase.supportTicketInserts).toHaveLength(1);
+    expect(supabase.supportTicketInserts[0]).toEqual(expect.objectContaining({
+      workspace_id: 'workspace-1',
+      user_id: 'user-1',
+      user_email: 'owner@example.com',
+      status: 'open',
+      priority: 'urgent',
+      source: 'v2_help',
+      current_page: '/v2/help',
+    }));
+    expect(supabase.supportTicketInserts[0]).toEqual(expect.objectContaining({
+      question: expect.stringContaining('calls are broken'),
+      answer_preview: expect.stringContaining('Check the failed calls doc first'),
+      diagnostics_snapshot: expect.stringContaining('Main Speed-to-Lead Agent'),
+    }));
     expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Support escalation'));
     expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Blue Star HVAC'));
+    expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Ticket: ticket-1'));
   });
 
   it('adds a live workspace diagnostic snapshot to the support prompt', async () => {

@@ -247,6 +247,9 @@ async function runLiveHelpCheck() {
   const text = await response.text();
   const json = JSON.parse(text);
   if (!response.ok) throw new Error(`live endpoint ${response.status}: ${text.slice(0, 500)}`);
+  if (!json.support?.ticket_id) {
+    throw new Error(`live endpoint returned no support.ticket_id: ${text.slice(0, 500)}`);
+  }
 
   return {
     httpStatus: response.status,

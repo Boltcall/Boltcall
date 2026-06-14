@@ -33,6 +33,7 @@ interface AskResponse {
     escalated: boolean;
     channel: string;
     message: string;
+    ticket_id?: string;
   };
   error?: string;
 }
@@ -243,7 +244,14 @@ const V2HelpPage: React.FC = () => {
                                   {turn.support?.escalated && (
                                     <div className="mt-3 flex items-start gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
                                       <LifeBuoy className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-                                      <span>{turn.support.message}</span>
+                                      <span>
+                                        {turn.support.message}
+                                        {turn.support.ticket_id && (
+                                          <span className="ml-1 font-medium">
+                                            Reference: {turn.support.ticket_id}
+                                          </span>
+                                        )}
+                                      </span>
                                     </div>
                                   )}
                                   {turn.sources.length > 0 && (
