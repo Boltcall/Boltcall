@@ -35,6 +35,7 @@ This folder keeps the reusable assets for creating and submitting Boltcall integ
 - `gohighlevel/boltcall-preview-1-640.jpg` - smaller fallback preview image 1.
 - `gohighlevel/boltcall-preview-2-640.jpg` - smaller fallback preview image 2.
 - `gohighlevel/boltcall-preview-3-640.jpg` - smaller fallback preview image 3.
+- `gohighlevel/boltcall-gohighlevel-marketplace-preview.mp4` - marketplace preview video.
 - Listing source: `integrations/gohighlevel/MARKETPLACE.md`
 - Setup page: `https://boltcall.org/integrations/gohighlevel`
 
@@ -44,7 +45,16 @@ This folder keeps the reusable assets for creating and submitting Boltcall integ
 - `pipedrive/boltcall-preview-1.png` - preview image 1.
 - `pipedrive/boltcall-preview-2.png` - preview image 2.
 - `pipedrive/boltcall-preview-3.png` - preview image 3.
+- `pipedrive/boltcall-preview-1-1280x800.png` - marketplace preview image 1.
+- `pipedrive/boltcall-preview-2-1280x800.png` - marketplace preview image 2.
+- `pipedrive/boltcall-preview-3-1280x800.png` - marketplace preview image 3.
+- `pipedrive/onboarding-block-1.jpg` - onboarding / setup block screenshot.
+- `pipedrive/setup-notes.md` - sandbox setup status and marketplace notes.
 - Listing copy: see `marketplace-copy.md`.
+
+## Vertical Marketplaces
+
+- `vertical-marketplace-application-drafts.md` - draft application copy and submission notes for ServiceTitan, Jobber, and Thumbtack.
 
 ## Zoho CRM
 

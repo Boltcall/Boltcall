@@ -48,17 +48,19 @@ P0,Marketplace,Microsoft Marketplace,https://learn.microsoft.com/en-us/partner-c
 P1,Marketplace,AWS Marketplace,https://docs.aws.amazon.com/marketplace/latest/userguide/user-guide-for-sellers.html,Noam,Not Started,Seller registration/KYC,Start seller flow
 P1,Marketplace,Google Cloud Marketplace,https://docs.cloud.google.com/marketplace/docs/partners/offer-products,Noam,Not Started,Partner/producer access,Start partner flow
 P1,Marketplace,HubSpot App Marketplace,https://developers.hubspot.com/docs/apps/developer-platform/list-apps/listing-your-app/listing-your-app,Noam,Not Started,Developer account/app requirements,Integration listing
-P1,Marketplace,Zapier App Directory,https://developer.zapier.com,Noam/Codex,Not Started,Developer account/app review,Integration listing
-P1,Marketplace,Make Partner/App Directory,https://www.make.com/en/partners,Noam,Not Started,Partner application,Integration listing
-P1,Marketplace,Pipedrive Marketplace,https://developers.pipedrive.com,Noam,Not Started,Developer account/app review,CRM integration
+P1,Marketplace,Zapier App Directory,https://developer.zapier.com,Noam/Codex,Drafted,Live usage requirements before review,"Private app exists; review blocked 2026-06-10 by Zapier validation: needs successful find_lead/send_lead tasks, at least 3 users with live Zaps, and warning cleanup"
+P1,Marketplace,Make Partner/App Directory,https://www.make.com/en/partners,Noam,Submitted,Partner application,Approval requested 2026-06-10 for Boltcall custom app
+P1,Marketplace,Pipedrive Marketplace,https://developers.pipedrive.com,Noam,Drafted,Demo video and legal company details required before review,Boltcall public app draft created in Pipedrive Developer Hub 2026-06-10
 P1,Marketplace,Salesforce AppExchange,https://appexchange.salesforce.com,Noam,Not Started,Partner account/security review,Longer-term listing
 P1,Marketplace,GoHighLevel Marketplace,https://marketplace.gohighlevel.com,Noam,Not Started,Developer/partner login,Agency/local business stack
 P2,Marketplace,n8n Integrations,https://n8n.io/integrations/,Noam/Codex,Not Started,Public integration/API readiness,Automation visibility
 P2,Marketplace,Retell partner/content,https://www.retellai.com,Noam,Not Started,Partner outreach,Ask for case study/mention
 P2,Marketplace,Twilio partners,https://www.twilio.com/partners,Noam,Not Started,Partner criteria,Later-stage partner proof
-P1,Vertical,ServiceTitan Marketplace,https://marketplace.servicetitan.com,Noam,Not Started,Partner application,Home services authority
-P1,Vertical,Jobber App Marketplace,https://apps.getjobber.com,Noam,Not Started,Partner application,Home services authority
-P1,Vertical,Housecall Pro,https://www.housecallpro.com,Noam,Not Started,Partner/application access,Home services authority
+P1,Vertical,ServiceTitan Marketplace,https://developer.servicetitan.io/request-access/,Noam,Ready for CEO approval,Partner application,"Application flow found 2026-06-10; choose Third-Party Software Organization -> App Marketplace Program; needs contact details and Chrome submission"
+P1,Vertical,Jobber App Marketplace,https://dash.partnerstack.com/application?company=jobber&group=jobberpartnernetwork,Noam,Ready for CEO approval,Partner/contact details,"Technology Partner form found 2026-06-10; needs approved contact email/phone/city/country/client counts before submission"
+P1,Vertical,Thumbtack Partner Platform,https://developers.thumbtack.com/request-access,Noam,Ready for CEO approval,API access request,"Direct API access form found 2026-06-10; strong speed-to-lead fit; needs contact phone/email and terms acceptance before submission"
+P1,Vertical,Housecall Pro,https://www.housecallpro.com/partner/,Noam,Submitted,Integration partner form,"Submitted Integration partner request 2026-06-11; production lead webhook live at https://boltcall.org/.netlify/functions/housecall-pro-lead-webhook"
+P1,Vertical,NiceJob,https://get.nicejob.com/partners/developers,Noam,Submitted,API access request,"Submitted API access and integration partnership request 2026-06-11; signed webhook endpoint live at https://boltcall.org/.netlify/functions/nicejob-webhook"
 P1,Vertical,Clio App Directory,https://www.clio.com/app-directory/,Noam,Not Started,Developer/partner account,Legal vertical
 P1,Vertical,MyCase,https://www.mycase.com,Noam,Not Started,Partner/integration contact,Legal vertical
 P1,Community,LinkedIn founder profile,https://www.linkedin.com,Noam,Not Started,Founder login,Founder launch post

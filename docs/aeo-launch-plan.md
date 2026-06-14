@@ -213,9 +213,11 @@ Codex/agent can do:
 
 | Priority | Surface | URL | Owner | Notes |
 | --- | --- | --- | --- | --- |
-| P1 | ServiceTitan Marketplace | https://marketplace.servicetitan.com | Noam | Home services authority. |
-| P1 | Jobber App Marketplace | https://apps.getjobber.com | Noam | Home services authority. |
-| P1 | Housecall Pro App Store/partners | https://www.housecallpro.com | Noam | Home services authority. |
+| P1 | ServiceTitan Marketplace | https://developer.servicetitan.io/request-access/ | Noam | Home services authority; application flow found 2026-06-10. |
+| P1 | Jobber App Marketplace | https://dash.partnerstack.com/application?company=jobber&group=jobberpartnernetwork | Noam | Home services authority; Technology Partner form found 2026-06-10. |
+| P1 | Thumbtack Partner Platform | https://developers.thumbtack.com/request-access | Noam | Lead-source authority; strong speed-to-lead API fit. |
+| P1 | Housecall Pro App Store/partners | https://www.housecallpro.com/partner/ | Noam | Integration partner form submitted 2026-06-11; production lead webhook added at `/.netlify/functions/housecall-pro-lead-webhook`. |
+| P1 | NiceJob API Access/partners | https://get.nicejob.com/partners/developers | Noam | API access request submitted 2026-06-11; signed webhook endpoint deployed at `/.netlify/functions/nicejob-webhook`. |
 | P1 | Clio App Directory | https://www.clio.com/app-directory/ | Noam | Legal vertical. |
 | P1 | MyCase integrations | https://www.mycase.com | Noam | Legal vertical. |
 | P1 | DentalTown | https://www.dentaltown.com | Noam | Dental community; value-first posts. |

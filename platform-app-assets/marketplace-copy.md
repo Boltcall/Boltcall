@@ -61,3 +61,33 @@ Short description: Trigger instant speed-to-lead calling and SMS from Zoho CRM l
 Description: Boltcall helps Zoho CRM users respond to new local-service leads immediately. Send new leads or contacts from Zoho CRM into Boltcall, trigger instant phone and SMS follow-up, and keep source, status, and outcome fields aligned so sales teams know which leads were contacted, qualified, booked, or still need attention.
 
 Best workflows include new Zoho lead to Boltcall, Zoho contact update to Boltcall, Boltcall outcome back to Zoho CRM, and instant follow-up for form, ad, and imported lead sources.
+
+## ServiceTitan
+
+App name: Boltcall
+
+Short description: Instant AI calling and SMS follow-up for new ServiceTitan leads.
+
+Description: Boltcall helps home service companies respond to new ServiceTitan opportunities immediately. When a lead, form submission, booking request, or customer inquiry appears, Boltcall can trigger AI phone and SMS follow-up, qualify intent, and help the office book the job while the homeowner is still ready to act.
+
+Best workflows include creating or updating ServiceTitan customers from Boltcall leads, launching instant outreach from new inbound requests, and writing contact outcome data back into the operating workflow so dispatch and sales teams know who was contacted, qualified, booked, or still needs attention.
+
+## Jobber
+
+App name: Boltcall
+
+Short description: Call, text, and book new Jobber leads instantly with AI speed-to-lead automation.
+
+Description: Boltcall helps Jobber users turn new inquiries into booked jobs faster. When a local-service lead is captured from a website, ad, form, or workflow, Boltcall can start immediate phone and SMS follow-up, qualify the customer, and route the outcome back into the business workflow.
+
+Best workflows include sending new Jobber client or request activity into Boltcall, launching instant AI outreach for high-intent leads, and keeping the team aligned with first-touch status, booking outcome, source, and next-step notes.
+
+## Thumbtack
+
+App name: Boltcall
+
+Short description: Instant speed-to-lead follow-up for Thumbtack pros and local-service leads.
+
+Description: Boltcall helps local service pros respond to Thumbtack leads immediately. When a homeowner reaches out, Boltcall can trigger AI calling and SMS follow-up, qualify the request, and help book the next step before competitors respond.
+
+Best workflows include receiving new Thumbtack lead or message events, starting immediate phone/SMS follow-up, routing urgent opportunities to the business, and recording whether the lead was contacted, qualified, booked, or still needs attention.
