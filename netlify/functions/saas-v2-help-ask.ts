@@ -421,7 +421,7 @@ export const handler: Handler = async (event) => {
   // ── 3. Resolve workspace_id (owner-only, server-derived) ────────────────
   const { data: wsRow, error: wsErr } = await supa
     .from('workspaces')
-    .select('id, name, default_language, default_timezone')
+    .select('id, name')
     .eq('user_id', userId)
     .maybeSingle();
   if (wsErr) {
