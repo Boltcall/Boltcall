@@ -25,6 +25,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion, generateEmbedding } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { notifyInfo } from './_shared/notify';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -173,6 +174,43 @@ function clamp(text: string, max: number): string {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
+function asksForHumanSupport(question: string): boolean {
+  const q = question.toLowerCase();
+  const humanIntent =
+    /\b(human|person|support|agent|team|someone|call me|contact me|ticket|escalate)\b/.test(q);
+  const urgentIntent =
+    /\b(urgent|emergency|asap|now|critical|broken|down|not working|failing|failed|stuck|can't|cannot)\b/.test(q);
+  const moneyOrGoLive =
+    /\b(charged|billing|refund|payment|invoice|go live|customer live|production|lead stopped|calls stopped)\b/.test(q);
+  const leadResponseSurface =
+    /\b(call|calls|lead|leads|sms|text|whatsapp|phone)\b/.test(q);
+
+  return humanIntent || (urgentIntent && moneyOrGoLive) || (urgentIntent && leadResponseSurface);
+}
+
+function notifyText(text: string, max = 320): string {
+  return clamp(text.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim(), max);
+}
+
+function buildSupportEscalationMessage(args: {
+  workspaceName: string;
+  workspaceId: string;
+  userId: string;
+  userEmail?: string;
+  question: string;
+  currentPage?: string;
+}): string {
+  return [
+    'Support escalation',
+    `Workspace: ${notifyText(args.workspaceName, 120)} (${args.workspaceId})`,
+    `User: ${args.userEmail || args.userId}`,
+    args.currentPage ? `Page: ${notifyText(args.currentPage, 160)}` : null,
+    `Question: ${notifyText(args.question)}`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
 export const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
@@ -220,6 +258,7 @@ export const handler: Handler = async (event) => {
   const { data: userResult, error: authErr } = await supa.auth.getUser(token);
   if (authErr || !userResult?.user) return unauthorized('Invalid or expired token');
   const userId = userResult.user.id;
+  const userEmail = userResult.user.email;
 
   // ── 2. Body parse ────────────────────────────────────────────────────────
   let parsed: AskBody;
@@ -375,6 +414,41 @@ export const handler: Handler = async (event) => {
   }
 
   const finalAnswer = clamp(answer.trim(), 2400) || 'No answer available.';
+  const needsSupport = asksForHumanSupport(question);
+  const support = needsSupport
+    ? {
+        escalated: true,
+        channel: 'internal_support',
+        message:
+          'I flagged this for Boltcall support. A human can use your workspace context and question to follow up.',
+      }
+    : {
+        escalated: false,
+        channel: 'self_serve',
+        message:
+          'No human escalation was created. Ask for support, a human, or urgent help if you want us to jump in.',
+      };
+
+  if (needsSupport) {
+    try {
+      await notifyInfo(
+        buildSupportEscalationMessage({
+          workspaceName: String(wsRow.name || 'Workspace'),
+          workspaceId,
+          userId,
+          userEmail,
+          question,
+          currentPage: ctx.current_page,
+        }),
+      );
+    } catch (supportNotifyErr) {
+      console.warn(
+        `[saas-v2-help-ask] support notification failed user=${userId} err=${
+          supportNotifyErr instanceof Error ? supportNotifyErr.message : String(supportNotifyErr)
+        }`,
+      );
+    }
+  }
 
   // Suggested followups: derive from the docs that were cited so the user has
   // one or two next-steps without us inventing topics. Cheap + deterministic.
@@ -446,6 +520,7 @@ export const handler: Handler = async (event) => {
       answer: finalAnswer,
       sources: sources.slice(0, 3),
       suggested_followups: suggestedFollowups,
+      support,
     }),
   };
 };

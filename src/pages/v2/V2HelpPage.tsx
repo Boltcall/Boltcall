@@ -13,7 +13,7 @@
  * V1 invariant: never touches V1 FAQ or V1 dashboard. Pure /v2/help surface.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { Sparkles, Send, ExternalLink, Loader2 } from 'lucide-react';
+import { Sparkles, Send, ExternalLink, Loader2, LifeBuoy } from 'lucide-react';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { Card, CardContent } from '../../components/ui/card-shadcn';
@@ -29,6 +29,11 @@ interface AskResponse {
   answer: string;
   sources?: HelpSource[];
   suggested_followups?: string[];
+  support?: {
+    escalated: boolean;
+    channel: string;
+    message: string;
+  };
   error?: string;
 }
 
@@ -40,6 +45,7 @@ type Turn =
       text: string;
       sources: HelpSource[];
       followups: string[];
+      support?: AskResponse['support'];
       pending?: boolean;
       error?: string;
     };
@@ -50,7 +56,7 @@ const STARTER_CHIPS: string[] = [
   'Why are some calls failing?',
   'How does billing work?',
   'How do I export my data?',
-  'How do I invite a teammate?',
+  'I need human support',
 ];
 
 const SUPPORT_EMAIL = 'support@boltcall.org';
@@ -130,6 +136,7 @@ const V2HelpPage: React.FC = () => {
                 followups: Array.isArray(data.suggested_followups)
                   ? data.suggested_followups.slice(0, 3)
                   : [],
+                support: data.support,
               }
             : t,
         ),
@@ -233,6 +240,12 @@ const V2HelpPage: React.FC = () => {
                                   <div className="text-sm text-text-main whitespace-pre-wrap leading-relaxed">
                                     {turn.text}
                                   </div>
+                                  {turn.support?.escalated && (
+                                    <div className="mt-3 flex items-start gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                                      <LifeBuoy className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                                      <span>{turn.support.message}</span>
+                                    </div>
+                                  )}
                                   {turn.sources.length > 0 && (
                                     <div className="mt-3 pt-3 border-t border-border">
                                       <div className="text-[11px] uppercase tracking-wide text-zinc-500 font-medium mb-1.5">
