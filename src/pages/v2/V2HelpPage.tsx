@@ -165,7 +165,7 @@ const V2HelpPage: React.FC = () => {
         setIsFounder(false);
         return;
       }
-      const role = (data.session.user.app_metadata as Record<string, unknown> | null)?.role;
+      const role = (data.session.user?.app_metadata as Record<string, unknown> | null)?.role;
       const founder = role === 'founder';
       setIsFounder(founder);
       if (founder) void loadSupportTickets();
