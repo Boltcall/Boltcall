@@ -246,7 +246,7 @@ async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<stri
     ] = await Promise.allSettled([
       supa
         .from('business_profiles')
-        .select('business_name, industry, phone, website')
+        .select('business_name, main_category, website_url, owner_name')
         .eq('user_id', userId)
         .maybeSingle(),
       supa
@@ -269,7 +269,7 @@ async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<stri
         .limit(5),
       supa
         .from('scheduled_messages')
-        .select('channel, type, status, scheduled_at, created_at')
+        .select('channel, type, status, scheduled_for, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(5),
@@ -291,9 +291,9 @@ async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<stri
     if (profile) {
       lines.push(
         `Business: ${rowValue(profile, ['business_name']) || 'unknown'} | ` +
-          `industry=${rowValue(profile, ['industry']) || 'unknown'} | ` +
-          `phone=${rowValue(profile, ['phone']) || 'unknown'} | ` +
-          `website=${rowValue(profile, ['website']) || 'unknown'}`,
+          `industry=${rowValue(profile, ['main_category']) || 'unknown'} | ` +
+          `owner=${rowValue(profile, ['owner_name']) || 'unknown'} | ` +
+          `website=${rowValue(profile, ['website_url']) || 'unknown'}`,
       );
     } else {
       lines.push('Business: no business profile found');
@@ -335,7 +335,7 @@ async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<stri
         `- channel=${rowValue(msg, ['channel']) || 'unknown'} | ` +
           `type=${rowValue(msg, ['type']) || 'unknown'} | ` +
           `status=${rowValue(msg, ['status']) || 'unknown'} | ` +
-          `scheduled=${fmtDate(msg.scheduled_at || msg.created_at)}`,
+          `scheduled=${fmtDate(msg.scheduled_for || msg.created_at)}`,
       );
     }
 
@@ -549,7 +549,9 @@ export const handler: Handler = async (event) => {
       ? 'foundry-heavy'
       : process.env.AZURE_OPENAI_API_KEY
         ? 'azure-legacy-heavy'
-        : 'anthropic-sonnet';
+        : process.env.OPENAI_API_KEY
+          ? 'openai-heavy'
+          : 'anthropic-sonnet';
   } catch (llmErr) {
     console.warn(
       `[saas-v2-help-ask] LLM failed user=${userId} err=${

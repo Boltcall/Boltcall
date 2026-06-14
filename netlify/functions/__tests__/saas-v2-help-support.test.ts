@@ -66,9 +66,9 @@ function makeSupabase(overrides: Record<string, unknown> = {}) {
     business_profiles: {
       data: {
         business_name: 'Blue Star HVAC',
-        industry: 'HVAC',
-        phone: '+15551234567',
-        website: 'https://bluestar.example',
+        main_category: 'HVAC',
+        owner_name: 'Noam',
+        website_url: 'https://bluestar.example',
       },
       error: null,
     },
@@ -115,7 +115,7 @@ function makeSupabase(overrides: Record<string, unknown> = {}) {
           channel: 'sms',
           type: 'followup',
           status: 'scheduled',
-          scheduled_at: '2026-06-14T09:00:00Z',
+          scheduled_for: '2026-06-14T09:00:00Z',
         },
       ],
       error: null,
