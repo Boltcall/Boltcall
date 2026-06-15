@@ -34,11 +34,12 @@ export const useTableOfContents = (): Heading[] => {
       h2Elements.forEach((h2) => {
         // Clone the h2 element to extract text without modifying the original
         const clone = h2.cloneNode(true) as HTMLElement;
-        // Remove the decorative blue bar div (usually has class 'w-1')
+        // Remove decorative markers so the sidebar shows clean section titles.
         const decorativeDiv = clone.querySelector('.w-1');
         if (decorativeDiv) {
           decorativeDiv.remove();
         }
+        clone.querySelectorAll('.toc-index').forEach((node) => node.remove());
         
         // Get the text content after removing the decorative div
         const headingText = clone.textContent?.trim() || '';
@@ -87,4 +88,3 @@ export const useTableOfContents = (): Heading[] => {
 
   return headings;
 };
-
