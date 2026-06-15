@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const agentRetrieveMock = vi.hoisted(() => vi.fn());
 const callListMock = vi.hoisted(() => vi.fn());
+const phoneNumberRetrieveMock = vi.hoisted(() => vi.fn());
 const getServiceSupabaseMock = vi.hoisted(() => vi.fn());
 
 vi.mock('retell-sdk', () => ({
   default: vi.fn(function RetellMock(this: any) {
     this.agent = { retrieve: agentRetrieveMock };
     this.call = { list: callListMock };
+    this.phoneNumber = { retrieve: phoneNumberRetrieveMock };
   }),
 }));
 
@@ -61,7 +63,12 @@ function supabaseMock(args: {
     error: args.agentError ?? null,
   });
   const phoneQuery = queryChain({
-    data: args.phoneRows ?? [{ id: 'phone-id', status: 'active', is_active: true }],
+    data: args.phoneRows ?? [{
+      id: 'phone-id',
+      status: 'active',
+      is_active: true,
+      phone_number: '+13613044585',
+    }],
     error: args.phoneError ?? null,
   });
 
@@ -89,6 +96,13 @@ describe('retell-readiness', () => {
       is_published: true,
     });
     callListMock.mockResolvedValue({ calls: [] });
+    phoneNumberRetrieveMock.mockResolvedValue({
+      phone_number: '+13613044585',
+      inbound_agents: [{
+        agent_id: 'agent_35968112e79b86e897ef99bccc',
+        weight: 1,
+      }],
+    });
     getServiceSupabaseMock.mockReturnValue(supabaseMock());
   });
 
@@ -142,6 +156,8 @@ describe('retell-readiness', () => {
       boltcallAgentType: 'inbound',
       hasActiveBoltcallPhoneNumber: true,
       activeBoltcallPhoneNumberCount: 1,
+      retellInboundPhoneNumberBoundToAgent: true,
+      retellInboundPhoneNumbersChecked: ['+13613044585'],
     });
     expect(JSON.stringify(body)).not.toContain('retell-api-secret');
   });
@@ -159,6 +175,50 @@ describe('retell-readiness', () => {
       check: 'retell_api_readiness',
       hasActiveBoltcallPhoneNumber: false,
       activeBoltcallPhoneNumberCount: 0,
+    });
+  });
+
+  it('does not pass when no active Retell phone number is bound inbound to the agent', async () => {
+    phoneNumberRetrieveMock.mockResolvedValue({
+      phone_number: '+13613044585',
+      inbound_agents: [{
+        agent_id: 'agent_different',
+        weight: 1,
+      }],
+    });
+    const { handler } = await import('../retell-readiness');
+
+    const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
+    const body = JSON.parse(res.body);
+
+    expect(res.statusCode).toBe(424);
+    expect(body).toMatchObject({
+      status: 'failed',
+      check: 'retell_api_readiness',
+      retellInboundPhoneNumberBoundToAgent: false,
+      retellInboundPhoneNumbersChecked: ['+13613044585'],
+    });
+    expect(body.failedChecks).toContain('retell_inbound_phone_number_not_bound');
+  });
+
+  it('does not pass when the Retell agent is not published', async () => {
+    agentRetrieveMock.mockResolvedValue({
+      agent_id: 'agent_35968112e79b86e897ef99bccc',
+      agent_name: 'Rapid Rooter QA AI Receptionist',
+      response_engine: { type: 'custom-llm' },
+      is_published: false,
+    });
+    const { handler } = await import('../retell-readiness');
+
+    const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
+    const body = JSON.parse(res.body);
+
+    expect(res.statusCode).toBe(424);
+    expect(body).toMatchObject({
+      status: 'failed',
+      check: 'retell_api_readiness',
+      retellAgentPublished: false,
+      failedChecks: ['retell_agent_unpublished'],
     });
   });
 

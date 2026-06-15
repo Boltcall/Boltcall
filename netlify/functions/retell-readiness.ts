@@ -52,6 +52,7 @@ async function fetchBoltcallAgentEvidence(agentId: string) {
   if (agentError) throw new Error(`agents query failed: ${agentError.message}`);
 
   let activePhoneCount = 0;
+  let activePhoneNumbers: string[] = [];
   if (agent?.user_id) {
     const { data: phoneRows, error: phoneError } = await supabase
       .from('phone_numbers')
@@ -61,12 +62,44 @@ async function fetchBoltcallAgentEvidence(agentId: string) {
       .limit(10);
 
     if (phoneError) throw new Error(`phone_numbers query failed: ${phoneError.message}`);
-    activePhoneCount = Array.isArray(phoneRows)
-      ? phoneRows.filter((row: Record<string, unknown>) => row.is_active !== false).length
-      : 0;
+    if (Array.isArray(phoneRows)) {
+      const activePhoneRows = phoneRows.filter((row: Record<string, unknown>) => row.is_active !== false);
+      activePhoneCount = activePhoneRows.length;
+      activePhoneNumbers = activePhoneRows
+        .map((row: Record<string, unknown>) => row.phone_number)
+        .filter((value): value is string => typeof value === 'string' && value.length > 0);
+    }
   }
 
-  return { agent, activePhoneCount };
+  return { agent, activePhoneCount, activePhoneNumbers };
+}
+
+async function checkRetellInboundPhoneBinding(
+  client: Retell,
+  agentId: string,
+  phoneNumbers: string[],
+) {
+  const checked: string[] = [];
+
+  for (const phoneNumber of phoneNumbers) {
+    checked.push(phoneNumber);
+    const retellPhone = await client.phoneNumber.retrieve(phoneNumber);
+    const inboundAgents = Array.isArray(retellPhone?.inbound_agents)
+      ? retellPhone.inbound_agents
+      : [];
+
+    if (inboundAgents.some((inboundAgent: { agent_id?: string }) => inboundAgent.agent_id === agentId)) {
+      return {
+        retellInboundPhoneNumberBoundToAgent: true,
+        retellInboundPhoneNumbersChecked: checked,
+      };
+    }
+  }
+
+  return {
+    retellInboundPhoneNumberBoundToAgent: false,
+    retellInboundPhoneNumbersChecked: checked,
+  };
 }
 
 export const handler: Handler = async (event) => {
@@ -100,7 +133,9 @@ export const handler: Handler = async (event) => {
       limit: 1,
     });
     const recentCalls = normalizeRetellCallList(listResponse);
-    const { agent: boltcallAgent, activePhoneCount } = await fetchBoltcallAgentEvidence(agentId);
+    const { agent: boltcallAgent, activePhoneCount, activePhoneNumbers } =
+      await fetchBoltcallAgentEvidence(agentId);
+    const phoneBindingEvidence = await checkRetellInboundPhoneBinding(client, agentId, activePhoneNumbers);
 
     const evidence = {
       hasApiKey: true,
@@ -116,14 +151,17 @@ export const handler: Handler = async (event) => {
       boltcallAgentType: boltcallAgent?.agent_type || null,
       hasActiveBoltcallPhoneNumber: activePhoneCount > 0,
       activeBoltcallPhoneNumberCount: activePhoneCount,
+      ...phoneBindingEvidence,
     };
     const failedChecks = [
       !evidence.retellAgentFound && 'retell_agent_missing',
       !evidence.retellAgentNameMatches && 'retell_agent_name_mismatch',
+      evidence.retellAgentPublished !== true && 'retell_agent_unpublished',
       !evidence.callListReachable && 'retell_call_list_unreachable',
       !evidence.boltcallAgentFound && 'boltcall_agent_missing',
       !evidence.boltcallAgentActive && 'boltcall_agent_inactive',
       !evidence.hasActiveBoltcallPhoneNumber && 'boltcall_active_phone_number_missing',
+      !evidence.retellInboundPhoneNumberBoundToAgent && 'retell_inbound_phone_number_not_bound',
     ].filter(Boolean);
 
     if (failedChecks.length > 0) {
