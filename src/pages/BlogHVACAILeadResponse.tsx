@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Phone, Thermometer } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, Phone, Thermometer } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
@@ -608,20 +608,46 @@ const BlogHVACAILeadResponse: React.FC = () => {
             </motion.div>
 
             {/* Related Articles */}
-            <section className="mb-12">
-              <h3 className="mb-6 text-2xl font-bold text-gray-900">Related Articles</h3>
+            <section className="mb-14 border-t border-gray-200 pt-8">
+              <div className="mb-6 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">Keep reading</p>
+                  <h3 className="mt-2 text-2xl font-bold text-gray-900">Related Articles</h3>
+                </div>
+                <a href="/blog" className="hidden text-sm font-semibold text-gray-700 transition-colors hover:text-blue-600 md:inline-flex">
+                  All articles
+                </a>
+              </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <a href="/blog/speed-to-lead-local-business" className="block rounded-xl border border-gray-200 p-4 transition-shadow duration-300 hover:shadow-md">
-                  <p className="font-semibold text-gray-900">Speed to Lead for Local Businesses</p>
-                  <p className="mt-1 text-sm text-gray-500">The complete guide to faster lead response.</p>
+                <a href="/blog/speed-to-lead-local-business" className="group flex min-h-[170px] flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">Speed</p>
+                    <p className="mt-3 text-base font-semibold leading-snug text-gray-900">Speed to Lead for Local Businesses</p>
+                    <p className="mt-2 text-sm leading-5 text-gray-500">The complete guide to faster lead response.</p>
+                  </div>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
+                    Read next <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </span>
                 </a>
-                <a href="/blog/best-after-hours-answering-service" className="block rounded-xl border border-gray-200 p-4 transition-shadow duration-300 hover:shadow-md">
-                  <p className="font-semibold text-gray-900">Best After-Hours Answering Service</p>
-                  <p className="mt-1 text-sm text-gray-500">Compare your options for 24/7 call coverage.</p>
+                <a href="/blog/best-after-hours-answering-service" className="group flex min-h-[170px] flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">Coverage</p>
+                    <p className="mt-3 text-base font-semibold leading-snug text-gray-900">Best After-Hours Answering Service</p>
+                    <p className="mt-2 text-sm leading-5 text-gray-500">Compare your options for 24/7 call coverage.</p>
+                  </div>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
+                    Read next <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </span>
                 </a>
-                <a href="/blog/ai-appointment-scheduling-hvac" className="block rounded-xl border border-gray-200 p-4 transition-shadow duration-300 hover:shadow-md">
-                  <p className="font-semibold text-gray-900">AI Appointment Scheduling for HVAC</p>
-                  <p className="mt-1 text-sm text-gray-500">How HVAC teams turn fast replies into booked jobs.</p>
+                <a href="/blog/ai-appointment-scheduling-hvac" className="group flex min-h-[170px] flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-lg">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-600">Booking</p>
+                    <p className="mt-3 text-base font-semibold leading-snug text-gray-900">AI Appointment Scheduling for HVAC</p>
+                    <p className="mt-2 text-sm leading-5 text-gray-500">How HVAC teams turn fast replies into booked jobs.</p>
+                  </div>
+                  <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
+                    Read next <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </span>
                 </a>
               </div>
             </section>
