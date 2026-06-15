@@ -74,6 +74,14 @@ function unauthorized(message = 'Invalid google_key') {
 function serverError(message = 'Internal error') {
   return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ message }) };
 }
+function tooManyRequests(retryAfterSeconds: number) {
+  const retryAfter = String(Math.max(1, Math.ceil(retryAfterSeconds || 60)));
+  return {
+    statusCode: 429,
+    headers: { ...HEADERS, 'Retry-After': retryAfter },
+    body: JSON.stringify({ message: 'Rate limit exceeded. Retry later.' }),
+  };
+}
 
 function newRequestId(): string {
   // Cheap correlation id — enough to grep one request across function logs.
@@ -182,6 +190,42 @@ function buildSyncCrm() {
 
 // ─── handler ──────────────────────────────────────────────────────────────
 
+async function resolveRateLimitedUser(supabase: ReturnType<typeof getSupabase>, googleKey: string): Promise<
+  | { ok: true; userId: string }
+  | { ok: false; response: ReturnType<typeof unauthorized> | ReturnType<typeof serverError> | ReturnType<typeof tooManyRequests> }
+> {
+  const { data, error } = await supabase.rpc('check_google_lead_form_rate_limit', {
+    p_google_key: googleKey,
+  });
+
+  if (error) {
+    console.error('[google-leads-webhook] rate-limit lookup failed:', error);
+    return { ok: false, response: serverError('Lookup failed') };
+  }
+
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row?.user_id) {
+    return { ok: false, response: unauthorized() };
+  }
+
+  if (row.allowed === false) {
+    return { ok: false, response: tooManyRequests(Number(row.retry_after_seconds || 60)) };
+  }
+
+  return { ok: true, userId: String(row.user_id) };
+}
+
+async function recordGoogleTestPing(supabase: ReturnType<typeof getSupabase>, userId: string) {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from('business_features')
+    .update({ last_google_test_ping_at: now, updated_at: now })
+    .eq('user_id', userId);
+  if (error) {
+    console.warn('[google-leads-webhook] failed to record test ping:', error);
+  }
+}
+
 export const handler: Handler = async (event) => {
   const reqId = newRequestId();
 
@@ -211,28 +255,18 @@ export const handler: Handler = async (event) => {
 
   const supabase = getSupabase();
 
-  // 1. Resolve workspace by google_key (single canonical lookup).
-  //    Don't leak whether the key exists or not — always return the same
-  //    'unauthorized' shape so an attacker can't enumerate valid keys.
-  const { data: features, error: featuresErr } = await supabase
-    .from('business_features')
-    .select('user_id')
-    .eq('google_lead_form_key', googleKey)
-    .maybeSingle();
-
-  if (featuresErr) {
-    console.error(`[google-leads-webhook] ${reqId} lookup failed:`, featuresErr);
-    return serverError('Lookup failed');
-  }
-  if (!features?.user_id) {
-    return unauthorized();
-  }
-  const userId = features.user_id;
+  // 1. Resolve workspace by google_key through the atomic rate-limit RPC.
+  //    Don't leak whether the key exists or not; invalid keys still get the
+  //    same unauthorized shape as before.
+  const resolved = await resolveRateLimitedUser(supabase, googleKey);
+  if (!resolved.ok) return resolved.response;
+  const userId = resolved.userId;
 
   // 2. Test ping (Google's "Send test data" button). Accept early before
   //    requiring lead_id — Google's test payload may omit it. Log it so
   //    the customer-support team can confirm "yes, your form is wired up."
   if (payload.is_test === true) {
+    await recordGoogleTestPing(supabase, userId);
     console.log(`[google-leads-webhook] ${reqId} is_test ping accepted for user=${userId}`);
     return ok({ ok: true, test: true });
   }
@@ -305,6 +339,7 @@ export const handler: Handler = async (event) => {
         supabase,
         retellApiKey,
         retellFactory: retellApiKey ? () => new Retell({ apiKey: retellApiKey }) : undefined,
+        awaitFirstTouch: false,
         fireWebhooks,
         syncCrm: buildSyncCrm(),
       },

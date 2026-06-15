@@ -112,6 +112,43 @@ describe('handleInboundLead', () => {
     }));
   });
 
+  it('can return capture immediately while first touch continues in the background', async () => {
+    const h = makeSupabase();
+    let resolveRetell: (() => void) | undefined;
+    const retellStarted = new Promise<void>((resolve) => {
+      resolveRetell = resolve;
+    });
+    const retell = { call: { createPhoneCall: vi.fn(() => retellStarted) } };
+
+    const result = await Promise.race([
+      handleInboundLead({
+        body: {
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+          phone: '+15551112222',
+          source: 'google_lead_form',
+          user_id: 'user-1',
+        },
+        source: 'google_lead_form',
+      }, {
+        supabase: h.supabase as any,
+        retellFactory: () => retell as any,
+        retellApiKey: 'retell-key',
+        awaitFirstTouch: false,
+      }),
+      new Promise((resolve) => setTimeout(() => resolve('timed-out'), 20)),
+    ]);
+
+    expect(result).not.toBe('timed-out');
+    expect((result as any).status).toBe('captured');
+    expect((result as any).first_touch_status).toBe('started');
+    expect((result as any).retell_call_started).toBe(true);
+    expect(retell.call.createPhoneCall).toHaveBeenCalledOnce();
+
+    resolveRetell?.();
+    await retellStarted;
+  });
+
   it('returns the existing lead for a repeated external id without starting first touch again', async () => {
     const h = makeSupabase({
       existingLead: {

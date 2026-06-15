@@ -24,6 +24,7 @@ export type LeadResponseDeps = {
   retellFactory?: () => any;
   fireWebhooks?: (userId: string, event: string, payload: Record<string, any>) => void | Promise<void>;
   syncCrm?: (lead: Record<string, any>, userId: string, originalBody: Record<string, any>) => void | Promise<void>;
+  awaitFirstTouch?: boolean;
   now?: () => Date;
 };
 
@@ -176,23 +177,37 @@ async function startFirstTouch(
     return 'skipped';
   }
 
+  const emitStarted = (emitted: string[] = eventsEmitted) =>
+    emitLifecycleEvent(deps, 'first_touch_started', lead, { source: lead.source }, emitted);
+  const emitFailed = (error: any, emitted: string[] = eventsEmitted) =>
+    emitLifecycleEvent(deps, 'first_touch_failed', lead, {
+      source: lead.source,
+      outcome: 'failure',
+      error: error?.message || String(error),
+    }, emitted);
+
   try {
     const retell = deps.retellFactory();
-    await retell.call.createPhoneCall({
+    const callPromise = retell.call.createPhoneCall({
       from_number: fromNumber,
       to_number: lead.phone,
       agent_id: agentId,
       metadata: { source: lead.source, user_id: lead.user_id, lead_id: lead.id },
     });
-    await emitLifecycleEvent(deps, 'first_touch_started', lead, { source: lead.source }, eventsEmitted);
+
+    if (deps.awaitFirstTouch === false) {
+      Promise.resolve(callPromise)
+        .then(() => emitStarted([]))
+        .catch((error: any) => emitFailed(error, []));
+      return 'started';
+    }
+
+    await callPromise;
+    await emitStarted();
     return 'started';
   } catch (error: any) {
     warnings.push('first_touch_failed');
-    await emitLifecycleEvent(deps, 'first_touch_failed', lead, {
-      source: lead.source,
-      outcome: 'failure',
-      error: error?.message || String(error),
-    }, eventsEmitted);
+    await emitFailed(error);
     return 'failed';
   }
 }
@@ -294,6 +309,19 @@ export async function handleInboundLead(
         source: insertedLead.source,
         status: insertedLead.status,
         created_at: insertedLead.created_at,
+        google: insertedLead.source === 'google_lead_form'
+          ? {
+              lead_id: insertedLead.raw_data?.google_lead_id ?? null,
+              form_id: insertedLead.raw_data?.google_form_id ?? null,
+              campaign_id: insertedLead.raw_data?.google_campaign_id ?? null,
+              adgroup_id: insertedLead.raw_data?.google_adgroup_id ?? null,
+              creative_id: insertedLead.raw_data?.google_creative_id ?? null,
+              asset_group_id: insertedLead.raw_data?.google_asset_group_id ?? null,
+              gcl_id: insertedLead.raw_data?.google_gcl_id ?? null,
+              lead_stage: insertedLead.raw_data?.google_lead_stage ?? null,
+              lead_submit_time: insertedLead.raw_data?.google_lead_submit_time ?? null,
+            }
+          : undefined,
       });
     } catch {
       warnings.push('webhook_failed');

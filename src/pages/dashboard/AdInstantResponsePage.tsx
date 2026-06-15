@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Loader2, Copy, RotateCw, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, Loader2, Copy, RotateCw, Eye, EyeOff, Clock } from 'lucide-react';
 import { PopButton } from '../../components/ui/pop-button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -27,6 +27,7 @@ const AdInstantResponsePage: React.FC = () => {
   const [fbConnecting, setFbConnecting] = useState(false);
 
   const [googleKey, setGoogleKey] = useState<string | null>(null);
+  const [lastGoogleTestPingAt, setLastGoogleTestPingAt] = useState<string | null>(null);
   const [googleKeyLoading, setGoogleKeyLoading] = useState(true);
   const [googleKeyRotating, setGoogleKeyRotating] = useState(false);
   const [googleKeyRevealed, setGoogleKeyRevealed] = useState(false);
@@ -70,13 +71,14 @@ const AdInstantResponsePage: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('business_features')
-          .select('google_lead_form_key')
+          .select('google_lead_form_key, last_google_test_ping_at')
           .eq('user_id', user.id)
           .maybeSingle();
         if (error) {
           console.error('Error fetching Google Ads key:', error);
         } else {
           setGoogleKey(data?.google_lead_form_key || null);
+          setLastGoogleTestPingAt(data?.last_google_test_ping_at || null);
         }
       } catch (err) {
         console.error('Error fetching Google Ads key:', err);
@@ -156,6 +158,15 @@ const AdInstantResponsePage: React.FC = () => {
       ? googleKey
       : `${googleKey.slice(0, 4)}${'•'.repeat(Math.max(googleKey.length - 8, 4))}${googleKey.slice(-4)}`
     : '';
+
+  const formattedGoogleTestPing = lastGoogleTestPingAt
+    ? new Intl.DateTimeFormat(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }).format(new Date(lastGoogleTestPingAt))
+    : null;
 
   const handleConnectFacebook = async () => {
     if (!user?.id) {
@@ -294,12 +305,23 @@ const AdInstantResponsePage: React.FC = () => {
             <p className="text-sm text-gray-500">Lead Form Asset webhook → instant follow-up</p>
           </div>
           {googleKey && (
-            <div
-              className="ml-auto flex items-center gap-1 bg-gray-50 text-gray-700 text-xs font-medium px-2 py-1 rounded-full"
-              title="A key has been generated for your workspace. Paste it into Google Ads to start receiving leads."
-            >
-              <CheckCircle className="w-3 h-3" />
-              Key generated
+            <div className="ml-auto flex flex-col items-end gap-1">
+              <div
+                className="flex items-center gap-1 bg-gray-50 text-gray-700 text-xs font-medium px-2 py-1 rounded-full"
+                title="A key has been generated for your workspace. Paste it into Google Ads to start receiving leads."
+              >
+                <CheckCircle className="w-3 h-3" />
+                Key generated
+              </div>
+              {formattedGoogleTestPing && (
+                <div
+                  className="flex items-center gap-1 text-[11px] font-medium text-green-700"
+                  title={new Date(lastGoogleTestPingAt!).toLocaleString()}
+                >
+                  <Clock className="w-3 h-3" />
+                  Test received {formattedGoogleTestPing}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -398,7 +420,7 @@ const AdInstantResponsePage: React.FC = () => {
               <h4 className="font-medium text-gray-900 mb-2 text-sm">How to set it up in Google Ads</h4>
               <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
                 <li>In Google Ads, open <strong>Assets → Lead forms</strong> and edit the form you want to forward.</li>
-                <li>Scroll to <strong>"Lead delivery options"</strong> → <strong>Webhook integration</strong>.</li>
+                <li>Scroll to <strong>"Lead delivery options"</strong> → <strong>Webhook URL</strong>.</li>
                 <li>Paste the <strong>Webhook URL</strong> and <strong>Webhook Key</strong> above.</li>
                 <li>Click <strong>"Send test data"</strong> in Google Ads to verify. You should see a 200 response.</li>
                 <li>Save the form. New submissions appear in your Leads page within seconds, with an instant AI follow-up call.</li>
