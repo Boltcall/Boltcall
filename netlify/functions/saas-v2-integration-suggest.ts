@@ -181,7 +181,7 @@ async function collectSignals(
         .select(
           'vertical, industry_preset, reputation_manager_config, calcom_webhook_secret',
         )
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .limit(1),
     ),
     safeCount(

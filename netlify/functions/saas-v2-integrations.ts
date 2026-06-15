@@ -302,6 +302,7 @@ const CATALOG: CatalogEntry[] = [
 async function loadConnectionContext(
   supa: ReturnType<typeof getServiceSupabase>,
   userId: string,
+  workspaceId: string,
 ): Promise<ConnectionContext> {
   // Each query is fire-and-forget with a try/catch wrapper so a missing
   // table (e.g. fresh project where a migration hasn't run) just yields an
@@ -375,7 +376,7 @@ async function loadConnectionContext(
       supa
         .from('business_features')
         .select('reputation_manager_config, calcom_webhook_secret')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .limit(1),
     ),
     // Defensive — older schemas store cal.com config in calcom_integrations
@@ -533,9 +534,17 @@ export const handler: Handler = async (event) => {
   }
 
   // ── 3. Build catalog with connection context ──────────────────────────
+  if (!workspaceId) {
+    return {
+      statusCode: 404,
+      headers: cors,
+      body: JSON.stringify({ error: 'No workspace found for this user' }),
+    };
+  }
+
   let ctx: ConnectionContext;
   try {
-    ctx = await loadConnectionContext(supa, userId);
+    ctx = await loadConnectionContext(supa, userId, workspaceId);
   } catch (err) {
     console.warn(
       `[saas-v2-integrations] context load failed user=${userId} err=${

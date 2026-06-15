@@ -58,13 +58,13 @@ function sanitize(s: unknown, max = 500): string {
 
 async function buildKbContext(
   supa: ReturnType<typeof getServiceSupabase>,
-  userId: string,
+  workspaceId: string,
 ): Promise<{ businessName: string; vertical: string; existingFaqs: string }> {
   // Pull the user's business profile (most-recent-first) for tone/vertical context.
   const { data: profileRow } = await supa
     .from('business_profiles')
     .select('business_name, business_type, services_offered, hours, location')
-    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -73,7 +73,7 @@ async function buildKbContext(
   const { data: kbRows } = await supa
     .from('knowledge_base')
     .select('title, content, category')
-    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
     .eq('status', 'active')
     .order('updated_at', { ascending: false })
     .limit(12);
@@ -228,7 +228,7 @@ const handler: Handler = async (event) => {
   const workspaceContext = sanitize(body.workspace_context, 1200);
 
   try {
-    const ctx = await buildKbContext(supa, userId);
+    const ctx = await buildKbContext(supa, workspaceId);
     const draft = await generateDraft(question, workspaceContext, ctx);
 
     await emitDraft(workspaceId, question);

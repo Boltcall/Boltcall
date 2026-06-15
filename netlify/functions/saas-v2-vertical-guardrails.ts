@@ -73,11 +73,12 @@ export const handler: Handler = async (event) => {
     return json(500, { error: 'Workspace lookup failed' });
   }
   if (!workspace) return json(404, { error: 'No workspace found for this user' });
+  const workspaceId = (workspace as { id: string }).id;
 
   const { data: profile } = await supabase
     .from('business_profiles')
     .select('main_category, user_preferences')
-    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
     .limit(1)
     .maybeSingle();
 

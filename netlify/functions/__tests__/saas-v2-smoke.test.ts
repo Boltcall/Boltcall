@@ -54,6 +54,7 @@ interface MockState {
   tableSingle: Record<string, any | null>;
   // Last from() call args (to introspect what the handler queried).
   fromCalls: string[];
+  eqCalls: Array<{ table: string; column: string; value: any }>;
   // Last update payload — useful for asserting handler ignored body workspace_id.
   lastUpdate: any;
 }
@@ -64,6 +65,7 @@ const mockState: MockState = {
   tableData: {},
   tableSingle: {},
   fromCalls: [],
+  eqCalls: [],
   lastUpdate: null,
 };
 
@@ -75,8 +77,17 @@ function defaultWorkspaceRow() {
     v2_enabled: true,
     created_at: new Date('2024-01-01').toISOString(),
     name: 'Test Workspace',
-    v2_setup_state: null,
-    v2_setup_conversation_id: null,
+    v2_setup_state: {
+      conversation: [],
+      extracted: {
+        businessName: 'Test HVAC',
+        industry: 'HVAC',
+        country: 'us',
+        languages: ['en'],
+      },
+    },
+    v2_setup_conversation_id: 'conv-1',
+    v2_setup_state_version: 0,
     v2_setup_status: 'in_progress',
     v2_setup_started_at: null,
   };
@@ -87,11 +98,34 @@ function resetMockState() {
   mockState.authError = null;
   mockState.tableData = {
     workspaces: [defaultWorkspaceRow()],
+    business_profiles: [
+      {
+        id: 'bp-1',
+        user_id: 'jwt-user-A',
+        workspace_id: 'workspace-A',
+        business_name: 'Test HVAC',
+        main_category: 'HVAC',
+        industry: 'HVAC',
+        user_preferences: {},
+      },
+    ],
+    leads: [
+      {
+        id: '11111111-1111-1111-1111-111111111111',
+        user_id: 'jwt-user-A',
+        first_name: 'Sam',
+        last_name: 'Customer',
+        status: 'new',
+      },
+    ],
   };
   mockState.tableSingle = {
     workspaces: defaultWorkspaceRow(),
+    business_profiles: mockState.tableData.business_profiles[0],
+    leads: mockState.tableData.leads[0],
   };
   mockState.fromCalls = [];
+  mockState.eqCalls = [];
   mockState.lastUpdate = null;
 }
 
@@ -133,6 +167,12 @@ function makeChain(table: string): any {
       if (prop === 'insert' || prop === 'upsert' || prop === 'delete') {
         return (_args?: any) => {
           // Allow further chaining (.select(), .eq(), .single() etc.)
+          return makeChain(table);
+        };
+      }
+      if (prop === 'eq') {
+        return (column: string, value: any) => {
+          mockState.eqCalls.push({ table, column, value });
           return makeChain(table);
         };
       }
@@ -490,7 +530,7 @@ const endpoints: Array<{
   happyBody?: Record<string, any>;
   happyQuery?: Record<string, string>;
 }> = [
-  { name: 'saas-v2-agent-stress-test', importPath: '../saas-v2-agent-stress-test', method: 'POST', happyBody: { agent_id: 'agent-1', scenarios: ['voicemail'] } },
+  { name: 'saas-v2-agent-stress-test', importPath: '../saas-v2-agent-stress-test', method: 'POST', happyBody: { scenario_id: 'caller-pricing-objection' } },
   { name: 'saas-v2-agent-suggest-edits', importPath: '../saas-v2-agent-suggest-edits', method: 'GET', happyQuery: { agent_id: 'agent-1' } },
   { name: 'saas-v2-agent-summary', importPath: '../saas-v2-agent-summary', method: 'GET' },
   { name: 'saas-v2-call-detail', importPath: '../saas-v2-call-detail', method: 'GET', happyQuery: { call_id: 'call-1' } },
@@ -502,7 +542,7 @@ const endpoints: Array<{
   { name: 'saas-v2-knowledge-detect-gaps', importPath: '../saas-v2-knowledge-detect-gaps', method: 'GET' },
   { name: 'saas-v2-knowledge-draft-faq', importPath: '../saas-v2-knowledge-draft-faq', method: 'POST', happyBody: { question: 'What are your hours?' } },
   { name: 'saas-v2-knowledge-list', importPath: '../saas-v2-knowledge-list', method: 'GET' },
-  { name: 'saas-v2-lead-detail', importPath: '../saas-v2-lead-detail', method: 'GET', happyQuery: { lead_id: 'lead-1' } },
+  { name: 'saas-v2-lead-detail', importPath: '../saas-v2-lead-detail', method: 'GET', happyQuery: { lead_id: '11111111-1111-1111-1111-111111111111' } },
   { name: 'saas-v2-leads', importPath: '../saas-v2-leads', method: 'GET' },
   { name: 'saas-v2-message-draft-reply', importPath: '../saas-v2-message-draft-reply', method: 'POST', happyBody: { thread_id: 'thread-1' } },
   { name: 'saas-v2-message-thread', importPath: '../saas-v2-message-thread', method: 'GET', happyQuery: { thread_id: 'thread-1' } },
@@ -514,13 +554,47 @@ const endpoints: Array<{
   { name: 'saas-v2-reviews', importPath: '../saas-v2-reviews', method: 'GET' },
   { name: 'saas-v2-settings-get', importPath: '../saas-v2-settings-get', method: 'GET' },
   { name: 'saas-v2-settings-suggest', importPath: '../saas-v2-settings-suggest', method: 'GET' },
-  { name: 'saas-v2-settings-update', importPath: '../saas-v2-settings-update', method: 'POST', happyBody: { patch: { greeting: 'Hi!' } } },
+  { name: 'saas-v2-settings-update', importPath: '../saas-v2-settings-update', method: 'POST', happyBody: { patch: { name: 'Test Workspace' } } },
   { name: 'saas-v2-setup-conversation', importPath: '../saas-v2-setup-conversation', method: 'POST', happyBody: { user_message: 'Hi, my business is Acme Plumbing.' } },
-  { name: 'saas-v2-setup-finalize', importPath: '../saas-v2-setup-finalize', method: 'POST', happyBody: { conversation_id: 'conv-1', confirm: true } },
+  { name: 'saas-v2-setup-finalize', importPath: '../saas-v2-setup-finalize', method: 'POST', happyBody: { conversation_id: 'conv-1', confirm: true, expected_state_version: 0 } },
   { name: 'saas-v2-setup-state', importPath: '../saas-v2-setup-state', method: 'GET' },
   { name: 'saas-v2-toggle', importPath: '../saas-v2-toggle', method: 'POST', happyBody: { enabled: true } },
   { name: 'saas-v2-vertical-guardrails', importPath: '../saas-v2-vertical-guardrails', method: 'GET' },
 ];
+
+const workspaceScopedTablesByEndpoint: Record<string, string[]> = {
+  'saas-v2-agent-stress-test': ['agents'],
+  'saas-v2-agent-suggest-edits': ['agents'],
+  'saas-v2-agent-summary': ['business_profiles', 'agents'],
+  'saas-v2-help-ask': ['business_profiles', 'agents', 'phone_numbers', 'facebook_page_connections'],
+  'saas-v2-integration-suggest': ['business_features'],
+  'saas-v2-integrations': ['business_features'],
+  'saas-v2-knowledge-draft-faq': ['business_profiles', 'knowledge_base'],
+  'saas-v2-knowledge-list': ['knowledge_base'],
+  'saas-v2-lead-detail': ['business_profiles'],
+  'saas-v2-leads': ['business_profiles'],
+  'saas-v2-settings-get': ['business_profiles'],
+  'saas-v2-settings-suggest': ['business_profiles'],
+  'saas-v2-settings-update': ['business_profiles'],
+  'saas-v2-setup-finalize': ['business_profiles'],
+  'saas-v2-vertical-guardrails': ['business_profiles'],
+};
+
+function expectUsesWorkspaceScopedFilters(endpointName: string) {
+  const tables = workspaceScopedTablesByEndpoint[endpointName] ?? [];
+  for (const table of tables) {
+    expect(mockState.eqCalls).toContainEqual({
+      table,
+      column: 'workspace_id',
+      value: 'workspace-A',
+    });
+    expect(mockState.eqCalls).not.toContainEqual({
+      table,
+      column: 'user_id',
+      value: 'jwt-user-A',
+    });
+  }
+}
 
 for (const ep of endpoints) {
   describe(`[V2 smoke] ${ep.name}`, () => {
@@ -548,6 +622,13 @@ for (const ep of endpoints) {
     it(`${ep.name} returns a non-5xx response with valid auth + minimal valid input`, async () => {
       await expectHappyPath(handler, ep.method, ep.happyBody, ep.happyQuery);
     });
+
+    if (workspaceScopedTablesByEndpoint[ep.name]) {
+      it(`${ep.name} scopes workspace-aware data tables by workspace_id`, async () => {
+        await expectHappyPath(handler, ep.method, ep.happyBody, ep.happyQuery);
+        expectUsesWorkspaceScopedFilters(ep.name);
+      });
+    }
   });
 }
 

@@ -313,7 +313,7 @@ function fmtDate(value: unknown): string {
   return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
 }
 
-async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<string> {
+async function loadWorkspaceDiagnostics(supa: any, userId: string, workspaceId: string): Promise<string> {
   try {
     const [
       profileResult,
@@ -326,18 +326,18 @@ async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<stri
       supa
         .from('business_profiles')
         .select('business_name, main_category, website_url, owner_name')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .maybeSingle(),
       supa
         .from('agents')
         .select('id, name, status, agent_type, retell_agent_id, updated_at')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
         .limit(5),
       supa
         .from('phone_numbers')
         .select('phone_number, status, phone_type, assigned_agent_id, created_at')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
         .limit(5),
       supa
@@ -355,7 +355,7 @@ async function loadWorkspaceDiagnostics(supa: any, userId: string): Promise<stri
       supa
         .from('facebook_page_connections')
         .select('page_id, page_name, created_at')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .limit(3),
     ]);
 
@@ -585,7 +585,7 @@ export const handler: Handler = async (event) => {
           .join('\n\n')
       : '(no workspace knowledge base matches)';
 
-  const diagnosticsContext = await loadWorkspaceDiagnostics(supa, userId);
+  const diagnosticsContext = await loadWorkspaceDiagnostics(supa, userId, workspaceId);
 
   const systemPrompt = [
     'You are the Boltcall help assistant inside the V2 dashboard.',

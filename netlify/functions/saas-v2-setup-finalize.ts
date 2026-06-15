@@ -259,7 +259,7 @@ export const handler: Handler = async (event) => {
     const { data: existingBp } = await supa
       .from('business_profiles')
       .select('id')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .limit(1)
       .maybeSingle();
 

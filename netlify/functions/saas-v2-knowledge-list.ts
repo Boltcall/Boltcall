@@ -209,7 +209,7 @@ const handler: Handler = async (event) => {
     const { data: rows, error: kbErr } = await supa
       .from('knowledge_base')
       .select('id, title, content, category, updated_at')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .eq('status', 'active')
       .order('updated_at', { ascending: false })
       .limit(500);

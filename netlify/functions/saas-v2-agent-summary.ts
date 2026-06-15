@@ -220,7 +220,7 @@ export const handler: Handler = async (event) => {
     const { data: profile } = await supa
       .from('business_profiles')
       .select('main_category')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspace.id)
       .limit(1)
       .maybeSingle();
     vertical =
@@ -240,7 +240,7 @@ export const handler: Handler = async (event) => {
     const { data, error } = await supa
       .from('agents')
       .select('id, name, retell_agent_id, system_prompt, system_prompt_synced_at')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspace.id)
       .order('system_prompt_synced_at', { ascending: false, nullsFirst: false })
       .limit(1)
       .maybeSingle();

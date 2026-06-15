@@ -309,7 +309,7 @@ export const handler: Handler = async (event) => {
     supa
       .from('business_profiles')
       .select('business_name, main_category, opening_hours, languages, user_preferences')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .limit(1)
       .maybeSingle(),
     supa

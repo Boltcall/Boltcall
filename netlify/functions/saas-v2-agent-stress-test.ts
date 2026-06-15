@@ -265,13 +265,13 @@ async function judgeScenarioViaSonnet(
 
 async function loadAgentPrompt(
   supa: ReturnType<typeof getServiceSupabase>,
-  userId: string,
+  workspaceId: string,
 ): Promise<{ prompt: string; agent_id: string | null }> {
   try {
     const { data } = await supa
       .from('agents')
       .select('id, system_prompt')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .order('system_prompt_synced_at', { ascending: false, nullsFirst: false })
       .limit(1)
       .maybeSingle();
@@ -346,7 +346,7 @@ export const handler: Handler = async (event) => {
   }
   const workspaceId = (workspaceRow as { id: string }).id;
 
-  const { prompt: agentPrompt } = await loadAgentPrompt(supa, userId);
+  const { prompt: agentPrompt } = await loadAgentPrompt(supa, workspaceId);
   if (!agentPrompt) {
     return jsonResponse(409, {
       error:
