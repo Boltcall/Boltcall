@@ -12,6 +12,7 @@ import BlogRelatedArticles from '../components/blog/BlogRelatedArticles';
 import { useTableOfContents } from '../hooks/useTableOfContents';
 import { updateMetaDescription } from '../lib/utils';
 import { createArticleSchema, createBreadcrumbSchema, createFAQSchema, injectSchemas } from '../lib/schema';
+import { getAbsoluteBlogPreviewImage, updateBlogPreviewMeta } from '../lib/blogPreviewImages';
 
 type BlogIntent = 'how-to' | 'comparison' | 'buyer' | 'industry' | 'cost' | 'stats' | 'faq' | 'explainer';
 
@@ -510,14 +511,16 @@ export default function CanonicalBlogArticlePage() {
     window.scrollTo(0, 0);
     document.title = `${article.title} | Boltcall`;
     updateMetaDescription(article.description.slice(0, 155));
+    const cleanupMeta = updateBlogPreviewMeta(article.path, article.title, article.description);
+    const cleanupSchemas = injectSchemas([
 
-    return injectSchemas([
       createArticleSchema({
         headline: article.title,
         description: article.description,
         datePublished: '2026-06-14',
         dateModified: '2026-06-14',
         url: article.path,
+        image: getAbsoluteBlogPreviewImage(article.path),
       }),
       createFAQSchema(article.faqs),
       createBreadcrumbSchema([
@@ -535,6 +538,11 @@ export default function CanonicalBlogArticlePage() {
         },
       },
     ]);
+
+    return () => {
+      cleanupMeta();
+      cleanupSchemas();
+    };
   }, [article]);
 
   return (

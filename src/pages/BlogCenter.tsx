@@ -6,6 +6,7 @@ import { ArrowRight, Calendar, Clock, Star } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
+import { getBlogPreviewImage } from '../lib/blogPreviewImages';
 
 import { AppleSpotlight } from '../components/ui/apple-spotlight';
 
@@ -610,27 +611,20 @@ const BlogCenter: React.FC = () => {
               >
                 <Link to={post.slug} className="block flex-grow flex flex-col">
                   {/* Featured image */}
-                  {post.image ? (
-                    <div className="relative overflow-hidden h-44 flex-shrink-0">
-                      <img
-                        src={post.image}
-                        alt=""
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                      {post.featured && (
-                        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
-                          <Star className="w-3 h-3" strokeWidth={2.5} />
-                          Featured
-                        </div>
-                      )}
-                    </div>
-                  ) : post.featured ? (
-                    <div className="relative h-14 bg-gradient-to-r from-blue-600 to-blue-500 flex-shrink-0 flex items-center px-5 gap-2">
-                      <Star className="w-4 h-4 text-white" strokeWidth={2.5} />
-                      <span className="text-white text-xs font-bold uppercase tracking-wider">Featured</span>
-                    </div>
-                  ) : null}
+                  <div className="relative overflow-hidden h-44 flex-shrink-0 bg-white">
+                    <img
+                      src={getBlogPreviewImage(post.slug)}
+                      alt=""
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    {post.featured && (
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">
+                        <Star className="w-3 h-3" strokeWidth={2.5} />
+                        Featured
+                      </div>
+                    )}
+                  </div>
 
                   <div className="p-6 flex flex-col flex-grow">
                     {/* Primary Category Badge */}

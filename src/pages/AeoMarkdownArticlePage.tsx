@@ -11,6 +11,7 @@ import BlogClosingCta from '../components/blog/BlogClosingCta';
 import BlogRelatedArticles from '../components/blog/BlogRelatedArticles';
 import { useTableOfContents } from '../hooks/useTableOfContents';
 import { updateMetaDescription } from '../lib/utils';
+import { getAbsoluteBlogPreviewImage, updateBlogPreviewMeta } from '../lib/blogPreviewImages';
 import { createArticleSchema, createFAQSchema, injectSchemas } from '../lib/schema';
 import { type AeoFaq, getAeoArticleBySlug } from '../lib/aeoContent';
 
@@ -235,17 +236,24 @@ export default function AeoMarkdownArticlePage() {
       .replace(/\s+/g, ' ')
       .slice(0, 155);
     updateMetaDescription(description);
+    const cleanupMeta = updateBlogPreviewMeta(article.route, article.title, description);
+    const cleanupSchemas = injectSchemas([
 
-    return injectSchemas([
       createArticleSchema({
         headline: article.title,
         description,
         datePublished: article.created || new Date().toISOString().slice(0, 10),
         dateModified: article.created || new Date().toISOString().slice(0, 10),
         url: article.route.replace(/\/$/, ''),
+        image: getAbsoluteBlogPreviewImage(article.route),
       }),
       createFAQSchema(prepared.faqs),
     ]);
+
+    return () => {
+      cleanupMeta();
+      cleanupSchemas();
+    };
   }, [article, prepared]);
 
   if (!article || !prepared) {

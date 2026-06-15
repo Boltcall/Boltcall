@@ -28,6 +28,23 @@ function extractBlogRoutes() {
   return [...unique.values()];
 }
 
+function previewImagePath(pathname) {
+  const key = pathname
+    .replace(/^https?:\/\/[^/]+/i, '')
+    .replace(/\/$/, '')
+    .replace(/^\//, '')
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+
+  return join('public', 'images', 'blog', 'previews', `${key}.svg`);
+}
+
+function extractBlogCenterSlugs() {
+  const body = readFileSync('src/pages/BlogCenter.tsx', 'utf8');
+  return [...body.matchAll(/slug:\s*'([^']+)'/g)].map((match) => match[1]);
+}
+
 function lastH2sFromMarkdown(body) {
   return [...body.matchAll(/^##\s+(.+)$/gm)].map((match) => match[1].trim());
 }
@@ -69,6 +86,10 @@ function auditTextSurface(label, body) {
 
 const routeIssues = [];
 for (const route of extractBlogRoutes()) {
+  if (!existsSync(previewImagePath(route.path))) {
+    routeIssues.push({ item: route.path, issue: `missing preview image ${previewImagePath(route.path)}` });
+  }
+
   if (route.component === 'CanonicalBlogArticlePage') {
     continue;
   }
@@ -86,6 +107,13 @@ for (const route of extractBlogRoutes()) {
 const markdownIssues = [];
 for (const fileName of readdirSync('src/content/aeo').filter((file) => file.endsWith('.md'))) {
   const file = join('src/content/aeo', fileName);
+  const rawBody = readFileSync(file, 'utf8');
+  const slug = rawBody.match(/^slug:\s*([^\n]+)/m)?.[1]?.trim() || fileName.replace(/\.md$/, '');
+  const route = `/blog/${slug}`;
+  if (!existsSync(previewImagePath(route))) {
+    markdownIssues.push({ item: route, issue: `missing preview image ${previewImagePath(route)}` });
+  }
+
   let body = readFileSync(file, 'utf8')
     .replace(/^##\s+FAQ\s*$/gim, '## FAQs')
     .replace(/^##\s+(CTA|Bottom Line)\s*$/gim, '## Conclusion');
@@ -105,13 +133,21 @@ for (const fileName of readdirSync('src/content/aeo').filter((file) => file.ends
     body = `${beforeConclusion}\n\n${faqBlock}\n\n${conclusionBlock}`;
   }
   const issues = auditTextSurface(fileName, body);
-  for (const issue of issues) markdownIssues.push({ item: `/blog/${fileName.replace(/\.md$/, '')}`, issue });
+  for (const issue of issues) markdownIssues.push({ item: route, issue });
 }
 
-const allIssues = [...routeIssues, ...markdownIssues];
+const blogCenterIssues = [];
+for (const slug of extractBlogCenterSlugs()) {
+  if (!existsSync(previewImagePath(slug))) {
+    blogCenterIssues.push({ item: slug, issue: `missing preview image ${previewImagePath(slug)}` });
+  }
+}
+
+const allIssues = [...routeIssues, ...markdownIssues, ...blogCenterIssues];
 const summary = {
   checkedRoutes: extractBlogRoutes().length,
   checkedMarkdownArticles: readdirSync('src/content/aeo').filter((file) => file.endsWith('.md')).length,
+  checkedBlogCenterPreviews: extractBlogCenterSlugs().length,
   issueCount: allIssues.length,
 };
 
