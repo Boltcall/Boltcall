@@ -155,6 +155,7 @@ describe('saas-v2-help-ask support escalation', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
     mocks.chatCompletion.mockResolvedValue('Check the failed calls doc first. If calls are still failing, support can help you trace the phone routing.');
     mocks.generateEmbedding.mockResolvedValue(null);
     mocks.notifyInfo.mockResolvedValue(undefined);
@@ -248,6 +249,34 @@ describe('saas-v2-help-ask support escalation', () => {
     expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Support escalation'));
     expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Blue Star HVAC'));
     expect(mocks.notifyInfo).toHaveBeenCalledWith(expect.stringContaining('Ticket: ticket-1'));
+  });
+
+  it('returns fallback JSON and still creates a ticket when the help LLM times out', async () => {
+    vi.stubEnv('SAAS_V2_HELP_LLM_TIMEOUT_MS', '1');
+    mocks.chatCompletion.mockImplementation(() => new Promise(() => {}));
+    const supabase = makeSupabase();
+    mocks.getServiceSupabase.mockReturnValue(supabase);
+    const { handler } = await import('../saas-v2-help-ask');
+
+    const res = await handler(
+      makeEvent('Urgent: calls are broken and I need a human to help me now.'),
+      {} as any,
+    );
+    const body = JSON.parse(res.body || '{}');
+
+    expect(res.statusCode).toBe(200);
+    expect(body.answer).toContain('Boltcall docs');
+    expect(body.support).toEqual(expect.objectContaining({
+      escalated: true,
+      channel: 'internal_support',
+      ticket_id: 'ticket-1',
+    }));
+    expect(supabase.supportTicketInserts).toHaveLength(1);
+    expect(supabase.supportTicketInserts[0]).toEqual(expect.objectContaining({
+      workspace_id: 'workspace-1',
+      priority: 'urgent',
+      source: 'v2_help',
+    }));
   });
 
   it('adds a live workspace diagnostic snapshot to the support prompt', async () => {

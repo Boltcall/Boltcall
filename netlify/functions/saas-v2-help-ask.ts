@@ -31,6 +31,7 @@ import { redactSecrets } from './_shared/redact-secrets';
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 const DOCS_BASE = 'https://boltcall.mintlify.app';
+const DEFAULT_HELP_LLM_TIMEOUT_MS = 9000;
 
 interface AskBody {
   question: string;
@@ -213,6 +214,33 @@ function pickDocs(question: string): HelpSource[] {
 function clamp(text: string, max: number): string {
   if (!text) return '';
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function helpLlmTimeoutMs(): number {
+  const raw = Number(process.env.SAAS_V2_HELP_LLM_TIMEOUT_MS || DEFAULT_HELP_LLM_TIMEOUT_MS);
+  if (!Number.isFinite(raw) || raw <= 0) return DEFAULT_HELP_LLM_TIMEOUT_MS;
+  return Math.min(raw, 20000);
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+function fallbackHelpAnswer(): string {
+  return (
+    "Here's what I can point you to from the Boltcall docs. " +
+    'Check the linked source below first, then ask for support if you want a human to review your workspace context. ' +
+    'If this is urgent, the support ticket includes your diagnostics so the team can investigate without asking you to repeat setup details.'
+  );
 }
 
 function asksForHumanSupport(question: string): boolean {
@@ -665,16 +693,20 @@ export const handler: Handler = async (event) => {
   let answer = '';
   let usedModel: string | undefined;
   try {
-    answer = await chatCompletion(systemPrompt, userPrompt, {
-      tier: 'heavy',
-      maxTokens: 800,
-    });
+    answer = await withTimeout(
+      chatCompletion(systemPrompt, userPrompt, {
+        tier: 'light',
+        maxTokens: 650,
+      }),
+      helpLlmTimeoutMs(),
+      'V2 help assistant LLM',
+    );
     usedModel = process.env.AZURE_OPENAI_FOUNDRY_KEY
-      ? 'foundry-heavy'
+      ? 'foundry-light'
       : process.env.AZURE_OPENAI_API_KEY
-        ? 'azure-legacy-heavy'
+        ? 'azure-legacy-light'
         : process.env.OPENAI_API_KEY
-          ? 'openai-heavy'
+          ? 'openai-light'
           : 'anthropic-sonnet';
   } catch (llmErr) {
     console.warn(
@@ -684,8 +716,7 @@ export const handler: Handler = async (event) => {
     );
     // Heuristic fallback so the user still sees a useful answer + sources
     // even when no AI provider is configured (preview / disaster mode).
-    answer =
-      "Here\'s what I can point you to from the Boltcall docs — open the linked source below for the full walkthrough. If you need a hand applying it to your workspace, email support@boltcall.org and a human will jump in.";
+    answer = fallbackHelpAnswer();
     usedModel = 'fallback-heuristic';
   }
 

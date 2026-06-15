@@ -5,6 +5,23 @@
 
 const BOT_TOKEN = '8548570744:AAFiridwZ2wruW0kTXQRUASRXhn7AiGN-6g';
 const CHAT_ID = '6196587627';
+const NOTIFY_TIMEOUT_MS = 2500;
+
+async function sendTelegramMessage(body: Record<string, unknown>): Promise<void> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), NOTIFY_TIMEOUT_MS);
+
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 /**
  * Send a Telegram notification for critical errors.
@@ -37,11 +54,7 @@ export async function notifyError(
   }
 
   try {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'Markdown' }),
-    });
+    await sendTelegramMessage({ chat_id: CHAT_ID, text, parse_mode: 'Markdown' });
   } catch (e) {
     console.error('Failed to send Telegram error notification:', e);
   }
@@ -53,14 +66,10 @@ export async function notifyError(
  */
 export async function notifyInfo(message: string): Promise<void> {
   try {
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: message,
-        parse_mode: 'Markdown',
-      }),
+    await sendTelegramMessage({
+      chat_id: CHAT_ID,
+      text: message,
+      parse_mode: 'Markdown',
     });
   } catch (e) {
     console.error('Failed to send Telegram info notification:', e);
