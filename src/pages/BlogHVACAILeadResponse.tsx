@@ -17,6 +17,37 @@ const BlogHVACAILeadResponse: React.FC = () => {
     document.title = 'How HVAC Companies Can Book More Service Calls with AI Lead Response';
     updateMetaDescription('Discover how HVAC companies use AI lead response to book more service calls. Learn the speed-to-lead strategies that top HVAC businesses use to win every job.');
 
+    const faqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can AI lead response answer HVAC calls after hours?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. AI lead response can answer after-hours HVAC calls, capture the issue, qualify urgency, and book or route the lead based on your rules."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does an HVAC company need to replace its dispatcher?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. AI lead response handles repetitive intake and booking work so dispatchers can focus on complex jobs, technician coordination, and customer issues that need a human."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How fast should an HVAC company respond to a new lead?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The best target is immediate response. In urgent categories like HVAC, every minute of delay gives the homeowner another reason to call a competitor."
+          }
+        }
+      ]
+    };
+
     const articleSchema = {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -55,6 +86,15 @@ const BlogHVACAILeadResponse: React.FC = () => {
     script.text = JSON.stringify(articleSchema);
     document.head.appendChild(script);
 
+    const existingFaqScript = document.getElementById('faq-schema');
+    if (existingFaqScript) existingFaqScript.remove();
+
+    const faqScript = document.createElement('script');
+    faqScript.id = 'faq-schema';
+    faqScript.type = 'application/ld+json';
+    faqScript.text = JSON.stringify(faqSchema);
+    document.head.appendChild(faqScript);
+
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';
     bcScript.id = 'breadcrumb-jsonld';
@@ -84,6 +124,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
     return () => {
       document.getElementById('person-schema')?.remove();
       document.getElementById('breadcrumb-jsonld')?.remove();
+      document.getElementById('faq-schema')?.remove();
       const scriptToRemove = document.getElementById('article-schema');
       if (scriptToRemove) scriptToRemove.remove();
     };
@@ -558,18 +599,70 @@ const BlogHVACAILeadResponse: React.FC = () => {
               </div>
             </motion.section>
 
-            {/* Editor's Note */}
-            <div className="mb-12">
-              <p className="text-sm font-bold text-gray-900 mb-1">Note — April 2026</p>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                The HVAC industry has seen rapid adoption of AI-powered dispatch and lead response
-                tools in 2025 and 2026. Companies that implemented speed-to-lead systems in this
-                period report capturing market share from competitors who still rely on manual
-                callbacks. The 5-minute rule is no longer a best practice — it is the baseline
-                expectation from homeowners who have experienced instant response from other
-                service categories.
-              </p>
-            </div>
+            {/* FAQs */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.75 }}
+              className="mb-12"
+            >
+              <h2 id="faqs" className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
+                <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
+                FAQs
+              </h2>
+              <div className="space-y-8 text-gray-700 leading-relaxed">
+                <div>
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">Can AI answer after-hours HVAC calls?</h3>
+                  <p>
+                    Yes. AI lead response can answer after-hours calls, capture the service issue,
+                    qualify urgency, and either book the job or route emergency calls based on your
+                    dispatch rules.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">Does AI replace my dispatcher?</h3>
+                  <p>
+                    No. AI handles the repetitive intake work: missed calls, web forms, basic
+                    qualification, reminders, and booking handoff. Your dispatcher stays focused on
+                    technician coordination, complex calls, and high-value customer situations.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">How fast should HVAC teams respond?</h3>
+                  <p>
+                    Immediately. HVAC is urgent by nature. Every minute of delay gives the homeowner
+                    time to call another company, especially during heat waves, cold snaps, and
+                    weekend emergencies.
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* Conclusion */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="mb-12"
+            >
+              <h2 id="conclusion" className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-start gap-3">
+                <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
+                Conclusion
+              </h2>
+              <div className="space-y-5 text-gray-700 leading-relaxed">
+                <p>
+                  HVAC companies do not lose most leads because their service is weak. They lose
+                  leads because the homeowner reaches someone else first. AI lead response closes
+                  that gap by answering instantly, collecting the right details, and moving the
+                  customer toward a booked appointment while intent is still hot.
+                </p>
+                <p>
+                  The fastest HVAC company is usually the one that gets the job. Make that speed
+                  automatic, and every call, form, text, and after-hours request becomes easier to
+                  capture.
+                </p>
+              </div>
+            </motion.section>
 
             {/* CTA Section */}
             <motion.div
@@ -666,7 +759,6 @@ const BlogHVACAILeadResponse: React.FC = () => {
                 ]}
                 cta={{
                   title: 'Missed jobs?',
-                  body: 'Catch the next one.',
                   href: '/signup',
                   label: 'Start for free',
                 }}

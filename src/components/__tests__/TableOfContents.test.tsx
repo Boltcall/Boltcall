@@ -32,7 +32,6 @@ describe('TableOfContents', () => {
         headings={headings}
         cta={{
           title: 'Missed jobs?',
-          body: 'Catch the next one.',
           href: '/signup',
           label: 'Start for free',
         }}
@@ -40,7 +39,6 @@ describe('TableOfContents', () => {
     );
 
     expect(screen.getByText('Missed jobs?')).toBeInTheDocument();
-    expect(screen.getByText('Catch the next one.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Start for free' })).toHaveAttribute('href', '/signup');
     expect(screen.getByLabelText('Missed jobs?')).toBeInTheDocument();
   });

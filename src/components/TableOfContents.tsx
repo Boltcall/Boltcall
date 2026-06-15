@@ -15,7 +15,6 @@ interface TableOfContentsProps {
   }>;
   cta?: {
     title: string;
-    body?: string;
     href: string;
     label: string;
   };
@@ -169,9 +168,6 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, socialLinks
                   </div>
                 </div>
                 <p className="text-sm font-semibold leading-5 text-gray-900">{cta.title}</p>
-                {cta.body && (
-                  <p className="mt-1 text-xs leading-4 text-gray-500">{cta.body}</p>
-                )}
                 <a
                   href={cta.href}
                   className="mt-3 inline-flex h-8 items-center justify-center rounded-md border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
