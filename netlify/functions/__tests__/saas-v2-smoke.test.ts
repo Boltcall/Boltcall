@@ -18,6 +18,10 @@
  * describe blocks so each endpoint isolates its mocks.
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -55,6 +59,7 @@ interface MockState {
   // Last from() call args (to introspect what the handler queried).
   fromCalls: string[];
   eqCalls: Array<{ table: string; column: string; value: any }>;
+  writeCalls: Array<{ table: string; method: 'insert' | 'upsert' | 'update'; payload: any }>;
   // Last update payload — useful for asserting handler ignored body workspace_id.
   lastUpdate: any;
 }
@@ -66,6 +71,7 @@ const mockState: MockState = {
   tableSingle: {},
   fromCalls: [],
   eqCalls: [],
+  writeCalls: [],
   lastUpdate: null,
 };
 
@@ -84,6 +90,11 @@ function defaultWorkspaceRow() {
         industry: 'HVAC',
         country: 'us',
         languages: ['en'],
+        businessPhone: '+15555550123',
+        addressLine1: '123 Main St',
+        city: 'Austin',
+        state: 'TX',
+        postalCode: '78701',
       },
     },
     v2_setup_conversation_id: 'conv-1',
@@ -221,6 +232,7 @@ function resetMockState() {
   };
   mockState.fromCalls = [];
   mockState.eqCalls = [];
+  mockState.writeCalls = [];
   mockState.lastUpdate = null;
 }
 
@@ -256,10 +268,18 @@ function makeChain(table: string): any {
       if (prop === 'update') {
         return (payload: any) => {
           mockState.lastUpdate = { table, payload };
+          mockState.writeCalls.push({ table, method: 'update', payload });
           return makeChain(table);
         };
       }
-      if (prop === 'insert' || prop === 'upsert' || prop === 'delete') {
+      if (prop === 'insert' || prop === 'upsert') {
+        return (payload?: any) => {
+          mockState.writeCalls.push({ table, method: prop, payload });
+          // Allow further chaining (.select(), .eq(), .single() etc.)
+          return makeChain(table);
+        };
+      }
+      if (prop === 'delete') {
         return (_args?: any) => {
           // Allow further chaining (.select(), .eq(), .single() etc.)
           return makeChain(table);
@@ -685,18 +705,67 @@ const workspaceScopedTablesByEndpoint: Record<string, string[]> = {
   'saas-v2-settings-get': ['business_profiles', 'locations'],
   'saas-v2-settings-suggest': ['business_profiles', 'locations'],
   'saas-v2-settings-update': ['business_profiles', 'locations'],
-  'saas-v2-setup-finalize': ['business_profiles'],
+  'saas-v2-setup-finalize': ['business_profiles', 'locations'],
   'saas-v2-vertical-guardrails': ['business_profiles'],
 };
+
+const workspaceAwareTables = [
+  'business_features',
+  'facebook_page_connections',
+  'locations',
+  'user_integrations',
+  'whatsapp_settings',
+];
+
+function discoverWorkspaceAwareTablesByEndpoint() {
+  const testsDir = path.dirname(fileURLToPath(import.meta.url));
+  const functionsDir = path.resolve(testsDir, '..');
+  const discovered: Record<string, string[]> = {};
+
+  for (const file of fs.readdirSync(functionsDir)) {
+    if (!/^saas-v2-.*\.ts$/.test(file)) continue;
+    const endpointName = file.replace(/\.ts$/, '');
+    const source = fs.readFileSync(path.join(functionsDir, file), 'utf8');
+    for (const table of workspaceAwareTables) {
+      if (source.includes(`.from('${table}')`) || source.includes(`.from("${table}")`)) {
+        discovered[endpointName] ??= [];
+        discovered[endpointName].push(table);
+      }
+    }
+  }
+
+  return Object.fromEntries(
+    Object.entries(discovered).map(([endpoint, tables]) => [endpoint, tables.sort()]),
+  );
+}
+
+describe('[V2 smoke] workspace-scope assertion coverage', () => {
+  it('covers every V2 use of workspace-aware tables in runtime scope assertions', () => {
+    expect(discoverWorkspaceAwareTablesByEndpoint()).toEqual(
+      Object.fromEntries(
+        Object.entries(workspaceScopedTablesByEndpoint)
+          .filter(([, tables]) => tables.some((table) => workspaceAwareTables.includes(table)))
+          .map(([endpoint, tables]) => [
+            endpoint,
+            tables.filter((table) => workspaceAwareTables.includes(table)).sort(),
+          ]),
+      ),
+    );
+  });
+});
 
 function expectUsesWorkspaceScopedFilters(endpointName: string) {
   const tables = workspaceScopedTablesByEndpoint[endpointName] ?? [];
   for (const table of tables) {
-    expect(mockState.eqCalls).toContainEqual({
-      table,
-      column: 'workspace_id',
-      value: 'workspace-A',
+    const hasWorkspaceEq = mockState.eqCalls.some(
+      (call) => call.table === table && call.column === 'workspace_id' && call.value === 'workspace-A',
+    );
+    const hasWorkspaceWrite = mockState.writeCalls.some((call) => {
+      if (call.table !== table) return false;
+      const rows = Array.isArray(call.payload) ? call.payload : [call.payload];
+      return rows.some((row) => row?.workspace_id === 'workspace-A');
     });
+    expect(hasWorkspaceEq || hasWorkspaceWrite).toBe(true);
     expect(mockState.eqCalls).not.toContainEqual({
       table,
       column: 'user_id',
