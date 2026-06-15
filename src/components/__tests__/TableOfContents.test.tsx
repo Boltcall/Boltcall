@@ -31,16 +31,17 @@ describe('TableOfContents', () => {
       <TableOfContents
         headings={headings}
         cta={{
-          title: 'Recover missed jobs',
-          href: '/ai-revenue-audit',
-          label: 'Get the audit',
+          title: 'Missed jobs?',
+          body: 'Catch the next one.',
+          href: '/signup',
+          label: 'Start for free',
         }}
       />,
     );
 
-    expect(screen.getByText('Recover missed jobs')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Get the audit' })).toHaveAttribute('href', '/ai-revenue-audit');
-    expect(screen.getByLabelText('Recover missed jobs')).toBeInTheDocument();
-    expect(screen.queryByText('See how much revenue slow response is costing.')).not.toBeInTheDocument();
+    expect(screen.getByText('Missed jobs?')).toBeInTheDocument();
+    expect(screen.getByText('Catch the next one.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start for free' })).toHaveAttribute('href', '/signup');
+    expect(screen.getByLabelText('Missed jobs?')).toBeInTheDocument();
   });
 });

@@ -576,33 +576,32 @@ const BlogHVACAILeadResponse: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
-              className="my-16"
+              className="my-12"
             >
               <div className="flex flex-col items-center justify-center text-center">
-                <div className="group w-full max-w-[800px] rounded-xl border-2 border-dashed border-blue-300 bg-white p-8 shadow-[0_0_0_1px_rgba(37,99,235,0.06)] transition duration-500 hover:border-blue-400 hover:duration-200">
+                <div className="group w-full max-w-[640px] rounded-xl border-2 border-dashed border-gray-300 bg-white p-6 shadow-sm transition duration-500 hover:border-gray-400 hover:duration-200">
                   <div className="flex justify-center isolate">
-                    <div className="relative left-2.5 top-1.5 grid size-12 -rotate-6 place-items-center rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:-translate-x-5 group-hover:-translate-y-0.5 group-hover:-rotate-12 group-hover:duration-200">
-                      <Thermometer className="h-6 w-6 text-blue-500" />
+                    <div className="relative left-2 top-1 grid size-10 -rotate-6 place-items-center rounded-xl bg-white shadow-md ring-1 ring-gray-200 transition duration-500 group-hover:-translate-x-4 group-hover:-translate-y-0.5 group-hover:-rotate-12 group-hover:duration-200">
+                      <Thermometer className="h-5 w-5 text-blue-500" />
                     </div>
-                    <div className="relative z-10 grid size-12 place-items-center rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:-translate-y-0.5 group-hover:duration-200">
-                      <Phone className="h-6 w-6 text-blue-500" />
+                    <div className="relative z-10 grid size-10 place-items-center rounded-xl bg-white shadow-md ring-1 ring-gray-200 transition duration-500 group-hover:-translate-y-0.5 group-hover:duration-200">
+                      <Phone className="h-5 w-5 text-blue-500" />
                     </div>
-                    <div className="relative right-2.5 top-1.5 grid size-12 rotate-6 place-items-center rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:translate-x-5 group-hover:-translate-y-0.5 group-hover:rotate-12 group-hover:duration-200">
-                      <Calendar className="h-6 w-6 text-blue-500" />
+                    <div className="relative right-2 top-1 grid size-10 rotate-6 place-items-center rounded-xl bg-white shadow-md ring-1 ring-gray-200 transition duration-500 group-hover:translate-x-4 group-hover:-translate-y-0.5 group-hover:rotate-12 group-hover:duration-200">
+                      <Calendar className="h-5 w-5 text-blue-500" />
                     </div>
                   </div>
-                  <h3 className="mt-4 text-3xl font-medium text-gray-900 md:text-4xl">
-                    See How Many Jobs You Are Currently Losing
+                  <h3 className="mt-4 text-2xl font-medium text-gray-900 md:text-3xl">
+                    Recover Missed Jobs
                   </h3>
-                  <p className="mt-2 text-base text-gray-600">
-                    Get a free AI Revenue Audit and find out exactly how much revenue your HVAC
-                    business is leaving behind with every missed call, slow response, and after-hours lead.
+                  <p className="mt-2 text-sm text-gray-600">
+                    Find the revenue hiding in missed calls and slow replies.
                   </p>
                   <a
-                    href="/ai-revenue-audit"
+                    href="/signup"
                     className="mt-4 inline-flex h-10 items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
                   >
-                    Get my free AI Revenue Audit
+                    Start for free
                   </a>
                 </div>
               </div>
@@ -640,9 +639,10 @@ const BlogHVACAILeadResponse: React.FC = () => {
                   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/boltcall' },
                 ]}
                 cta={{
-                  title: 'Recover missed jobs',
-                  href: '/ai-revenue-audit',
-                  label: 'Get the free audit',
+                  title: 'Missed jobs?',
+                  body: 'Catch the next one.',
+                  href: '/signup',
+                  label: 'Start for free',
                 }}
               />
             </div>

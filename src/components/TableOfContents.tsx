@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Facebook, Linkedin } from 'lucide-react';
+import { Calendar, Facebook, Linkedin, Phone, Thermometer } from 'lucide-react';
 
 interface Heading {
   id: string;
@@ -15,6 +15,7 @@ interface TableOfContentsProps {
   }>;
   cta?: {
     title: string;
+    body?: string;
     href: string;
     label: string;
   };
@@ -154,9 +155,23 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, socialLinks
               <div
                 role="complementary"
                 aria-label={cta.title}
-                className="rounded-xl border-2 border-dashed border-blue-300 bg-white p-4 text-center shadow-[0_0_0_1px_rgba(37,99,235,0.06)] transition duration-300 hover:border-blue-400 hover:shadow-md"
+                className="group rounded-xl border-2 border-dashed border-gray-300 bg-white p-4 text-center shadow-sm transition duration-300 hover:border-gray-400 hover:shadow-md"
               >
+                <div className="mb-3 flex justify-center isolate">
+                  <div className="relative left-1.5 top-1 grid size-8 -rotate-6 place-items-center rounded-lg bg-white shadow ring-1 ring-gray-200 transition duration-300 group-hover:-translate-x-2 group-hover:-rotate-12">
+                    <Thermometer className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div className="relative z-10 grid size-8 place-items-center rounded-lg bg-white shadow ring-1 ring-gray-200 transition duration-300 group-hover:-translate-y-0.5">
+                    <Phone className="h-4 w-4 text-blue-500" />
+                  </div>
+                  <div className="relative right-1.5 top-1 grid size-8 rotate-6 place-items-center rounded-lg bg-white shadow ring-1 ring-gray-200 transition duration-300 group-hover:translate-x-2 group-hover:rotate-12">
+                    <Calendar className="h-4 w-4 text-blue-500" />
+                  </div>
+                </div>
                 <p className="text-sm font-semibold leading-5 text-gray-900">{cta.title}</p>
+                {cta.body && (
+                  <p className="mt-1 text-xs leading-4 text-gray-500">{cta.body}</p>
+                )}
                 <a
                   href={cta.href}
                   className="mt-3 inline-flex h-8 items-center justify-center rounded-md border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
