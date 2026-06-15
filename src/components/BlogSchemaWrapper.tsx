@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { createPersonSchema, injectSchemas } from '../lib/schema';
 
 /**
@@ -8,9 +8,16 @@ import { createPersonSchema, injectSchemas } from '../lib/schema';
  * modifying individual page components.
  */
 export default function BlogSchemaWrapper() {
+  const location = useLocation();
+  const isBlogArticle = location.pathname.startsWith('/blog/');
+
   useEffect(() => {
     return injectSchemas([createPersonSchema('Boltcall Team')]);
   }, []);
 
-  return <Outlet />;
+  return (
+    <div className={isBlogArticle ? 'canonical-blog-article' : undefined}>
+      <Outlet />
+    </div>
+  );
 }
