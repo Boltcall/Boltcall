@@ -8,7 +8,7 @@ import { verifyOAuthState } from './_shared/oauth-state';
  * Facebook redirects here after user authorizes. This function:
  *   1. Exchanges the code for a user access token
  *   2. Fetches the user's Facebook Pages
- *   3. Stores page_id + page_access_token in Supabase `facebook_page_connections`
+ *   3. Stores page_id + access_token in Supabase `facebook_page_connections`
  *   4. Subscribes the page to leadgen webhooks
  *   5. Redirects the user back to the dashboard
  *
@@ -105,6 +105,19 @@ export const handler: Handler = async (event) => {
     }
 
     const supabase = getServiceSupabase();
+    const { data: workspace, error: workspaceErr } = await supabase
+      .from('workspaces')
+      .select('id')
+      .eq('user_id', userId)
+      .limit(1)
+      .maybeSingle();
+
+    if (workspaceErr) {
+      console.error('Failed to resolve workspace for Facebook connection:', workspaceErr);
+      return redirect('/dashboard/instant-lead-reply?fb=workspace_error');
+    }
+
+    const workspaceId = workspace?.id ?? null;
 
     // Step 3: Store each page connection and subscribe to leadgen
     const connectedPages: string[] = [];
@@ -118,11 +131,11 @@ export const handler: Handler = async (event) => {
         .from('facebook_page_connections')
         .upsert(
           {
-            user_id: userId || null,
-            workspace_id: userId || null, // fallback: use user_id as workspace_id
+            user_id: userId,
+            workspace_id: workspaceId,
             page_id: pageId,
             page_name: page.name,
-            page_access_token: pageAccessToken,
+            access_token: pageAccessToken,
           },
           { onConflict: 'page_id' }
         );
