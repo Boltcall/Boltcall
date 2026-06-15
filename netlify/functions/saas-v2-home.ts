@@ -307,9 +307,15 @@ export const handler: Handler = async (event) => {
     };
   }
 
-  // Some V2 environments don't yet have a workspaces row — fall back to user_id
-  // as workspace identity (matches saas-v2-toggle.ts behavior on first install).
-  const workspaceId: string = workspaceRow?.id || userId;
+  if (!workspaceRow?.id) {
+    return {
+      statusCode: 404,
+      headers: { ...cors, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'workspace_not_found' }),
+    };
+  }
+
+  const workspaceId: string = workspaceRow.id;
   const workspaceCreatedAt: string = workspaceRow?.created_at || new Date().toISOString();
 
   const { todayStart, yesterdayStart, todayEnd } = todayBounds();

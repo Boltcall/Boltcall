@@ -192,20 +192,31 @@ const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) return unauthorized('Invalid or expired token');
   const userId = userResult.user.id;
 
-  // Resolve workspace (user_id = userId). Falls back to userId itself for
-  // legacy single-tenant rows that pre-date workspaces.
-  const { data: ws } = await supa
+  const { data: ws, error: wsErr } = await supa
     .from('workspaces')
     .select('id')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
-  const workspaceId = ws?.id || userId;
+  if (wsErr) {
+    console.error('[saas-v2-knowledge-list] workspace lookup failed:', wsErr.message);
+    return {
+      statusCode: 500,
+      headers: cors,
+      body: JSON.stringify({ error: 'workspace_lookup_failed' }),
+    };
+  }
+  if (!ws?.id) {
+    return {
+      statusCode: 404,
+      headers: cors,
+      body: JSON.stringify({ error: 'workspace_not_found' }),
+    };
+  }
+  const workspaceId = ws.id;
 
   try {
-    // Read all KB entries owned by this user. knowledge_base has both
-    // user_id (legacy) and (in newer migrations) is scoped via business
-    // profile / workspace — we use user_id for the broadest coverage.
+    // Read all KB entries owned by the resolved workspace.
     const { data: rows, error: kbErr } = await supa
       .from('knowledge_base')
       .select('id, title, content, category, updated_at')

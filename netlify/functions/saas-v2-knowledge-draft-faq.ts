@@ -202,13 +202,28 @@ const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) return unauthorized('Invalid or expired token');
   const userId = userResult.user.id;
 
-  const { data: ws } = await supa
+  const { data: ws, error: wsErr } = await supa
     .from('workspaces')
     .select('id')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
-  const workspaceId = ws?.id || userId;
+  if (wsErr) {
+    console.error('[saas-v2-knowledge-draft-faq] workspace lookup failed:', wsErr.message);
+    return {
+      statusCode: 500,
+      headers: cors,
+      body: JSON.stringify({ error: 'workspace_lookup_failed' }),
+    };
+  }
+  if (!ws?.id) {
+    return {
+      statusCode: 404,
+      headers: cors,
+      body: JSON.stringify({ error: 'workspace_not_found' }),
+    };
+  }
+  const workspaceId = ws.id;
 
   let body: { question?: string; workspace_context?: string } = {};
   try {

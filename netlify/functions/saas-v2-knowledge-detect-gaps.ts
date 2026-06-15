@@ -81,7 +81,7 @@ async function emitGaps(workspaceId: string, gaps: Gap[]) {
  */
 async function loadRecentCalls(
   supa: ReturnType<typeof getServiceSupabase>,
-  userId: string,
+  workspaceId: string,
   sinceIso: string,
 ): Promise<CallRow[]> {
   const tableCandidates: Array<{ table: string; cols: string }> = [
@@ -94,7 +94,7 @@ async function loadRecentCalls(
     const { data, error } = await supa
       .from(table)
       .select(cols)
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', sinceIso)
       .order('created_at', { ascending: false })
       .limit(60);
@@ -224,19 +224,34 @@ const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) return unauthorized('Invalid or expired token');
   const userId = userResult.user.id;
 
-  const { data: ws } = await supa
+  const { data: ws, error: wsErr } = await supa
     .from('workspaces')
     .select('id')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
-  const workspaceId = ws?.id || userId;
+  if (wsErr) {
+    console.error('[saas-v2-knowledge-detect-gaps] workspace lookup failed:', wsErr.message);
+    return {
+      statusCode: 500,
+      headers: cors,
+      body: JSON.stringify({ error: 'workspace_lookup_failed' }),
+    };
+  }
+  if (!ws?.id) {
+    return {
+      statusCode: 404,
+      headers: cors,
+      body: JSON.stringify({ error: 'workspace_not_found' }),
+    };
+  }
+  const workspaceId = ws.id;
 
   const WINDOW_DAYS = 30;
   const sinceIso = new Date(Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
   try {
-    const calls = await loadRecentCalls(supa, userId, sinceIso);
+    const calls = await loadRecentCalls(supa, workspaceId, sinceIso);
 
     // Cold-start guard.
     if (calls.length < 5) {

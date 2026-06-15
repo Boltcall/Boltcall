@@ -693,6 +693,7 @@ const workspaceScopedTablesByEndpoint: Record<string, string[]> = {
   'saas-v2-home': ['call_logs', 'callbacks'],
   'saas-v2-integration-suggest': ['business_features', 'user_integrations', 'whatsapp_settings'],
   'saas-v2-integrations': ['business_features', 'user_integrations', 'whatsapp_settings'],
+  'saas-v2-knowledge-detect-gaps': ['call_logs'],
   'saas-v2-knowledge-draft-faq': ['business_profiles', 'knowledge_base'],
   'saas-v2-knowledge-list': ['knowledge_base'],
   'saas-v2-lead-detail': ['business_profiles', 'leads', 'callbacks'],
@@ -751,6 +752,28 @@ describe('[V2 smoke] workspace-scope assertion coverage', () => {
           ]),
       ),
     );
+  });
+
+  it('does not fall back from resolved workspace_id to user_id', () => {
+    const testsDir = path.dirname(fileURLToPath(import.meta.url));
+    const functionsDir = path.resolve(testsDir, '..');
+    const offenders: Array<{ endpoint: string; line: number; source: string }> = [];
+
+    for (const file of fs.readdirSync(functionsDir)) {
+      if (!/^saas-v2-.*\.ts$/.test(file)) continue;
+      const source = fs.readFileSync(path.join(functionsDir, file), 'utf8');
+      source.split(/\r?\n/).forEach((line, index) => {
+        if (/workspaceId[^=\n]*=\s*[^;\n]*\|\|\s*userId/.test(line)) {
+          offenders.push({
+            endpoint: file.replace(/\.ts$/, ''),
+            line: index + 1,
+            source: line.trim(),
+          });
+        }
+      });
+    }
+
+    expect(offenders).toEqual([]);
   });
 });
 
