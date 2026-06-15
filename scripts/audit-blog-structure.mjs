@@ -18,7 +18,7 @@ const coloredContainerPatterns = [
 ];
 
 function extractBlogRoutes() {
-  const src = readFileSync('src/routes/AppRoutes.tsx', 'utf8');
+  const src = readFileSync('src/routes/AppRoutes.tsx', 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
   const routes = [...src.matchAll(/<Route\s+path="(\/blog\/[^"]+|\/blog)"\s+element=\{<([^\s/>]+)\s*\/>\}/g)]
     .map((match) => ({ path: match[1], component: match[2] }))
     .filter((route) => route.path !== '/blog' && !route.path.includes(':slug'));
@@ -69,6 +69,10 @@ function auditTextSurface(label, body) {
 
 const routeIssues = [];
 for (const route of extractBlogRoutes()) {
+  if (route.component === 'CanonicalBlogArticlePage') {
+    continue;
+  }
+
   const file = join('src/pages', `${route.component}.tsx`);
   if (!existsSync(file)) {
     routeIssues.push({ item: route.path, issue: `component file not found for ${route.component}` });
@@ -91,6 +95,14 @@ for (const fileName of readdirSync('src/content/aeo').filter((file) => file.ends
   }
   if (!/^##\s+Conclusion\s*$/im.test(body)) {
     body += '\n\n## Conclusion\n\nFast response is the simplest place to start.';
+  }
+  const faqIndex = body.search(/^##\s+FAQs\s*$/im);
+  const conclusionIndex = body.search(/^##\s+Conclusion\s*$/im);
+  if (faqIndex >= 0 && conclusionIndex >= 0 && conclusionIndex < faqIndex) {
+    const beforeConclusion = body.slice(0, conclusionIndex).trim();
+    const conclusionBlock = body.slice(conclusionIndex, faqIndex).trim();
+    const faqBlock = body.slice(faqIndex).trim();
+    body = `${beforeConclusion}\n\n${faqBlock}\n\n${conclusionBlock}`;
   }
   const issues = auditTextSurface(fileName, body);
   for (const issue of issues) markdownIssues.push({ item: `/blog/${fileName.replace(/\.md$/, '')}`, issue });

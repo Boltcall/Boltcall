@@ -25,10 +25,6 @@ import SetupLoading from '../pages/SetupLoading';
 const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'));
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
-const BlogNeverMissCallAfterHours = React.lazy(() => import('../pages/BlogNeverMissCallAfterHours'));
-const BlogWhatsAppAppointmentBookingPlumbers = React.lazy(() => import('../pages/BlogWhatsAppAppointmentBookingPlumbers'));
-const BlogAIReceptionistDentists = React.lazy(() => import('../pages/BlogAIReceptionistDentists'));
-const BlogAIReceptionistLawFirms = React.lazy(() => import('../pages/BlogAIReceptionistLawFirms'));
 const AeoMarkdownArticlePage = React.lazy(() => import('../pages/AeoMarkdownArticlePage'));
 // ── Auth pages — lazy-loaded (not on typical landing path) ──────────────
 const Login = React.lazy(() => import('../pages/Login'));
@@ -218,14 +214,6 @@ const SolarSalesCloser = React.lazy(() => import('../pages/SolarSalesCloser'));
 const SolarROICalculator = React.lazy(() => import('../pages/SolarROICalculator'));
 const SolarSpeedScoreQuiz = React.lazy(() => import('../pages/SolarSpeedScoreQuiz'));
 const SolarBenchmark2026 = React.lazy(() => import('../pages/SolarBenchmark2026'));
-const HowToAIPhoneAnsweringVetClinic = React.lazy(() => import('../pages/HowToAIPhoneAnsweringVetClinic'));
-const FAQAIReceptionistHVAC = React.lazy(() => import('../pages/FAQAIReceptionistHVAC'));
-const FAQAIReceptionistDentist = React.lazy(() => import('../pages/FAQAIReceptionistDentist'));
-const FAQAIReceptionistPlumber = React.lazy(() => import('../pages/FAQAIReceptionistPlumber'));
-const FAQAIReceptionistLawyer = React.lazy(() => import('../pages/FAQAIReceptionistLawyer'));
-const FAQAIReceptionistMedSpa = React.lazy(() => import('../pages/FAQAIReceptionistMedSpa'));
-const FAQAIReceptionistSolar = React.lazy(() => import('../pages/FAQAIReceptionistSolar'));
-const FAQAIReceptionistVet = React.lazy(() => import('../pages/FAQAIReceptionistVet'));
 
 // ── Lazy loads — Speed Test funnel ───────────────────────────────────────
 const SpeedTestLanding = React.lazy(() => import('../pages/speed-test/SpeedTestLanding'));
@@ -235,59 +223,13 @@ const SpeedTestOffer = React.lazy(() => import('../pages/speed-test/SpeedTestOff
 
 // ── Lazy loads — Blog pages ──────────────────────────────────────────────
 const BlogCenter = React.lazy(() => import('../pages/BlogCenter'));
-const Blog = React.lazy(() => import('../pages/Blog'));
-const BlogSpeed = React.lazy(() => import('../pages/BlogSpeed'));
-const BlogSEO = React.lazy(() => import('../pages/BlogSEO'));
+const CanonicalBlogArticlePage = React.lazy(() => import('../pages/CanonicalBlogArticlePage'));
 const BlogAIGuide = React.lazy(() => import('../pages/BlogAIGuide'));
 const BlogAIGuideStep1 = React.lazy(() => import('../pages/BlogAIGuideStep1'));
 const BlogAIGuideStep2 = React.lazy(() => import('../pages/BlogAIGuideStep2'));
 const BlogAIGuideStep3 = React.lazy(() => import('../pages/BlogAIGuideStep3'));
-const BlogAIReceptionistComparison = React.lazy(() => import('../pages/BlogAIReceptionistComparison'));
-const BlogAIReceptionistHowItWorks = React.lazy(() => import('../pages/BlogAIReceptionistHowItWorks'));
-const BlogAIAnsweringServiceSmallBusiness = React.lazy(() => import('../pages/BlogAIAnsweringServiceSmallBusiness'));
-const BlogIsAIReceptionistWorthIt = React.lazy(() => import('../pages/BlogIsAIReceptionistWorthIt'));
-const BlogHowToMakeAIReceptionist = React.lazy(() => import('../pages/BlogHowToMakeAIReceptionist'));
-const BlogWhatDoesInstantLeadReplyMean = React.lazy(() => import('../pages/BlogWhatDoesInstantLeadReplyMean'));
-const BlogHVACAILeadResponse = React.lazy(() => import('../pages/BlogHVACAILeadResponse'));
-const BlogDentalAILeadResponse = React.lazy(() => import('../pages/BlogDentalAILeadResponse'));
-const BlogAIReceptionistRealEstate = React.lazy(() => import('../pages/BlogAIReceptionistRealEstate'));
-const BlogAIAppointmentSchedulingHVAC = React.lazy(() => import('../pages/BlogAIAppointmentSchedulingHVAC'));
-const BlogHowToSetUpInstantLeadReply = React.lazy(() => import('../pages/BlogHowToSetUpInstantLeadReply'));
-const BlogHowDoesInstantLeadReplyWork = React.lazy(() => import('../pages/BlogHowDoesInstantLeadReplyWork'));
-const BlogHowToScheduleText = React.lazy(() => import('../pages/BlogHowToScheduleText'));
-const BlogAutomaticGoogleReviews = React.lazy(() => import('../pages/BlogAutomaticGoogleReviews'));
-const BlogOutsourcedReceptionServices = React.lazy(() => import('../pages/BlogOutsourcedReceptionServices'));
-const BlogEffectivePhoneCallScripts = React.lazy(() => import('../pages/BlogEffectivePhoneCallScripts'));
-const BlogLiveAnsweringServiceCosts = React.lazy(() => import('../pages/BlogLiveAnsweringServiceCosts'));
-const BlogProfessionalTelephoneEtiquette = React.lazy(() => import('../pages/BlogProfessionalTelephoneEtiquette'));
-const BlogAnsweringServiceAppointmentScheduling = React.lazy(() => import('../pages/BlogAnsweringServiceAppointmentScheduling'));
-const BlogTop10AIReceptionistAgencies = React.lazy(() => import('../pages/BlogTop10AIReceptionistAgencies'));
-const BlogGeminiGemBusinessAssistant = React.lazy(() => import('../pages/BlogGeminiGemBusinessAssistant'));
-const Blog5SignsAIReceptionist = React.lazy(() => import('../pages/Blog5SignsAIReceptionist'));
-const BestAfterHoursAnsweringService = React.lazy(() => import('../pages/BestAfterHoursAnsweringService'));
-const AiPhoneAnsweringDentists = React.lazy(() => import('../pages/AiPhoneAnsweringDentists'));
-const AiPhoneAnsweringPlumbers = React.lazy(() => import('../pages/AiPhoneAnsweringPlumbers'));
-const WhatIsAIReceptionistGuide = React.lazy(() => import('../pages/WhatIsAIReceptionistGuide'));
-const BestAiReceptionistSmallBusiness = React.lazy(() => import('../pages/BestAiReceptionistSmallBusiness'));
-const ChatbotVsLiveChatVsPhoneAnswering = React.lazy(() => import('../pages/ChatbotVsLiveChatVsPhoneAnswering'));
-const AIVsHumanReceptionistBlog = React.lazy(() => import('../pages/AIVsHumanReceptionistBlog'));
-const AiReceptionistCostPricingGuide = React.lazy(() => import('../pages/AiReceptionistCostPricingGuide'));
-const SpeedToLeadGuide = React.lazy(() => import('../pages/SpeedToLeadGuide'));
 const SpeedToLeadPillar = React.lazy(() => import('../pages/SpeedToLeadPillar'));
 const SpeedToLeadStatistics = React.lazy(() => import('../pages/SpeedToLeadStatistics'));
-const ChatbotVsLivePhoneComparison = React.lazy(() => import('../pages/ChatbotVsLivePhoneComparison'));
-const AiReceptionistForPlumbers = React.lazy(() => import('../pages/AiReceptionistForPlumbers'));
-const AIReceptionistWorthItROI = React.lazy(() => import('../pages/AIReceptionistWorthItROI'));
-const MissedCallsStatistics2026 = React.lazy(() => import('../pages/MissedCallsStatistics2026'));
-const BestAIReceptionistHomeServices = React.lazy(() => import('../pages/BestAIReceptionistHomeServices'));
-const AiAgentSmallBusiness247CallAnswering = React.lazy(() => import('../pages/AiAgentSmallBusiness247CallAnswering'));
-const RoofingMissedCallsLeadCapture = React.lazy(() => import('../pages/RoofingMissedCallsLeadCapture'));
-const HomeServiceGoogleAdsLeadFollowUp = React.lazy(() => import('../pages/HomeServiceGoogleAdsLeadFollowUp'));
-const BestAIAnsweringServiceDentalMedical = React.lazy(() => import('../pages/BestAIAnsweringServiceDentalMedical'));
-const BlogAfterHoursLeadResponse = React.lazy(() => import('../pages/BlogAfterHoursLeadResponse'));
-const BlogAIReceptionistMedSpa = React.lazy(() => import('../pages/BlogAIReceptionistMedSpa'));
-const BlogSolarAILeadResponse = React.lazy(() => import('../pages/BlogSolarAILeadResponse'));
-const BlogSpeedToLeadLawFirms = React.lazy(() => import('../pages/BlogSpeedToLeadLawFirms'));
 
 // ── Lazy loads — Comparisons ─────────────────────────────────────────────
 const Comparisons = React.lazy(() => import('../pages/Comparisons'));
@@ -674,60 +616,60 @@ const NavigationWrapper: React.FC = () => {
         <Route element={<BlogSchemaWrapper />}>
         <Route path="/blog" element={<BlogCenter />} />
         <Route path="/newsletter" element={<Newsletter />} />
-        <Route path="/blog/the-new-reality-for-local-businesses" element={<Blog />} />
-        <Route path="/blog/why-speed-matters" element={<BlogSpeed />} />
-        <Route path="/blog/complete-guide-to-seo" element={<BlogSEO />} />
+        <Route path="/blog/the-new-reality-for-local-businesses" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/why-speed-matters" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/complete-guide-to-seo" element={<CanonicalBlogArticlePage />} />
         <Route path="/ai-guide-for-businesses" element={<BlogAIGuide />} />
         <Route path="/ai-guide-for-businesses/level-1-understanding-ai" element={<BlogAIGuideStep1 />} />
         <Route path="/ai-guide-for-businesses/level-2-choosing-ai-tools" element={<BlogAIGuideStep2 />} />
         <Route path="/ai-guide-for-businesses/level-3-getting-started" element={<BlogAIGuideStep3 />} />
-        <Route path="/blog/best-ai-receptionist-tools" element={<BlogAIReceptionistComparison />} />
-        <Route path="/blog/how-ai-receptionist-works" element={<BlogAIReceptionistHowItWorks />} />
-        <Route path="/blog/ai-answering-service-small-business" element={<BlogAIAnsweringServiceSmallBusiness />} />
-        <Route path="/blog/is-ai-receptionist-worth-it" element={<BlogIsAIReceptionistWorthIt />} />
-        <Route path="/blog/how-to-make-ai-receptionist" element={<BlogHowToMakeAIReceptionist />} />
-        <Route path="/blog/instant-lead-reply-guide" element={<BlogWhatDoesInstantLeadReplyMean />} />
-        <Route path="/blog/hvac-ai-lead-response" element={<BlogHVACAILeadResponse />} />
-        <Route path="/blog/dental-ai-lead-response" element={<BlogDentalAILeadResponse />} />
-        <Route path="/blog/ai-receptionist-real-estate-agents" element={<BlogAIReceptionistRealEstate />} />
-        <Route path="/blog/ai-appointment-scheduling-hvac" element={<BlogAIAppointmentSchedulingHVAC />} />
-        <Route path="/blog/setup-instant-lead-reply" element={<BlogHowToSetUpInstantLeadReply />} />
-        <Route path="/blog/how-instant-lead-reply-works" element={<BlogHowDoesInstantLeadReplyWork />} />
-        <Route path="/blog/how-to-schedule-text" element={<BlogHowToScheduleText />} />
-        <Route path="/blog/automatic-google-reviews" element={<BlogAutomaticGoogleReviews />} />
-        <Route path="/blog/benefits-of-outsourced-reception-services" element={<BlogOutsourcedReceptionServices />} />
-        <Route path="/blog/phone-call-scripts" element={<BlogEffectivePhoneCallScripts />} />
-        <Route path="/blog/understanding-live-answering-service-costs" element={<BlogLiveAnsweringServiceCosts />} />
-        <Route path="/blog/tips-for-professional-telephone-etiquette" element={<BlogProfessionalTelephoneEtiquette />} />
-        <Route path="/blog/answering-service-scheduling" element={<BlogAnsweringServiceAppointmentScheduling />} />
-        <Route path="/blog/top-10-ai-receptionist-agencies" element={<BlogTop10AIReceptionistAgencies />} />
-        <Route path="/blog/create-gemini-gem-business-assistant" element={<BlogGeminiGemBusinessAssistant />} />
-        <Route path="/blog/5-signs-you-need-ai-receptionist" element={<Blog5SignsAIReceptionist />} />
+        <Route path="/blog/best-ai-receptionist-tools" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/how-ai-receptionist-works" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/ai-answering-service-small-business" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/is-ai-receptionist-worth-it" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/how-to-make-ai-receptionist" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/instant-lead-reply-guide" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/hvac-ai-lead-response" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/dental-ai-lead-response" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/ai-receptionist-real-estate-agents" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/ai-appointment-scheduling-hvac" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/setup-instant-lead-reply" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/how-instant-lead-reply-works" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/how-to-schedule-text" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/automatic-google-reviews" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/benefits-of-outsourced-reception-services" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/phone-call-scripts" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/understanding-live-answering-service-costs" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/tips-for-professional-telephone-etiquette" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/answering-service-scheduling" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/top-10-ai-receptionist-agencies" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/create-gemini-gem-business-assistant" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/5-signs-you-need-ai-receptionist" element={<CanonicalBlogArticlePage />} />
             <Route path="/speed-to-lead" element={<SpeedToLeadPillar />} />
             <Route path="/speed-to-lead/statistics" element={<SpeedToLeadStatistics />} />
-            <Route path="/blog/speed-to-lead-local-business" element={<SpeedToLeadGuide />} />
-            <Route path="/blog/ai-receptionist-cost-pricing" element={<AiReceptionistCostPricingGuide />} />
-            <Route path="/blog/ai-vs-human-receptionist" element={<AIVsHumanReceptionistBlog />} />
-            <Route path="/blog/ai-chatbot-vs-live-chat-phone-answering" element={<ChatbotVsLiveChatVsPhoneAnswering />} />
-            <Route path="/blog/best-ai-receptionist-small-business" element={<BestAiReceptionistSmallBusiness />} />
-            <Route path="/blog/ai-phone-answering-plumbers" element={<AiPhoneAnsweringPlumbers />} />
+            <Route path="/blog/speed-to-lead-local-business" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-receptionist-cost-pricing" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-vs-human-receptionist" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-chatbot-vs-live-chat-phone-answering" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/best-ai-receptionist-small-business" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-phone-answering-plumbers" element={<CanonicalBlogArticlePage />} />
             {/* <Route path="/blog/is-ai-receptionist-worth-it" element={<IsAiReceptionistWorthIt />} /> */}
             {/* <Route path="/blog/google-reviews-automation-local-business" element={<GoogleReviewsAutomationGuide />} /> */}
-            <Route path="/blog/what-is-ai-receptionist-guide" element={<WhatIsAIReceptionistGuide />} />
-            <Route path="/blog/ai-phone-answering-dentists" element={<AiPhoneAnsweringDentists />} />
-            <Route path="/blog/best-after-hours-answering-service" element={<BestAfterHoursAnsweringService />} />
-            <Route path="/blog/ai-chatbot-vs-live-chat-phone-comparison" element={<ChatbotVsLivePhoneComparison />} />
-            <Route path="/blog/ai-receptionist-for-plumbers" element={<AiReceptionistForPlumbers />} />
-            <Route path="/blog/ai-receptionist-worth-it-roi" element={<AIReceptionistWorthItROI />} />
-            <Route path="/blog/missed-calls-statistics-local-business-2026" element={<MissedCallsStatistics2026 />} />
-        <Route path="/blog/best-ai-receptionist-home-services" element={<BestAIReceptionistHomeServices />} />
-        <Route path="/blog/ai-agent-for-small-business-24-7-call-answering" element={<AiAgentSmallBusiness247CallAnswering />} />
-        <Route path="/blog/roofing-company-stop-losing-leads-missed-calls" element={<RoofingMissedCallsLeadCapture />} />
-        <Route path="/blog/home-service-google-ads-lead-follow-up" element={<HomeServiceGoogleAdsLeadFollowUp />} />
-        <Route path="/blog/best-ai-answering-service-dental-medical-practice" element={<BestAIAnsweringServiceDentalMedical />} />
-        <Route path="/blog/after-hours-lead-response-home-services" element={<BlogAfterHoursLeadResponse />} />
-        <Route path="/blog/ai-receptionist-med-spas" element={<BlogAIReceptionistMedSpa />} />
-        <Route path="/blog/solar-ai-lead-response" element={<BlogSolarAILeadResponse />} />
+            <Route path="/blog/what-is-ai-receptionist-guide" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-phone-answering-dentists" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/best-after-hours-answering-service" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-chatbot-vs-live-chat-phone-comparison" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-receptionist-for-plumbers" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/ai-receptionist-worth-it-roi" element={<CanonicalBlogArticlePage />} />
+            <Route path="/blog/missed-calls-statistics-local-business-2026" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/best-ai-receptionist-home-services" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/ai-agent-for-small-business-24-7-call-answering" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/roofing-company-stop-losing-leads-missed-calls" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/home-service-google-ads-lead-follow-up" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/best-ai-answering-service-dental-medical-practice" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/after-hours-lead-response-home-services" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/ai-receptionist-med-spas" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/solar-ai-lead-response" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/:slug" element={<AeoMarkdownArticlePage />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />
@@ -804,19 +746,19 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/tools/roofing-missed-lead-calculator" element={<RoofingMissedLeadCalculator />} />
         {/* Industry FAQ AEO pages + Vet Clinic How-To */}
         <Route element={<BlogSchemaWrapper />}>
-          <Route path="/blog/ai-receptionist-hvac-faq" element={<FAQAIReceptionistHVAC />} />
-          <Route path="/blog/ai-receptionist-dentist-faq" element={<FAQAIReceptionistDentist />} />
-          <Route path="/blog/ai-receptionist-plumber-faq" element={<FAQAIReceptionistPlumber />} />
-          <Route path="/blog/ai-receptionist-lawyer-faq" element={<FAQAIReceptionistLawyer />} />
-          <Route path="/blog/ai-receptionist-medspa-faq" element={<FAQAIReceptionistMedSpa />} />
-          <Route path="/blog/ai-receptionist-solar-faq" element={<FAQAIReceptionistSolar />} />
-          <Route path="/blog/ai-receptionist-vet-faq" element={<FAQAIReceptionistVet />} />
-          <Route path="/blog/how-to-set-up-ai-phone-answering-vet-clinic" element={<HowToAIPhoneAnsweringVetClinic />} />
-                <Route path="/blog/never-miss-a-call-after-business-hours" element={<BlogNeverMissCallAfterHours />} />
-                <Route path="/blog/whatsapp-appointment-booking-plumbers" element={<BlogWhatsAppAppointmentBookingPlumbers />} />
-                <Route path="/blog/ai-receptionist-for-dentists" element={<BlogAIReceptionistDentists />} />
-                <Route path="/blog/ai-receptionist-for-law-firms" element={<BlogAIReceptionistLawFirms />} />
-                <Route path="/blog/speed-to-lead-for-law-firms" element={<BlogSpeedToLeadLawFirms />} />
+          <Route path="/blog/ai-receptionist-hvac-faq" element={<CanonicalBlogArticlePage />} />
+          <Route path="/blog/ai-receptionist-dentist-faq" element={<CanonicalBlogArticlePage />} />
+          <Route path="/blog/ai-receptionist-plumber-faq" element={<CanonicalBlogArticlePage />} />
+          <Route path="/blog/ai-receptionist-lawyer-faq" element={<CanonicalBlogArticlePage />} />
+          <Route path="/blog/ai-receptionist-medspa-faq" element={<CanonicalBlogArticlePage />} />
+          <Route path="/blog/ai-receptionist-solar-faq" element={<CanonicalBlogArticlePage />} />
+          <Route path="/blog/ai-receptionist-vet-faq" element={<CanonicalBlogArticlePage />} />
+          <Route path="/blog/how-to-set-up-ai-phone-answering-vet-clinic" element={<CanonicalBlogArticlePage />} />
+                <Route path="/blog/never-miss-a-call-after-business-hours" element={<CanonicalBlogArticlePage />} />
+                <Route path="/blog/whatsapp-appointment-booking-plumbers" element={<CanonicalBlogArticlePage />} />
+                <Route path="/blog/ai-receptionist-for-dentists" element={<CanonicalBlogArticlePage />} />
+                <Route path="/blog/ai-receptionist-for-law-firms" element={<CanonicalBlogArticlePage />} />
+                <Route path="/blog/speed-to-lead-for-law-firms" element={<CanonicalBlogArticlePage />} />
         </Route>
         {/* Industry-specific calculators */}
         <Route path="/tools/dentist-chair-calculator" element={<DentistChairCalculator />} />
