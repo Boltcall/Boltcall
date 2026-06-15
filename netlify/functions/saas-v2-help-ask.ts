@@ -199,7 +199,15 @@ function pickDocs(question: string): HelpSource[] {
     .sort((a, b) => b.hits - a.hits);
 
   if (scored.length === 0) return [FALLBACK_DOC];
-  return scored.slice(0, 3).map((s) => s.source);
+  const unique: HelpSource[] = [];
+  const seenUrls = new Set<string>();
+  for (const { source } of scored) {
+    if (seenUrls.has(source.url)) continue;
+    seenUrls.add(source.url);
+    unique.push(source);
+    if (unique.length >= 3) break;
+  }
+  return unique;
 }
 
 function clamp(text: string, max: number): string {

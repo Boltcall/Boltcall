@@ -198,6 +198,20 @@ describe('saas-v2-help-ask support escalation', () => {
     }));
   });
 
+  it('deduplicates repeated docs sources and followups', async () => {
+    const { handler } = await import('../saas-v2-help-ask');
+
+    const res = await handler(
+      makeEvent('Why are failed calls failing for my phone number?'),
+      {} as any,
+    );
+    const body = JSON.parse(res.body || '{}');
+    const sourceUrls = body.sources.map((source: { url: string }) => source.url);
+
+    expect(sourceUrls).toEqual(Array.from(new Set(sourceUrls)));
+    expect(body.suggested_followups).toEqual(Array.from(new Set(body.suggested_followups)));
+  });
+
   it('alerts internal support when the customer asks for urgent human help', async () => {
     const supabase = makeSupabase();
     mocks.getServiceSupabase.mockReturnValue(supabase);
