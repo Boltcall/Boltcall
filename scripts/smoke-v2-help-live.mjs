@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 import { checkHelpSourcesResolve } from './support-source-checks.mjs';
+import { verifySupportSmokeCleanup } from './support-smoke-cleanup.mjs';
 
 const siteUrl = process.env.SITE_URL || 'https://boltcall.org';
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -45,6 +46,9 @@ const ids = {
   messageId: null,
 };
 let cleanedOnce = false;
+let cleanupResult = null;
+let scriptResult = null;
+let scriptError = null;
 
 async function must(label, promise) {
   const { data, error } = await promise;
@@ -85,6 +89,8 @@ async function cleanup() {
       console.warn(JSON.stringify({ cleanupWarning: `delete auth user: ${error.message}` }));
     }
   }
+
+  cleanupResult = await verifySupportSmokeCleanup(admin, ids);
 }
 
 async function ensureWorkspace(userId) {
@@ -267,11 +273,26 @@ async function runLiveHelpCheck() {
 try {
   await seedWorkspace();
   const result = await runLiveHelpCheck();
-  console.log(JSON.stringify({ status: 'passed', siteUrl, ...result }, null, 2));
+  scriptResult = { status: 'passed', siteUrl, ...result };
 } catch (err) {
-  console.error(JSON.stringify({ status: 'failed', error: err.message }, null, 2));
+  scriptError = err;
   process.exitCode = 1;
 } finally {
   await cleanup();
-  console.log(JSON.stringify({ cleanup: 'done', testUserDeleted: Boolean(ids.userId) }));
+  const cleanupPayload = {
+    cleanupDone: true,
+    testUserDeleted: Boolean(ids.userId),
+    cleanupVerified: cleanupResult?.status === 'passed',
+    cleanupResult,
+  };
+  if (cleanupResult?.status !== 'passed') process.exitCode = 1;
+  if (scriptResult) {
+    console.log(JSON.stringify({ ...scriptResult, ...cleanupPayload }, null, 2));
+  } else {
+    console.error(JSON.stringify({
+      status: 'failed',
+      error: scriptError?.message || 'Unknown support smoke failure',
+      ...cleanupPayload,
+    }, null, 2));
+  }
 }

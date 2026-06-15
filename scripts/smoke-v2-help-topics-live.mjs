@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 
 import { checkHelpSourcesResolve } from './support-source-checks.mjs';
+import { verifySupportSmokeCleanup } from './support-smoke-cleanup.mjs';
 
 const DEFAULT_SITE_URL = 'https://boltcall.org';
 
@@ -210,6 +211,7 @@ async function cleanupWorkspace(admin, ids) {
       console.warn(JSON.stringify({ cleanupWarning: `delete auth user: ${error.message}` }));
     }
   }
+  return verifySupportSmokeCleanup(admin, ids);
 }
 
 async function askHelpTopic({ siteUrl, token, topic }) {
@@ -286,6 +288,9 @@ async function runLiveTopicSmoke(env = process.env) {
   const email = `support-topic-test-${suffix}@boltcall.test`;
   const password = `Bc!${crypto.randomBytes(18).toString('base64url')}9`;
   let ids = {};
+  let cleanupResult = null;
+  let result = null;
+  let testError = null;
 
   try {
     ids = await createTopicWorkspace({ admin, suffix, email, password });
@@ -304,13 +309,27 @@ async function runLiveTopicSmoke(env = process.env) {
       );
     }
 
-    return {
+    result = {
       siteUrl: config.siteUrl,
       ...summarizeTopicResults(topicResults),
     };
+  } catch (error) {
+    testError = error;
   } finally {
-    await cleanupWorkspace(admin, ids);
+    cleanupResult = await cleanupWorkspace(admin, ids);
   }
+
+  const cleanup = {
+    cleanupDone: true,
+    testUserDeleted: Boolean(ids.userId),
+    cleanupVerified: cleanupResult?.status === 'passed',
+    cleanupResult,
+  };
+  if (testError) throw testError;
+  if (cleanupResult?.status !== 'passed') {
+    throw new Error(`support topic cleanup failed: ${JSON.stringify(cleanupResult)}`);
+  }
+  return { ...result, ...cleanup };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
