@@ -253,6 +253,10 @@ export async function runProductionReadiness(opts = {}) {
     name: 'support_agent_topic_coverage_live',
     result: await runJson(process.execPath, ['scripts/smoke-v2-help-topics-live.mjs'], { cwd, env }),
   });
+  rawChecks.push({
+    name: 'action_surfaces_live',
+    result: await runJson(process.execPath, ['scripts/smoke-action-surfaces-live.mjs'], { cwd, env }),
+  });
 
   for (const [name, functionName] of [
     ['facebook_runtime', 'facebook-readiness'],

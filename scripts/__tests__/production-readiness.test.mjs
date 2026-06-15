@@ -148,10 +148,12 @@ describe('production-readiness helpers', () => {
     expect(nodeCommands).toContain('scripts/audit-support-kb-coverage.mjs');
     expect(nodeCommands).toContain('scripts/smoke-v2-help-live.mjs');
     expect(nodeCommands).toContain('scripts/smoke-v2-help-topics-live.mjs');
+    expect(nodeCommands).toContain('scripts/smoke-action-surfaces-live.mjs');
     expect(summary.checks.map((check) => check.name)).toContain('support_kb_coverage');
     expect(summary.checks.map((check) => check.name)).toContain('support_agent_live');
     expect(summary.checks.map((check) => check.name)).toContain('support_agent_topic_coverage_live');
-    expect(summary.total).toBe(11);
+    expect(summary.checks.map((check) => check.name)).toContain('action_surfaces_live');
+    expect(summary.total).toBe(12);
   });
 
   it('parses the first JSON object when a command prints cleanup JSON after the result', () => {
