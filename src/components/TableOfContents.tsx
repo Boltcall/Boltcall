@@ -154,7 +154,7 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, socialLinks
               <div
                 role="complementary"
                 aria-label={cta.title}
-                className="rounded-xl border-2 border-dashed border-gray-200 bg-white p-4 text-center shadow-sm transition duration-300 hover:border-gray-300 hover:shadow-md"
+                className="rounded-xl border-2 border-dashed border-blue-300 bg-white p-4 text-center shadow-[0_0_0_1px_rgba(37,99,235,0.06)] transition duration-300 hover:border-blue-400 hover:shadow-md"
               >
                 <p className="text-sm font-semibold leading-5 text-gray-900">{cta.title}</p>
                 <a

@@ -579,7 +579,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
               className="my-16"
             >
               <div className="flex flex-col items-center justify-center text-center">
-                <div className="group w-full max-w-[800px] rounded-xl border-2 border-dashed border-gray-200 bg-white p-8 transition duration-500 hover:bg-gray-50 hover:duration-200">
+                <div className="group w-full max-w-[800px] rounded-xl border-2 border-dashed border-blue-300 bg-white p-8 shadow-[0_0_0_1px_rgba(37,99,235,0.06)] transition duration-500 hover:border-blue-400 hover:duration-200">
                   <div className="flex justify-center isolate">
                     <div className="relative left-2.5 top-1.5 grid size-12 -rotate-6 place-items-center rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:-translate-x-5 group-hover:-translate-y-0.5 group-hover:-rotate-12 group-hover:duration-200">
                       <Thermometer className="h-6 w-6 text-blue-500" />
