@@ -2,10 +2,23 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const DEFAULT_SITE_URL = 'https://boltcall.org';
+const PRODUCTION_ENV_KEYS = [
+  'SUPABASE_URL',
+  'SUPABASE_SERVICE_KEY',
+  'VITE_SUPABASE_URL',
+  'VITE_SUPABASE_ANON_KEY',
+  'FOUNDER_UUID',
+  'INTERNAL_API_SECRET',
+  'RETELL_API_KEY',
+];
 const ACTION_REQUIRED_REASONS = new Set([
   'not_found',
   'no_recent_calls',
 ]);
+
+function netlifyCommand() {
+  return 'netlify';
+}
 
 function parseJsonOutput(output) {
   const text = String(output || '').trim();
@@ -30,7 +43,7 @@ function runProcess(command, args, opts = {}) {
     const child = spawn(command, args, {
       cwd: opts.cwd || process.cwd(),
       env: sanitizeSpawnEnv(opts.env || process.env),
-      shell: false,
+      shell: opts.shell === true,
       windowsHide: true,
     });
 
@@ -63,6 +76,37 @@ async function runJsonCommand(command, args, opts = {}) {
     status: 'failed',
     error: output.stderr.trim() || output.stdout.trim() || `Command exited ${output.exitCode}`,
   };
+}
+
+async function fetchNetlifyProductionEnvValue(key, opts = {}) {
+  const output = await runProcess(
+    netlifyCommand(),
+    ['env:get', key, '--context', 'production'],
+    {
+      cwd: opts.cwd || process.cwd(),
+      env: opts.env || process.env,
+      shell: process.platform === 'win32',
+    },
+  );
+  if (output.exitCode !== 0) return '';
+  return String(output.stdout || '').trim();
+}
+
+export async function hydrateProductionEnv(inputEnv = process.env, opts = {}) {
+  const env = {
+    ...inputEnv,
+    SITE_URL: inputEnv.SITE_URL || DEFAULT_SITE_URL,
+  };
+  const fetchEnvValue = opts.fetchNetlifyEnvValue || ((key) =>
+    fetchNetlifyProductionEnvValue(key, { cwd: opts.cwd, env }));
+
+  for (const key of PRODUCTION_ENV_KEYS) {
+    if (env[key]) continue;
+    const value = await fetchEnvValue(key);
+    if (value) env[key] = value;
+  }
+
+  return env;
 }
 
 async function postInternalReadiness(siteUrl, functionName, internalSecret) {
@@ -149,7 +193,11 @@ function buildVerifierEnv(env = process.env) {
 
 export async function runProductionReadiness(opts = {}) {
   const cwd = opts.cwd || process.cwd();
-  const env = buildVerifierEnv(opts.env || process.env);
+  const hydratedEnv = await hydrateProductionEnv(opts.env || process.env, {
+    cwd,
+    fetchNetlifyEnvValue: opts.fetchNetlifyEnvValue,
+  });
+  const env = buildVerifierEnv(hydratedEnv);
   const siteUrl = env.SITE_URL || DEFAULT_SITE_URL;
   const internalSecret = env.INTERNAL_API_SECRET || env.INTERNAL_WEBHOOK_SECRET || '';
 

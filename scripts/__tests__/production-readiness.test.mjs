@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   classifyReadinessCheck,
+  hydrateProductionEnv,
   sanitizeSpawnEnv,
   summarizeProductionReadiness,
 } from '../production-readiness.mjs';
@@ -81,5 +82,40 @@ describe('production-readiness helpers', () => {
       PATH: 'C:\\Windows',
       SITE_URL: 'https://boltcall.org',
     });
+  });
+
+  it('hydrates missing production env from Netlify without replacing caller-provided values', async () => {
+    const requested = [];
+    const env = await hydrateProductionEnv(
+      {
+        SUPABASE_URL: 'existing-supabase-url',
+        RETELL_API_KEY: 'existing-retell-key',
+      },
+      {
+        fetchNetlifyEnvValue: async (key) => {
+          requested.push(key);
+          return `netlify-${key}`;
+        },
+      },
+    );
+
+    expect(env.SITE_URL).toBe('https://boltcall.org');
+    expect(env.SUPABASE_URL).toBe('existing-supabase-url');
+    expect(env.RETELL_API_KEY).toBe('existing-retell-key');
+    expect(env.SUPABASE_SERVICE_KEY).toBe('netlify-SUPABASE_SERVICE_KEY');
+    expect(env.VITE_SUPABASE_ANON_KEY).toBe('netlify-VITE_SUPABASE_ANON_KEY');
+    expect(requested).not.toContain('SUPABASE_URL');
+    expect(requested).not.toContain('RETELL_API_KEY');
+  });
+
+  it('does not set a missing env key when Netlify cannot return a value', async () => {
+    const env = await hydrateProductionEnv(
+      {},
+      {
+        fetchNetlifyEnvValue: async (key) => (key === 'INTERNAL_API_SECRET' ? '' : `netlify-${key}`),
+      },
+    );
+
+    expect(env.INTERNAL_API_SECRET).toBeUndefined();
   });
 });
