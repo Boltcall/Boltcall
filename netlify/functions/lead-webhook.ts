@@ -142,7 +142,7 @@ async function handleFacebookLeadgen(body: any, supabase: any) {
         last_name: fbLastName || null,
         email: fields.email || null,
         phone: fields.phone_number || fields.phone || null,
-        source: 'facebook_ads',
+        source: 'facebook_lead_ad',
         status: 'pending',
         raw_data: { leadgen_id, page_id, fields },
       };
@@ -156,7 +156,7 @@ async function handleFacebookLeadgen(body: any, supabase: any) {
 
       const outcome = await handleInboundLead({
         body: leadRow,
-        source: 'facebook_ads',
+        source: 'facebook_lead_ad',
       }, leadResponseDeps(supabase));
 
       if (outcome.status !== 'captured') {
