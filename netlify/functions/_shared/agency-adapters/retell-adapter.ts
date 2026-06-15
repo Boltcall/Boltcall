@@ -40,6 +40,11 @@ import {
   syncRetellKnowledgeBases,
   type RetellKnowledgeBinding,
 } from '../retell-knowledge-sync';
+import {
+  buildRetellAgentFilter,
+  buildRetellStartTimestampFilter,
+  normalizeRetellCallList,
+} from '../retell-call-list';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -754,15 +759,15 @@ export async function listRecentCalls(
     const calls = await callWithRetry('call.list', opts.client_id ?? null, () =>
       client.call.list({
         filter_criteria: {
-          agent_id: [opts.agent_id],
-          start_timestamp: { lower_threshold: sinceMs },
+          agent: buildRetellAgentFilter(opts.agent_id),
+          start_timestamp: buildRetellStartTimestampFilter({ lower: sinceMs }),
         },
         limit,
         sort_order: 'descending',
       } as unknown as Parameters<typeof client.call.list>[0]),
     );
 
-    const summaries: RecentCallSummary[] = (calls as Array<{
+    const summaries: RecentCallSummary[] = normalizeRetellCallList<{
       call_id: string;
       start_timestamp?: number;
       duration_ms?: number;
@@ -774,7 +779,7 @@ export async function listRecentCalls(
         words?: Array<{ word?: string }>;
       }>;
       call_analysis?: { call_summary?: string; call_successful?: boolean };
-    }>).map((c) => {
+    }>(calls).map((c) => {
       const transcript = flattenTranscript(c);
       const excerpt =
         transcript.length > 280 ? transcript.slice(0, 277) + '…' : transcript;

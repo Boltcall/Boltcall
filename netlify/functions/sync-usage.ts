@@ -3,6 +3,11 @@ import Retell from 'retell-sdk';
 import { getSupabase, deductTokensBatch, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import {
+  buildRetellAgentFilter,
+  buildRetellStartTimestampFilter,
+  normalizeRetellCallList,
+} from './_shared/retell-call-list';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -64,16 +69,14 @@ async function syncRetell(userId: string): Promise<{
   // Fetch calls from Retell since last sync
   const calls = await client.call.list({
     filter_criteria: {
-      agent_id: agentIds,
-      start_timestamp: {
-        lower_threshold: sinceTimestamp,
-      },
+      agent: buildRetellAgentFilter(agentIds),
+      start_timestamp: buildRetellStartTimestampFilter({ lower: sinceTimestamp }),
     },
     sort_order: 'ascending',
     limit: 200,
   } as unknown as Parameters<typeof client.call.list>[0]);
 
-  const callList = Array.isArray(calls) ? calls : [];
+  const callList = normalizeRetellCallList(calls);
   if (callList.length === 0) {
     return { calls_synced: 0, minutes_consumed: 0, tokens_deducted: 0 };
   }

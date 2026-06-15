@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { getSupabase } from './_shared/token-utils';
+import { buildRetellStartTimestampFilter, normalizeRetellCallList } from './_shared/retell-call-list';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -22,21 +23,21 @@ async function getRetellStats(apiKey: string) {
     const [recentCalls, weekCalls, agents] = await Promise.all([
       client.call.list({
         filter_criteria: {
-          start_timestamp: { lower_threshold: oneDayAgo },
+          start_timestamp: buildRetellStartTimestampFilter({ lower: oneDayAgo }),
         },
         limit: 100,
       } as unknown as Parameters<typeof client.call.list>[0]),
       client.call.list({
         filter_criteria: {
-          start_timestamp: { lower_threshold: sevenDaysAgo },
+          start_timestamp: buildRetellStartTimestampFilter({ lower: sevenDaysAgo }),
         },
         limit: 500,
       } as unknown as Parameters<typeof client.call.list>[0]),
       client.agent.list(),
     ]);
 
-    const recentCallsList = Array.isArray(recentCalls) ? recentCalls : [];
-    const weekCallsList = Array.isArray(weekCalls) ? weekCalls : [];
+    const recentCallsList = normalizeRetellCallList<any>(recentCalls);
+    const weekCallsList = normalizeRetellCallList<any>(weekCalls);
 
     // Calculate stats
     const totalDurationMs = recentCallsList.reduce((sum: number, c: any) => sum + (c.duration_ms || 0), 0);

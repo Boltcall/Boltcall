@@ -5,6 +5,11 @@ import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { chatCompletion, getAzureDeployment } from './_shared/azure-ai';
 import { requireMatchingUser } from './_shared/user-auth';
+import {
+  buildRetellAgentFilter,
+  buildRetellStartTimestampFilter,
+  normalizeRetellCallList,
+} from './_shared/retell-call-list';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -465,9 +470,12 @@ async function executeTool(name: string, args: any, ctx: any): Promise<{ result:
       const since = Date.now() - days * 24 * 60 * 60 * 1000;
       try {
         const calls = await retell.call.list({
-          filter_criteria: { agent_id: [agent.retell_agent_id], after_start_timestamp: since },
+          filter_criteria: {
+            agent: buildRetellAgentFilter(agent.retell_agent_id),
+            start_timestamp: buildRetellStartTimestampFilter({ lower: since }),
+          },
         } as unknown as Parameters<typeof retell.call.list>[0]);
-        const callList = Array.isArray(calls) ? calls : [];
+        const callList = normalizeRetellCallList<any>(calls);
         const total = callList.length;
         const successful = callList.filter((c: any) => c.call_analysis?.call_successful).length;
         const avgDuration = total > 0 ? Math.round(callList.reduce((sum: number, c: any) => sum + ((c.end_timestamp || 0) - (c.start_timestamp || 0)), 0) / total / 1000) : 0;

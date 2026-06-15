@@ -17,6 +17,7 @@ export default defineConfig({
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',
       'netlify/functions/__tests__/*.{test,spec}.{ts,tsx}',
+      'scripts/__tests__/*.{test,spec}.mjs',
     ],
     css: false,
   },

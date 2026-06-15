@@ -1,6 +1,12 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { requireAuth, getUserAgentIds } from './_shared/require-auth';
+import {
+  buildRetellAgentFilter,
+  buildRetellEnumInFilter,
+  buildRetellStartTimestampFilter,
+  normalizeRetellCallList,
+} from './_shared/retell-call-list';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -53,11 +59,11 @@ export const handler: Handler = async (event) => {
 
       // GET /retell-calls — list calls scoped to user's agents
       const calls = await client.call.list({
-        filter_criteria: { agent_id: userAgentIds },
+        filter_criteria: { agent: buildRetellAgentFilter(userAgentIds) },
         sort_order: 'descending',
         limit: 50,
       } as unknown as Parameters<typeof client.call.list>[0]);
-      return { statusCode: 200, headers, body: JSON.stringify(calls) };
+      return { statusCode: 200, headers, body: JSON.stringify(normalizeRetellCallList(calls)) };
     }
 
     // POST /retell-calls — list calls with filters
@@ -74,17 +80,18 @@ export const handler: Handler = async (event) => {
         }
       }
 
-      const filterCriteria: Record<string, any> = { agent_id: scopedAgentIds };
-      if (body.call_status?.length) filterCriteria.call_status = body.call_status;
-      if (body.direction?.length) filterCriteria.direction = body.direction;
+      const filterCriteria: Record<string, any> = {
+        agent: buildRetellAgentFilter(scopedAgentIds),
+      };
+      const callStatusFilter = buildRetellEnumInFilter(body.call_status);
+      if (callStatusFilter) filterCriteria.call_status = callStatusFilter;
+      const directionFilter = buildRetellEnumInFilter(body.direction);
+      if (directionFilter) filterCriteria.direction = directionFilter;
       if (body.start_date || body.end_date) {
-        filterCriteria.start_timestamp = {};
-        if (body.start_date) {
-          filterCriteria.start_timestamp.lower_threshold = new Date(body.start_date).getTime();
-        }
-        if (body.end_date) {
-          filterCriteria.start_timestamp.upper_threshold = new Date(body.end_date).getTime();
-        }
+        filterCriteria.start_timestamp = buildRetellStartTimestampFilter({
+          lower: body.start_date ? new Date(body.start_date).getTime() : undefined,
+          upper: body.end_date ? new Date(body.end_date).getTime() : undefined,
+        });
       }
 
       const calls = await client.call.list({
@@ -94,7 +101,7 @@ export const handler: Handler = async (event) => {
         pagination_key: body.pagination_key,
       });
 
-      return { statusCode: 200, headers, body: JSON.stringify(calls) };
+      return { statusCode: 200, headers, body: JSON.stringify(normalizeRetellCallList(calls)) };
     }
 
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
