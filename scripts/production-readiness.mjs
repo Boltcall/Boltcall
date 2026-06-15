@@ -20,16 +20,48 @@ function netlifyCommand() {
   return 'netlify';
 }
 
-function parseJsonOutput(output) {
+export function parseJsonOutput(output) {
   const text = String(output || '').trim();
-  const first = text.indexOf('{');
-  const last = text.lastIndexOf('}');
-  if (first === -1 || last === -1 || last < first) return null;
-  try {
-    return JSON.parse(text.slice(first, last + 1));
-  } catch {
-    return null;
+  let start = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === '\\') {
+        escaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+    if (char === '{') {
+      if (depth === 0) start = i;
+      depth += 1;
+      continue;
+    }
+    if (char === '}' && depth > 0) {
+      depth -= 1;
+      if (depth === 0 && start !== -1) {
+        try {
+          return JSON.parse(text.slice(start, i + 1));
+        } catch {
+          start = -1;
+        }
+      }
+    }
   }
+  return null;
 }
 
 export function sanitizeSpawnEnv(env = process.env) {
@@ -200,12 +232,18 @@ export async function runProductionReadiness(opts = {}) {
   const env = buildVerifierEnv(hydratedEnv);
   const siteUrl = env.SITE_URL || DEFAULT_SITE_URL;
   const internalSecret = env.INTERNAL_API_SECRET || env.INTERNAL_WEBHOOK_SECRET || '';
+  const runJson = opts.runJsonCommand || runJsonCommand;
+  const postInternal = opts.postInternalReadiness || postInternalReadiness;
 
   const rawChecks = [];
 
   rawChecks.push({
     name: 'production_smoke',
-    result: await runJsonCommand(process.execPath, ['scripts/smoke-production.mjs'], { cwd, env }),
+    result: await runJson(process.execPath, ['scripts/smoke-production.mjs'], { cwd, env }),
+  });
+  rawChecks.push({
+    name: 'support_agent_live',
+    result: await runJson(process.execPath, ['scripts/smoke-v2-help-live.mjs'], { cwd, env }),
   });
 
   for (const [name, functionName] of [
@@ -215,29 +253,29 @@ export async function runProductionReadiness(opts = {}) {
   ]) {
     rawChecks.push({
       name,
-      result: await postInternalReadiness(siteUrl, functionName, internalSecret),
+      result: await postInternal(siteUrl, functionName, internalSecret),
     });
   }
 
   rawChecks.push({
     name: 'facebook_page_connection',
     requiredAction: 'Connect the founder Facebook Page in the Boltcall dashboard.',
-    result: await runJsonCommand(process.execPath, ['scripts/verify-facebook-page-connection.mjs'], { cwd, env }),
+    result: await runJson(process.execPath, ['scripts/verify-facebook-page-connection.mjs'], { cwd, env }),
   });
   rawChecks.push({
     name: 'facebook_lead_ingestion',
     requiredAction: 'Submit a real/test Facebook Lead Ad after the Page is connected.',
-    result: await runJsonCommand(process.execPath, ['scripts/verify-facebook-lead-ingestion.mjs', '--lookback-hours', '168'], { cwd, env }),
+    result: await runJson(process.execPath, ['scripts/verify-facebook-lead-ingestion.mjs', '--lookback-hours', '168'], { cwd, env }),
   });
   rawChecks.push({
     name: 'paypal_live_test_payment',
     requiredAction: 'Approve and capture the real $2 PayPal test payment from Boltcall billing.',
-    result: await runJsonCommand(process.execPath, ['scripts/verify-paypal-test-payment.mjs', '--lookback-hours', '168'], { cwd, env }),
+    result: await runJson(process.execPath, ['scripts/verify-paypal-test-payment.mjs', '--lookback-hours', '168'], { cwd, env }),
   });
   rawChecks.push({
     name: 'retell_phase_e',
     requiredAction: 'Call the QA Retell number and complete a 30-60 second Rapid Rooter QA conversation.',
-    result: await runJsonCommand(process.execPath, ['scripts/verify-retell-phase-e.mjs'], { cwd, env }),
+    result: await runJson(process.execPath, ['scripts/verify-retell-phase-e.mjs'], { cwd, env }),
   });
 
   const checks = rawChecks.map(classifyReadinessCheck);

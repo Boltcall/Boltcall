@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import {
   classifyReadinessCheck,
   hydrateProductionEnv,
+  parseJsonOutput,
+  runProductionReadiness,
   sanitizeSpawnEnv,
   summarizeProductionReadiness,
 } from '../production-readiness.mjs';
@@ -117,5 +119,47 @@ describe('production-readiness helpers', () => {
     );
 
     expect(env.INTERNAL_API_SECRET).toBeUndefined();
+  });
+
+  it('runs the live support-agent KB smoke as its own production readiness check', async () => {
+    const nodeCommands = [];
+    const summary = await runProductionReadiness({
+      env: {
+        SITE_URL: 'https://boltcall.org',
+        INTERNAL_API_SECRET: 'internal-secret',
+        SUPABASE_URL: 'supabase-url',
+        SUPABASE_SERVICE_KEY: 'service-key',
+        VITE_SUPABASE_URL: 'supabase-url',
+        VITE_SUPABASE_ANON_KEY: 'anon-key',
+        INTERNAL_WEBHOOK_SECRET: 'internal-secret',
+        RETELL_API_KEY: 'retell-key',
+        FOUNDER_UUID: 'founder-id',
+      },
+      runJsonCommand: async (_command, args) => {
+        nodeCommands.push(args.join(' '));
+        return { status: 'passed', check: args[0] };
+      },
+      postInternalReadiness: async (_siteUrl, functionName) => ({
+        status: 'passed',
+        check: functionName,
+      }),
+    });
+
+    expect(nodeCommands).toContain('scripts/smoke-v2-help-live.mjs');
+    expect(summary.checks.map((check) => check.name)).toContain('support_agent_live');
+    expect(summary.total).toBe(9);
+  });
+
+  it('parses the first JSON object when a command prints cleanup JSON after the result', () => {
+    expect(
+      parseJsonOutput(`{
+        "status": "passed",
+        "check": "support_agent_live"
+      }
+      {"cleanup":"done","testUserDeleted":true}`),
+    ).toEqual({
+      status: 'passed',
+      check: 'support_agent_live',
+    });
   });
 });
