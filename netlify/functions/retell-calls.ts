@@ -56,7 +56,7 @@ export const handler: Handler = async (event) => {
         filter_criteria: { agent_id: userAgentIds },
         sort_order: 'descending',
         limit: 50,
-      });
+      } as unknown as Parameters<typeof client.call.list>[0]);
       return { statusCode: 200, headers, body: JSON.stringify(calls) };
     }
 

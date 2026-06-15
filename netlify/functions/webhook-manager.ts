@@ -373,7 +373,13 @@ export const handler: Handler = async (event) => {
         return { statusCode: 200, headers, body: JSON.stringify({ success: true, fired: 0 }) };
       }
 
-      const results = [];
+      const results: Array<{
+        webhookId: string;
+        statusCode: number;
+        body: string;
+        durationMs: number;
+        success: boolean;
+      }> = [];
       for (const webhook of webhooks) {
         const fullPayload = {
           event: triggerEvent,

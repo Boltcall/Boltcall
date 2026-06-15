@@ -40,6 +40,7 @@ export const handler: Handler = async (event) => {
   if (authError || !authUser) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid or expired token' }) };
   }
+  const authUserId = authUser.id;
 
   // Confirm the authenticated user has owner|admin authority on a given workspace.
   // Either via workspaces.owner_id (solo owner) or via workspace_members.role.
@@ -49,13 +50,13 @@ export const handler: Handler = async (event) => {
       .select('owner_id')
       .eq('id', workspaceId)
       .maybeSingle();
-    if (ws && ws.owner_id === authUser.id) return true;
+    if (ws && ws.owner_id === authUserId) return true;
 
     const { data: membership } = await supabase
       .from('workspace_members')
       .select('role, status')
       .eq('workspace_id', workspaceId)
-      .eq('user_id', authUser.id)
+      .eq('user_id', authUserId)
       .eq('status', 'active')
       .maybeSingle();
     return !!membership && (membership.role === 'owner' || membership.role === 'admin');

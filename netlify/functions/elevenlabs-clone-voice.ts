@@ -38,6 +38,10 @@ export const handler: Handler = async (event) => {
 
   const supabase = getServiceSupabase();
   const retell = new Retell({ apiKey: retellKey });
+  const retellVoice = retell.voice as unknown as {
+    create: (params: Record<string, unknown>) => Promise<{ voice_id?: string }>;
+    delete: (voiceId: string) => Promise<unknown>;
+  };
 
   try {
     // ── LIST: GET ?userId=... ─────────────────────────────────────────
@@ -79,7 +83,7 @@ export const handler: Handler = async (event) => {
         headers: { 'xi-api-key': elevenKey },
       }).catch(() => {});
 
-      await retell.voice.delete(row.retell_voice_id).catch(() => {});
+      await retellVoice.delete(row.retell_voice_id).catch(() => {});
 
       const { error: delErr } = await supabase.from('cloned_voices').delete().eq('id', id);
       if (delErr) return json(500, { error: delErr.message });
@@ -156,13 +160,13 @@ export const handler: Handler = async (event) => {
     const retellVoiceId = `custom-${elevenVoiceId}`;
     let registeredRetellVoiceId = retellVoiceId;
     try {
-      const created = await retell.voice.create({
+      const created = await retellVoice.create({
         voice_id: retellVoiceId,
         voice_name: name,
         provider: 'elevenlabs',
         provider_voice_id: elevenVoiceId,
         provider_model: 'eleven_turbo_v2_5',
-      } as any);
+      });
       registeredRetellVoiceId = (created as any)?.voice_id || retellVoiceId;
     } catch (retellErr: any) {
       // Roll back ElevenLabs voice if Retell registration fails — otherwise we
@@ -198,7 +202,7 @@ export const handler: Handler = async (event) => {
       await fetch(`${ELEVEN_API}/voices/${elevenVoiceId}`, {
         method: 'DELETE', headers: { 'xi-api-key': elevenKey },
       }).catch(() => {});
-      await retell.voice.delete(registeredRetellVoiceId).catch(() => {});
+      await retellVoice.delete(registeredRetellVoiceId).catch(() => {});
       return json(500, { error: insertErr.message });
     }
 

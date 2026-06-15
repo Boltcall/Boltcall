@@ -337,7 +337,7 @@ export async function createAgentFromArtifact(
         ...(knowledgeBaseIds.length
           ? { knowledge_base_ids: knowledgeBaseIds, kb_config: RETELL_KB_CONFIG }
           : {}),
-      } as Parameters<typeof client.llm.create>[0]),
+      } as unknown as Parameters<typeof client.llm.create>[0]),
     );
 
     const agent = await callWithRetry('agent.create', opts.client_id, () =>
@@ -759,7 +759,7 @@ export async function listRecentCalls(
         },
         limit,
         sort_order: 'descending',
-      } as Parameters<typeof client.call.list>[0]),
+      } as unknown as Parameters<typeof client.call.list>[0]),
     );
 
     const summaries: RecentCallSummary[] = (calls as Array<{

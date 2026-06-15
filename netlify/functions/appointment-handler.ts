@@ -36,14 +36,14 @@ const LANG_TO_LOCALE: Record<string, string> = {
   es: 'es-ES',
 };
 
-async function getUserLocale(supabase: ReturnType<typeof createClient>, userId: string): Promise<string> {
+async function getUserLocale(supabase: ReturnType<typeof createClient<any>>, userId: string): Promise<string> {
   const { data } = await supabase
     .from('agents')
     .select('language')
     .eq('user_id', userId)
     .limit(1)
     .single();
-  return LANG_TO_LOCALE[data?.language] || 'en-US';
+  return LANG_TO_LOCALE[(data as { language?: string } | null)?.language || ''] || 'en-US';
 }
 
 function formatDate(isoString: string, locale = 'en-US'): string {

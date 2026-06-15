@@ -178,7 +178,7 @@ export const handler: Handler = async (event) => {
               lead_id: lead.id,
               lead_name: lead.name || '',
             },
-          });
+          } as unknown as Parameters<typeof retell.call.createPhoneCall>[0]);
 
           // Update lead with call ID
           await supabase

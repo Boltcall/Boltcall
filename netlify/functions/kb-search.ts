@@ -179,7 +179,7 @@ export const handler: Handler = async (event) => {
       const profileId = await getProfileId(userId);
 
       // Generate embedding for search-tier entries
-      let embedding = null;
+      let embedding: number[] | null = null;
       if ((tier || 'search') === 'search') {
         embedding = await getEmbedding(`${title}\n${content}`);
       }
@@ -213,9 +213,9 @@ export const handler: Handler = async (event) => {
       }
 
       const profileId = await getProfileId(userId);
-      const results = [];
+      const results: Array<{ title: string; success: boolean; id?: string; error?: string }> = [];
       for (const entry of entries) {
-        let embedding = null;
+        let embedding: number[] | null = null;
         if ((entry.tier || 'search') === 'search') {
           embedding = await getEmbedding(`${entry.title}\n${entry.content}`);
         }

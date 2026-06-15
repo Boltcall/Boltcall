@@ -3,13 +3,25 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-04-30.basil',
+  apiVersion: '2026-02-25.clover',
 });
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
   process.env.SUPABASE_SERVICE_KEY || ''
 );
+
+type StripeSubscriptionWithPeriods = Stripe.Subscription & {
+  current_period_start?: number;
+  current_period_end?: number;
+};
+
+type StripeInvoiceWithSubscription = Stripe.Invoice & {
+  subscription?: string | Stripe.Subscription | null;
+  subscription_details?: { metadata?: Record<string, string> } | null;
+  period_start?: number;
+  period_end?: number;
+};
 
 function getInternalSecretHeaders(): Record<string, string> {
   const secret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || process.env.CRON_SECRET;
@@ -88,7 +100,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Get the subscription details from Stripe
   const subscriptionId = session.subscription as string;
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId) as StripeSubscriptionWithPeriods;
 
   // Upsert subscription in Supabase
   const { error } = await supabase
@@ -100,8 +112,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       plan_level: plan,
       billing_interval: interval,
       status: subscription.status,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_start: new Date((subscription.current_period_start || 0) * 1000).toISOString(),
+      current_period_end: new Date((subscription.current_period_end || 0) * 1000).toISOString(),
       updated_at: new Date().toISOString(),
     }, {
       onConflict: 'stripe_subscription_id',
@@ -116,6 +128,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+  const subscriptionWithPeriods = subscription as StripeSubscriptionWithPeriods;
   const plan = subscription.metadata?.plan;
   const interval = subscription.metadata?.interval;
 
@@ -125,8 +138,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       status: subscription.status,
       plan_level: plan || undefined,
       billing_interval: interval || undefined,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_start: new Date((subscriptionWithPeriods.current_period_start || 0) * 1000).toISOString(),
+      current_period_end: new Date((subscriptionWithPeriods.current_period_end || 0) * 1000).toISOString(),
       cancel_at: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null,
       canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
       updated_at: new Date().toISOString(),
@@ -156,24 +169,29 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
+  const invoiceWithSubscription = invoice as StripeInvoiceWithSubscription;
   // Stripe API ≥ 2024-09 sometimes omits invoice.subscription_details, so fall
   // back to looking up the subscription row we keep on file, then to retrieving
   // the subscription directly from Stripe.
-  let userId: string | undefined = invoice.subscription_details?.metadata?.userId;
+  let userId: string | undefined = invoiceWithSubscription.subscription_details?.metadata?.userId;
+  const invoiceSubscriptionId =
+    typeof invoiceWithSubscription.subscription === 'string'
+      ? invoiceWithSubscription.subscription
+      : invoiceWithSubscription.subscription?.id;
 
   const { data: sub } = await supabase
     .from('subscriptions')
     .select('id, user_id')
-    .eq('stripe_subscription_id', invoice.subscription as string)
+    .eq('stripe_subscription_id', invoiceSubscriptionId || '')
     .single();
 
   if (!userId && sub?.user_id) {
     userId = sub.user_id;
   }
 
-  if (!userId && invoice.subscription) {
+  if (!userId && invoiceSubscriptionId) {
     try {
-      const sObj = await stripe.subscriptions.retrieve(invoice.subscription as string);
+      const sObj = await stripe.subscriptions.retrieve(invoiceSubscriptionId);
       userId = sObj.metadata?.userId;
     } catch (e) {
       console.error('Failed to retrieve subscription for invoice', invoice.id, e);
@@ -196,8 +214,8 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       status: 'paid',
       invoice_url: invoice.hosted_invoice_url,
       invoice_pdf: invoice.invoice_pdf,
-      period_start: new Date((invoice.period_start || 0) * 1000).toISOString(),
-      period_end: new Date((invoice.period_end || 0) * 1000).toISOString(),
+      period_start: new Date((invoiceWithSubscription.period_start || 0) * 1000).toISOString(),
+      period_end: new Date((invoiceWithSubscription.period_end || 0) * 1000).toISOString(),
     }, {
       onConflict: 'stripe_invoice_id',
     });
@@ -228,15 +246,20 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+  const invoiceWithSubscription = invoice as StripeInvoiceWithSubscription;
+  const invoiceSubscriptionId =
+    typeof invoiceWithSubscription.subscription === 'string'
+      ? invoiceWithSubscription.subscription
+      : invoiceWithSubscription.subscription?.id;
   // Update subscription status to past_due
-  if (invoice.subscription) {
+  if (invoiceSubscriptionId) {
     const { error } = await supabase
       .from('subscriptions')
       .update({
         status: 'past_due',
         updated_at: new Date().toISOString(),
       })
-      .eq('stripe_subscription_id', invoice.subscription as string);
+      .eq('stripe_subscription_id', invoiceSubscriptionId);
 
     if (error) {
       console.error('Error updating subscription to past_due:', error);

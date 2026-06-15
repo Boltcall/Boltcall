@@ -25,13 +25,13 @@ async function getRetellStats(apiKey: string) {
           start_timestamp: { lower_threshold: oneDayAgo },
         },
         limit: 100,
-      }),
+      } as unknown as Parameters<typeof client.call.list>[0]),
       client.call.list({
         filter_criteria: {
           start_timestamp: { lower_threshold: sevenDaysAgo },
         },
         limit: 500,
-      }),
+      } as unknown as Parameters<typeof client.call.list>[0]),
       client.agent.list(),
     ]);
 

@@ -161,7 +161,7 @@ async function syncToGoHighLevel(apiKey: string, config: any, lead: any): Promis
 async function syncToPipedrive(apiToken: string, lead: any, authMode: 'api_token' | 'oauth' = 'api_token'): Promise<{ success: boolean; personId?: number; error?: string }> {
   try {
     const name = lead.name || [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'Unknown';
-    const authHeaders = authMode === 'oauth' ? { Authorization: `Bearer ${apiToken}` } : {};
+    const authHeaders: Record<string, string> = authMode === 'oauth' ? { Authorization: `Bearer ${apiToken}` } : {};
     const tokenQuery = authMode === 'api_token' ? `api_token=${encodeURIComponent(apiToken)}` : '';
     const withAuth = (url: string) => {
       if (!tokenQuery) return url;
@@ -312,7 +312,7 @@ async function refreshGoogleToken(refreshToken: string, integrationId: string): 
     const expiresAt = new Date(Date.now() + (data.expires_in || 3600) * 1000).toISOString();
 
     // Update token in Supabase
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
     await supabase
       .from('user_integrations')
       .update({

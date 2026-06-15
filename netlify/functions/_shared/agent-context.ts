@@ -138,10 +138,10 @@ export async function buildAgentContext(
 
   return {
     agent: {
-      id: agent.id,
-      name: agent.name,
-      agent_type: agent.agent_type,
-      retell_agent_id: agent.retell_agent_id,
+      id: agent.id ?? '',
+      name: agent.name ?? '',
+      agent_type: agent.agent_type ?? '',
+      retell_agent_id: agent.retell_agent_id ?? null,
     },
     systemPrompt: agent.system_prompt || '',
     kbPromptBlock,

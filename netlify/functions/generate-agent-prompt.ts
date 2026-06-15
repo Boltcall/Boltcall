@@ -2761,7 +2761,7 @@ Una a la vez, de forma natural:
 
 // ─── Template Matching ───────────────────────────────────────────────────────
 
-function findIndustryTemplate(category: string, lang: 'en' | 'es' = 'en'): IndustryTemplate | null {
+function findIndustryTemplate(category: string, lang: 'en' | 'es' | 'he' = 'en'): IndustryTemplate | null {
   const cat = category.toLowerCase();
   const templates = lang === 'es' ? INDUSTRY_TEMPLATES_ES : INDUSTRY_TEMPLATES;
   for (const template of templates) {
@@ -2785,7 +2785,7 @@ function findIndustryTemplate(category: string, lang: 'en' | 'es' = 'en'): Indus
 
 // ─── Format Helpers ──────────────────────────────────────────────────────────
 
-function formatOpeningHours(hours: Record<string, { open: string; close: string; closed: boolean }>, lang: 'en' | 'es' = 'en'): string {
+function formatOpeningHours(hours: Record<string, { open: string; close: string; closed: boolean }>, lang: 'en' | 'es' | 'he' = 'en'): string {
   const l = LOCALE[lang];
   if (!hours) return l.notSpecified;
   return Object.entries(hours)
@@ -2797,7 +2797,7 @@ function formatOpeningHours(hours: Record<string, { open: string; close: string;
     .join('\n');
 }
 
-function formatServices(services: Array<{ name: string; duration: number; price: number }>, lang: 'en' | 'es' = 'en'): string {
+function formatServices(services: Array<{ name: string; duration: number; price: number }>, lang: 'en' | 'es' | 'he' = 'en'): string {
   if (!services?.length) return '';
   const l = LOCALE[lang];
   return services
@@ -2811,7 +2811,7 @@ A: ${s.name} takes ${s.duration} ${l.minutes} and costs $${s.price}.`}
     .join('\n');
 }
 
-function formatFAQs(faqs: Array<{ question: string; answer: string }>, lang: 'en' | 'es' = 'en'): string {
+function formatFAQs(faqs: Array<{ question: string; answer: string }>, lang: 'en' | 'es' | 'he' = 'en'): string {
   if (!faqs?.length) return '';
   return faqs.map((f, i) => `<document index="${i + 1}" title="${f.question}" category="faq">
 ${lang === 'es' ? 'P' : 'Q'}: ${f.question}

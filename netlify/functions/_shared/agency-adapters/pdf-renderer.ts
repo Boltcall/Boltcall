@@ -155,8 +155,8 @@ async function loadPuppeteer(): Promise<PuppeteerBundle | null> {
       import('puppeteer-core'),
       import('@sparticuz/chromium'),
     ]);
-    const puppeteer = (puppeteerMod.default ?? puppeteerMod) as typeof import('puppeteer-core');
-    const chromium = (chromiumMod.default ?? chromiumMod) as PuppeteerBundle['chromium'];
+    const puppeteer = (puppeteerMod.default ?? puppeteerMod) as unknown as typeof import('puppeteer-core');
+    const chromium = (chromiumMod.default ?? chromiumMod) as unknown as PuppeteerBundle['chromium'];
     return { puppeteer, chromium };
   } catch (err) {
     console.warn(

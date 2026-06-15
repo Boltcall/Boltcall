@@ -101,12 +101,7 @@ Return JSON:
 }`;
 
   try {
-    const response = await chatCompletion([
-      { role: 'system', content: META_JUDGE_SYSTEM },
-      { role: 'user',   content: userMsg },
-    ], { tier: 'light', maxTokens: 350 });
-
-    const text = response?.choices?.[0]?.message?.content || '';
+    const text = await chatCompletion(META_JUDGE_SYSTEM, userMsg, { tier: 'light', maxTokens: 350 });
     return JSON.parse(text);
   } catch (err) {
     console.error(`[benchmark-runner] Judge failed for scenario ${scenario.id}:`, err);

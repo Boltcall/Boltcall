@@ -71,7 +71,7 @@ async function syncRetell(userId: string): Promise<{
     },
     sort_order: 'ascending',
     limit: 200,
-  });
+  } as unknown as Parameters<typeof client.call.list>[0]);
 
   const callList = Array.isArray(calls) ? calls : [];
   if (callList.length === 0) {

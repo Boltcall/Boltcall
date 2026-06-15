@@ -19,7 +19,7 @@
  * they never mask the original error.
  */
 
-import type { Handler, HandlerContext, HandlerEvent } from '@netlify/functions';
+import type { Handler, HandlerContext, HandlerEvent, HandlerResponse } from '@netlify/functions';
 
 import { emitAgencyEvent } from './emit-agency-event';
 import { notifyError } from './notify';
@@ -36,7 +36,7 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' };
  * @returns            A new Handler that delegates to the original and alerts on throw.
  */
 export function wrapCronWithAlert(handlerName: string, handler: Handler): Handler {
-  return async (event: HandlerEvent, context: HandlerContext) => {
+  return async (event: HandlerEvent, context: HandlerContext): Promise<HandlerResponse> => {
     const authz = await authorizeRunner(event);
     if (!authz.ok) {
       return {
@@ -47,7 +47,8 @@ export function wrapCronWithAlert(handlerName: string, handler: Handler): Handle
     }
 
     try {
-      return await handler(event, context);
+      const response = await handler(event, context);
+      return response ?? { statusCode: 204, headers: JSON_HEADERS, body: '' };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
 

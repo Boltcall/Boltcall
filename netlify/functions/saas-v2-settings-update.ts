@@ -423,8 +423,10 @@ export const handler: Handler = async (event) => {
     .eq('user_id', userId)
     .select(RETURN_COLUMNS);
 
-  if (upErr) {
-    console.warn('[saas-v2-settings-update] update failed:', upErr.message);
+  const updateError = upErr;
+  if (updateError !== null) {
+    const updateErrorMessage = updateError!.message;
+    console.warn('[saas-v2-settings-update] update failed:', updateErrorMessage);
     return {
       statusCode: 500,
       headers: cors,
@@ -432,11 +434,12 @@ export const handler: Handler = async (event) => {
         error: 'Failed to update workspace',
         detail:
           'update error — user owns no workspace OR column missing from workspaces table. Run the V2 settings migration.',
-        supabase_error: upErr.message,
+        supabase_error: updateErrorMessage,
       }),
     };
   }
-  if (!updatedRows || updatedRows.length === 0) {
+  const rows = updatedRows ?? [];
+  if (rows.length === 0) {
     return {
       statusCode: 404,
       headers: cors,
@@ -447,7 +450,7 @@ export const handler: Handler = async (event) => {
     };
   }
 
-  const workspace = updatedRows[0];
+  const workspace = rows[0];
   emitEvent(supa, (workspace as any).id, changedKeys).catch(() => undefined);
 
   return {

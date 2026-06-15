@@ -672,7 +672,7 @@ async function gatherEvidence(args: {
 
   // Fetch full transcripts for the picks — in parallel but with a small cap
   // to avoid hammering Retell.
-  const transcripts: FullTranscript[] = await runWithConcurrency(
+  const transcriptRows = await runWithConcurrency(
     topPicks,
     5,
     async (c) => {
@@ -697,7 +697,16 @@ async function gatherEvidence(args: {
         return null;
       }
     },
-  ).then((rows) => rows.filter((r): r is FullTranscript => r !== null));
+  );
+  const transcripts: FullTranscript[] = transcriptRows
+    .filter((r): r is NonNullable<typeof r> => r !== null)
+    .map((r) => ({
+      call_id: r.call_id,
+      started_at: r.started_at,
+      duration_sec: r.duration_sec,
+      ...(r.outcome ? { outcome: r.outcome } : {}),
+      transcript: r.transcript,
+    }));
 
   const this_week_kpis = computeKpis({
     calls: callsThis,

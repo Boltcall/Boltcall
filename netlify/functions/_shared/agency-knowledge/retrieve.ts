@@ -63,6 +63,7 @@ export interface RetrievedChunk {
   kind: string;
   content: unknown;
   similarity: number;
+  score?: number;
   version: number;
 }
 

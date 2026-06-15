@@ -634,13 +634,14 @@ async function runArchitect(args: RunArchitectArgs): Promise<RunArchitectResult>
   //     vertical_template_feedback object, persist it to agency_knowledge so
   //     the cross-client federated-learning loop can mine it. Anonymized
   //     pattern only — no client_id in the body.
-  if (simulation_passed && latestOutput?.vertical_template_feedback) {
+  const verticalTemplateFeedback = (latestOutput as ArchitectOutput | null)?.vertical_template_feedback;
+  if (simulation_passed && verticalTemplateFeedback) {
     await writeVerticalTemplateFeedback({
       supabase,
       client_id: args.client_id,
       vertical,
       artifact_id: runResult.artifact_id,
-      feedback: latestOutput.vertical_template_feedback,
+      feedback: verticalTemplateFeedback,
     });
   }
 

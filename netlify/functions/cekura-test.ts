@@ -192,7 +192,7 @@ export const handler: Handler = async (event) => {
         business_name || 'the business'
       );
 
-      const created = [];
+      const created: Array<{ id: string; name: string }> = [];
       for (const scenario of scenarios) {
         try {
           const evaluator = await cekuraRequest('/scenarios/', 'POST', {

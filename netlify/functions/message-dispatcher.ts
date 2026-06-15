@@ -241,7 +241,7 @@ export const handler: Handler = async (event) => {
               scheduled_message_id: msg.id,
               user_id: msg.user_id,
             },
-          });
+          } as unknown as Parameters<typeof retell.call.createPhoneCall>[0]);
 
           await supabase
             .from('scheduled_messages')
@@ -257,7 +257,7 @@ export const handler: Handler = async (event) => {
             await deductTokens(
               msg.user_id,
               TOKEN_COSTS.outbound_call,
-              'call_retry',
+              'outbound_call',
               `Follow-up call retry to ${msg.recipient_phone}`,
               { scheduled_message_id: msg.id, retell_call_id: callResp.call_id },
               supabase

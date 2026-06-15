@@ -135,7 +135,7 @@ export async function listVoices(opts: { voice_type?: VoiceType } = {}): Promise
               : v.category !== 'cloned'
           );
     await emitAgencyEvent({
-      client_id: null,
+      client_id: '',
       agent_name: 'elevenlabs-adapter',
       type: 'cost_incurred',
       severity: 'debug',
@@ -144,7 +144,7 @@ export async function listVoices(opts: { voice_type?: VoiceType } = {}): Promise
     return filtered;
   } catch (err) {
     await emitAgencyEvent({
-      client_id: null,
+      client_id: '',
       agent_name: 'elevenlabs-adapter',
       type: 'adapter_error',
       severity: 'error',
@@ -195,7 +195,7 @@ export async function cloneVoice(opts: {
     if (!voice_id) throw new Error('ElevenLabs returned no voice_id');
 
     await emitAgencyEvent({
-      client_id: opts.client_id || null,
+      client_id: opts.client_id || '',
       agent_name: 'elevenlabs-adapter',
       type: 'cost_incurred',
       severity: 'info',
@@ -210,7 +210,7 @@ export async function cloneVoice(opts: {
     return { voice_id, status: 'created' };
   } catch (err) {
     await emitAgencyEvent({
-      client_id: opts.client_id || null,
+      client_id: opts.client_id || '',
       agent_name: 'elevenlabs-adapter',
       type: 'adapter_error',
       severity: 'error',

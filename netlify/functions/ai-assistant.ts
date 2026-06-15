@@ -464,7 +464,9 @@ async function executeTool(name: string, args: any, ctx: any): Promise<{ result:
       const days = args.days || 7;
       const since = Date.now() - days * 24 * 60 * 60 * 1000;
       try {
-        const calls = await retell.call.list({ filter_criteria: { agent_id: [agent.retell_agent_id], after_start_timestamp: since } });
+        const calls = await retell.call.list({
+          filter_criteria: { agent_id: [agent.retell_agent_id], after_start_timestamp: since },
+        } as unknown as Parameters<typeof retell.call.list>[0]);
         const callList = Array.isArray(calls) ? calls : [];
         const total = callList.length;
         const successful = callList.filter((c: any) => c.call_analysis?.call_successful).length;
@@ -829,21 +831,23 @@ const handler: Handler = async (event) => {
       currentMessages.push(assistantMsg as OpenAI.Chat.ChatCompletionMessageParam);
 
       for (const tc of toolCalls) {
-        const toolArgs = JSON.parse(tc.function.arguments || '{}');
-        console.log(`Executing tool: ${tc.function.name}`, toolArgs);
+        if (tc.type !== 'function') continue;
+        const toolCallFunction = tc.function;
+        const toolArgs = JSON.parse(toolCallFunction.arguments || '{}');
+        console.log(`Executing tool: ${toolCallFunction.name}`, toolArgs);
         try {
-          const { result, actionTaken } = await executeTool(tc.function.name, toolArgs, ctx);
+          const { result, actionTaken } = await executeTool(toolCallFunction.name, toolArgs, ctx);
           if (actionTaken) actionsTaken.push(actionTaken);
           currentMessages.push({ role: 'tool', tool_call_id: tc.id, content: result });
         } catch (toolErr) {
-          console.error(`Tool execution failed: ${tc.function.name}`, toolErr);
+          console.error(`Tool execution failed: ${toolCallFunction.name}`, toolErr);
           await notifyError('ai-assistant: Tool execution failed', toolErr, {
-            toolName: tc.function.name, userId, input: JSON.stringify(toolArgs).slice(0, 200),
+            toolName: toolCallFunction.name, userId, input: JSON.stringify(toolArgs).slice(0, 200),
           });
           currentMessages.push({
             role: 'tool',
             tool_call_id: tc.id,
-            content: `Error executing ${tc.function.name}: ${toolErr instanceof Error ? toolErr.message : 'Unknown error'}`,
+            content: `Error executing ${toolCallFunction.name}: ${toolErr instanceof Error ? toolErr.message : 'Unknown error'}`,
           });
         }
       }

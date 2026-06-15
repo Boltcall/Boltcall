@@ -309,7 +309,7 @@ export const handler: Handler = async (event) => {
       try {
         // Step 2: Run all scenarios
         const scenariosToRun = customScenarios || DEFAULT_SCENARIOS;
-        const results = [];
+        const results: Awaited<ReturnType<typeof runScenario>>[] = [];
 
         for (const scenario of scenariosToRun) {
           const result = await runScenario(chatAgentId, scenario);

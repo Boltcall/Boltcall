@@ -4,7 +4,7 @@ import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-04-30.basil',
+  apiVersion: '2026-02-25.clover',
 });
 
 // Map plan levels + intervals to Stripe Price IDs (USD)
