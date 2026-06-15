@@ -122,6 +122,7 @@ interface CallbackRow {
 async function buildTouchpoints(
   supa: ReturnType<typeof getServiceSupabase>,
   lead: LeadRow,
+  workspaceId: string,
 ): Promise<Touchpoint[]> {
   const tps: Touchpoint[] = [];
 
@@ -166,7 +167,7 @@ async function buildTouchpoints(
     const { data } = await supa
       .from('callbacks')
       .select('id, source, status, user_id, created_at')
-      .eq('user_id', lead.user_id)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', since)
       .lte('created_at', until)
       .order('created_at', { ascending: true })
@@ -404,7 +405,7 @@ export const handler: Handler = async (event) => {
   if (!leadId) return badRequest('lead_id query parameter is required');
   if (!/^[0-9a-fA-F-]{16,64}$/.test(leadId)) return badRequest('lead_id must be a uuid');
 
-  // 4. Fetch the lead — scope the query to user_id so cross-tenant lookups
+  // 4. Fetch the lead — scope the query to workspace_id so cross-tenant lookups
   //    return 404, not 403 (don't leak existence).
   const { data: leadRow, error: leadErr } = await supa
     .from('leads')
@@ -412,7 +413,7 @@ export const handler: Handler = async (event) => {
       'id, user_id, first_name, last_name, email, phone, source, status, call_status, call_duration, sms_sent, created_at, raw_data',
     )
     .eq('id', leadId)
-    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
     .limit(1)
     .maybeSingle();
 
@@ -440,7 +441,7 @@ export const handler: Handler = async (event) => {
   }
 
   // 6. Touchpoints + AI action
-  const touchpoints = await buildTouchpoints(supa, lead);
+  const touchpoints = await buildTouchpoints(supa, lead, workspaceId);
   const suggested = await suggestNextAction(lead, touchpoints, vertical);
 
   const response: LeadDetailResponse = {

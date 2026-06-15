@@ -230,13 +230,13 @@ export const handler: Handler = async (event) => {
       supa
         .from('retell_calls')
         .select('id, started_at, duration_seconds, outcome, summary')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .order('started_at', { ascending: false })
         .limit(RECENT_CALLS_LIMIT),
       supa
         .from('callbacks')
         .select('id, customer_name, phone, status, priority, created_at')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
         .limit(RECENT_LEADS_LIMIT),
     ]);

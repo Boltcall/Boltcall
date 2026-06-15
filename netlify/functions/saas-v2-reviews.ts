@@ -218,7 +218,7 @@ interface CallActivitySnapshot {
   daysOfData: number;
 }
 
-async function fetchCallActivity(userId: string): Promise<CallActivitySnapshot> {
+async function fetchCallActivity(workspaceId: string): Promise<CallActivitySnapshot> {
   const supa = getServiceSupabase();
   const end = new Date();
   const start = new Date();
@@ -229,12 +229,12 @@ async function fetchCallActivity(userId: string): Promise<CallActivitySnapshot> 
     supa
       .from('daily_metrics')
       .select('date, calls')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('date', start.toISOString().split('T')[0]),
     supa
       .from('call_logs')
       .select('id, created_at')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', startIso),
   ]);
 
@@ -401,7 +401,7 @@ export const handler: Handler = async (event) => {
     };
   }
 
-  const { userId, workspaceId } = authResult;
+  const { workspaceId } = authResult;
   const generatedAt = new Date().toISOString();
 
   let snapshot: ReviewsSnapshot;
@@ -445,7 +445,7 @@ export const handler: Handler = async (event) => {
   if (snapshot.rows.length === 0) {
     let activity: CallActivitySnapshot = { callsTotal: 0, daysOfData: 0 };
     try {
-      activity = await fetchCallActivity(userId);
+      activity = await fetchCallActivity(workspaceId);
     } catch {
       /* tolerate — already fall through to cold-start branch */
     }

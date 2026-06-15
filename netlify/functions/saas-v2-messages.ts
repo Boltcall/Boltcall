@@ -83,6 +83,7 @@ interface ChatRow {
   }> | null;
   created_at: string;
   user_id: string;
+  workspace_id?: string | null;
 }
 
 
@@ -292,7 +293,7 @@ export const handler: Handler = async (event) => {
   const { count: totalChatCount } = await supa
     .from('chats')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId);
+    .eq('workspace_id', workspace_id);
 
   const isColdStart =
     (totalChatCount ?? 0) < COLD_START_MIN_CHATS &&
@@ -329,10 +330,10 @@ export const handler: Handler = async (event) => {
   let query = supa
     .from('chats')
     .select(
-      'id, customer_name, primary_phone, status, chat_type, source, last_message, last_message_at, last_activity_at, message_count, agent_id, chat_history, created_at, user_id',
+      'id, customer_name, primary_phone, status, chat_type, source, last_message, last_message_at, last_activity_at, message_count, agent_id, chat_history, created_at, user_id, workspace_id',
       { count: 'exact' },
     )
-    .eq('user_id', userId)
+    .eq('workspace_id', workspace_id)
     .order('last_activity_at', { ascending: false })
     .range(offset, offset + limit - 1);
 

@@ -332,7 +332,7 @@ async function loadConnectionContext(
       supa
         .from('user_integrations')
         .select('provider')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .eq('is_connected', true),
     ),
     safeArray<{ provider: string }>(
@@ -359,7 +359,7 @@ async function loadConnectionContext(
       supa
         .from('whatsapp_settings')
         .select('id')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .limit(1),
     ),
     safeArray<{ id: string }>(

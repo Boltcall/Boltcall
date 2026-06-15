@@ -507,14 +507,14 @@ export const handler: Handler = async (event) => {
     // Best-effort; not having a vertical just lowers the hot-lead signal.
   }
 
-  // 5. Fetch leads page (with server-side defense-in-depth: user_id filter)
+  // 5. Fetch leads page (workspace_id is server-derived from the JWT)
   let leadsQuery = supa
     .from('leads')
     .select(
       'id, user_id, first_name, last_name, email, phone, source, status, call_status, call_duration, sms_sent, created_at, raw_data',
       { count: 'exact' },
     )
-    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -547,7 +547,7 @@ export const handler: Handler = async (event) => {
     .select(
       'id, user_id, first_name, last_name, email, phone, source, status, call_status, call_duration, sms_sent, created_at, raw_data',
     )
-    .eq('user_id', userId)
+    .eq('workspace_id', workspaceId)
     .gte('created_at', sevenDaysAgo)
     .order('created_at', { ascending: false })
     .limit(100);

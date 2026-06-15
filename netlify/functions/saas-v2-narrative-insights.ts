@@ -99,7 +99,7 @@ function dateKey(d: Date): string {
   return d.toISOString().split('T')[0];
 }
 
-async function fetchMetricsSnapshot(userId: string): Promise<MetricsSnapshot> {
+async function fetchMetricsSnapshot(workspaceId: string): Promise<MetricsSnapshot> {
   const supa = getServiceSupabase();
   const end = new Date();
   const start = new Date();
@@ -109,20 +109,20 @@ async function fetchMetricsSnapshot(userId: string): Promise<MetricsSnapshot> {
     supa
       .from('daily_metrics')
       .select('date, calls, leads, bookings, sms_sent, success_rate, avg_call_duration')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('date', dateKey(start))
       .lte('date', dateKey(end))
       .order('date', { ascending: true }),
     supa
       .from('callbacks')
       .select('id, created_at')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', dateKey(start))
       .lte('created_at', `${dateKey(end)}T23:59:59`),
     supa
       .from('call_logs')
       .select('id, created_at, duration_seconds')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', dateKey(start))
       .lte('created_at', `${dateKey(end)}T23:59:59`),
   ]);
@@ -407,13 +407,12 @@ export const handler: Handler = async (event) => {
     };
   }
 
-  const userId = authResult.userId;
   const workspaceId = authResult.workspaceId;
   const generatedAt = new Date().toISOString();
 
   let snapshot: MetricsSnapshot;
   try {
-    snapshot = await fetchMetricsSnapshot(userId);
+    snapshot = await fetchMetricsSnapshot(workspaceId);
   } catch (err) {
     console.error('[saas-v2-narrative-insights] metrics fetch failed:', err);
     // Fall back to cold-start rather than 500 — UI handles empty gracefully.

@@ -20,6 +20,7 @@ const rows: Record<TableName, Record<string, unknown>[]> = {
     {
       id: 'thread-1',
       user_id: 'jwt-user-A',
+      workspace_id: 'workspace-A',
       customer_name: 'Sam',
       primary_phone: '+15555550123',
       customer_email: 'sam@example.com',
@@ -34,7 +35,15 @@ const rows: Record<TableName, Record<string, unknown>[]> = {
       created_at: '2026-06-06T12:00:00Z',
     },
   ],
-  leads: [{ id: 'lead-1', name: 'Sam', phone: '+15555550123', email: 'sam@example.com' }],
+  leads: [
+    {
+      id: 'lead-1',
+      workspace_id: 'workspace-A',
+      name: 'Sam',
+      phone: '+15555550123',
+      email: 'sam@example.com',
+    },
+  ],
 };
 
 function makeChain(table: TableName) {

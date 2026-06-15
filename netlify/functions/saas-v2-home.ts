@@ -320,7 +320,7 @@ export const handler: Handler = async (event) => {
     supa
       .from('call_logs')
       .select('id, user_id, status, duration_seconds, started_at, caller_phone, outcome, created_at')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', todayStart)
       .lte('created_at', todayEnd)
       .order('created_at', { ascending: false })
@@ -328,14 +328,14 @@ export const handler: Handler = async (event) => {
     supa
       .from('call_logs')
       .select('id, user_id, status, duration_seconds, started_at, caller_phone, outcome, created_at')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', yesterdayStart)
       .lt('created_at', todayStart)
       .limit(200),
     supa
       .from('callbacks')
       .select('id, user_id, status, priority, first_reply_seconds, created_at, customer_name, phone')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', todayStart)
       .lte('created_at', todayEnd)
       .order('created_at', { ascending: false })
@@ -343,14 +343,14 @@ export const handler: Handler = async (event) => {
     supa
       .from('callbacks')
       .select('id, user_id, status, priority, first_reply_seconds, created_at, customer_name, phone')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .gte('created_at', yesterdayStart)
       .lt('created_at', todayStart)
       .limit(200),
     supa
       .from('call_logs')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId),
+      .eq('workspace_id', workspaceId),
   ]);
 
   const todayCalls = (callsRes.data || []) as CallRow[];

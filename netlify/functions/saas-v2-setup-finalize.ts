@@ -305,6 +305,7 @@ export const handler: Handler = async (event) => {
       await supa.from('locations').insert({
         business_profile_id: businessProfileId,
         user_id: userId,
+        workspace_id: workspaceId,
         name: businessName,
         slug: null,
         phone: extracted.businessPhone || null,

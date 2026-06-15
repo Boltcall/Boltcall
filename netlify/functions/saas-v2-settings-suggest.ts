@@ -315,7 +315,7 @@ export const handler: Handler = async (event) => {
     supa
       .from('locations')
       .select('timezone, phone')
-      .eq('user_id', userId)
+      .eq('workspace_id', workspaceId)
       .eq('is_primary', true)
       .limit(1)
       .maybeSingle(),

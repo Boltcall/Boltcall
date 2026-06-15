@@ -343,13 +343,13 @@ async function loadWorkspaceDiagnostics(supa: any, userId: string, workspaceId: 
       supa
         .from('leads')
         .select('id, source, status, created_at')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
         .limit(5),
       supa
         .from('scheduled_messages')
         .select('channel, type, status, scheduled_for, created_at')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .order('created_at', { ascending: false })
         .limit(5),
       supa

@@ -286,7 +286,7 @@ export const handler: Handler = async (event) => {
       supa
         .from('locations')
         .select('id, timezone, phone')
-        .eq('user_id', userId)
+        .eq('workspace_id', workspaceId)
         .eq('is_primary', true)
         .limit(1)
         .maybeSingle(),
@@ -364,12 +364,14 @@ export const handler: Handler = async (event) => {
         const { error } = await supa
           .from('locations')
           .update({ ...locationPatch, updated_at: now })
-          .eq('id', (location as any).id);
+          .eq('id', (location as any).id)
+          .eq('workspace_id', workspaceId);
         if (error) console.warn('[saas-v2-settings-update] location update failed:', error.message);
       } else if ((profile as any)?.id) {
         const { error } = await supa.from('locations').insert({
           ...locationPatch,
           user_id: userId,
+          workspace_id: workspaceId,
           business_profile_id: (profile as any).id,
           name: 'Main Office',
           slug: 'main-office',
@@ -392,7 +394,7 @@ export const handler: Handler = async (event) => {
         supa
           .from('locations')
           .select('timezone, phone')
-          .eq('user_id', userId)
+          .eq('workspace_id', workspaceId)
           .eq('is_primary', true)
           .limit(1)
           .maybeSingle(),

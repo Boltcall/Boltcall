@@ -46,6 +46,7 @@ interface ChatHistoryEntry {
 interface ChatRecord {
   id: string;
   user_id: string;
+  workspace_id?: string | null;
   customer_name: string | null;
   primary_phone: string | null;
   source: string | null;
@@ -176,9 +177,10 @@ export const handler: Handler = async (event) => {
   const { data: chat, error: chatErr } = await supa
     .from('chats')
     .select(
-      'id, user_id, customer_name, primary_phone, source, chat_history, last_activity_at, created_at',
+      'id, user_id, workspace_id, customer_name, primary_phone, source, chat_history, last_activity_at, created_at',
     )
     .eq('id', thread_id)
+    .eq('workspace_id', workspace_id)
     .maybeSingle();
 
   if (chatErr) return serverError('Failed to fetch thread');

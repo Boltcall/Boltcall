@@ -36,6 +36,7 @@ interface ChatHistoryEntry {
 interface ChatRecord {
   id: string;
   user_id: string;
+  workspace_id?: string | null;
   customer_name: string | null;
   primary_phone: string | null;
   customer_email: string | null;
@@ -139,9 +140,10 @@ export const handler: Handler = async (event) => {
   const { data: chat, error: chatErr } = await supa
     .from('chats')
     .select(
-      'id, user_id, customer_name, primary_phone, customer_email, status, source, chat_history, last_message_at, last_activity_at, message_count, agent_id, lead_id, created_at',
+      'id, user_id, workspace_id, customer_name, primary_phone, customer_email, status, source, chat_history, last_message_at, last_activity_at, message_count, agent_id, lead_id, created_at',
     )
     .eq('id', thread_id)
+    .eq('workspace_id', workspace_id)
     .maybeSingle();
 
   if (chatErr) {
@@ -178,7 +180,7 @@ export const handler: Handler = async (event) => {
       .from('leads')
       .select('id, name, phone, email')
       .eq('id', c.lead_id)
-      .eq('user_id', userId)
+      .eq('workspace_id', workspace_id)
       .maybeSingle();
     if (leadRow) {
       lead = {
@@ -198,7 +200,7 @@ export const handler: Handler = async (event) => {
     const { count: priorCount, data: priorRows } = await supa
       .from('chats')
       .select('id, last_activity_at', { count: 'exact' })
-      .eq('user_id', userId)
+      .eq('workspace_id', workspace_id)
       .eq(filterCol, filterVal)
       .neq('id', c.id)
       .order('last_activity_at', { ascending: false })
