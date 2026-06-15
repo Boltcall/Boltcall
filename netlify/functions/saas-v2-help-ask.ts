@@ -68,53 +68,53 @@ const DOCS_INDEX: DocEntry[] = [
   {
     cues: ['phone', 'number', 'twilio', 'sip', 'forward', 'forwarding', 'call routing'],
     source: {
-      title: 'Add a phone number',
-      url: `${DOCS_BASE}/phone-numbers/add-number`,
-      snippet: 'Provision a Twilio or ACS number and route inbound calls to your AI agent.',
+      title: 'Phone numbers',
+      url: `${DOCS_BASE}/dashboard/phone-numbers`,
+      snippet: 'Manage connected numbers and route inbound calls to your AI agent.',
     },
   },
   {
-    cues: ['voice', 'agent voice', 'voices', 'elevenlabs', 'tts', 'speech', 'accent'],
+    cues: ['agent', 'agents', 'voice', 'agent voice', 'voices', 'elevenlabs', 'tts', 'speech', 'accent'],
     source: {
-      title: 'Change your agent voice',
-      url: `${DOCS_BASE}/agents/voice`,
-      snippet: 'Browse ElevenLabs voices and assign one to your agent.',
+      title: 'Agents',
+      url: `${DOCS_BASE}/dashboard/agents`,
+      snippet: 'Configure your AI agent, voice, routing, and lead-response behavior.',
     },
   },
   {
     cues: ['call failing', 'calls failing', 'failed call', 'no answer', 'silence', 'dropped', 'troubleshoot'],
     source: {
-      title: 'Troubleshooting failed calls',
-      url: `${DOCS_BASE}/troubleshooting/failed-calls`,
-      snippet: 'Common reasons calls fail and how to diagnose each one.',
+      title: 'Phone numbers',
+      url: `${DOCS_BASE}/dashboard/phone-numbers`,
+      snippet: 'Check number status, routing, and agent assignment when calls are not connecting.',
     },
   },
   {
-    cues: ['billing', 'invoice', 'plan', 'price', 'pricing', 'usage', 'subscription', 'stripe'],
+    cues: ['billing', 'invoice', 'plan', 'price', 'pricing', 'usage', 'subscription', 'paypal', 'payment'],
     source: {
-      title: 'How billing works',
-      url: `${DOCS_BASE}/billing/overview`,
-      snippet: 'Plan tiers, usage metering, and where to find your invoices.',
+      title: 'Plans and billing',
+      url: `${DOCS_BASE}/account/plans`,
+      snippet: 'Review plan tiers, billing details, and account plan settings.',
     },
   },
   {
     cues: ['export', 'csv', 'data', 'download', 'leads export', 'calls export'],
     source: {
-      title: 'Export your data',
-      url: `${DOCS_BASE}/data/export`,
+      title: 'Dashboard overview',
+      url: `${DOCS_BASE}/dashboard/overview`,
       snippet: 'Download calls, leads, and messages as CSV.',
     },
   },
   {
     cues: ['invite', 'teammate', 'team', 'member', 'workspace member', 'seat', 'role'],
     source: {
-      title: 'Invite a teammate',
-      url: `${DOCS_BASE}/workspace/members`,
+      title: 'Team members',
+      url: `${DOCS_BASE}/account/team-members`,
       snippet: 'Send invites and pick a role (admin, editor, viewer).',
     },
   },
   {
-    cues: ['integration', 'integrations', 'crm', 'webhook', 'zapier', 'hubspot', 'salesforce'],
+    cues: ['integration', 'integrations', 'zapier'],
     source: {
       title: 'Integrations overview',
       url: `${DOCS_BASE}/integrations/overview`,
@@ -122,18 +122,34 @@ const DOCS_INDEX: DocEntry[] = [
     },
   },
   {
+    cues: ['crm', 'hubspot', 'salesforce', 'pipedrive', 'lead sync', 'sync lead'],
+    source: {
+      title: 'CRM integrations',
+      url: `${DOCS_BASE}/integrations/crm`,
+      snippet: 'Send new Boltcall leads and updates into your CRM.',
+    },
+  },
+  {
+    cues: ['webhook', 'webhooks', 'google ads', 'google lead', 'lead form', 'lead forms', 'facebook lead', 'meta lead'],
+    source: {
+      title: 'Webhooks',
+      url: `${DOCS_BASE}/integrations/webhooks`,
+      snippet: 'Forward external lead sources into Boltcall for instant response.',
+    },
+  },
+  {
     cues: ['knowledge', 'kb', 'knowledge base', 'docs upload', 'faq', 'business info'],
     source: {
       title: 'Knowledge base',
-      url: `${DOCS_BASE}/knowledge-base/overview`,
+      url: `${DOCS_BASE}/dashboard/knowledge-base`,
       snippet: 'Give your agent the answers customers will ask.',
     },
   },
   {
     cues: ['booking', 'calendar', 'calendly', 'cal.com', 'appointment', 'schedule'],
     source: {
-      title: 'Booking + calendar',
-      url: `${DOCS_BASE}/booking/calendar`,
+      title: 'Calendar integrations',
+      url: `${DOCS_BASE}/integrations/calendar`,
       snippet: 'Connect Cal.com / Calendly so the agent can book in real time.',
     },
   },
@@ -141,8 +157,24 @@ const DOCS_INDEX: DocEntry[] = [
     cues: ['sms', 'text', 'message', 'messages', 'whatsapp', 'follow up', 'followup'],
     source: {
       title: 'SMS and messaging',
-      url: `${DOCS_BASE}/messaging/overview`,
+      url: `${DOCS_BASE}/features/sms-booking`,
       snippet: 'Set up two-way SMS, WhatsApp, and follow-up sequences.',
+    },
+  },
+  {
+    cues: ['setup', 'onboarding', 'quickstart', 'start', 'go live', 'launch'],
+    source: {
+      title: 'Onboarding',
+      url: `${DOCS_BASE}/onboarding`,
+      snippet: 'Complete the setup steps required to launch your speed-to-lead system.',
+    },
+  },
+  {
+    cues: ['instant reply', 'instant response', 'speed to lead', 'lead response', 'lead replies', 'new lead'],
+    source: {
+      title: 'Instant lead reply',
+      url: `${DOCS_BASE}/features/instant-lead-reply`,
+      snippet: 'Respond to inbound leads immediately so the first business to reply wins.',
     },
   },
 ];

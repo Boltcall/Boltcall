@@ -173,6 +173,31 @@ describe('saas-v2-help-ask support escalation', () => {
     expect(mocks.notifyInfo).not.toHaveBeenCalled();
   });
 
+  it('returns current public docs sources for common customer questions', async () => {
+    const { handler } = await import('../saas-v2-help-ask');
+
+    const phoneRes = await handler(makeEvent('How do I add a phone number?'), {} as any);
+    const phoneBody = JSON.parse(phoneRes.body || '{}');
+    expect(phoneBody.sources[0]).toEqual(expect.objectContaining({
+      title: 'Phone numbers',
+      url: 'https://boltcall.mintlify.app/dashboard/phone-numbers',
+    }));
+
+    const billingRes = await handler(makeEvent('How does billing and my plan work?'), {} as any);
+    const billingBody = JSON.parse(billingRes.body || '{}');
+    expect(billingBody.sources[0]).toEqual(expect.objectContaining({
+      title: 'Plans and billing',
+      url: 'https://boltcall.mintlify.app/account/plans',
+    }));
+
+    const webhookRes = await handler(makeEvent('How do I connect Google Ads lead forms by webhook?'), {} as any);
+    const webhookBody = JSON.parse(webhookRes.body || '{}');
+    expect(webhookBody.sources[0]).toEqual(expect.objectContaining({
+      title: 'Webhooks',
+      url: 'https://boltcall.mintlify.app/integrations/webhooks',
+    }));
+  });
+
   it('alerts internal support when the customer asks for urgent human help', async () => {
     const supabase = makeSupabase();
     mocks.getServiceSupabase.mockReturnValue(supabase);
