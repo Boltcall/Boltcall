@@ -1,0 +1,217 @@
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const DEFAULT_SITE_URL = 'https://boltcall.org';
+const ACTION_REQUIRED_REASONS = new Set([
+  'not_found',
+  'no_recent_calls',
+]);
+
+function parseJsonOutput(output) {
+  const text = String(output || '').trim();
+  const first = text.indexOf('{');
+  const last = text.lastIndexOf('}');
+  if (first === -1 || last === -1 || last < first) return null;
+  try {
+    return JSON.parse(text.slice(first, last + 1));
+  } catch {
+    return null;
+  }
+}
+
+export function sanitizeSpawnEnv(env = process.env) {
+  return Object.fromEntries(
+    Object.entries(env).filter(([key, value]) => key && !key.startsWith('=') && value !== undefined),
+  );
+}
+
+function runProcess(command, args, opts = {}) {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, {
+      cwd: opts.cwd || process.cwd(),
+      env: sanitizeSpawnEnv(opts.env || process.env),
+      shell: false,
+      windowsHide: true,
+    });
+
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on('error', (error) => {
+      resolve({
+        exitCode: 1,
+        stdout,
+        stderr: `${stderr}${error.message}`,
+      });
+    });
+    child.on('close', (exitCode) => {
+      resolve({ exitCode, stdout, stderr });
+    });
+  });
+}
+
+async function runJsonCommand(command, args, opts = {}) {
+  const output = await runProcess(command, args, opts);
+  const parsed = parseJsonOutput(output.stdout) || parseJsonOutput(output.stderr);
+  if (parsed) return parsed;
+  return {
+    status: 'failed',
+    error: output.stderr.trim() || output.stdout.trim() || `Command exited ${output.exitCode}`,
+  };
+}
+
+async function postInternalReadiness(siteUrl, functionName, internalSecret) {
+  if (!internalSecret) {
+    return {
+      status: 'failed',
+      check: functionName,
+      error: 'INTERNAL_API_SECRET is required for internal readiness checks.',
+    };
+  }
+
+  const res = await fetch(`${siteUrl}/.netlify/functions/${functionName}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-internal-secret': internalSecret,
+    },
+    body: '{}',
+  });
+  const body = await res.json().catch(async () => ({
+    status: 'failed',
+    error: await res.text().catch(() => `HTTP ${res.status}`),
+  }));
+  return body;
+}
+
+export function classifyReadinessCheck(check) {
+  const result = check.result || {};
+  const status = result.status === 'passed' ? 'passed' : 'failed';
+  const reason = result.reason || result.error || null;
+
+  if (status === 'passed') {
+    return {
+      name: check.name,
+      status: 'passed',
+      check: result.check || check.name,
+      result,
+    };
+  }
+
+  if (check.requiredAction && ACTION_REQUIRED_REASONS.has(String(reason))) {
+    return {
+      name: check.name,
+      status: 'action_required',
+      check: result.check || check.name,
+      reason,
+      requiredAction: check.requiredAction,
+      result,
+    };
+  }
+
+  return {
+    name: check.name,
+    status: 'failed',
+    check: result.check || check.name,
+    reason: reason || 'failed',
+    result,
+  };
+}
+
+export function summarizeProductionReadiness(checks) {
+  const passed = checks.filter((check) => check.status === 'passed').length;
+  const failed = checks.filter((check) => check.status === 'failed').length;
+  const actionRequired = checks.filter((check) => check.status === 'action_required').length;
+
+  return {
+    status: failed > 0 ? 'failed' : actionRequired > 0 ? 'action_required' : 'passed',
+    passed,
+    failed,
+    actionRequired,
+    total: checks.length,
+  };
+}
+
+function buildVerifierEnv(env = process.env) {
+  const sinceIso = env.RETELL_PHASE_E_SINCE_ISO ||
+    new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  return {
+    ...env,
+    SITE_URL: env.SITE_URL || DEFAULT_SITE_URL,
+    RETELL_PHASE_E_SINCE_ISO: sinceIso,
+  };
+}
+
+export async function runProductionReadiness(opts = {}) {
+  const cwd = opts.cwd || process.cwd();
+  const env = buildVerifierEnv(opts.env || process.env);
+  const siteUrl = env.SITE_URL || DEFAULT_SITE_URL;
+  const internalSecret = env.INTERNAL_API_SECRET || env.INTERNAL_WEBHOOK_SECRET || '';
+
+  const rawChecks = [];
+
+  rawChecks.push({
+    name: 'production_smoke',
+    result: await runJsonCommand(process.execPath, ['scripts/smoke-production.mjs'], { cwd, env }),
+  });
+
+  for (const [name, functionName] of [
+    ['facebook_runtime', 'facebook-readiness'],
+    ['paypal_runtime', 'paypal-readiness'],
+    ['retell_runtime', 'retell-readiness'],
+  ]) {
+    rawChecks.push({
+      name,
+      result: await postInternalReadiness(siteUrl, functionName, internalSecret),
+    });
+  }
+
+  rawChecks.push({
+    name: 'facebook_page_connection',
+    requiredAction: 'Connect the founder Facebook Page in the Boltcall dashboard.',
+    result: await runJsonCommand(process.execPath, ['scripts/verify-facebook-page-connection.mjs'], { cwd, env }),
+  });
+  rawChecks.push({
+    name: 'facebook_lead_ingestion',
+    requiredAction: 'Submit a real/test Facebook Lead Ad after the Page is connected.',
+    result: await runJsonCommand(process.execPath, ['scripts/verify-facebook-lead-ingestion.mjs', '--lookback-hours', '168'], { cwd, env }),
+  });
+  rawChecks.push({
+    name: 'paypal_live_test_payment',
+    requiredAction: 'Approve and capture the real $2 PayPal test payment from Boltcall billing.',
+    result: await runJsonCommand(process.execPath, ['scripts/verify-paypal-test-payment.mjs', '--lookback-hours', '168'], { cwd, env }),
+  });
+  rawChecks.push({
+    name: 'retell_phase_e',
+    requiredAction: 'Call the QA Retell number and complete a 30-60 second Rapid Rooter QA conversation.',
+    result: await runJsonCommand(process.execPath, ['scripts/verify-retell-phase-e.mjs'], { cwd, env }),
+  });
+
+  const checks = rawChecks.map(classifyReadinessCheck);
+  return {
+    ...summarizeProductionReadiness(checks),
+    siteUrl,
+    generatedAt: new Date().toISOString(),
+    checks,
+  };
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  runProductionReadiness()
+    .then((summary) => {
+      console.log(JSON.stringify(summary, null, 2));
+      if (summary.status === 'failed') process.exitCode = 1;
+    })
+    .catch((error) => {
+      console.error(JSON.stringify({
+        status: 'failed',
+        error: error instanceof Error ? error.message : String(error),
+      }, null, 2));
+      process.exitCode = 1;
+    });
+}

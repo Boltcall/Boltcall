@@ -20,6 +20,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "smoke:production": "node scripts/smoke-production.mjs",
+    "readiness:production": "node scripts/production-readiness.mjs",
     "smoke:v2-help-live": "node scripts/smoke-v2-help-live.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
