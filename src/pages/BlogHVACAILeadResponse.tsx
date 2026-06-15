@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Thermometer, Phone } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
@@ -96,7 +96,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
       <ReadingProgress />
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-8 bg-gradient-to-br from-blue-50 via-white to-blue-50/30">
+      <section className="relative pt-32 pb-8 bg-white">
         <div className="max-w-4xl px-4 sm:px-6 lg:px-8" style={{ marginLeft: 0 }}>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -140,7 +140,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="prose prose-lg max-w-none mb-12"
             >
-              <p className="text-xl text-gray-700 leading-relaxed font-medium">
+              <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
                 A homeowner's AC stops working on a 95-degree afternoon. She picks up her phone,
                 opens Google, and calls the first three HVAC companies she finds. The one that
                 answers first gets the job — and likely keeps her as a customer for years. The other
@@ -149,19 +149,6 @@ const BlogHVACAILeadResponse: React.FC = () => {
               </p>
             </motion.div>
 
-            {/* Table of Contents */}
-            <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 mb-12">
-              <h2 className="text-base font-bold text-gray-900 mb-4">In This Article</h2>
-              <ol className="space-y-2 list-decimal list-inside">
-                <li><a href="#why-speed-wins-in-hvac" className="text-blue-600 hover:underline text-sm">Why Speed Wins in HVAC</a></li>
-                <li><a href="#the-problem-most-hvac-companies-respond-too-slow" className="text-blue-600 hover:underline text-sm">The Problem: Most HVAC Companies Respond Too Slow</a></li>
-                <li><a href="#what-ai-lead-response-looks-like-for-hvac" className="text-blue-600 hover:underline text-sm">What AI Lead Response Looks Like for HVAC</a></li>
-                <li><a href="#5-hvac-scenarios-where-ai-wins" className="text-blue-600 hover:underline text-sm">The 5 HVAC Scenarios Where AI Response Wins Every Time</a></li>
-                <li><a href="#how-to-set-up-ai-lead-response" className="text-blue-600 hover:underline text-sm">How to Set Up AI Lead Response for Your HVAC Business</a></li>
-                <li><a href="#the-numbers" className="text-blue-600 hover:underline text-sm">The Numbers: What HVAC Companies See After Implementing AI</a></li>
-              </ol>
-            </div>
-
             {/* Section 1 */}
             <motion.section
               initial={{ opacity: 0, y: 20 }}
@@ -169,9 +156,9 @@ const BlogHVACAILeadResponse: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mb-16"
             >
-              <h2 id="why-speed-wins-in-hvac" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
+              <h2 id="key-takeaways" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                Why Speed Wins in HVAC
+                Key Takeaways
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -212,9 +199,9 @@ const BlogHVACAILeadResponse: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mb-16"
             >
-              <h2 id="the-problem-most-hvac-companies-respond-too-slow" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
+              <h2 id="response-gap" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                The Problem: Most HVAC Companies Respond Too Slow
+                Response Gap
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -288,9 +275,9 @@ const BlogHVACAILeadResponse: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="mb-16"
             >
-              <h2 id="what-ai-lead-response-looks-like-for-hvac" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
+              <h2 id="ai-response" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                What AI Lead Response Looks Like for HVAC
+                AI Response
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -332,14 +319,12 @@ const BlogHVACAILeadResponse: React.FC = () => {
                   appointment on your team's calendar.
                 </p>
 
-                <div className="bg-gray-900 text-white p-8 rounded-2xl my-8">
-                  <h3 className="text-2xl font-bold mb-4">The core promise of AI lead response</h3>
-                  <p className="text-lg leading-relaxed text-gray-200">
+                <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">The core promise</h3>
+                <p>
                     Every inbound HVAC lead gets a real response within seconds, a real conversation
                     about their problem, and a real appointment booked — automatically, 24 hours a
                     day, 7 days a week, without adding a single person to your payroll.
-                  </p>
-                </div>
+                </p>
               </div>
             </motion.section>
 
@@ -350,9 +335,9 @@ const BlogHVACAILeadResponse: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.5 }}
               className="mb-16"
             >
-              <h2 id="5-hvac-scenarios-where-ai-wins" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
+              <h2 id="top-scenarios" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                The 5 HVAC Scenarios Where AI Response Wins Every Time
+                Top Scenarios
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -441,9 +426,9 @@ const BlogHVACAILeadResponse: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="mb-16"
             >
-              <h2 id="how-to-set-up-ai-lead-response" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
+              <h2 id="setup" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                How to Set Up AI Lead Response for Your HVAC Business
+                Setup
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -512,9 +497,9 @@ const BlogHVACAILeadResponse: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.7 }}
               className="mb-16"
             >
-              <h2 id="the-numbers" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
+              <h2 id="results" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                The Numbers: What HVAC Companies See After Implementing AI Response
+                Results
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -523,24 +508,22 @@ const BlogHVACAILeadResponse: React.FC = () => {
                   Here is what the typical pattern looks like:
                 </p>
 
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Example: Mid-size HVAC company, 80 inbound leads/month</h3>
-                  <p className="text-gray-700 leading-relaxed mb-3">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Example: 80 inbound leads/month</h3>
+                <p>
                     Before AI: average 25-minute response time, manual callbacks, no after-hours
                     coverage. Conversion rate of approximately 12% — 10 booked jobs per month at
                     an average job value of $350. Monthly revenue from inbound leads: $3,500.
-                  </p>
-                  <p className="text-gray-700 leading-relaxed mb-3">
+                </p>
+                <p>
                     After AI: instant response to every inbound lead, 24/7 coverage including
                     evenings and weekends, automated booking. Conversion rate increases to 31% —
                     25 booked jobs per month at the same average value. Monthly revenue from
                     inbound leads: $8,750.
-                  </p>
-                  <p className="text-gray-700 leading-relaxed font-medium">
+                </p>
+                <p className="font-medium text-gray-900">
                     That is $5,250 in additional monthly revenue — $63,000 per year — from the
                     same lead volume, with no additional advertising spend.
-                  </p>
-                </div>
+                </p>
 
                 <p>
                   Beyond the conversion rate improvement, HVAC companies report three additional
@@ -576,9 +559,9 @@ const BlogHVACAILeadResponse: React.FC = () => {
             </motion.section>
 
             {/* Editor's Note */}
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-12">
-              <p className="text-sm font-bold text-blue-800 mb-1">Note — April 2026</p>
-              <p className="text-blue-900 text-sm leading-relaxed">
+            <div className="mb-12">
+              <p className="text-sm font-bold text-gray-900 mb-1">Note — April 2026</p>
+              <p className="text-gray-700 text-sm leading-relaxed">
                 The HVAC industry has seen rapid adoption of AI-powered dispatch and lead response
                 tools in 2025 and 2026. Companies that implemented speed-to-lead systems in this
                 period report capturing market share from competitors who still rely on manual
@@ -588,47 +571,25 @@ const BlogHVACAILeadResponse: React.FC = () => {
               </p>
             </div>
 
-            {/* CTA Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="my-16"
-            >
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-8 w-full max-w-[800px] group hover:bg-gray-50 transition duration-500 hover:duration-200">
-                  <div className="flex justify-center isolate">
-                    <div className="bg-white size-12 grid place-items-center rounded-xl relative left-2.5 top-1.5 -rotate-6 shadow-lg ring-1 ring-gray-200 group-hover:-translate-x-5 group-hover:-rotate-12 group-hover:-translate-y-0.5 transition duration-500 group-hover:duration-200">
-                      <Thermometer className="w-6 h-6 text-blue-500" />
-                    </div>
-                    <div className="bg-white size-12 grid place-items-center rounded-xl relative z-10 shadow-lg ring-1 ring-gray-200 group-hover:-translate-y-0.5 transition duration-500 group-hover:duration-200">
-                      <Phone className="w-6 h-6 text-blue-500" />
-                    </div>
-                    <div className="bg-white size-12 grid place-items-center rounded-xl relative right-2.5 top-1.5 rotate-6 shadow-lg ring-1 ring-gray-200 group-hover:translate-x-5 group-hover:rotate-12 group-hover:-translate-y-0.5 transition duration-500 group-hover:duration-200">
-                      <Calendar className="w-6 h-6 text-blue-500" />
-                    </div>
-                  </div>
-                  <h2 className="text-gray-900 font-medium mt-4 text-4xl">See How Many Jobs You Are Currently Losing</h2>
-                  <p className="text-base text-gray-600 mt-2 whitespace-pre-line">
-                    Get a free AI Revenue Audit and find out exactly how much revenue your HVAC business
-                    is leaving behind with every missed call, slow response, and after-hours lead.
-                  </p>
-                  <a
-                    href="https://boltcall.org/ai-revenue-audit"
-                    className="mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 shadow-sm active:shadow-none"
-                  >
-                    Get my free AI Revenue Audit
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-
           </article>
 
           {/* Sidebar TOC */}
           <aside className="hidden xl:block w-64 shrink-0">
             <div className="sticky top-32">
-              <TableOfContents headings={headings} />
+              <TableOfContents
+                headings={headings}
+                socialLinks={[
+                  { label: 'Facebook', href: 'https://www.facebook.com/profile.php?id=61582307818752' },
+                  { label: 'X', href: 'https://x.com/boltcallteam' },
+                  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/boltcall' },
+                ]}
+                cta={{
+                  title: 'Recover missed jobs',
+                  body: 'See how much revenue slow response is costing your HVAC business.',
+                  href: '/ai-revenue-audit',
+                  label: 'Get the free audit',
+                }}
+              />
             </div>
           </aside>
         </div>

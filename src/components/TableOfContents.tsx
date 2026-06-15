@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Facebook, Linkedin } from 'lucide-react';
 
 interface Heading {
   id: string;
@@ -8,9 +9,31 @@ interface Heading {
 
 interface TableOfContentsProps {
   headings: Heading[];
+  socialLinks?: Array<{
+    label: 'Facebook' | 'X' | 'LinkedIn';
+    href: string;
+  }>;
+  cta?: {
+    title: string;
+    body: string;
+    href: string;
+    label: string;
+  };
 }
 
-const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
+const XLogo: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
+const socialIcon = (label: 'Facebook' | 'X' | 'LinkedIn') => {
+  if (label === 'Facebook') return <Facebook className="w-3.5 h-3.5" strokeWidth={2.25} />;
+  if (label === 'LinkedIn') return <Linkedin className="w-3.5 h-3.5" strokeWidth={2.25} />;
+  return <XLogo />;
+};
+
+const TableOfContents: React.FC<TableOfContentsProps> = ({ headings, socialLinks = [], cta }) => {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
@@ -86,9 +109,27 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
         }}
       >
         <div className="border-l-2 border-gray-200 pl-6">
-          <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide mb-4">
-            On this page
-          </h3>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+              On this page
+            </h3>
+            {socialLinks.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                {socialLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Boltcall on ${link.label}`}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-900"
+                  >
+                    {socialIcon(link.label)}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
           <nav className="space-y-2">
             {headings.map((heading) => (
               <a
@@ -108,6 +149,18 @@ const TableOfContents: React.FC<TableOfContentsProps> = ({ headings }) => {
               </a>
             ))}
           </nav>
+          {cta && (
+            <div className="mt-6 border-t border-gray-200 pt-5">
+              <p className="text-sm font-semibold text-gray-900">{cta.title}</p>
+              <p className="mt-2 text-sm leading-6 text-gray-600">{cta.body}</p>
+              <a
+                href={cta.href}
+                className="mt-3 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700"
+              >
+                {cta.label}
+              </a>
+            </div>
+          )}
         </div>
       </div>
     </aside>
