@@ -12,8 +12,9 @@
 
 import puppeteer from 'puppeteer-core';
 import { createServer } from 'http';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { readFile, writeFile, mkdir, access } from 'fs/promises';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -199,6 +200,39 @@ const ROUTES = [
   '/terms-of-service',
 ];
 
+function parseMarkdownFrontmatter(raw) {
+  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (!match) return {};
+
+  const frontmatter = {};
+  for (const line of match[1].split(/\r?\n/)) {
+    const idx = line.indexOf(':');
+    if (idx <= 0) continue;
+    const key = line.slice(0, idx).trim();
+    const value = line.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+    frontmatter[key] = value;
+  }
+  return frontmatter;
+}
+
+function publishedAeoBlogRoutes(contentDir = resolve(__dirname, '../src/content/aeo')) {
+  if (!existsSync(contentDir)) return [];
+
+  return readdirSync(contentDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /\.mdx?$/i.test(entry.name))
+    .map((entry) => {
+      const raw = readFileSync(resolve(contentDir, entry.name), 'utf-8');
+      const frontmatter = parseMarkdownFrontmatter(raw);
+      const slug = frontmatter.slug || entry.name.replace(/\.mdx?$/i, '');
+      return {
+        path: `/blog/${slug}`,
+        status: frontmatter.status || 'draft',
+      };
+    })
+    .filter((route) => route.status === 'published')
+    .map((route) => route.path);
+}
+
 // Simple static file server
 function startServer() {
   return new Promise((resolve) => {
@@ -232,14 +266,15 @@ function startServer() {
 }
 
 async function prerender() {
+  const allRoutes = [...new Set([...ROUTES, ...publishedAeoBlogRoutes()])];
   const requestedRoutes = (process.env.PRERENDER_ROUTES || '')
     .split(',')
     .map((route) => route.trim())
     .filter(Boolean);
   const routesToRender = requestedRoutes.length > 0
-    ? ROUTES.filter((route) => requestedRoutes.includes(route))
-    : ROUTES;
-  const missingRoutes = requestedRoutes.filter((route) => !ROUTES.includes(route));
+    ? allRoutes.filter((route) => requestedRoutes.includes(route))
+    : allRoutes;
+  const missingRoutes = requestedRoutes.filter((route) => !allRoutes.includes(route));
 
   if (missingRoutes.length > 0) {
     console.error(`Unknown prerender route(s): ${missingRoutes.join(', ')}`);
