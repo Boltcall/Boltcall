@@ -21,6 +21,8 @@ For any Boltcall blog work, use the installed `boltcall-blog-writer` skill befor
 
 All blog UI should follow `/blog/hvac-ai-lead-response` as the clean canonical article style. Keep SEO/AEO strength through schema, headings, FAQ JSON-LD, and speakable markup; do not add colored content containers, tinted direct-answer boxes, visible AEO footer blocks, or "Page Context" filler.
 
+Every blog article must end its H2 sequence with `FAQs` and then `Conclusion`. Do not add another H2 after `Conclusion`; CTA and related-article blocks may follow only as H3/lower UI. The right-side table-of-contents CTA may show icons, one short title, and one button only; never add a CTA subtitle/body line.
+
 ---
 
 # ⚡ START HERE — V2 / v8 handoff (2026-06-03)
