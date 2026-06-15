@@ -37,5 +37,12 @@ export function normalizeRetellCallList<T = unknown>(response: unknown): T[] {
   ) {
     return (response as { calls: T[] }).calls;
   }
+  if (
+    response &&
+    typeof response === 'object' &&
+    Array.isArray((response as { items?: unknown }).items)
+  ) {
+    return (response as { items: T[] }).items;
+  }
   return [];
 }

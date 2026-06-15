@@ -39,6 +39,7 @@ describe('Retell call list v5 filters', () => {
     const calls = [{ call_id: 'call_1' }];
     expect(normalizeRetellCallList(calls)).toEqual(calls);
     expect(normalizeRetellCallList({ calls })).toEqual(calls);
+    expect(normalizeRetellCallList({ items: calls, has_more: false })).toEqual(calls);
   });
 
   it('does not leave old Retell list-call filter keys in production functions', () => {

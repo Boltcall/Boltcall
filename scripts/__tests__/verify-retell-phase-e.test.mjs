@@ -72,5 +72,6 @@ describe('verify-retell-phase-e helpers', () => {
 
     expect(normalizeRetellCallListResponse(calls)).toEqual(calls);
     expect(normalizeRetellCallListResponse({ calls })).toEqual(calls);
+    expect(normalizeRetellCallListResponse({ items: calls, has_more: false })).toEqual(calls);
   });
 });

@@ -96,6 +96,7 @@ export function buildRetellCallListParams({ agentId, sinceMs, limit }) {
 export function normalizeRetellCallListResponse(response) {
   if (Array.isArray(response)) return response;
   if (Array.isArray(response?.calls)) return response.calls;
+  if (Array.isArray(response?.items)) return response.items;
   return [];
 }
 
