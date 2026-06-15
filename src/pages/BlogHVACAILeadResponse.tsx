@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Phone, Thermometer } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
@@ -201,7 +201,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
             >
               <h2 id="response-gap" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                Response Gap
+                The Hidden Response Gap
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -277,7 +277,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
             >
               <h2 id="ai-response" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                AI Response
+                AI Response In Action
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -337,7 +337,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
             >
               <h2 id="top-scenarios" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                Top Scenarios
+                Five Moments AI Wins
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -428,7 +428,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
             >
               <h2 id="setup" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                Setup
+                Launch Your Response System
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -499,7 +499,7 @@ const BlogHVACAILeadResponse: React.FC = () => {
             >
               <h2 id="results" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-                Results
+                Revenue Lift To Expect
               </h2>
 
               <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -571,6 +571,62 @@ const BlogHVACAILeadResponse: React.FC = () => {
               </p>
             </div>
 
+            {/* CTA Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="my-16"
+            >
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="group w-full max-w-[800px] rounded-xl border-2 border-dashed border-gray-200 bg-white p-8 transition duration-500 hover:bg-gray-50 hover:duration-200">
+                  <div className="flex justify-center isolate">
+                    <div className="relative left-2.5 top-1.5 grid size-12 -rotate-6 place-items-center rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:-translate-x-5 group-hover:-translate-y-0.5 group-hover:-rotate-12 group-hover:duration-200">
+                      <Thermometer className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <div className="relative z-10 grid size-12 place-items-center rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:-translate-y-0.5 group-hover:duration-200">
+                      <Phone className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <div className="relative right-2.5 top-1.5 grid size-12 rotate-6 place-items-center rounded-xl bg-white shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:translate-x-5 group-hover:-translate-y-0.5 group-hover:rotate-12 group-hover:duration-200">
+                      <Calendar className="h-6 w-6 text-blue-500" />
+                    </div>
+                  </div>
+                  <h3 className="mt-4 text-3xl font-medium text-gray-900 md:text-4xl">
+                    See How Many Jobs You Are Currently Losing
+                  </h3>
+                  <p className="mt-2 text-base text-gray-600">
+                    Get a free AI Revenue Audit and find out exactly how much revenue your HVAC
+                    business is leaving behind with every missed call, slow response, and after-hours lead.
+                  </p>
+                  <a
+                    href="/ai-revenue-audit"
+                    className="mt-4 inline-flex h-10 items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
+                  >
+                    Get my free AI Revenue Audit
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Related Articles */}
+            <section className="mb-12">
+              <h3 className="mb-6 text-2xl font-bold text-gray-900">Related Articles</h3>
+              <div className="grid gap-4 md:grid-cols-3">
+                <a href="/blog/speed-to-lead-local-business" className="block rounded-xl border border-gray-200 p-4 transition-shadow duration-300 hover:shadow-md">
+                  <p className="font-semibold text-gray-900">Speed to Lead for Local Businesses</p>
+                  <p className="mt-1 text-sm text-gray-500">The complete guide to faster lead response.</p>
+                </a>
+                <a href="/blog/best-after-hours-answering-service" className="block rounded-xl border border-gray-200 p-4 transition-shadow duration-300 hover:shadow-md">
+                  <p className="font-semibold text-gray-900">Best After-Hours Answering Service</p>
+                  <p className="mt-1 text-sm text-gray-500">Compare your options for 24/7 call coverage.</p>
+                </a>
+                <a href="/blog/ai-appointment-scheduling-hvac" className="block rounded-xl border border-gray-200 p-4 transition-shadow duration-300 hover:shadow-md">
+                  <p className="font-semibold text-gray-900">AI Appointment Scheduling for HVAC</p>
+                  <p className="mt-1 text-sm text-gray-500">How HVAC teams turn fast replies into booked jobs.</p>
+                </a>
+              </div>
+            </section>
+
           </article>
 
           {/* Sidebar TOC */}
@@ -585,14 +641,8 @@ const BlogHVACAILeadResponse: React.FC = () => {
                 ]}
                 cta={{
                   title: 'Recover missed jobs',
-                  body: 'See how much revenue slow response is costing your HVAC business.',
                   href: '/ai-revenue-audit',
                   label: 'Get the free audit',
-                  relatedArticles: [
-                    { title: 'Speed to Lead for Local Businesses', href: '/blog/speed-to-lead-local-business' },
-                    { title: 'Best After-Hours Answering Service', href: '/blog/best-after-hours-answering-service' },
-                    { title: 'AI Appointment Scheduling for HVAC', href: '/blog/ai-appointment-scheduling-hvac' },
-                  ],
                 }}
               />
             </div>

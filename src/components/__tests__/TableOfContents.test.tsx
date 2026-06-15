@@ -32,12 +32,8 @@ describe('TableOfContents', () => {
         headings={headings}
         cta={{
           title: 'Recover missed jobs',
-          body: 'See how much revenue slow response is costing.',
           href: '/ai-revenue-audit',
           label: 'Get the audit',
-          relatedArticles: [
-            { title: 'Speed to Lead for Local Businesses', href: '/blog/speed-to-lead-local-business' },
-          ],
         }}
       />,
     );
@@ -45,9 +41,6 @@ describe('TableOfContents', () => {
     expect(screen.getByText('Recover missed jobs')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Get the audit' })).toHaveAttribute('href', '/ai-revenue-audit');
     expect(screen.getByLabelText('Recover missed jobs')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Speed to Lead for Local Businesses' })).toHaveAttribute(
-      'href',
-      '/blog/speed-to-lead-local-business',
-    );
+    expect(screen.queryByText('See how much revenue slow response is costing.')).not.toBeInTheDocument();
   });
 });
