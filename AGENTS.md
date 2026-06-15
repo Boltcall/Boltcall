@@ -15,6 +15,14 @@ Two parallel agent sessions ran in late May / early June 2026. Each wrote its ow
 
 ---
 
+## Blog Creation Routing
+
+For any Boltcall blog work, use the installed `boltcall-blog-writer` skill before editing. This includes creating, writing, updating, migrating, templating, or fixing blog/articles, and any work touching `Blog*.tsx`, `/blog/*`, `BlogCenter.tsx`, or `src/content/aeo/*.md`.
+
+All blog UI should follow `/blog/hvac-ai-lead-response` as the clean canonical article style. Keep SEO/AEO strength through schema, headings, FAQ JSON-LD, and speakable markup; do not add colored content containers, tinted direct-answer boxes, visible AEO footer blocks, or "Page Context" filler.
+
+---
+
 # ⚡ START HERE — V2 / v8 handoff (2026-06-03)
 
 ## Current live state (V2 dashboard)
