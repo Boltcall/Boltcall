@@ -2,6 +2,8 @@ import crypto from 'node:crypto';
 
 import { createClient } from '@supabase/supabase-js';
 
+import { checkHelpSourcesResolve } from './support-source-checks.mjs';
+
 const siteUrl = process.env.SITE_URL || 'https://boltcall.org';
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -250,11 +252,13 @@ async function runLiveHelpCheck() {
   if (!json.support?.ticket_id) {
     throw new Error(`live endpoint returned no support.ticket_id: ${text.slice(0, 500)}`);
   }
+  const sourceResults = await checkHelpSourcesResolve(json.sources || [], { siteUrl });
 
   return {
     httpStatus: response.status,
     answerPreview: String(json.answer || '').slice(0, 500),
     sourceTitles: (json.sources || []).map((source) => source.title),
+    sourceResults,
     suggestedFollowups: json.suggested_followups || [],
     support: json.support,
   };
