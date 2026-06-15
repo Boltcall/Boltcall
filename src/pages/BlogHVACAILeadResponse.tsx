@@ -588,6 +588,11 @@ const BlogHVACAILeadResponse: React.FC = () => {
                   body: 'See how much revenue slow response is costing your HVAC business.',
                   href: '/ai-revenue-audit',
                   label: 'Get the free audit',
+                  relatedArticles: [
+                    { title: 'Speed to Lead for Local Businesses', href: '/blog/speed-to-lead-local-business' },
+                    { title: 'Best After-Hours Answering Service', href: '/blog/best-after-hours-answering-service' },
+                    { title: 'AI Appointment Scheduling for HVAC', href: '/blog/ai-appointment-scheduling-hvac' },
+                  ],
                 }}
               />
             </div>
