@@ -242,6 +242,10 @@ export async function runProductionReadiness(opts = {}) {
     result: await runJson(process.execPath, ['scripts/smoke-production.mjs'], { cwd, env }),
   });
   rawChecks.push({
+    name: 'support_kb_coverage',
+    result: await runJson(process.execPath, ['scripts/audit-support-kb-coverage.mjs'], { cwd, env }),
+  });
+  rawChecks.push({
     name: 'support_agent_live',
     result: await runJson(process.execPath, ['scripts/smoke-v2-help-live.mjs'], { cwd, env }),
   });

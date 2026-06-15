@@ -145,9 +145,11 @@ describe('production-readiness helpers', () => {
       }),
     });
 
+    expect(nodeCommands).toContain('scripts/audit-support-kb-coverage.mjs');
     expect(nodeCommands).toContain('scripts/smoke-v2-help-live.mjs');
+    expect(summary.checks.map((check) => check.name)).toContain('support_kb_coverage');
     expect(summary.checks.map((check) => check.name)).toContain('support_agent_live');
-    expect(summary.total).toBe(9);
+    expect(summary.total).toBe(10);
   });
 
   it('parses the first JSON object when a command prints cleanup JSON after the result', () => {
