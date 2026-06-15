@@ -8,12 +8,16 @@ const hasSupabaseConfig = Boolean(
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
 )
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+if (!hasSupabaseConfig && import.meta.env.PROD) {
+  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in browser build')
+}
 
 if (!hasSupabaseConfig && import.meta.env.DEV) {
   console.warn('Supabase env vars are missing; auth/API calls will not work in this local session.')
 }
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key'
 
 // Create the Supabase client with fallback credentials
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
