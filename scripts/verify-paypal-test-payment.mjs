@@ -71,7 +71,7 @@ export function buildPayPalPaymentSummary(row, verification) {
     amount: Number(row.amount),
     currency: String(row.currency || '').toUpperCase(),
     status: String(row.status || '').toLowerCase(),
-    payerEmail: row.payer_email || null,
+    hasPayerEmail: Boolean(row.payer_email),
     createdAt: row.created_at || null,
   };
 }

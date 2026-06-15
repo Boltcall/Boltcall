@@ -53,7 +53,7 @@ describe('verify-paypal-test-payment helpers', () => {
       .toMatchObject({ ok: false, reason: 'wrong_founder' });
   });
 
-  it('builds a sanitized payment summary', () => {
+  it('builds a sanitized payment summary without exposing payer email', () => {
     const summary = buildPayPalPaymentSummary(
       {
         order_id: 'ORDER-1',
@@ -78,7 +78,7 @@ describe('verify-paypal-test-payment helpers', () => {
       amount: 2,
       currency: 'USD',
       status: 'completed',
-      payerEmail: 'buyer@example.com',
+      hasPayerEmail: true,
       createdAt: '2026-06-15T12:00:00.000Z',
     });
   });
