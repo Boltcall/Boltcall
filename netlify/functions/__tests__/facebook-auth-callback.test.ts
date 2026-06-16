@@ -104,4 +104,32 @@ describe('facebook-auth-callback', () => {
     );
     expect(upsertMock.mock.calls[0]?.[0]).not.toHaveProperty('page_access_token');
   });
+
+  it('does not report success when every Page upsert fails', async () => {
+    upsertMock.mockResolvedValue({ error: { message: 'no unique constraint' } });
+    const { handler } = await import('../facebook-auth-callback');
+
+    const res = await handler(makeEvent(), {} as any);
+
+    expect(res.statusCode).toBe(302);
+    expect(res.headers?.Location).toContain('/dashboard/ad-instant-response?fb=store_fail');
+  });
+
+  it('does not report success when no Page is subscribed to leadgen webhooks', async () => {
+    fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ access_token: 'user-token' }))
+      .mockResolvedValueOnce(jsonResponse({
+        data: [
+          { id: 'page-1', name: 'Rapid Rooter QA', access_token: 'page-token' },
+        ],
+      }))
+      .mockResolvedValueOnce(jsonResponse({ error: { message: 'missing permission' } }, false));
+    vi.stubGlobal('fetch', fetchMock);
+    const { handler } = await import('../facebook-auth-callback');
+
+    const res = await handler(makeEvent(), {} as any);
+
+    expect(res.statusCode).toBe(302);
+    expect(res.headers?.Location).toContain('/dashboard/ad-instant-response?fb=subscribe_fail');
+  });
 });

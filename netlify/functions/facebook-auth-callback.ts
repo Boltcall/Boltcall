@@ -121,7 +121,9 @@ export const handler: Handler = async (event) => {
 
     const workspaceId = workspace?.id ?? null;
 
-    // Step 3: Store each page connection and subscribe to leadgen
+    // Step 3: Store each page connection and subscribe to leadgen.
+    // Report success only when at least one Page is both stored and subscribed.
+    const storedPages: string[] = [];
     const connectedPages: string[] = [];
 
     for (const page of pages) {
@@ -138,6 +140,9 @@ export const handler: Handler = async (event) => {
             page_id: pageId,
             page_name: page.name,
             access_token: pageAccessToken,
+            status: 'connected',
+            connected_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
           { onConflict: 'page_id' }
         );
@@ -146,6 +151,7 @@ export const handler: Handler = async (event) => {
         console.error(`Failed to store page ${pageId}:`, upsertErr);
         continue;
       }
+      storedPages.push(page.name);
 
       // Step 4: Subscribe the page to leadgen webhooks
       const subRes = await fetch(
@@ -160,6 +166,14 @@ export const handler: Handler = async (event) => {
       } else {
         connectedPages.push(page.name);
       }
+    }
+
+    if (storedPages.length === 0) {
+      return redirect(`${FACEBOOK_RETURN_PATH}?fb=store_fail`);
+    }
+
+    if (connectedPages.length === 0) {
+      return redirect(`${FACEBOOK_RETURN_PATH}?fb=subscribe_fail`);
     }
 
     const pagesParam = encodeURIComponent(connectedPages.join(','));
