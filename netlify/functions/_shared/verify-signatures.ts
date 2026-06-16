@@ -63,8 +63,9 @@ function eventUrlCandidates(event: HandlerEvent): string[] {
 /**
  * Verify a Retell webhook signature.
  *
- * Retell sends `x-retell-signature: <hex>` where the value is the HMAC-SHA256
- * of the raw event body using the API key as the secret.
+ * Retell sends `x-retell-signature: v={timestamp},d={hex}` where the digest is
+ * the HMAC-SHA256 of the raw event body concatenated with the timestamp using
+ * the API key as the secret. The timestamp is Unix milliseconds.
  *
  * Returns 'missing' if no secret is configured (e.g. local dev without RETELL_API_KEY)
  * so the caller can choose to allow vs reject.
@@ -77,12 +78,22 @@ export function verifyRetellSignature(
   if (!secret) return 'missing';
 
   const provided =
-    headers['x-retell-signature'] ||
-    headers['X-Retell-Signature'] ||
-    headers['x-retell-signature-256'] ||
+    header(headers, 'x-retell-signature') ||
+    header(headers, 'x-retell-signature-256') ||
     '';
 
   if (!provided) return 'missing';
+
+  const retellMatch = provided.match(/^v=(\d+),d=([a-fA-F0-9]+)$/);
+  if (retellMatch) {
+    const [, timestamp, digest] = retellMatch;
+    const timestampMs = Number(timestamp);
+    if (!Number.isSafeInteger(timestampMs)) return 'invalid';
+    if (Math.abs(Date.now() - timestampMs) > 5 * 60 * 1000) return 'invalid';
+
+    const expected = crypto.createHmac('sha256', secret).update(`${rawBody}${timestamp}`).digest('hex');
+    return timingSafeHexEqual(expected, digest) ? 'valid' : 'invalid';
+  }
 
   const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
   // Some Retell versions prefix with `sha256=` — strip it.
