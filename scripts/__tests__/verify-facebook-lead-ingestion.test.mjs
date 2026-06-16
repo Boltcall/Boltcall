@@ -62,7 +62,7 @@ describe('verify-facebook-lead-ingestion helpers', () => {
       id: 'lead-1',
       userId: 'founder-1',
       source: 'facebook_lead_ad',
-      status: 'pending',
+      leadStatus: 'pending',
       leadgenId: 'leadgen-1',
       pageId: 'page-1',
       hasEmail: true,

@@ -63,7 +63,7 @@ export function buildFacebookLeadSummary(row) {
     id: row.id,
     userId: row.user_id || null,
     source: row.source,
-    status: row.status || null,
+    leadStatus: row.status || null,
     leadgenId: row.raw_data?.leadgen_id || null,
     pageId: row.raw_data?.page_id || null,
     hasEmail: Boolean(row.email),
