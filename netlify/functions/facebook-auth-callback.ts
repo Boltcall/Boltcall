@@ -28,6 +28,8 @@ import { verifyOAuthState } from './_shared/oauth-state';
  *   - user_id — the Supabase auth user ID to associate with the page connection
  */
 
+const FACEBOOK_RETURN_PATH = '/dashboard/ad-instant-response';
+
 function redirect(path: string) {
   const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
   return {
@@ -46,25 +48,25 @@ export const handler: Handler = async (event) => {
 
   // Handle denied access
   if (params.error) {
-    return redirect('/dashboard/instant-lead-reply?fb=error');
+    return redirect(`${FACEBOOK_RETURN_PATH}?fb=error`);
   }
 
   const code = params.code;
   if (!code) {
-    return redirect('/dashboard/instant-lead-reply?fb=missing_code');
+    return redirect(`${FACEBOOK_RETURN_PATH}?fb=missing_code`);
   }
 
   const state = verifyOAuthState(params.state, 'facebook');
   const userId = state?.userId;
   if (!userId) {
-    return redirect('/dashboard/instant-lead-reply?fb=missing_user');
+    return redirect(`${FACEBOOK_RETURN_PATH}?fb=missing_user`);
   }
 
   const appId = process.env.FB_APP_ID;
   const appSecret = process.env.FB_APP_SECRET;
   if (!appId || !appSecret) {
     console.error('Missing FB_APP_ID or FB_APP_SECRET');
-    return redirect('/dashboard/instant-lead-reply?fb=config_error');
+    return redirect(`${FACEBOOK_RETURN_PATH}?fb=config_error`);
   }
 
   const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
@@ -83,7 +85,7 @@ export const handler: Handler = async (event) => {
 
     if (!tokenRes.ok) {
       console.error('Token exchange failed:', tokenData);
-      return redirect('/dashboard/instant-lead-reply?fb=token_fail');
+      return redirect(`${FACEBOOK_RETURN_PATH}?fb=token_fail`);
     }
 
     const userAccessToken = tokenData.access_token as string;
@@ -96,12 +98,12 @@ export const handler: Handler = async (event) => {
 
     if (!pagesRes.ok) {
       console.error('Pages fetch failed:', pagesData);
-      return redirect('/dashboard/instant-lead-reply?fb=pages_fail');
+      return redirect(`${FACEBOOK_RETURN_PATH}?fb=pages_fail`);
     }
 
     const pages = pagesData.data || [];
     if (pages.length === 0) {
-      return redirect('/dashboard/instant-lead-reply?fb=no_pages');
+      return redirect(`${FACEBOOK_RETURN_PATH}?fb=no_pages`);
     }
 
     const supabase = getServiceSupabase();
@@ -114,7 +116,7 @@ export const handler: Handler = async (event) => {
 
     if (workspaceErr) {
       console.error('Failed to resolve workspace for Facebook connection:', workspaceErr);
-      return redirect('/dashboard/instant-lead-reply?fb=workspace_error');
+      return redirect(`${FACEBOOK_RETURN_PATH}?fb=workspace_error`);
     }
 
     const workspaceId = workspace?.id ?? null;
@@ -161,9 +163,9 @@ export const handler: Handler = async (event) => {
     }
 
     const pagesParam = encodeURIComponent(connectedPages.join(','));
-    return redirect(`/dashboard/instant-lead-reply?fb=success&pages=${pagesParam}`);
+    return redirect(`${FACEBOOK_RETURN_PATH}?fb=success&pages=${pagesParam}`);
   } catch (error) {
     console.error('Facebook OAuth callback error:', error);
-    return redirect('/dashboard/instant-lead-reply?fb=error');
+    return redirect(`${FACEBOOK_RETURN_PATH}?fb=error`);
   }
 };

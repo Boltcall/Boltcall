@@ -90,7 +90,7 @@ describe('facebook-auth-callback', () => {
     const res = await handler(makeEvent(), {} as any);
 
     expect(res.statusCode).toBe(302);
-    expect(res.headers?.Location).toContain('/dashboard/instant-lead-reply?fb=success');
+    expect(res.headers?.Location).toContain('/dashboard/ad-instant-response?fb=success');
     expect(workspaceMaybeSingleMock).toHaveBeenCalled();
     expect(upsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
