@@ -2,6 +2,8 @@ import { fileURLToPath } from 'node:url';
 
 import { createClient } from '@supabase/supabase-js';
 
+import { hydrateManualGateEnv } from './_shared/manual-gate-env.mjs';
+
 const DEFAULT_LOOKBACK_HOURS = 72;
 const CANONICAL_FACEBOOK_SOURCE = 'facebook_lead_ad';
 
@@ -108,9 +110,10 @@ async function fetchCandidateLeads(admin, opts) {
 
 async function main() {
   const args = parseVerifyFacebookLeadArgs(process.argv.slice(2));
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const founderUserId = args.founderUserId || process.env.FOUNDER_UUID || '';
+  const env = hydrateManualGateEnv(process.env);
+  const supabaseUrl = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
+  const serviceKey = env.SUPABASE_SERVICE_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+  const founderUserId = args.founderUserId || env.FOUNDER_UUID || '';
 
   if (!supabaseUrl || !serviceKey) {
     throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY are required.');
