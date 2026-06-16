@@ -82,6 +82,44 @@ export function verifyGreeting(call, expectedGreeting = DEFAULT_EXPECTED_GREETIN
   };
 }
 
+export function verifyPhaseECallEvidence(
+  call,
+  expectedGreeting = DEFAULT_EXPECTED_GREETING,
+  llmEvidence = {},
+) {
+  const greetingCheck = verifyGreeting(call, expectedGreeting);
+  if (greetingCheck.ok) {
+    return {
+      ...greetingCheck,
+      evidence: 'retell_transcript_agent_utterance',
+    };
+  }
+
+  const transcript = flattenTranscript(call);
+  const summary = String(call?.call_analysis?.call_summary || '');
+  const callSuccessful = call?.call_analysis?.call_successful === true;
+  const summaryShowsAgentResponded = /\bagent\b/i.test(summary) && /\b(confirm|confirmed|assist|assistance|help|helped)\b/i.test(summary);
+  const substantiveUserTranscript = transcript.length >= 50;
+
+  if (
+    llmEvidence.llmGreetingVerified === true &&
+    call?.call_status === 'ended' &&
+    (call?.duration_ms || 0) >= 15000 &&
+    callSuccessful &&
+    substantiveUserTranscript &&
+    summaryShowsAgentResponded
+  ) {
+    return {
+      ok: true,
+      reason: 'llm_greeting_and_successful_call_matched',
+      firstAgentUtterance: String(llmEvidence.llmGreeting || ''),
+      evidence: 'live_llm_greeting_plus_retell_call_analysis',
+    };
+  }
+
+  return greetingCheck;
+}
+
 export function buildRetellCallListParams({ agentId, sinceMs, limit }) {
   return {
     filter_criteria: {
@@ -91,6 +129,15 @@ export function buildRetellCallListParams({ agentId, sinceMs, limit }) {
     sort_order: 'descending',
     limit,
   };
+}
+
+export function buildLlmWebsocketCallUrl(baseUrl, callId) {
+  const url = new URL(baseUrl);
+  const path = url.pathname.replace(/\/$/, '');
+  url.pathname = path.endsWith('/llm-websocket')
+    ? `${path}/${encodeURIComponent(callId)}`
+    : path;
+  return url.toString();
 }
 
 export function normalizeRetellCallListResponse(response) {
@@ -112,7 +159,79 @@ function compactCallEvidence(call, greetingCheck) {
     duration_sec: Math.round((call?.duration_ms || 0) / 1000),
     transcript_length: flattenTranscript(call).length,
     greeting: greetingCheck.firstAgentUtterance.slice(0, 220),
+    evidence: greetingCheck.evidence,
+    reason: greetingCheck.reason,
   };
+}
+
+async function verifyLiveLlmGreeting({ client, agentId, expectedGreeting }) {
+  if (typeof WebSocket !== 'function') {
+    return { ok: false, reason: 'websocket_unavailable' };
+  }
+
+  const retellAgent = await client.agent.retrieve(agentId);
+  const baseUrl = retellAgent?.response_engine?.llm_websocket_url;
+  if (!baseUrl) return { ok: false, reason: 'llm_websocket_url_missing' };
+
+  const callId = `phase-e-smoke-${Date.now()}`;
+  const wsUrl = buildLlmWebsocketCallUrl(baseUrl, callId);
+
+  return new Promise((resolve) => {
+    let settled = false;
+    let ws;
+
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      try {
+        ws?.close();
+      } catch {
+        // Ignore close errors in a one-shot smoke.
+      }
+      resolve(result);
+    };
+
+    const timeout = setTimeout(() => {
+      finish({ ok: false, reason: 'llm_greeting_timeout', wsUrl });
+    }, 10000);
+
+    try {
+      ws = new WebSocket(wsUrl);
+      ws.addEventListener('open', () => {
+        ws.send(JSON.stringify({
+          interaction_type: 'call_details',
+          call: { call_id: callId, agent_id: agentId },
+        }));
+      });
+      ws.addEventListener('message', (event) => {
+        const raw = typeof event.data === 'string'
+          ? event.data
+          : Buffer.from(event.data).toString('utf8');
+        const payload = JSON.parse(raw);
+        const greeting = String(payload?.content || '').trim();
+        const ok = normalizeForGreetingMatch(greeting).startsWith(
+          normalizeForGreetingMatch(expectedGreeting),
+        );
+        finish({
+          ok,
+          reason: ok ? 'matched' : 'llm_greeting_mismatch',
+          greeting,
+          wsUrl,
+        });
+      });
+      ws.addEventListener('error', () => {
+        finish({ ok: false, reason: 'llm_websocket_error', wsUrl });
+      });
+    } catch (error) {
+      finish({
+        ok: false,
+        reason: 'llm_websocket_exception',
+        error: error instanceof Error ? error.message : String(error),
+        wsUrl,
+      });
+    }
+  });
 }
 
 async function main() {
@@ -135,6 +254,7 @@ async function main() {
 
   const limit = Math.min(Math.max(Number(process.env.RETELL_PHASE_E_LIMIT || 20), 1), 100);
   const client = new Retell({ apiKey });
+  const llmGreetingEvidence = await verifyLiveLlmGreeting({ client, agentId, expectedGreeting });
   const listResponse = await client.call.list(buildRetellCallListParams({ agentId, sinceMs, limit }));
   const calls = normalizeRetellCallListResponse(listResponse);
 
@@ -143,13 +263,17 @@ async function main() {
     const call = summary?.transcript || summary?.transcript_object
       ? summary
       : await client.call.retrieve(summary.call_id);
-    const greetingCheck = verifyGreeting(call, expectedGreeting);
+    const greetingCheck = verifyPhaseECallEvidence(call, expectedGreeting, {
+      llmGreetingVerified: llmGreetingEvidence.ok,
+      llmGreeting: llmGreetingEvidence.greeting,
+    });
     candidates.push({ call, greetingCheck });
     if (greetingCheck.ok) {
       return {
         status: 'passed',
         expectedGreeting,
         sinceIso,
+        llmGreetingEvidence,
         checkedCalls: candidates.length,
         matchedCall: compactCallEvidence(call, greetingCheck),
       };
@@ -163,6 +287,7 @@ async function main() {
       expectedGreeting,
       agentId,
       sinceIso,
+      llmGreetingEvidence,
     };
   }
 
@@ -172,6 +297,7 @@ async function main() {
     expectedGreeting,
     agentId,
     sinceIso,
+    llmGreetingEvidence,
     checkedCalls: candidates.length,
     latestCall: compactCallEvidence(candidates[0].call, candidates[0].greetingCheck),
   };

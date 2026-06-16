@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildRetellCallListParams,
+  buildLlmWebsocketCallUrl,
   extractFirstAgentUtterance,
   normalizeRetellCallListResponse,
   normalizeForGreetingMatch,
+  verifyPhaseECallEvidence,
   verifyGreeting,
 } from '../verify-retell-phase-e.mjs';
 
@@ -49,6 +51,49 @@ describe('verify-retell-phase-e helpers', () => {
     ).toMatchObject({ ok: false, reason: 'greeting_mismatch' });
   });
 
+  it('accepts a successful Retell phone call when the live LLM greeting was verified separately', () => {
+    const result = verifyPhaseECallEvidence(
+      {
+        call_status: 'ended',
+        duration_ms: 23000,
+        transcript: [
+          'User: Hi. I need plumbing service.',
+          'User: Do you help with emergency leaks?',
+          'User: That helps. Thank you.',
+        ].join('\n'),
+        call_analysis: {
+          call_successful: true,
+          call_summary: 'The user asked about emergency leak assistance. The agent confirmed assistance.',
+        },
+      },
+      'Hi, thanks for calling Rapid Rooter QA',
+      { llmGreetingVerified: true, llmGreeting: 'Hi, thanks for calling Rapid Rooter QA! How can I help you today?' },
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      reason: 'llm_greeting_and_successful_call_matched',
+    });
+  });
+
+  it('does not accept analysis-only phone evidence when the live LLM greeting was not verified', () => {
+    const result = verifyPhaseECallEvidence(
+      {
+        call_status: 'ended',
+        duration_ms: 23000,
+        transcript: 'User: Hi. I need plumbing service.',
+        call_analysis: {
+          call_successful: true,
+          call_summary: 'The agent confirmed assistance.',
+        },
+      },
+      'Hi, thanks for calling Rapid Rooter QA',
+      { llmGreetingVerified: false },
+    );
+
+    expect(result).toMatchObject({ ok: false });
+  });
+
   it('normalizes punctuation and case without losing word order', () => {
     expect(normalizeForGreetingMatch('Hi, thanks for calling Rapid Rooter QA!')).toBe(
       'hi thanks for calling rapid rooter qa',
@@ -65,6 +110,15 @@ describe('verify-retell-phase-e helpers', () => {
         sort_order: 'descending',
         limit: 10,
       });
+  });
+
+  it('adds the call id to the Retell custom LLM websocket path', () => {
+    expect(
+      buildLlmWebsocketCallUrl(
+        'wss://boltcall-retell-llm.example.com/llm-websocket',
+        'call_123',
+      ),
+    ).toBe('wss://boltcall-retell-llm.example.com/llm-websocket/call_123');
   });
 
   it('handles both bare-array and paginated Retell call list responses', () => {
