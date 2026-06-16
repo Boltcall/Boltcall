@@ -22,6 +22,7 @@ const headers = {
 
 const SCOPES = [
   'pages_manage_metadata',
+  'pages_manage_ads',
   'pages_read_engagement',
   'leads_retrieval',
   'pages_show_list',
