@@ -99,7 +99,55 @@ function buildKeyTakeaways(articleTitle: string, intro: string, targetQuery: str
   ];
 }
 
-function prepareBody(body: string, faqs: AeoFaq[]) {
+function inferBuyerMoment(articleTitle: string, targetQuery: string) {
+  const haystack = `${articleTitle} ${targetQuery}`.toLowerCase();
+  if (haystack.includes('hvac')) return 'a homeowner needs heating, cooling, repair, or replacement help';
+  if (haystack.includes('dentist') || haystack.includes('dental')) return 'a patient is trying to book care, ask about urgency, or choose a practice';
+  if (haystack.includes('plumber')) return 'a homeowner has a leak, clog, water heater problem, or urgent repair';
+  if (haystack.includes('google') || haystack.includes('ai answer') || haystack.includes('mentions')) return 'search visibility turns into a call, form, message, or booked consultation';
+  if (haystack.includes('review')) return 'a buyer is comparing trust signals before deciding who deserves the next call';
+  if (haystack.includes('voice')) return 'the caller decides whether the business feels credible enough to keep talking';
+  return 'a local buyer reaches out while intent is still fresh';
+}
+
+function buildAeoExpansion(articleTitle: string, targetQuery: string) {
+  const buyerMoment = inferBuyerMoment(articleTitle, targetQuery);
+  const queryLine = targetQuery ? `The useful answer to "${targetQuery}" is not theoretical.` : 'The useful answer is not theoretical.';
+
+  return [
+    '## Revenue Standard',
+    '',
+    `${queryLine} It should tell a local business what to fix so more demand becomes booked work.`,
+    '',
+    `The revenue standard is simple: when ${buyerMoment}, the business should respond immediately, collect the right context, and make the next step obvious. Anything slower creates space for a competitor to become the easier choice.`,
+    '',
+    '- Answer before the buyer starts comparing alternatives.',
+    '- Ask only the questions needed to route or book.',
+    '- Keep the handoff short enough for the team to act quickly.',
+    '- Measure booked outcomes, not just activity.',
+    '',
+    '## Operating Workflow',
+    '',
+    'A strong speed-to-lead workflow has four moves. First, detect the inquiry as soon as it arrives. Second, respond in seconds with a clear acknowledgment. Third, qualify urgency, fit, location, and timing. Fourth, book, route, or escalate with the full context attached.',
+    '',
+    'This is where many local businesses lose momentum. They already have demand, but the demand lands in voicemail, an unchecked form inbox, a busy front desk, or a callback list that gets handled too late.',
+    '',
+    '## Measurement Plan',
+    '',
+    'The cleanest measurement plan is small. Track first response time, contact rate, booked appointment rate, missed-call recovery, and lead source. Then compare those numbers before and after the response system changes.',
+    '',
+    'If response time improves but booked appointments do not, the script needs work. If booked appointments improve but the team feels overwhelmed, the handoff needs work. If both improve, the business has turned speed into operating leverage.',
+  ].join('\n');
+}
+
+function insertBeforeFaq(body: string, insertion: string) {
+  if (body.includes('## Revenue Standard')) return body;
+  const faqIndex = body.search(/^##\s+FAQs\s*$/im);
+  if (faqIndex < 0) return `${body.trim()}\n\n${insertion}`;
+  return `${body.slice(0, faqIndex).trim()}\n\n${insertion}\n\n${body.slice(faqIndex).trim()}`;
+}
+
+function prepareBody(body: string, faqs: AeoFaq[], articleTitle: string, targetQuery: string) {
   let prepared = body
     .replace(/^##\s+FAQ\s*$/gim, '## FAQs')
     .replace(/^##\s+(CTA|Bottom Line)\s*$/gim, '## Conclusion')
@@ -121,6 +169,13 @@ function prepareBody(body: string, faqs: AeoFaq[]) {
     const conclusionBlock = prepared.slice(conclusionIndex, faqIndex).trim();
     const faqBlock = prepared.slice(faqIndex).trim();
     prepared = `${beforeConclusion}\n\n${faqBlock}\n\n${conclusionBlock}`;
+  }
+
+  const refreshedFaqIndex = prepared.search(/^##\s+FAQs\s*$/im);
+  const refreshedConclusionIndex = prepared.search(/^##\s+Conclusion\s*$/im);
+  const insertionPoint = refreshedFaqIndex >= 0 ? refreshedFaqIndex : refreshedConclusionIndex;
+  if (insertionPoint >= 0) {
+    prepared = insertBeforeFaq(prepared, buildAeoExpansion(articleTitle, targetQuery));
   }
 
   return prepared;
@@ -220,7 +275,7 @@ export default function AeoMarkdownArticlePage() {
     if (!article) return null;
     const { intro, remaining } = splitMarkdownBody(article.body);
     const faqs = buildFaqs(article.title, article.faqs);
-    const body = prepareBody(remaining, faqs);
+    const body = prepareBody(remaining, faqs, article.title, article.targetQuery);
     const keyTakeaways = buildKeyTakeaways(article.title, intro, article.targetQuery);
 
     return { intro, body, faqs, keyTakeaways };
