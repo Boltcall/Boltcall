@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildFacebookLeadIngestionActionRequired,
   buildFacebookLeadSummary,
   parseVerifyFacebookLeadArgs,
   verifyFacebookLeadRow,
@@ -87,6 +88,22 @@ describe('verify-facebook-lead-ingestion helpers', () => {
       leadgenId: 'leadgen-1',
       pageId: 'page-1',
       lookbackHours: 24,
+    });
+  });
+
+  it('describes the exact manual action required when no Facebook lead is found', () => {
+    expect(
+      buildFacebookLeadIngestionActionRequired({
+        founderUserId: 'founder-1',
+        pageId: 'page-1',
+        lookbackHours: 168,
+      }),
+    ).toEqual({
+      prerequisite: 'facebook_page_connection',
+      dashboardUrl: 'https://boltcall.org/dashboard/ad-instant-response',
+      verifyCommand: 'node scripts/verify-facebook-lead-ingestion.mjs --page-id page-1 --lookback-hours 168',
+      founderUserId: 'founder-1',
+      pageId: 'page-1',
     });
   });
 });

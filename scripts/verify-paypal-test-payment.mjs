@@ -76,6 +76,20 @@ export function buildPayPalPaymentSummary(row, verification) {
   };
 }
 
+export function buildPayPalActionRequired(opts = {}) {
+  const lookbackHours = opts.orderId ? null : (opts.lookbackHours || DEFAULT_LOOKBACK_HOURS);
+  return {
+    dashboardUrl: 'https://boltcall.org/dashboard/settings/plan-billing',
+    approvalLinkCommand: 'node scripts/create-paypal-test-approval-link.mjs',
+    verifyCommand: opts.orderId
+      ? `node scripts/verify-paypal-test-payment.mjs --order-id ${opts.orderId}`
+      : `node scripts/verify-paypal-test-payment.mjs --lookback-hours ${lookbackHours}`,
+    expectedAmount: DEFAULT_TEST_AMOUNT,
+    expectedCurrency: DEFAULT_TEST_CURRENCY,
+    founderUserId: opts.founderUserId || null,
+  };
+}
+
 async function fetchCandidatePayment(admin, opts) {
   let query = admin
     .from('paypal_payments')
@@ -131,6 +145,11 @@ async function main() {
     founderUserId: founderUserId || null,
     lookbackHours: args.orderId ? null : args.lookbackHours,
     candidatesChecked: candidates.length,
+    action: buildPayPalActionRequired({
+      founderUserId,
+      orderId: args.orderId,
+      lookbackHours: args.lookbackHours,
+    }),
   };
 }
 

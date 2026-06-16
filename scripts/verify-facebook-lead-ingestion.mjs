@@ -70,6 +70,21 @@ export function buildFacebookLeadSummary(row) {
   };
 }
 
+export function buildFacebookLeadIngestionActionRequired(opts = {}) {
+  const parts = ['node scripts/verify-facebook-lead-ingestion.mjs'];
+  if (opts.leadgenId) parts.push('--leadgen-id', opts.leadgenId);
+  if (opts.pageId) parts.push('--page-id', opts.pageId);
+  if (!opts.leadgenId) parts.push('--lookback-hours', String(opts.lookbackHours || DEFAULT_LOOKBACK_HOURS));
+
+  return {
+    prerequisite: 'facebook_page_connection',
+    dashboardUrl: 'https://boltcall.org/dashboard/ad-instant-response',
+    verifyCommand: parts.join(' '),
+    founderUserId: opts.founderUserId || null,
+    pageId: opts.pageId || null,
+  };
+}
+
 async function fetchCandidateLeads(admin, opts) {
   let query = admin
     .from('leads')
@@ -136,6 +151,12 @@ async function main() {
     pageId: args.pageId || null,
     lookbackHours: args.leadgenId ? null : args.lookbackHours,
     candidatesChecked: candidates.length,
+    action: buildFacebookLeadIngestionActionRequired({
+      founderUserId,
+      leadgenId: args.leadgenId,
+      pageId: args.pageId,
+      lookbackHours: args.lookbackHours,
+    }),
   };
 }
 

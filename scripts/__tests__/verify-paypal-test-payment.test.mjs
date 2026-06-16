@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildPayPalActionRequired,
   buildPayPalPaymentSummary,
   parseVerifyPayPalArgs,
   verifyPayPalPaymentRow,
@@ -98,5 +99,17 @@ describe('verify-paypal-test-payment helpers', () => {
       founderUserId: 'founder-1',
       lookbackHours: 48,
     });
+  });
+
+  it('describes the exact manual action required when no PayPal payment is found', () => {
+    expect(buildPayPalActionRequired({ founderUserId: 'founder-1', lookbackHours: 168 }))
+      .toEqual({
+        dashboardUrl: 'https://boltcall.org/dashboard/settings/plan-billing',
+        approvalLinkCommand: 'node scripts/create-paypal-test-approval-link.mjs',
+        verifyCommand: 'node scripts/verify-paypal-test-payment.mjs --lookback-hours 168',
+        expectedAmount: 2,
+        expectedCurrency: 'USD',
+        founderUserId: 'founder-1',
+      });
   });
 });

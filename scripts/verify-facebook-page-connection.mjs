@@ -52,6 +52,17 @@ export function buildFacebookConnectionSummary(row) {
   };
 }
 
+export function buildFacebookPageConnectionActionRequired(opts = {}) {
+  const verifyCommand = opts.pageId
+    ? `node scripts/verify-facebook-page-connection.mjs --page-id ${opts.pageId}`
+    : 'node scripts/verify-facebook-page-connection.mjs';
+  return {
+    dashboardUrl: 'https://boltcall.org/dashboard/ad-instant-response',
+    verifyCommand,
+    founderUserId: opts.founderUserId || null,
+  };
+}
+
 async function fetchCandidateConnections(admin, opts) {
   let query = admin
     .from('facebook_page_connections')
@@ -109,6 +120,10 @@ async function main() {
     founderUserId: founderUserId || null,
     pageId: args.pageId || null,
     candidatesChecked: candidates.length,
+    action: buildFacebookPageConnectionActionRequired({
+      founderUserId,
+      pageId: args.pageId,
+    }),
   };
 }
 

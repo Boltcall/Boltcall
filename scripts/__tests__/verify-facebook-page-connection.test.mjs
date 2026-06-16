@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildFacebookPageConnectionActionRequired,
   buildFacebookConnectionSummary,
   parseVerifyFacebookArgs,
   verifyFacebookConnectionRow,
@@ -75,5 +76,14 @@ describe('verify-facebook-page-connection helpers', () => {
       founderUserId: 'founder-1',
       pageId: 'page-1',
     });
+  });
+
+  it('describes the exact manual action required when no Page is connected', () => {
+    expect(buildFacebookPageConnectionActionRequired({ founderUserId: 'founder-1' }))
+      .toEqual({
+        dashboardUrl: 'https://boltcall.org/dashboard/ad-instant-response',
+        verifyCommand: 'node scripts/verify-facebook-page-connection.mjs',
+        founderUserId: 'founder-1',
+      });
   });
 });
