@@ -323,6 +323,8 @@ describe('V2 pages — smoke tests', () => {
       expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
       // And the gate-disabled sentinel must NOT appear (page bypasses the gate).
       expect(screen.queryByTestId('v2-gate-disabled')).not.toBeInTheDocument();
+      expect(screen.queryByText(/skip to v1 setup/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/setup data is saved as you go/i)).not.toBeInTheDocument();
     });
 
     it('V2SetupPage blocks unauthenticated users before chat fetches run', () => {
