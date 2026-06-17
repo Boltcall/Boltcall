@@ -248,7 +248,7 @@ const V2SetupChat: React.FC = () => {
       setError(
         e instanceof Error
           ? e.message
-          : 'Network error. Try again, or switch to the classic setup at /setup.',
+          : 'Network error. Try again, or switch to the classic setup at /setup/classic.',
       );
     } finally {
       setIsStreaming(false);
@@ -281,7 +281,7 @@ const V2SetupChat: React.FC = () => {
         return;
       }
       if (!res.ok || data.error) {
-        setError(data.error || 'Deploy failed. Try again or use the classic setup at /setup.');
+        setError(data.error || 'Deploy failed. Try again or use the classic setup at /setup/classic.');
         setIsFinalizing(false);
         return;
       }
@@ -319,7 +319,7 @@ const V2SetupChat: React.FC = () => {
           </div>
         </div>
         <Link
-          to="/setup"
+          to="/setup/classic"
           className="text-xs font-medium text-zinc-500 underline-offset-2 hover:text-zinc-900 hover:underline"
         >
           Skip to classic setup
@@ -347,7 +347,7 @@ const V2SetupChat: React.FC = () => {
       {showStallBanner && (
         <div className="mx-5 mt-3 flex items-start justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-700">
           <span>Stuck? You can switch to the classic step-by-step setup any time.</span>
-          <Link to="/setup" className="shrink-0 font-medium text-zinc-900 underline">
+          <Link to="/setup/classic" className="shrink-0 font-medium text-zinc-900 underline">
             Use classic setup
           </Link>
         </div>
@@ -357,7 +357,7 @@ const V2SetupChat: React.FC = () => {
       {error && (
         <div className="mx-5 mt-3 flex items-start justify-between gap-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
           <span>{error}</span>
-          <Link to="/setup" className="shrink-0 font-medium underline">
+          <Link to="/setup/classic" className="shrink-0 font-medium underline">
             Switch to V1
           </Link>
         </div>

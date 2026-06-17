@@ -49,7 +49,7 @@ const V2SetupPage: React.FC = () => {
 
           {/* Persistent escape hatch — always available, no matter what */}
           <Link
-            to="/setup"
+            to="/setup/classic"
             className="text-xs font-medium text-zinc-600 transition hover:text-zinc-900"
           >
             Skip to V1 setup →
@@ -90,7 +90,7 @@ const V2SetupPage: React.FC = () => {
                 Create account
               </Link>
               <Link
-                to="/setup"
+                to="/setup/classic"
                 className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
               >
                 Classic setup
