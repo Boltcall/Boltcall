@@ -13,6 +13,8 @@ import {
   Mail,
   MessageSquare,
   Phone,
+  ShieldCheck,
+  SlidersHorizontal,
   Wand2,
   Users,
   UserPlus,
@@ -25,6 +27,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import FeatureOnboarding from '../../components/dashboard/FeatureOnboarding';
 import { PopButton } from '../../components/ui/pop-button';
+import {
+  FOLLOWUP_LIMITS,
+  FOLLOWUP_PRESET_META,
+  getFollowupPresetSteps,
+  summarizeFollowupSteps,
+  validateFollowupSteps,
+} from '../../lib/followupPresets';
+import type { FollowupPresetId } from '../../lib/followupPresets';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -633,9 +643,20 @@ const TEMPLATE_DEFAULTS: Record<
   'missed_call' | 'website_no_answer' | 'ad_no_answer',
   { name: string; steps: Omit<SequenceStep, 'id' | 'sequence_id'>[] }
 > = {
-  missed_call:      { name: 'Missed Call Follow-Up',   steps: NO_ANSWER_TEMPLATE_STEPS },
-  website_no_answer: { name: 'Website No-Answer Follow-Up', steps: WEBSITE_NO_ANSWER_TEMPLATE_STEPS },
-  ad_no_answer:     { name: 'Ad Lead Follow-Up',        steps: AD_NO_ANSWER_TEMPLATE_STEPS },
+  missed_call:      { name: 'Missed Call Follow-Up',   steps: getFollowupPresetSteps('missed_call', 'standard') },
+  website_no_answer: { name: 'Website No-Answer Follow-Up', steps: getFollowupPresetSteps('website_no_answer', 'standard') },
+  ad_no_answer:     { name: 'Ad Lead Follow-Up',        steps: getFollowupPresetSteps('ad_no_answer', 'standard') },
+};
+
+const GUIDED_TRIGGERS: Sequence['trigger_event'][] = ['missed_call', 'website_no_answer', 'ad_no_answer'];
+
+const DEFAULT_SEQUENCE_NAMES: Record<Sequence['trigger_event'], string> = {
+  missed_call: 'Missed Call Follow-Up',
+  website_no_answer: 'Website No-Answer Follow-Up',
+  ad_no_answer: 'Ad Lead Follow-Up',
+  appointment_completed: 'Appointment Follow-Up',
+  lead_created: 'New Lead Follow-Up',
+  manual: 'Manual Follow-Up',
 };
 
 const SequenceModal: React.FC<SequenceModalProps> = ({
@@ -656,6 +677,9 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
   const [steps, setSteps] = useState<SequenceStep[]>([]);
   const [saving, setSaving] = useState(false);
   const [loadingSteps, setLoadingSteps] = useState(false);
+  const [preset, setPreset] = useState<FollowupPresetId>('standard');
+  const [advancedOpen, setAdvancedOpen] = useState(isEdit);
+  const guidedMode = GUIDED_TRIGGERS.includes(trigger);
 
   // Load steps when editing
   useEffect(() => {
@@ -678,6 +702,21 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
     })();
   }, [sequence, showToast]);
 
+  const applyPreset = (nextPreset: FollowupPresetId, nextTrigger = trigger) => {
+    setPreset(nextPreset);
+    setSteps(getFollowupPresetSteps(nextTrigger, nextPreset));
+  };
+
+  const handleTriggerChange = (nextTrigger: Sequence['trigger_event']) => {
+    setTrigger(nextTrigger);
+    if (!name.trim() || name === DEFAULT_SEQUENCE_NAMES[trigger]) {
+      setName(DEFAULT_SEQUENCE_NAMES[nextTrigger]);
+    }
+    if (GUIDED_TRIGGERS.includes(nextTrigger)) {
+      setSteps(getFollowupPresetSteps(nextTrigger, preset));
+    }
+  };
+
   const updateStep = (idx: number, patch: Partial<SequenceStep>) => {
     setSteps((prev) =>
       prev.map((s, i) => (i === idx ? { ...s, ...patch } : s))
@@ -692,6 +731,13 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
   };
 
   const addStep = () => {
+    if (steps.length >= FOLLOWUP_LIMITS.maxSteps) {
+      showToast({
+        variant: 'error',
+        message: `Use ${FOLLOWUP_LIMITS.maxSteps} steps or fewer to keep follow-up safe.`,
+      });
+      return;
+    }
     setSteps((prev) => [...prev, defaultStep(prev.length + 1)]);
   };
 
@@ -702,6 +748,11 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
     }
     if (steps.length === 0) {
       showToast({ variant: 'error', message: 'Add at least one step.' });
+      return;
+    }
+    const validationError = validateFollowupSteps(steps);
+    if (validationError) {
+      showToast({ variant: 'error', message: validationError });
       return;
     }
     for (let i = 0; i < steps.length; i++) {
@@ -841,9 +892,7 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
               <div className="relative">
                 <select
                   value={trigger}
-                  onChange={(e) =>
-                    setTrigger(e.target.value as Sequence['trigger_event'])
-                  }
+                  onChange={(e) => handleTriggerChange(e.target.value as Sequence['trigger_event'])}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white"
                 >
                   {TRIGGER_OPTIONS.map((t) => (
@@ -856,11 +905,69 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
               </div>
             </div>
 
+            {guidedMode && (
+              <div className="border border-blue-100 bg-blue-50 rounded-xl p-4 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0 border border-blue-100">
+                    <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Guided setup</p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      Pick a safe preset first. Open advanced controls when you want exact timing or message copy.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {(Object.keys(FOLLOWUP_PRESET_META) as FollowupPresetId[]).map((presetId) => {
+                    const meta = FOLLOWUP_PRESET_META[presetId];
+                    const preview = summarizeFollowupSteps(getFollowupPresetSteps(trigger, presetId));
+                    const selected = preset === presetId;
+                    return (
+                      <button
+                        key={presetId}
+                        type="button"
+                        onClick={() => applyPreset(presetId)}
+                        className={`text-left rounded-lg border p-3 transition-colors ${
+                          selected
+                            ? 'bg-white border-blue-400 shadow-sm'
+                            : 'bg-white/70 border-blue-100 hover:border-blue-300'
+                        }`}
+                      >
+                        <span className="block text-sm font-semibold text-gray-900">{meta.label}</span>
+                        <span className="block text-xs text-gray-500 mt-1 min-h-[32px]">{meta.description}</span>
+                        <span className="block text-[11px] text-blue-700 mt-2 leading-snug">{preview}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg bg-white border border-blue-100 px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-gray-700">Current timeline</p>
+                    <p className="text-xs text-gray-500 truncate">{summarizeFollowupSteps(steps)}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAdvancedOpen((value) => !value)}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    {advancedOpen ? 'Hide Advanced' : 'Advanced Edit'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Steps */}
-            <div>
+            <div className={guidedMode && !advancedOpen ? 'hidden' : ''}>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Steps
+                Advanced Steps
               </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Max {FOLLOWUP_LIMITS.maxSteps} steps, max {FOLLOWUP_LIMITS.maxCallSteps} AI call retries, SMS under {FOLLOWUP_LIMITS.maxSmsChars} characters.
+              </p>
 
               {loadingSteps ? (
                 <div className="flex items-center justify-center py-8">
@@ -870,7 +977,7 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
                 <div className="space-y-4">
                   {steps.map((step, idx) => (
                     <StepEditor
-                      key={idx}
+                      key={`${idx}-${step.channel}-${step.delay_minutes}`}
                       step={step}
                       index={idx}
                       canRemove={steps.length > 1}
@@ -883,7 +990,8 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
 
               <button
                 onClick={addStep}
-                className="mt-3 flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                disabled={steps.length >= FOLLOWUP_LIMITS.maxSteps}
+                className="mt-3 flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" />
                 Add Step
@@ -1078,6 +1186,13 @@ const StepEditor: React.FC<StepEditorProps> = ({
           <p className="mt-1 text-xs text-gray-400">
             Placeholders: {'{{client_name}}'}, {'{{business_name}}'}, {'{{appointment_date}}'}
           </p>
+          {step.channel === 'sms' && (
+            <p className={`mt-1 text-xs ${
+              step.template.length > FOLLOWUP_LIMITS.maxSmsChars ? 'text-red-500' : 'text-gray-400'
+            }`}>
+              {step.template.length}/{FOLLOWUP_LIMITS.maxSmsChars} SMS characters
+            </p>
+          )}
         </div>
       )}
     </div>
