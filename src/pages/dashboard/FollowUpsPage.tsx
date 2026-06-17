@@ -659,6 +659,24 @@ const DEFAULT_SEQUENCE_NAMES: Record<Sequence['trigger_event'], string> = {
   manual: 'Manual Follow-Up',
 };
 
+const PRESET_CARD_TONE: Record<FollowupPresetId, { badge: string; className: string; selectedClassName: string }> = {
+  gentle: {
+    badge: 'Light touch',
+    className: 'border-emerald-100 bg-emerald-50/50 hover:border-emerald-300',
+    selectedClassName: 'border-emerald-400 bg-white shadow-sm ring-2 ring-emerald-100',
+  },
+  standard: {
+    badge: 'Recommended',
+    className: 'border-blue-100 bg-blue-50/50 hover:border-blue-300',
+    selectedClassName: 'border-blue-400 bg-white shadow-sm ring-2 ring-blue-100',
+  },
+  aggressive: {
+    badge: 'Hot leads',
+    className: 'border-amber-100 bg-amber-50/60 hover:border-amber-300',
+    selectedClassName: 'border-amber-400 bg-white shadow-sm ring-2 ring-amber-100',
+  },
+};
+
 const SequenceModal: React.FC<SequenceModalProps> = ({
   sequence,
   userId,
@@ -853,7 +871,7 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
         className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-10 px-4"
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200"
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-200"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -906,7 +924,7 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
             </div>
 
             {guidedMode && (
-              <div className="border border-blue-100 bg-blue-50 rounded-xl p-4 space-y-4">
+              <div className="border border-blue-100 bg-blue-50/80 rounded-xl p-4 space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0 border border-blue-100">
                     <ShieldCheck className="w-4 h-4 text-blue-600" />
@@ -914,47 +932,54 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Guided setup</p>
                     <p className="text-xs text-gray-600 mt-0.5">
-                      Pick a safe preset first. Open advanced controls when you want exact timing or message copy.
+                      Pick a safe preset first. Customize timing and messages when you want exact control.
+                    </p>
+                    <p className="mt-2 inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-blue-700 border border-blue-100">
+                      This sequence owns the text-back, so Boltcall will not send a duplicate no-answer SMS.
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {(Object.keys(FOLLOWUP_PRESET_META) as FollowupPresetId[]).map((presetId) => {
                     const meta = FOLLOWUP_PRESET_META[presetId];
                     const preview = summarizeFollowupSteps(getFollowupPresetSteps(trigger, presetId));
                     const selected = preset === presetId;
+                    const tone = PRESET_CARD_TONE[presetId];
                     return (
                       <button
                         key={presetId}
                         type="button"
                         onClick={() => applyPreset(presetId)}
-                        className={`text-left rounded-lg border p-3 transition-colors ${
-                          selected
-                            ? 'bg-white border-blue-400 shadow-sm'
-                            : 'bg-white/70 border-blue-100 hover:border-blue-300'
+                        className={`text-left rounded-xl border p-3.5 transition-all ${
+                          selected ? tone.selectedClassName : tone.className
                         }`}
                       >
-                        <span className="block text-sm font-semibold text-gray-900">{meta.label}</span>
-                        <span className="block text-xs text-gray-500 mt-1 min-h-[32px]">{meta.description}</span>
-                        <span className="block text-[11px] text-blue-700 mt-2 leading-snug">{preview}</span>
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-gray-900">{meta.label}</span>
+                          <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-medium text-gray-600 border border-white">
+                            {tone.badge}
+                          </span>
+                        </span>
+                        <span className="block text-xs text-gray-600 mt-2 min-h-[34px]">{meta.description}</span>
+                        <span className="block text-[11px] text-gray-800 mt-3 leading-snug">{preview}</span>
                       </button>
                     );
                   })}
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg bg-white border border-blue-100 px-3 py-2">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 rounded-xl bg-white border border-blue-100 px-4 py-3">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-gray-700">Current timeline</p>
-                    <p className="text-xs text-gray-500 truncate">{summarizeFollowupSteps(steps)}</p>
+                    <p className="text-sm text-gray-900 leading-relaxed mt-1">{summarizeFollowupSteps(steps)}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setAdvancedOpen((value) => !value)}
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    className="inline-flex shrink-0 items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-700 hover:bg-gray-50"
                   >
                     <SlidersHorizontal className="w-3.5 h-3.5" />
-                    {advancedOpen ? 'Hide Advanced' : 'Advanced Edit'}
+                    {advancedOpen ? 'Hide customization' : 'Customize timing & messages'}
                   </button>
                 </div>
               </div>
