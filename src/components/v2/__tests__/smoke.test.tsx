@@ -357,14 +357,16 @@ describe('V2SetupChat — smoke', () => {
     });
   });
 
-  it('renders the composer + the V1-escape link', async () => {
+  it('renders setup as inline questions without chat chrome', async () => {
     await act(async () => {
       renderInRouter(<V2SetupChat />);
     });
-    expect(screen.getByPlaceholderText(/type your reply/i)).toBeInTheDocument();
-    // Header + stall-banner-or-error all link back to /setup; check at least one exists.
-    const escapeLinks = screen.getAllByText(/classic setup/i);
-    expect(escapeLinks.length).toBeGreaterThanOrEqual(1);
+
+    expect(screen.getByLabelText(/your setup answer/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/type your reply/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('Boltcall Setup')).not.toBeInTheDocument();
+    expect(screen.queryByText(/conversational setup/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/classic setup/i)).not.toBeInTheDocument();
   });
 
   it('hits the saas-v2-setup-conversation endpoint when the user sends a turn', async () => {
@@ -372,7 +374,7 @@ describe('V2SetupChat — smoke', () => {
       renderInRouter(<V2SetupChat />);
     });
 
-    const composer = screen.getByPlaceholderText(/type your reply/i) as HTMLTextAreaElement;
+    const composer = screen.getByLabelText(/your setup answer/i) as HTMLTextAreaElement;
     fireEvent.change(composer, { target: { value: 'Boltcall Plumbing' } });
     const sendBtn = screen.getByLabelText('Send');
     await act(async () => {
