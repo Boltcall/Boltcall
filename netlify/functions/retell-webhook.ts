@@ -48,6 +48,13 @@ function substituteTemplate(
   return result;
 }
 
+function substituteFollowupTemplate(template: string, contactName: string | null): string {
+  return substituteTemplate(template, {
+    client_name: contactName || 'there',
+    name: contactName || 'there',
+  });
+}
+
 // ─── Outcome Evaluation ──────────────────────────────────────────────────────
 
 function buildTranscriptText(call: any): string {
@@ -408,7 +415,19 @@ export const handler: Handler = async (event) => {
       });
     }
 
-    // Auto-enroll in the matching follow-up sequence (skip for follow-up retries and campaigns)
+    let sequenceControlledTextback = false;
+    let sequenceScheduledImmediateTextback = false;
+    let sequenceEnrollmentCount = 0;
+
+    const metadataContactName =
+      typeof call.metadata?.name === 'string' ? call.metadata.name
+        : typeof call.metadata?.full_name === 'string' ? call.metadata.full_name
+          : typeof call.metadata?.first_name === 'string' ? call.metadata.first_name
+            : null;
+
+    // Auto-enroll in the matching follow-up sequence (skip for follow-up retries and campaigns).
+    // When a sequence exists, it owns the no-answer follow-up so the legacy
+    // missed-call text-back cannot duplicate the first user-controlled SMS.
     if (lead?.id && triggerType) {
       try {
         const { data: sequences } = await supabase
@@ -429,25 +448,118 @@ export const handler: Handler = async (event) => {
               .eq('is_active', true)
               .single();
 
-            const delayMs = (firstStep?.delay_minutes || 1440) * 60 * 1000;
+            if (!firstStep) continue;
 
-            await supabase.from('followup_enrollments').insert({
+            const firstSequenceStep = firstStep as {
+              channel?: string;
+              delay_minutes?: number;
+              template?: string;
+            };
+            const firstDelayMinutes = firstSequenceStep.delay_minutes ?? 1440;
+            const fireFirstSmsNow = firstSequenceStep.channel === 'sms' && firstDelayMinutes <= 0;
+            let currentStep = 0;
+            let enrollmentStatus = 'active';
+            let nextStepAt: string | null = new Date(Date.now() + firstDelayMinutes * 60 * 1000).toISOString();
+            let completedAt: string | null = null;
+
+            if (fireFirstSmsNow) {
+              const scheduledNow = new Date().toISOString();
+              const { error: firstMessageError } = await supabase.from('scheduled_messages').insert({
+                type: 'followup',
+                channel: 'sms',
+                recipient_phone: callerPhone,
+                message_body: substituteFollowupTemplate(firstSequenceStep.template || '', metadataContactName),
+                scheduled_for: scheduledNow,
+                status: 'scheduled',
+                user_id: userId,
+                metadata: {
+                  call_id: call.call_id,
+                  call_status: call.call_status,
+                  duration_ms: call.duration_ms,
+                  lead_id: lead.id,
+                  sequence_id: seq.id,
+                  sequence_step_order: 1,
+                  trigger_event: triggerType,
+                },
+              });
+
+              if (firstMessageError) {
+                console.error('[retell-webhook] Failed to schedule first sequence SMS:', firstMessageError);
+                await notifyError('retell-webhook: First sequence SMS scheduling failed', firstMessageError, {
+                  callerPhone, userId, callId: call.call_id, sequenceId: seq.id,
+                });
+                continue;
+              }
+
+              currentStep = 1;
+              sequenceScheduledImmediateTextback = true;
+
+              const { data: secondStep } = await supabase
+                .from('followup_sequence_steps')
+                .select('delay_minutes')
+                .eq('sequence_id', seq.id)
+                .eq('step_order', 2)
+                .eq('is_active', true)
+                .single();
+
+              if (secondStep) {
+                nextStepAt = new Date(Date.now() + secondStep.delay_minutes * 60 * 1000).toISOString();
+              } else {
+                enrollmentStatus = 'completed';
+                nextStepAt = null;
+                completedAt = scheduledNow;
+              }
+            }
+
+            const enrollmentInsert: Record<string, any> = {
               sequence_id: seq.id,
               user_id: userId,
               lead_id: lead.id,
               contact_name: null,
               contact_phone: callerPhone,
               contact_email: null,
-              current_step: 0,
-              status: 'active',
-              next_step_at: new Date(Date.now() + delayMs).toISOString(),
-            });
+              current_step: currentStep,
+              status: enrollmentStatus,
+              next_step_at: nextStepAt,
+            };
+            if (completedAt) enrollmentInsert.completed_at = completedAt;
+
+            const { error: enrollmentError } = await supabase.from('followup_enrollments').insert(enrollmentInsert);
+
+            if (enrollmentError) {
+              console.error('[retell-webhook] Failed to enroll no-answer sequence:', enrollmentError);
+              await notifyError('retell-webhook: Follow-up enrollment failed', enrollmentError, {
+                callerPhone, userId, callId: call.call_id, sequenceId: seq.id,
+              });
+              continue;
+            }
+
+            sequenceEnrollmentCount += 1;
+            sequenceControlledTextback = true;
           }
-          console.log(`[retell-webhook] Auto-enrolled ${callerPhone} in ${sequences.length} ${triggerType} sequence(s)`);
+          if (sequenceEnrollmentCount > 0) {
+            console.log(`[retell-webhook] Auto-enrolled ${callerPhone} in ${sequenceEnrollmentCount} ${triggerType} sequence(s)`);
+          }
         }
       } catch (enrollErr) {
         console.error('[retell-webhook] Auto-enrollment failed (non-blocking):', enrollErr);
       }
+    }
+
+    if (sequenceControlledTextback) {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          ok: true,
+          missed: true,
+          textback: sequenceScheduledImmediateTextback,
+          textback_source: 'followup_sequence',
+          lead_created: !!lead,
+          lead_id: lead?.id || null,
+          sequence_enrollments: sequenceEnrollmentCount,
+        }),
+      };
     }
 
     const adLeadTextbackEnabledByDefault = isOutbound && triggerType === 'ad_no_answer';
