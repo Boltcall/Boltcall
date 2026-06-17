@@ -109,7 +109,7 @@
     "node-fetch": "^3.3.2",
     "openai": "^6.27.0",
     "puppeteer": "^24.40.0",
-    "retell-sdk": "^5.33.0",
+    "retell-sdk": "^5.38.0",
     "stripe": "^20.4.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.44.0",
