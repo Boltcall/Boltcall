@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowUp, Zap, BarChart2, Globe, Activity, CheckCircle2, Paperclip } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authedFetch } from '../../lib/authedFetch';
+import { readJsonResponse } from '../../lib/readJsonResponse';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -12,6 +13,12 @@ interface Message {
   actions?: string[];
   loading?: boolean;
 }
+
+type AssistantResponse = {
+  reply?: string;
+  error?: string;
+  actions?: string[];
+};
 
 // ─── Simple markdown renderer ─────────────────────────────────────────────────
 
@@ -170,13 +177,16 @@ const BoltcallAgentPage: React.FC = () => {
           body: JSON.stringify({ messages: history, userId: user?.id }),
         });
 
-        const data = await res.json();
+        const data = await readJsonResponse<AssistantResponse>(res);
 
         const assistantMsg: Message = {
           id: crypto.randomUUID(),
           role: 'assistant',
-          content: data.reply || (res.ok ? 'Done!' : 'Something went wrong. Please try again.'),
-          actions: data.actions,
+          content:
+            data?.reply ||
+            data?.error ||
+            (res.ok ? 'Done!' : 'Something went wrong. Please try again.'),
+          actions: data?.actions,
         };
 
         setMessages(prev => prev.slice(0, -1).concat(assistantMsg));

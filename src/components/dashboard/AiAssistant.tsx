@@ -4,12 +4,19 @@ import { X, Send, CheckCircle2, MessageCircle, HelpCircle, Wand2 } from 'lucide-
 import { useAuth } from '../../contexts/AuthContext';
 import { cn } from '../../lib/utils';
 import { authedFetch } from '../../lib/authedFetch';
+import { readJsonResponse } from '../../lib/readJsonResponse';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   actions?: string[];
 }
+
+type AssistantResponse = {
+  reply?: string;
+  error?: string;
+  actions?: string[];
+};
 
 const QUICK_ACTIONS: { label: string; type: 'question' | 'action' }[] = [
   { label: 'I am new to the platform, what do I do first?', type: 'question' },
@@ -50,20 +57,23 @@ const AiAssistant: React.FC = () => {
         }),
       });
 
-      const data = await res.json();
+      const data = await readJsonResponse<AssistantResponse>(res);
 
       if (!res.ok) {
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: 'Something went wrong on our end. Please try again in a moment.',
+          content:
+            data?.reply ||
+            data?.error ||
+            'Something went wrong on our end. Please try again in a moment.',
         }]);
         return;
       }
 
       const assistantMsg: Message = {
         role: 'assistant',
-        content: data.reply || 'Done!',
-        actions: data.actions,
+        content: data?.reply || 'Done!',
+        actions: data?.actions,
       };
       setMessages(prev => [...prev, assistantMsg]);
     } catch {
