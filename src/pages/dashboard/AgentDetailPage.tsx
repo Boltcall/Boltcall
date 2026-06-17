@@ -19,7 +19,8 @@ interface AgentData {
   id: string;
   name: string;
   status: string;
-  greeting: string;
+  greeting?: string;
+  begin_message?: string;
   voice_id: string;
   transfer_phone_number: string;
   system_prompt: string;
@@ -133,7 +134,7 @@ const AgentDetailPage: React.FC = () => {
         // begin_message is the actual greeting column on agents — data.greeting
         // is undefined and would silently blank the field, so a save without
         // an edit would overwrite the stored value with empty.
-        setGreeting(data.begin_message || '');
+        setGreeting(data.begin_message || data.greeting || '');
         setVoiceId(data.voice_id || '');
         setTransferPhone(data.transfer_phone_number || '');
         setAvatar(data.avatar ?? null);
@@ -192,7 +193,7 @@ const AgentDetailPage: React.FC = () => {
     const changed =
       name !== (agent.name || '') ||
       status !== (agent.status || 'active') ||
-      greeting !== (agent.greeting || '') ||
+      greeting !== (agent.begin_message || agent.greeting || '') ||
       voiceId !== (agent.voice_id || '') ||
       transferPhone !== (agent.transfer_phone_number || '') ||
       avatar !== (agent.avatar ?? null) ||
@@ -548,7 +549,7 @@ const AgentDetailPage: React.FC = () => {
               onClick={() => {
                 setName(agent.name || '');
                 setStatus(agent.status || 'active');
-                setGreeting(agent.greeting || '');
+                setGreeting(agent.begin_message || agent.greeting || '');
                 setVoiceId(agent.voice_id || '');
                 setTransferPhone(agent.transfer_phone_number || '');
               }}

@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 
-interface Lead {
+export interface Lead {
   id: string;
   name: string;
   phone: string;
@@ -73,7 +73,17 @@ function smoothPath(points: { x: number; y: number }[]): string {
   return d;
 }
 
-const SpeedToLeadPage: React.FC = () => {
+interface SpeedToLeadPageProps {
+  previewMode?: boolean;
+  previewLeads?: Lead[];
+}
+
+const EMPTY_PREVIEW_LEADS: Lead[] = [];
+
+const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
+  previewMode = false,
+  previewLeads,
+}) => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -85,15 +95,15 @@ const SpeedToLeadPage: React.FC = () => {
   const [chartRange, setChartRange] = useState<'7' | '30'>('7');
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; date: string; value: string } | null>(null);
   const chartRef = useRef<SVGSVGElement>(null);
+  const resolvedPreviewLeads = previewLeads ?? EMPTY_PREVIEW_LEADS;
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchLeads();
+  const fetchLeads = useCallback(async () => {
+    if (previewMode) {
+      setLeads(resolvedPreviewLeads);
+      setIsLoadingLeads(false);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
 
-  const fetchLeads = async () => {
     if (!user?.id) {
       setIsLoadingLeads(false);
       return;
@@ -146,7 +156,11 @@ const SpeedToLeadPage: React.FC = () => {
     } finally {
       setIsLoadingLeads(false);
     }
-  };
+  }, [previewMode, resolvedPreviewLeads, showToast, user?.id]);
+
+  useEffect(() => {
+    void fetchLeads();
+  }, [fetchLeads]);
 
   // --- KPI Calculations ---
   const kpis = useMemo(() => {
