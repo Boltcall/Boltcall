@@ -12,6 +12,32 @@ import {
 } from '../_shared/retell-call-list';
 
 describe('Retell call list v5 filters', () => {
+  it('uses a Retell SDK build with versioned list endpoints', () => {
+    const testsDir = path.dirname(fileURLToPath(import.meta.url));
+    const repoRoot = path.resolve(testsDir, '..', '..', '..');
+    const lockPath = path.join(repoRoot, 'package-lock.json');
+    const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8')) as {
+      packages?: Record<string, { version?: string }>;
+    };
+
+    expect(lock.packages?.['node_modules/retell-sdk']?.version).toBe('5.38.0');
+
+    const sdkResourcesDir = path.join(repoRoot, 'node_modules', 'retell-sdk', 'resources');
+    if (!fs.existsSync(sdkResourcesDir)) return;
+
+    const callResource = fs.readFileSync(path.join(sdkResourcesDir, 'call.js'), 'utf8');
+    const phoneNumberResource = fs.readFileSync(
+      path.join(sdkResourcesDir, 'phone-number.js'),
+      'utf8',
+    );
+
+    expect(callResource).toContain('/v3/list-calls');
+    expect(callResource).not.toContain('/v2/list-calls');
+    expect(phoneNumberResource).toContain('/v2/list-phone-numbers');
+    expect(phoneNumberResource).not.toContain("'/list-phone-numbers'");
+    expect(phoneNumberResource).not.toContain('"/list-phone-numbers"');
+  });
+
   it('builds typed agent and timestamp filters accepted by Retell v5', () => {
     expect(buildRetellAgentFilter(['agent_a', 'agent_b'])).toEqual([
       { agent_id: 'agent_a' },
