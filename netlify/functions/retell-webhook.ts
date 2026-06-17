@@ -153,12 +153,18 @@ export const handler: Handler = async (event) => {
     const contactPhone = isOutbound ? (call.to_number || null) : (call.from_number || null);
     // Legacy alias used in the rest of this file
     const callerPhone = contactPhone;
-    const callSource = (call.metadata?.source ?? '') as string;
+    const callSource = String(call.metadata?.source ?? '');
+    const adNoAnswerSources = new Set([
+      'facebook_ads',
+      'facebook_lead_ad',
+      'google_ads',
+      'google_lead_form',
+    ]);
     // Trigger type for enrollment — null means skip enrollment (follow-up retries, campaigns, etc.)
     const triggerType: 'missed_call' | 'website_no_answer' | 'ad_no_answer' | null = (() => {
       if (!isOutbound) return 'missed_call';
       if (!callSource || callSource === 'followup_sequence' || callSource === 'reactivation') return null;
-      if (callSource === 'facebook_ads') return 'ad_no_answer';
+      if (adNoAnswerSources.has(callSource)) return 'ad_no_answer';
       return 'website_no_answer';
     })();
     const agentId = call.agent_id;
@@ -344,16 +350,21 @@ export const handler: Handler = async (event) => {
         lead = newLead;
       }
     } else {
-      // For outbound no-answers, look up the existing lead by phone
-      const { data: existingLead } = await supabase
-        .from('leads')
-        .select('id')
-        .eq('phone', callerPhone)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      lead = existingLead ?? null;
+      const metadataLeadId = typeof call.metadata?.lead_id === 'string' ? call.metadata.lead_id : null;
+      if (metadataLeadId) {
+        lead = { id: metadataLeadId };
+      } else {
+        // For outbound no-answers, look up the existing lead by phone.
+        const { data: existingLead } = await supabase
+          .from('leads')
+          .select('id')
+          .eq('phone', callerPhone)
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        lead = existingLead ?? null;
+      }
     }
 
     // Fire missed_call webhook
@@ -439,7 +450,10 @@ export const handler: Handler = async (event) => {
       }
     }
 
-    if (!config.enabled) {
+    const adLeadTextbackEnabledByDefault = isOutbound && triggerType === 'ad_no_answer';
+    const textbackEnabled = config.enabled === true || (adLeadTextbackEnabledByDefault && config.enabled !== false);
+
+    if (!textbackEnabled) {
       console.log('[retell-webhook] Missed call text-back not enabled for user', userId);
       return {
         statusCode: 200,

@@ -132,4 +132,125 @@ describe('retell-webhook', () => {
     );
     expect(fireWebhooksMock).toHaveBeenCalledWith('user-a', 'call_completed', expect.any(Object));
   });
+
+  it('schedules immediate SMS after an unanswered outbound Facebook lead call', async () => {
+    const inserts: Record<string, any[]> = {};
+    const makeInsert = (table: string) => vi.fn(async (row: any) => {
+      inserts[table] ||= [];
+      inserts[table].push(row);
+      return { data: row, error: null };
+    });
+
+    const chains = {
+      agents: {
+        select: () => ({
+          or: () => ({
+            limit: () => ({
+              maybeSingle: async () => ({ data: { user_id: 'founder-user-id' }, error: null }),
+            }),
+          }),
+        }),
+      },
+      business_features: {
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: { missed_call_config: {} }, error: null }),
+          }),
+        }),
+      },
+      leads: {
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              order: () => ({
+                limit: () => ({
+                  single: async () => ({ data: { id: 'lead-from-phone' }, error: null }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      },
+      business_profiles: {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({ data: { business_name: 'Boltcall' }, error: null }),
+          }),
+        }),
+      },
+      phone_numbers: {
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              order: () => ({
+                limit: () => ({
+                  maybeSingle: async () => ({ data: { phone_number: '+13613044585' }, error: null }),
+                }),
+              }),
+            }),
+          }),
+        }),
+      },
+      scheduled_messages: {
+        insert: makeInsert('scheduled_messages'),
+      },
+    } as Record<string, any>;
+
+    getSupabaseMock.mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (chains[table]) return chains[table];
+        throw new Error(`unexpected table ${table}`);
+      }),
+    });
+
+    const { handler } = await import('../retell-webhook');
+
+    const res = await handler(
+      {
+        httpMethod: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          event: 'call_ended',
+          call: {
+            call_id: 'call-facebook-no-answer',
+            agent_id: 'agent-owned',
+            call_type: 'outbound_api',
+            call_status: 'not_connected',
+            duration_ms: 0,
+            from_number: '+13613044585',
+            to_number: '+15555550217',
+            metadata: {
+              source: 'facebook_lead_ad',
+              user_id: 'founder-user-id',
+              lead_id: 'facebook-lead-1',
+            },
+          },
+        }),
+      } as any,
+      {} as any,
+      vi.fn(),
+    );
+
+    expect(res?.statusCode).toBe(200);
+    expect(JSON.parse(res?.body || '{}')).toMatchObject({
+      ok: true,
+      missed: true,
+      textback: true,
+      lead_id: 'facebook-lead-1',
+    });
+    expect(inserts.scheduled_messages).toHaveLength(1);
+    expect(inserts.scheduled_messages[0]).toMatchObject({
+      type: 'missed_call_textback',
+      channel: 'sms',
+      recipient_phone: '+15555550217',
+      status: 'scheduled',
+      user_id: 'founder-user-id',
+      metadata: expect.objectContaining({
+        call_id: 'call-facebook-no-answer',
+        lead_id: 'facebook-lead-1',
+      }),
+    });
+    expect(new Date(inserts.scheduled_messages[0].scheduled_for).getTime())
+      .toBeLessThanOrEqual(Date.now() + 5000);
+  });
 });
