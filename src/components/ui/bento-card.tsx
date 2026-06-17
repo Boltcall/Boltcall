@@ -6,7 +6,6 @@ import {
   ZapIcon,
   PhoneOff01Icon,
   BubbleChatNotificationIcon,
-  Search01Icon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 
@@ -94,23 +93,13 @@ const BentoCard = () => {
                 </div>
                 <div className="absolute left-1/2 -translate-x-1/2">
                   <span className="text-[11px] uppercase tracking-[0.28em] text-slate-400">
-                    Boltcall V1
+                    Boltcall
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-1 overflow-hidden bg-slate-50">
                 <div className="flex w-44 flex-col overflow-hidden border-r border-slate-200 bg-white">
-                  <div className="border-b border-slate-200 px-3 py-3">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-                      Workspace
-                    </div>
-                    <div className="mt-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-                      <div className="text-[10px] font-semibold text-slate-900">Boltcall HQ</div>
-                      <div className="text-[9px] text-slate-500">Speed-to-lead dashboard</div>
-                    </div>
-                  </div>
-
                   <div className="sidebar-nav-scroll flex-1 overflow-y-auto p-2 pt-3">
                     <LayoutGroup>
                       <p className="px-2 pb-2 text-[9px] font-semibold uppercase tracking-[0.24em] text-slate-400">
@@ -130,13 +119,7 @@ const BentoCard = () => {
 
                 <div className="relative flex flex-1 flex-col overflow-hidden bg-slate-50">
                   <div className="border-b border-slate-200 bg-white px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                        <HugeiconsIcon icon={Search01Icon} size={12} className="text-slate-400" />
-                        <span className="truncate text-[10px] text-slate-400">
-                          Search leads, calls, or conversations...
-                        </span>
-                      </div>
+                    <div className="flex items-center justify-end gap-2">
                       <div className="hidden items-center gap-2 sm:flex">
                         <div className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-700">
                           Live

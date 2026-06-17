@@ -2,6 +2,11 @@ import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import {
+  clearPendingAgentSetup,
+  readPendingAgentSetup,
+} from '../lib/setup/onboarding';
+import { provisionAgentSetup } from '../lib/setup/provisionAgentSetup';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -24,12 +29,25 @@ const AuthCallback: React.FC = () => {
         }
 
         if (session) {
+          const pendingSetup = readPendingAgentSetup();
+
           // Check if user has completed setup
           const { data: profile } = await supabase
             .from('business_profiles')
             .select('id')
             .eq('user_id', session.user.id)
             .maybeSingle();
+
+          if (!profile && pendingSetup) {
+            await provisionAgentSetup(session.user.id, pendingSetup);
+            clearPendingAgentSetup();
+            navigate('/setup/loading', { replace: true });
+            return;
+          }
+
+          if (profile) {
+            clearPendingAgentSetup();
+          }
 
           navigate(profile ? '/dashboard' : '/setup');
         } else {

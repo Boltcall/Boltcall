@@ -11,6 +11,7 @@ import {
   Check,
   ArrowLeft,
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 type Category = 'general' | 'bug' | 'feature';
 
@@ -45,7 +46,12 @@ const NPS_LABELS: Record<number, string> = {
 
 const STEP_LABELS = ['Feedback on', 'Details', 'Rating'];
 
+export function getFeedbackSubmittedStorageKey(userId = 'anonymous') {
+  return `boltcall_feedback_submitted:${userId}`;
+}
+
 const FeedbackPage: React.FC = () => {
+  const { user } = useAuth();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [topic, setTopic] = useState<Topic | null>(null);
   const [feedback, setFeedback] = useState('');
@@ -55,11 +61,13 @@ const FeedbackPage: React.FC = () => {
 
   const handleSubmit = () => {
     const categoryLabel = CATEGORIES.find(c => c.value === category)?.label ?? category;
-    const npsLine = nps !== null ? `\n\nLikelihood to recommend (1–10): ${nps}` : '';
+    const npsLine = nps !== null ? `\n\nLikelihood to recommend (1-10): ${nps}` : '';
     const topicLine = topic ? `Topic: ${topic}\n` : '';
     const bodyText = `${topicLine}Category: ${categoryLabel}\n\n${feedback.trim()}${npsLine}`;
 
-    const subject = encodeURIComponent(`Boltcall Feedback — ${categoryLabel}`);
+    window.localStorage.setItem(getFeedbackSubmittedStorageKey(user?.id ?? 'anonymous'), 'true');
+
+    const subject = encodeURIComponent(`Boltcall Feedback - ${categoryLabel}`);
     const body = encodeURIComponent(bodyText);
     window.open(`mailto:noam@boltcall.org?subject=${subject}&body=${body}`, '_blank');
     setSubmitted(true);
@@ -101,7 +109,6 @@ const FeedbackPage: React.FC = () => {
 
   return (
     <div className="max-w-lg mx-auto space-y-5 px-4 py-5">
-      {/* Page heading */}
       <div>
         <h1 className="text-lg font-bold text-gray-900 dark:text-white">Share Your Feedback</h1>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -109,12 +116,12 @@ const FeedbackPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Step indicator */}
       <div className="flex items-center">
         {STEP_LABELS.map((label, idx) => {
           const stepNum = (idx + 1) as 1 | 2 | 3;
           const isCurrent = stepNum === step;
           const isDone = stepNum < step;
+
           return (
             <React.Fragment key={label}>
               <div className="flex flex-col items-center gap-1 min-w-0 flex-1">
@@ -139,10 +146,7 @@ const FeedbackPage: React.FC = () => {
         })}
       </div>
 
-      {/* Form card */}
       <div className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-4 space-y-4">
-
-        {/* STEP 1 */}
         {step === 1 && (
           <>
             <div>
@@ -154,6 +158,7 @@ const FeedbackPage: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
               {TOPICS.map(({ value, icon }) => {
                 const selected = topic === value;
+
                 return (
                   <button
                     key={value}
@@ -181,7 +186,6 @@ const FeedbackPage: React.FC = () => {
           </>
         )}
 
-        {/* STEP 2 */}
         {step === 2 && (
           <>
             <div>
@@ -214,6 +218,7 @@ const FeedbackPage: React.FC = () => {
                 Your feedback
               </label>
               <textarea
+                aria-label="Your feedback"
                 value={feedback}
                 onChange={e => setFeedback(e.target.value)}
                 placeholder="What's working? What could be better?"
@@ -243,7 +248,6 @@ const FeedbackPage: React.FC = () => {
           </>
         )}
 
-        {/* STEP 3 */}
         {step === 3 && (
           <>
             <div>

@@ -6,6 +6,18 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSetupStore } from '../../stores/setupStore';
 
+export interface CompletionSignals {
+  hasKnowledgeBase: boolean;
+  hasPhoneNumber: boolean;
+  hasInboundAgent: boolean;
+  hasSpeedToLeadAgent: boolean;
+  hasLeadTracking: boolean;
+  hasCompletedAgentTest: boolean;
+  hasCalendarConnection: boolean;
+  hasAdLeadConnection: boolean;
+  hasSubmittedFeedback: boolean;
+}
+
 type Step = {
   id: string;
   title: string;
@@ -82,6 +94,111 @@ const CORE_TASKS: Omit<Step, 'completed'>[] = [
   { id: 'feedback', title: 'Give Feedback', description: 'Share your experience with us', link: '/dashboard/feedback', icon: MessageSquare, timeEstimate: 'About 1 min', credits: 2 },
 ];
 
+const INBOUND_AGENT_TYPES = new Set(['inbound', 'ai_receptionist', 'voice_agent']);
+const SPEED_TO_LEAD_AGENT_TYPES = new Set(['speed_to_lead', 'outbound_speed_to_lead', 'follow_up']);
+
+function isActiveAgent(agent: { status?: string | null }) {
+  return !agent.status || agent.status === 'active';
+}
+
+export function resolveCompletedStepIds(signals: CompletionSignals): Set<string> {
+  const completed = new Set<string>();
+
+  if (signals.hasKnowledgeBase) completed.add('knowledge_base');
+  if (signals.hasPhoneNumber) completed.add('missed_calls');
+  if (signals.hasInboundAgent) completed.add('after_hours');
+  if (signals.hasSpeedToLeadAgent) completed.add('slow_response');
+  if (signals.hasLeadTracking) completed.add('no_system');
+  if (signals.hasCompletedAgentTest) completed.add('test_agent');
+  if (signals.hasCalendarConnection) completed.add('manual_booking');
+  if (signals.hasAdLeadConnection) completed.add('ad_followup');
+  if (signals.hasSubmittedFeedback) completed.add('feedback');
+
+  return completed;
+}
+
+async function fetchCompletionSignals(userId: string): Promise<CompletionSignals> {
+  const [
+    kbRes,
+    leadRes,
+    phoneRes,
+    agentRes,
+    featureRes,
+    integrationRes,
+    facebookRes,
+    agentTestRes,
+  ] = await Promise.all([
+    supabase
+      .from('knowledge_base')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
+    supabase
+      .from('leads')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
+    supabase
+      .from('phone_numbers')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
+    supabase
+      .from('agents')
+      .select('agent_type, status, retell_agent_id')
+      .eq('user_id', userId),
+    supabase
+      .from('business_features')
+      .select('reminders_config, google_lead_form_key')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    supabase
+      .from('user_integrations')
+      .select('provider')
+      .eq('user_id', userId),
+    supabase
+      .from('facebook_page_connections')
+      .select('id', { count: 'exact', head: true })
+      .or(`workspace_id.eq.${userId},user_id.eq.${userId}`),
+    supabase
+      .from('agent_test_runs')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'completed'),
+  ]);
+
+  const agents = Array.isArray(agentRes.data) ? agentRes.data : [];
+  const remindersConfig = (featureRes.data?.reminders_config ?? {}) as Record<string, unknown>;
+  const providers = new Set(
+    Array.isArray(integrationRes.data)
+      ? integrationRes.data
+          .map((row: { provider?: string | null }) => row.provider)
+          .filter((provider): provider is string => typeof provider === 'string')
+      : [],
+  );
+
+  return {
+    hasKnowledgeBase: (kbRes.count ?? 0) > 0,
+    hasPhoneNumber: (phoneRes.count ?? 0) > 0,
+    hasInboundAgent: agents.some((agent: { agent_type?: string | null; status?: string | null }) =>
+      isActiveAgent(agent) && INBOUND_AGENT_TYPES.has(agent.agent_type ?? ''),
+    ),
+    hasSpeedToLeadAgent: agents.some((agent: { agent_type?: string | null; status?: string | null }) =>
+      isActiveAgent(agent) && SPEED_TO_LEAD_AGENT_TYPES.has(agent.agent_type ?? ''),
+    ),
+    hasLeadTracking: (leadRes.count ?? 0) > 0,
+    hasCompletedAgentTest: (agentTestRes.count ?? 0) > 0,
+    hasCalendarConnection:
+      remindersConfig.cal_connected === true ||
+      providers.has('calcom') ||
+      providers.has('google_calendar'),
+    hasAdLeadConnection:
+      (facebookRes.count ?? 0) > 0 ||
+      (typeof featureRes.data?.google_lead_form_key === 'string' &&
+        featureRes.data.google_lead_form_key.trim().length > 0),
+    hasSubmittedFeedback:
+      typeof window !== 'undefined' &&
+      window.localStorage.getItem(`boltcall_feedback_submitted:${userId}`) === 'true',
+  };
+}
+
 const GettingStartedPage: React.FC = () => {
   const { user } = useAuth();
   const painPoints = useSetupStore((s) => s.survey.painPoints);
@@ -114,26 +231,24 @@ const GettingStartedPage: React.FC = () => {
   useEffect(() => {
     if (!user?.id) return;
 
+    let cancelled = false;
+
     const detect = async () => {
-      const done = new Set<string>();
-
-      const { data: kb } = await supabase
-        .from('knowledge_base')
-        .select('user_id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (kb) done.add('knowledge_base');
-
-      const { count: leadCount } = await supabase
-        .from('leads')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      if ((leadCount ?? 0) > 0) done.add('test_agent');
-
-      setCompletedIds(done);
+      try {
+        const signals = await fetchCompletionSignals(user.id);
+        if (!cancelled) {
+          setCompletedIds(resolveCompletedStepIds(signals));
+        }
+      } catch (error) {
+        console.error('Failed to detect getting-started progress:', error);
+      }
     };
 
-    detect();
+    void detect();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   return (

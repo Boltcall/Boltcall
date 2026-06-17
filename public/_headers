@@ -4,7 +4,7 @@
   X-Content-Type-Options: nosniff
   Strict-Transport-Security: max-age=31536000
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Permissions-Policy: camera=(), microphone=(self), geolocation=()
 
 # X-Robots-Tag: noindex rules are for private funnel states only.
 # Public blog/tool pages should not be listed here; they need crawlable HTML
