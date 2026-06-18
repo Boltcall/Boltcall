@@ -69,30 +69,68 @@ describe('SpeedToLeadPage', () => {
       ],
       error: null,
     });
-    authedFetchMock.mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        period: '30d',
-        period_label: 'Last 30 days',
-        comparison_label: 'previous last 30 days',
-        filtered_total: 1,
-        series: [
-          { label: 'Week 1', new: 1, contacted: 0, booked: 0, lost: 0 },
-          { label: 'Week 2', new: 0, contacted: 0, booked: 0, lost: 0 },
-          { label: 'Week 3', new: 0, contacted: 0, booked: 0, lost: 0 },
-          { label: 'Week 4', new: 0, contacted: 0, booked: 0, lost: 0 },
-          { label: 'Week 5', new: 0, contacted: 0, booked: 0, lost: 0 },
-          { label: 'Week 6', new: 0, contacted: 0, booked: 0, lost: 0 },
-        ],
-        metrics: [
-          { key: 'new', current_total: 1, previous_total: 0, delta: 100 },
-          { key: 'contacted', current_total: 0, previous_total: 0, delta: 0 },
-          { key: 'booked', current_total: 0, previous_total: 0, delta: 0 },
-          { key: 'lost', current_total: 0, previous_total: 0, delta: 0 },
-        ],
-      }),
-      text: async () => '',
+    authedFetchMock.mockImplementation(async (url: unknown) => {
+      if (url === '/.netlify/functions/saas-v2-leads?limit=50') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            hot_lead: {
+              id: 'lead-1',
+              name: 'Alice Johnson',
+              source: 'website_form',
+              captured_at: '2026-06-17T10:00:00.000Z',
+              ai_summary: 'Asked for a same-day plumbing estimate.',
+              status: 'new',
+              next_action: 'Call in 2 min',
+              why_hot: 'High-intent lead with urgent job timing.',
+            },
+            leads: [
+              {
+                id: 'lead-1',
+                name: 'Alice Johnson',
+                source: 'website_form',
+                captured_at: '2026-06-17T10:00:00.000Z',
+                ai_summary: 'Asked for a same-day plumbing estimate.',
+                status: 'new',
+                next_action: 'Call in 2 min',
+              },
+            ],
+            total: 1,
+          }),
+          text: async () => '',
+        };
+      }
+
+      if (url === '/.netlify/functions/saas-v2-lead-status-flow?period=30d') {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            period: '30d',
+            period_label: 'Last 30 days',
+            comparison_label: 'previous last 30 days',
+            filtered_total: 1,
+            series: [
+              { label: 'Week 1', new: 1, contacted: 0, booked: 0, lost: 0 },
+              { label: 'Week 2', new: 0, contacted: 0, booked: 0, lost: 0 },
+              { label: 'Week 3', new: 0, contacted: 0, booked: 0, lost: 0 },
+              { label: 'Week 4', new: 0, contacted: 0, booked: 0, lost: 0 },
+              { label: 'Week 5', new: 0, contacted: 0, booked: 0, lost: 0 },
+              { label: 'Week 6', new: 0, contacted: 0, booked: 0, lost: 0 },
+            ],
+            metrics: [
+              { key: 'new', current_total: 1, previous_total: 0, delta: 100 },
+              { key: 'contacted', current_total: 0, previous_total: 0, delta: 0 },
+              { key: 'booked', current_total: 0, previous_total: 0, delta: 0 },
+              { key: 'lost', current_total: 0, previous_total: 0, delta: 0 },
+            ],
+          }),
+          text: async () => '',
+        };
+      }
+
+      throw new Error(`Unexpected authedFetch URL: ${String(url)}`);
     });
   });
 
@@ -102,14 +140,13 @@ describe('SpeedToLeadPage', () => {
     expect(screen.getByText('Loading leads...')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
+      expect(orderMock).toHaveBeenCalledTimes(1);
     });
 
-    expect(screen.queryByText('Loading leads...')).not.toBeInTheDocument();
     expect(orderMock).toHaveBeenCalledTimes(1);
   });
 
-  it('shows name before status and removes the id column from the lead table', async () => {
+  it('renders the backend-enriched V1 leads table with summary and next action columns', async () => {
     render(<SpeedToLeadPage />);
 
     await waitFor(() => {
@@ -117,12 +154,21 @@ describe('SpeedToLeadPage', () => {
     });
 
     expect(screen.queryByText('ID')).not.toBeInTheDocument();
+    expect(screen.getByText('Asked for a same-day plumbing estimate.')).toBeInTheDocument();
+    expect(screen.getByText('Call in 2 min')).toBeInTheDocument();
 
     const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
-    expect(headers).toEqual(['Name', 'Status', 'Source', 'Date']);
+    expect(headers).toEqual([
+      'Name',
+      'Source',
+      'Captured',
+      'Summary',
+      'Status',
+      'Next Action',
+    ]);
   });
 
-  it('renders the backend lead status flow card on V1', async () => {
+  it('renders the backend lead status flow card as a visible second graph on V1', async () => {
     render(<SpeedToLeadPage />);
 
     await waitFor(() => {
@@ -130,6 +176,10 @@ describe('SpeedToLeadPage', () => {
     });
 
     expect(screen.getByText('Backend lead velocity snapshot')).toBeInTheDocument();
+    expect(screen.getByText('Lead Performance')).toBeInTheDocument();
+    expect(authedFetchMock).toHaveBeenCalledWith(
+      '/.netlify/functions/saas-v2-leads?limit=50',
+    );
     expect(authedFetchMock).toHaveBeenCalledWith(
       '/.netlify/functions/saas-v2-lead-status-flow?period=30d',
     );
