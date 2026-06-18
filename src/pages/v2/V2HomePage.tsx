@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowUpRight, AlertCircle, Lightbulb, BookOpen, Activity } from 'lucide-react';
+import { Sparkles, ArrowUpRight, AlertCircle, Lightbulb, BookOpen, Activity, PhoneCall, CalendarDays, Clock3 } from 'lucide-react';
 import AskBoltcallAIV2 from '../../components/v2/AskBoltcallAIV2';
 import { useAuth } from '../../contexts/AuthContext';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
+import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 
 /**
  * V2HomePage — single-tenant SaaS V2 home.
@@ -170,33 +171,65 @@ const NarrativeSkeleton: React.FC = () => (
   </div>
 );
 
+function deltaTone(delta: { text: string; tone: 'up' | 'down' | 'flat' } | undefined, goodDirection: 'up' | 'down') {
+  if (!delta || delta.tone === 'flat') return 'neutral' as const;
+  const isGood =
+    (delta.tone === 'up' && goodDirection === 'up') ||
+    (delta.tone === 'down' && goodDirection === 'down');
+  return isGood ? 'positive' as const : 'negative' as const;
+}
+
 const KpiTile: React.FC<{
   label: string;
   value: number | string;
   delta?: { text: string; tone: 'up' | 'down' | 'flat' };
   goodDirection?: 'up' | 'down';
 }> = ({ label, value, delta, goodDirection = 'up' }) => {
-  let deltaClass = 'text-slate-500 bg-slate-100';
-  if (delta && delta.tone !== 'flat') {
-    const isGood =
-      (delta.tone === 'up' && goodDirection === 'up') ||
-      (delta.tone === 'down' && goodDirection === 'down');
-    deltaClass = isGood
-      ? 'text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200/60'
-      : 'text-rose-700 bg-rose-50 ring-1 ring-rose-200/60';
-  }
+  const chartData =
+    typeof value === 'number' && delta && delta.text !== 'flat'
+      ? [Math.max(value - Math.abs(value * 0.18), 0), value]
+      : [];
+
+  const icon =
+    label === 'Calls answered'
+      ? PhoneCall
+      : label === 'Leads booked'
+        ? CalendarDays
+        : label === 'Missed'
+          ? AlertCircle
+          : Clock3;
+
+  const accentColor =
+    label === 'Calls answered'
+      ? '#2563eb'
+      : label === 'Leads booked'
+        ? '#059669'
+        : label === 'Missed'
+          ? '#ef4444'
+          : '#f59e0b';
+
+  const caption =
+    label === 'Calls answered'
+      ? 'Answered by your AI agent today'
+      : label === 'Leads booked'
+        ? 'Appointments moved onto the calendar'
+        : label === 'Missed'
+          ? 'Calls that still need cleanup'
+          : 'Time to first response';
+
   return (
-    <div className="rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-[0_1px_2px_0_rgba(15,23,42,0.04)]">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">{label}</p>
-      <div className="mt-1 flex items-end justify-between gap-2">
-        <p className="text-2xl font-semibold tabular-nums text-slate-900">{value}</p>
-        {delta && (
-          <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums ${deltaClass}`}>
-            {delta.text}
-          </span>
-        )}
-      </div>
-    </div>
+    <OverviewMetricCard
+      compact
+      label={label}
+      period="Vs yesterday"
+      value={value}
+      badge={delta?.text ?? '-'}
+      badgeTone={deltaTone(delta, goodDirection)}
+      chartData={chartData}
+      icon={icon}
+      accentColor={accentColor}
+      caption={caption}
+    />
   );
 };
 

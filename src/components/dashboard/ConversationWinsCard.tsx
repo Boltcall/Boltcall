@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Trophy, Phone, MessageSquare, Smartphone, Zap, RefreshCw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import OverviewMetricCard from './OverviewMetricCard';
 
 interface ChannelCount {
   channel: string;
@@ -34,6 +35,13 @@ const CHANNEL_LABELS: Record<string, string> = {
   email:    'Email',
   ads:      'Ads',
 };
+
+function buildMiniSeries(value: number, direction: 'up' | 'down' = 'up') {
+  const step = Math.max(1, Math.ceil(Math.max(value, 1) * 0.15));
+  return direction === 'up'
+    ? [Math.max(value - step, 0), Math.max(value - Math.ceil(step / 2), 0), value]
+    : [value + step, Math.max(value + Math.ceil(step / 2), 0), value];
+}
 
 export const ConversationWinsCard: React.FC = () => {
   const { user } = useAuth();
@@ -108,11 +116,11 @@ export const ConversationWinsCard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 animate-pulse">
-        <div className="h-4 bg-gray-100 rounded w-32 mb-4" />
+      <div className="rounded-[24px] border border-gray-100 bg-white p-5 shadow-sm animate-pulse">
+        <div className="mb-4 h-4 w-32 rounded bg-gray-100" />
         <div className="grid grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-16 bg-gray-100 rounded-lg" />
+            <div key={i} className="h-40 rounded-[24px] bg-gray-100" />
           ))}
         </div>
       </div>
@@ -122,7 +130,7 @@ export const ConversationWinsCard: React.FC = () => {
   if (!stats) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+    <div className="rounded-[24px] border border-gray-100 bg-white p-5 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -141,33 +149,43 @@ export const ConversationWinsCard: React.FC = () => {
       </div>
 
       {/* KPI row */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        {/* Wins today */}
-        <div className="bg-emerald-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-emerald-700">{stats.totalToday}</div>
-          <div className="text-xs text-emerald-600 mt-0.5">Wins</div>
-        </div>
-
-        {/* Win rate */}
-        <div className={`rounded-lg p-3 text-center ${stats.winRate >= 70 ? 'bg-blue-50' : stats.winRate >= 40 ? 'bg-amber-50' : 'bg-red-50'}`}>
-          <div className={`text-2xl font-bold ${stats.winRate >= 70 ? 'text-blue-700' : stats.winRate >= 40 ? 'text-amber-700' : 'text-red-700'}`}>
-            {stats.winRate}%
-          </div>
-          <div className={`text-xs mt-0.5 ${stats.winRate >= 70 ? 'text-blue-600' : stats.winRate >= 40 ? 'text-amber-600' : 'text-red-600'}`}>
-            Win rate
-          </div>
-        </div>
-
-        {/* Self-heals */}
-        <div className="bg-purple-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-purple-700">{stats.healsToday}</div>
-          <div className="text-xs text-purple-600 mt-0.5">
-            {stats.healsToday === 1 ? 'Self-heal' : 'Self-heals'}
-            {stats.healsToday > 0 && (
-              <span className="block text-purple-500">{stats.healSuccessRate}% fixed</span>
-            )}
-          </div>
-        </div>
+      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <OverviewMetricCard
+          compact
+          label="Wins today"
+          period="Conversation overview"
+          value={stats.totalToday}
+          badge={stats.totalToday > 0 ? 'Won' : 'Quiet'}
+          badgeTone={stats.totalToday > 0 ? 'positive' : 'neutral'}
+          chartData={buildMiniSeries(stats.totalToday, 'up')}
+          icon={Trophy}
+          accentColor="#059669"
+          caption={`${stats.totalConversations} conversations evaluated`}
+        />
+        <OverviewMetricCard
+          compact
+          label="Win rate"
+          period="Conversation overview"
+          value={`${stats.winRate}%`}
+          badge={stats.winRate >= 70 ? 'Strong' : stats.winRate >= 40 ? 'Mixed' : 'Risk'}
+          badgeTone={stats.winRate >= 70 ? 'positive' : stats.winRate >= 40 ? 'neutral' : 'negative'}
+          chartData={buildMiniSeries(stats.winRate, 'up')}
+          icon={Trophy}
+          accentColor={stats.winRate >= 70 ? '#2563eb' : stats.winRate >= 40 ? '#f59e0b' : '#ef4444'}
+          caption="Successful conversations as a share of total"
+        />
+        <OverviewMetricCard
+          compact
+          label={stats.healsToday === 1 ? 'Self-heal' : 'Self-heals'}
+          period="Conversation overview"
+          value={stats.healsToday}
+          badge={stats.healsToday > 0 ? `${stats.healSuccessRate}% fixed` : 'Idle'}
+          badgeTone={stats.healsToday > 0 && stats.healSuccessRate < 60 ? 'negative' : stats.healsToday > 0 ? 'positive' : 'neutral'}
+          chartData={buildMiniSeries(stats.healsToday, 'up')}
+          icon={Zap}
+          accentColor="#7c3aed"
+          caption="Recovery loops triggered by the system"
+        />
       </div>
 
       {/* Channel breakdown */}
