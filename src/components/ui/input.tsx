@@ -1,14 +1,99 @@
-import React from 'react';
+'use client';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+import { useId, useState, type InputHTMLAttributes } from 'react';
+import { motion, type Variants } from 'motion/react';
+import { cn } from '@/lib/utils';
+
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  value?: string | number | readonly string[];
   className?: string;
 }
 
-export const Input: React.FC<InputProps> = ({ className = '', ...props }) => {
+const containerVariants: Variants = {
+  initial: {},
+  animate: {
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const letterVariants: Variants = {
+  initial: {
+    y: 0,
+    color: 'inherit',
+  },
+  animate: {
+    y: '-120%',
+    color: 'var(--zinc-500)',
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 20,
+    },
+  },
+};
+
+export const Input = ({
+  label,
+  className = '',
+  disabled,
+  id,
+  onBlur,
+  onFocus,
+  type = 'text',
+  value,
+  ...props
+}: InputProps) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const resolvedLabel = label ?? props['aria-label'] ?? props.placeholder ?? '';
+  const valueText = value == null ? '' : String(value);
+  const showLabel = isFocused || valueText.length > 0;
+
   return (
-    <input
-      className={`flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-      {...props}
-    />
+    <div className={cn('relative', className)}>
+      <motion.label
+        htmlFor={inputId}
+        className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-zinc-900 dark:text-zinc-50"
+        variants={containerVariants}
+        initial="initial"
+        animate={showLabel ? 'animate' : 'initial'}
+      >
+        {resolvedLabel.split('').map((char, index) => (
+          <motion.span
+            key={index}
+            className="inline-block text-sm"
+            variants={letterVariants}
+            style={{ willChange: 'transform' }}
+          >
+            {char === ' ' ? '\u00A0' : char}
+          </motion.span>
+        ))}
+      </motion.label>
+
+      <input
+        id={inputId}
+        type={type}
+        value={value}
+        disabled={disabled}
+        onFocus={(event) => {
+          setIsFocused(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setIsFocused(false);
+          onBlur?.(event);
+        }}
+        aria-label={props['aria-label'] ?? resolvedLabel}
+        {...props}
+        className={cn(
+          'h-14 w-full border-b-2 border-zinc-900 bg-transparent pb-1 pt-5 text-base font-medium text-zinc-900 outline-none placeholder-transparent dark:border-zinc-50 dark:text-zinc-50',
+          disabled && 'cursor-not-allowed opacity-50',
+        )}
+      />
+    </div>
   );
 };
