@@ -64,8 +64,6 @@ jobs:
         shell: bash
         run: |
           status=$(curl -sS -o /tmp/saas-v2-leads-response.txt -w '%{http_code}' \
-            -X OPTIONS \
-            -H 'Origin: https://boltcall.org' \
             https://boltcall.org/.netlify/functions/saas-v2-leads)
 
           if [[ "$status" == "200" ]] && grep -qi '<!doctype html' /tmp/saas-v2-leads-response.txt; then
@@ -75,7 +73,7 @@ jobs:
           fi
 
           case "$status" in
-            204|401|403|405)
+            401|403|405)
               echo "Function smoke test passed with HTTP $status"
               ;;
             *)
