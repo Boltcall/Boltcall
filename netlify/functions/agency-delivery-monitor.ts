@@ -267,7 +267,7 @@ const OUTPUT_SCHEMA = {
 //   Entry point — Netlify scheduled handler
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
 
   const authz = await authorizeRunner(event);
@@ -1156,4 +1156,5 @@ export const __internal = {
 // without touching the import block.
 void getBookings;
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -46,7 +46,7 @@ const headers = {
 type Action = 'approve' | 'reject' | 'swap';
 const VALID_ACTIONS: Action[] = ['approve', 'reject', 'swap'];
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
@@ -245,4 +245,5 @@ export const handler: Handler = async (event: HandlerEvent) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

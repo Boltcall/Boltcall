@@ -112,6 +112,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-cron-hourly-monitor', inner);
+const handler = wrapCronWithAlert('agency-cron-hourly-monitor', inner);
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

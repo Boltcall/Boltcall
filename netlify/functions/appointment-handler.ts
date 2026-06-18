@@ -57,7 +57,7 @@ function formatTime(isoString: string, locale = 'en-US'): string {
   return d.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit', hour12: locale !== 'he-IL' });
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   // Only accept POST from Cal.com webhooks
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -518,4 +518,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

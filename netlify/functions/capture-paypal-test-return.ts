@@ -158,7 +158,7 @@ function failure(reason: string, statusCode = 400) {
   );
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod !== 'GET') {
     return failure('This return endpoint only accepts PayPal browser redirects.', 405);
   }
@@ -214,4 +214,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

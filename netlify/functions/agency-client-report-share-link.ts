@@ -37,7 +37,7 @@ const headers = {
 const SHARE_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 const REPORT_BUCKET_CANDIDATES = ['client-reports', 'agency-reports', 'reports'];
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
@@ -204,4 +204,5 @@ async function tryFallbackBuckets(
   return null;
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

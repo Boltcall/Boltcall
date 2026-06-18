@@ -285,7 +285,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-post-ship-watcher', inner);
+const handler = wrapCronWithAlert('agency-post-ship-watcher', inner);
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Per-artifact processor
@@ -868,4 +868,5 @@ function countByVerdict(
   return out;
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

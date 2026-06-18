@@ -93,7 +93,7 @@ describe('retell-call-scorer', () => {
   it('scores completed Retell calls through the shared chatCompletion helper', async () => {
     const supabase = makeSupabase();
     getSupabaseMock.mockReturnValue(supabase);
-    const { handler } = await import('../retell-call-scorer');
+    const { testHandler: handler } = await import('../retell-call-scorer');
 
     const res = await handler(
       makePost({

@@ -15,7 +15,7 @@ function redirect(path: string) {
 
 const DEFAULT_HUBSPOT_CLIENT_ID = '46c5edfe-64a1-4b6b-8f0d-e83faeca8124';
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
@@ -131,4 +131,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

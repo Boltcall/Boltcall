@@ -229,7 +229,7 @@ interface ScribeOutput {
 //   Handler
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
@@ -1525,4 +1525,5 @@ async function runWithConcurrency<T, R>(
   return results;
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

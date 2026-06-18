@@ -156,7 +156,7 @@ async function scoreOne(call: RetellCall): Promise<JudgeOutput | { error: string
   return { rubric, verdict_oneliner: verdict };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
     { methods: 'POST' },
@@ -431,4 +431,5 @@ export const handler: Handler = async (event) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

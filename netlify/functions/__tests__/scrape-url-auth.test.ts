@@ -50,7 +50,7 @@ describe('scrape-url customer auth', () => {
   });
 
   it('allows a logged-in customer to scrape a public website without an internal secret header', async () => {
-    const { handler } = await import('../scrape-url');
+    const { testHandler: handler } = await import('../scrape-url');
 
     const res = await handler(
       makePost(

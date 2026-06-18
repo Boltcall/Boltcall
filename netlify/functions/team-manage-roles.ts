@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const cors = getCorsHeaders(event.headers.origin);
 
   if (event.httpMethod === 'OPTIONS') {
@@ -149,4 +149,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

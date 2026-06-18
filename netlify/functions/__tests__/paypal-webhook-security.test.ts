@@ -44,7 +44,7 @@ describe('paypal-webhook security', () => {
   });
 
   it('fails closed when the PayPal webhook id is not configured', async () => {
-    const { handler } = await import('../paypal-webhook');
+    const { testHandler: handler } = await import('../paypal-webhook');
 
     const res = await handler(makePayPalWebhook(), {} as any);
 

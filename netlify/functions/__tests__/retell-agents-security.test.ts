@@ -95,7 +95,7 @@ describe('retell-agents tenant hardening', () => {
   });
 
   it('rejects create_full when body user_id differs from the authenticated user', async () => {
-    const { handler } = await import('../retell-agents');
+    const { testHandler: handler } = await import('../retell-agents');
 
     const res = await handler(
       makePost({ action: 'create_full', user_id: 'user-b', business_name: 'Victim Co' }),
@@ -110,7 +110,7 @@ describe('retell-agents tenant hardening', () => {
   it('rejects user-supplied llm_id values not owned by the authenticated user', async () => {
     getUserAgentIdsMock.mockResolvedValue(['agent-owned']);
     agentRetrieveMock.mockResolvedValue({ response_engine: { llm_id: 'llm-owned' } });
-    const { handler } = await import('../retell-agents');
+    const { testHandler: handler } = await import('../retell-agents');
 
     const res = await handler(
       makePost({ action: 'create_agent', llm_id: 'llm-victim', agent_name: 'Borrowed LLM' }),
@@ -124,7 +124,7 @@ describe('retell-agents tenant hardening', () => {
 
   it('rejects create_full when referenced business profile is not owned by the user', async () => {
     setupSupabaseMaybeSingle({ data: null, error: null });
-    const { handler } = await import('../retell-agents');
+    const { testHandler: handler } = await import('../retell-agents');
 
     const res = await handler(
       makePost({
@@ -145,7 +145,7 @@ describe('retell-agents tenant hardening', () => {
     getUserAgentIdsMock.mockResolvedValue(['agent-owned']);
     agentRetrieveMock.mockResolvedValue({ response_engine: { llm_id: 'llm-owned' } });
     llmRetrieveMock.mockResolvedValue({ knowledge_base_ids: ['kb-owned'] });
-    const { handler } = await import('../retell-agents');
+    const { testHandler: handler } = await import('../retell-agents');
 
     const res = await handler(
       makePost({
@@ -163,7 +163,7 @@ describe('retell-agents tenant hardening', () => {
 
   it('rejects create_web_call for agents outside the authenticated user tenant', async () => {
     userOwnsAgentMock.mockResolvedValue(false);
-    const { handler } = await import('../retell-agents');
+    const { testHandler: handler } = await import('../retell-agents');
 
     const res = await handler(
       makePost({ action: 'create_web_call', agent_id: 'agent-victim' }),
@@ -179,7 +179,7 @@ describe('retell-agents tenant hardening', () => {
     getUserAgentIdsMock.mockResolvedValue(['agent-owned']);
     agentRetrieveMock.mockResolvedValue({ response_engine: { llm_id: 'llm-owned' } });
     llmRetrieveMock.mockResolvedValue({ knowledge_base_ids: ['kb-owned'] });
-    const { handler } = await import('../retell-agents');
+    const { testHandler: handler } = await import('../retell-agents');
 
     const res = await handler(
       makePost({
@@ -199,7 +199,7 @@ describe('retell-agents tenant hardening', () => {
   it('requires founder or platform admin authorization for org-wide Azure migration', async () => {
     process.env.RETELL_LLM_WEBSOCKET_URL = 'wss://llm.example/ws';
     setupSupabaseMaybeSingle({ data: null, error: null });
-    const { handler } = await import('../retell-agents');
+    const { testHandler: handler } = await import('../retell-agents');
 
     const res = await handler(
       makePost({ action: 'migrate_to_azure' }),

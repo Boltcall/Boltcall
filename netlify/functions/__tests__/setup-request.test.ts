@@ -49,7 +49,7 @@ describe('setup-request', () => {
   });
 
   it('creates a setup request and hands it off to fulfillment automation', async () => {
-    const { handler } = await import('../setup-request');
+    const { testHandler: handler } = await import('../setup-request');
 
     const res = await handler(
       makeEvent({
@@ -92,7 +92,7 @@ describe('setup-request', () => {
   it('automatically hands off to the internal fulfillment webhook when no external webhook is configured', async () => {
     delete process.env.SETUP_REQUEST_FULFILLMENT_WEBHOOK_URL;
     delete process.env.LEAD_MAGNET_SETUP_WEBHOOK_URL;
-    const { handler } = await import('../setup-request');
+    const { testHandler: handler } = await import('../setup-request');
 
     const res = await handler(
       makeEvent({
@@ -132,7 +132,7 @@ describe('setup-request', () => {
   it('keeps the saved request and alerts internally when the automation webhook fails', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 502, text: async () => 'bad gateway' });
     const { notifyInfo } = await import('../_shared/notify');
-    const { handler } = await import('../setup-request');
+    const { testHandler: handler } = await import('../setup-request');
 
     const res = await handler(
       makeEvent({

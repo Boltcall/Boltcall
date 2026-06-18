@@ -208,7 +208,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-cron-benchmark-curation', inner);
+const handler = wrapCronWithAlert('agency-cron-benchmark-curation', inner);
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Per-agent curator
@@ -592,4 +592,5 @@ function todayStamp(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

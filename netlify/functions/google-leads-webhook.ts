@@ -227,7 +227,7 @@ async function recordGoogleTestPing(supabase: ReturnType<typeof getSupabase>, us
   }
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const reqId = newRequestId();
 
   if (event.httpMethod !== 'POST') {
@@ -377,4 +377,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

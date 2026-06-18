@@ -68,7 +68,7 @@ async function callWhatsappSend(userId: string, to: string, body: string): Promi
   }
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   }
@@ -401,4 +401,5 @@ Generate a reply to the latest customer message and qualify the lead.`;
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

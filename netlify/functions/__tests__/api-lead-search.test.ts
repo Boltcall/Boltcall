@@ -55,7 +55,7 @@ vi.mock('../_shared/token-utils', () => ({
   getSupabase: () => mockSupabase,
 }));
 
-import { handler } from '../api-lead-search';
+import { testHandler as handler } from '../api-lead-search';
 
 function makeEvent(queryStringParameters: Record<string, string | undefined> | null = {}) {
   return {

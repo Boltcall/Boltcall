@@ -208,7 +208,7 @@ function leadResponseDeps(supabase: any) {
   };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   // CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
@@ -364,4 +364,5 @@ export const handler: Handler = async (event) => {
   return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

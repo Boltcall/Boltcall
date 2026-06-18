@@ -210,7 +210,7 @@ async function suggestEditsViaSonnet(
   }
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
     { methods: 'GET' },
@@ -334,4 +334,5 @@ export const handler: Handler = async (event) => {
   });
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -27,7 +27,7 @@ describe('paypal-readiness', () => {
   });
 
   it('requires the internal secret before touching PayPal', async () => {
-    const { handler } = await import('../paypal-readiness');
+    const { testHandler: handler } = await import('../paypal-readiness');
 
     const res = await handler(event(), {} as any);
 
@@ -36,7 +36,7 @@ describe('paypal-readiness', () => {
   });
 
   it('reports PayPal runtime readiness without exposing the token', async () => {
-    const { handler } = await import('../paypal-readiness');
+    const { testHandler: handler } = await import('../paypal-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -55,7 +55,7 @@ describe('paypal-readiness', () => {
 
   it('returns a sanitized failure when PayPal auth fails', async () => {
     getPayPalAccessTokenMock.mockRejectedValue(new Error('PayPal auth failed: 401 invalid_client'));
-    const { handler } = await import('../paypal-readiness');
+    const { testHandler: handler } = await import('../paypal-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);

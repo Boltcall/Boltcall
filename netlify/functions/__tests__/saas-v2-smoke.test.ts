@@ -805,7 +805,7 @@ for (const ep of endpoints) {
 
     beforeEach(async () => {
       const mod = await import(ep.importPath);
-      handler = mod.handler ?? mod.default;
+      handler = mod.testHandler ?? mod.handler ?? mod.default;
       expect(typeof handler).toBe('function');
     });
 
@@ -846,7 +846,7 @@ for (const ep of endpoints) {
 describe('[V2 smoke] streaming content-type guard', () => {
   it('saas-v2-setup-conversation currently returns application/json, not text/event-stream', async () => {
     const mod = await import('../saas-v2-setup-conversation');
-    const handler = mod.handler ?? (mod as any).default;
+    const handler = mod.testHandler ?? mod.handler ?? (mod as any).default;
     const res = await handler(
       makeEvent({
         httpMethod: 'POST',

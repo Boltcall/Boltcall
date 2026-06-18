@@ -18,7 +18,7 @@ function getServiceClient() {
  * into scheduled_messages (which the message-dispatcher will then send), and
  * advances the enrollment to the next step.
  */
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod && !['GET', 'POST'].includes(event.httpMethod)) {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
@@ -220,4 +220,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

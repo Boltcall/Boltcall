@@ -151,7 +151,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-cron-monday-creative', inner);
+const handler = wrapCronWithAlert('agency-cron-monday-creative', inner);
 
 // ───────────────────────────────────────────────────────────────────────────
 //   Helpers
@@ -192,4 +192,5 @@ async function postToCreativeFoundry(client_id: string): Promise<{ ok: boolean; 
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

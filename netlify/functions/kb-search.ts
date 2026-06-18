@@ -97,7 +97,7 @@ async function getEmbedding(text: string): Promise<number[] | null> {
   return null;
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
@@ -638,4 +638,5 @@ A: ${content}
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

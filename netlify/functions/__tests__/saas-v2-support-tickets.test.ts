@@ -89,7 +89,7 @@ describe('saas-v2-support-tickets', () => {
   });
 
   it('lists open tickets for founders', async () => {
-    const { handler } = await import('../saas-v2-support-tickets');
+    const { testHandler: handler } = await import('../saas-v2-support-tickets');
 
     const res = await handler(event(), {} as any);
     const body = JSON.parse(res.body);
@@ -106,7 +106,7 @@ describe('saas-v2-support-tickets', () => {
 
   it('rejects non-founder users', async () => {
     role = 'user';
-    const { handler } = await import('../saas-v2-support-tickets');
+    const { testHandler: handler } = await import('../saas-v2-support-tickets');
 
     const res = await handler(event(), {} as any);
 
@@ -115,7 +115,7 @@ describe('saas-v2-support-tickets', () => {
   });
 
   it('updates ticket status for founders', async () => {
-    const { handler } = await import('../saas-v2-support-tickets');
+    const { testHandler: handler } = await import('../saas-v2-support-tickets');
 
     const res = await handler(
       event({

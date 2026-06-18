@@ -118,7 +118,7 @@ function leadFromWorkflow(body: Record<string, any>, userId: string, portalId: s
   };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return json(405, { error: 'Method not allowed' });
   }
@@ -196,4 +196,5 @@ export const handler: Handler = async (event) => {
   });
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

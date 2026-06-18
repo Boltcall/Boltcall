@@ -217,7 +217,7 @@ describe('saas-v2-setup-conversation: CORS restriction (Fix 1)', () => {
   let handler: any;
   beforeAll(async () => {
     const mod = await import('../saas-v2-setup-conversation');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
   beforeEach(resetTestState);
 
@@ -279,7 +279,7 @@ describe('saas-v2-setup-conversation: secret redaction (Fix 2)', () => {
   let handler: any;
   beforeAll(async () => {
     const mod = await import('../saas-v2-setup-conversation');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
   beforeEach(resetTestState);
 
@@ -341,7 +341,7 @@ describe('saas-v2-setup-conversation: scan_website fails closed without INTERNAL
   let handler: any;
   beforeAll(async () => {
     const mod = await import('../saas-v2-setup-conversation');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
   beforeEach(resetTestState);
 
@@ -426,7 +426,7 @@ describe('saas-v2-setup-finalize: state_version pinning (Fix 4)', () => {
   let handler: any;
   beforeAll(async () => {
     const mod = await import('../saas-v2-setup-finalize');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
   beforeEach(resetTestState);
 
@@ -502,7 +502,7 @@ describe('saas-v2-setup-finalize: CAS lock against concurrent provisioning', () 
   let handler: any;
   beforeAll(async () => {
     const mod = await import('../saas-v2-setup-finalize');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
   beforeEach(resetTestState);
 
@@ -640,7 +640,7 @@ describe('saas-v2-setup-conversation: lost-update detection', () => {
   let handler: any;
   beforeAll(async () => {
     const mod = await import('../saas-v2-setup-conversation');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
   beforeEach(resetTestState);
 
@@ -728,7 +728,7 @@ describe('scrape-url: CORS allowlist', () => {
   let handler: any;
   beforeAll(async () => {
     const mod = await import('../scrape-url');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
   beforeEach(() => {
     resetTestState();

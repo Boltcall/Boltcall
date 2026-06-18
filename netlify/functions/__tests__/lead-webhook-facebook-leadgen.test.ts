@@ -98,7 +98,7 @@ describe('lead-webhook Facebook leadgen', () => {
   });
 
   it('captures signed Meta Lead Ads webhooks with the canonical facebook_lead_ad source', async () => {
-    const { handler } = await import('../lead-webhook');
+    const { testHandler: handler } = await import('../lead-webhook');
 
     const res = await handler(makeFacebookLeadgenEvent(), {} as any);
 

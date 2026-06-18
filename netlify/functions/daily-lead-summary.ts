@@ -162,7 +162,7 @@ async function sendBrevoEmail(to: string, subject: string, htmlContent: string):
   }
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const authz = await authorizeRunner(event);
   if (!authz.ok) {
     return { statusCode: authz.status, body: JSON.stringify({ error: authz.message }) };
@@ -202,4 +202,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -205,7 +205,7 @@ function buildPersona(scenarioId: ScenarioId, vertical: string | null, overrides
   return { ...base, ...(overrides || {}) };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
@@ -303,4 +303,5 @@ export const __test__ = {
   SCENARIO_LABELS,
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

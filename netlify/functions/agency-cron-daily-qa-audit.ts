@@ -124,7 +124,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-cron-daily-qa-audit', inner);
+const handler = wrapCronWithAlert('agency-cron-daily-qa-audit', inner);
 
 // ───────────────────────────────────────────────────────────────────────────
 //   Helpers
@@ -164,4 +164,5 @@ async function postToQaAuditor(client_id: string): Promise<{ ok: boolean; status
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -92,7 +92,7 @@ function tryParseJson<T = unknown>(raw: string): T | null {
   }
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
     { methods: 'POST' },
@@ -414,4 +414,5 @@ export const handler: Handler = async (event) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

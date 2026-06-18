@@ -42,7 +42,7 @@ process.env.RETELL_API_KEY = '';
 process.env.TWILIO_ACCOUNT_SID = '';
 process.env.TWILIO_AUTH_TOKEN = '';
 
-import { handler } from '../dashboard-stats';
+import { testHandler as handler } from '../dashboard-stats';
 
 function makeEvent(overrides: any = {}) {
   return {

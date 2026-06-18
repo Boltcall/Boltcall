@@ -55,7 +55,7 @@ async function emitEvent(type: string, payload: Record<string, unknown>): Promis
   }
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), { methods: 'POST' });
   const headers = cors.headers;
 
@@ -523,4 +523,5 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

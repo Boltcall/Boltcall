@@ -36,7 +36,7 @@ describe('paypal-webhook-sync', () => {
   });
 
   it('requires the internal secret before touching PayPal', async () => {
-    const { handler } = await import('../paypal-webhook-sync');
+    const { testHandler: handler } = await import('../paypal-webhook-sync');
 
     const res = await handler(event(), {} as any);
 
@@ -53,7 +53,7 @@ describe('paypal-webhook-sync', () => {
         },
       ],
     }));
-    const { handler } = await import('../paypal-webhook-sync');
+    const { testHandler: handler } = await import('../paypal-webhook-sync');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
 
@@ -73,7 +73,7 @@ describe('paypal-webhook-sync', () => {
         id: 'WH-created',
         url: 'https://boltcall.org/.netlify/functions/paypal-webhook',
       }));
-    const { handler } = await import('../paypal-webhook-sync');
+    const { testHandler: handler } = await import('../paypal-webhook-sync');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const createBody = JSON.parse(vi.mocked(fetch).mock.calls[1]?.[1]?.body as string);

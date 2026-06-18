@@ -268,6 +268,6 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   }
 }
 
-export { handler };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -493,7 +493,7 @@ async function resolveUser(authHeader: string | undefined): Promise<{
 
 // ── Handler ─────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), { methods: 'POST' });
   const headers = cors.headers;
 
@@ -750,4 +750,5 @@ function state_isEmpty(s: WizardState): boolean {
   return s.conversation.length === 0 && Object.keys(s.extracted).length === 0;
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

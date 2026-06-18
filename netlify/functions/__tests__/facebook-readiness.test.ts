@@ -30,7 +30,7 @@ describe('facebook-readiness', () => {
   });
 
   it('requires the internal secret before touching Facebook', async () => {
-    const { handler } = await import('../facebook-readiness');
+    const { testHandler: handler } = await import('../facebook-readiness');
 
     const res = await handler(event(), {} as any);
 
@@ -42,7 +42,7 @@ describe('facebook-readiness', () => {
     vi.mocked(fetch)
       .mockResolvedValueOnce(graphResponse({ access_token: 'fb-app-token-secret' }))
       .mockResolvedValueOnce(graphResponse({ data: { is_valid: true, app_id: 'fb-app-id' } }));
-    const { handler } = await import('../facebook-readiness');
+    const { testHandler: handler } = await import('../facebook-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -66,7 +66,7 @@ describe('facebook-readiness', () => {
 
   it('fails closed when required Facebook env is missing', async () => {
     vi.stubEnv('FB_APP_SECRET', '');
-    const { handler } = await import('../facebook-readiness');
+    const { testHandler: handler } = await import('../facebook-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -83,7 +83,7 @@ describe('facebook-readiness', () => {
 
   it('returns a sanitized failure when Facebook rejects the app credentials', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(graphResponse({ error: { message: 'invalid appsecret_proof' } }, false, 400));
-    const { handler } = await import('../facebook-readiness');
+    const { testHandler: handler } = await import('../facebook-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);

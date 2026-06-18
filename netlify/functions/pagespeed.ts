@@ -9,7 +9,7 @@ function json(headers: Record<string, string>, statusCode: number, body: Record<
   return { statusCode, headers, body: JSON.stringify(body) };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const origin = getRequestOrigin(event.headers as Record<string, string | undefined>);
   const cors = getV2CorsHeaders(origin, { methods: 'POST' });
   const headers = cors.headers;
@@ -102,4 +102,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

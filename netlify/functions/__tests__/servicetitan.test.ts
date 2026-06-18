@@ -31,7 +31,7 @@ vi.mock('../_shared/notify', () => ({ notifyError: vi.fn(), notifyInfo: vi.fn() 
 process.env.SUPABASE_URL = 'https://test.supabase.co';
 process.env.SUPABASE_SERVICE_KEY = 'test-key';
 
-import { handler } from '../integration-sync';
+import { testHandler as handler } from '../integration-sync';
 
 function makeEvent(body: object) {
   return { httpMethod: 'POST', body: JSON.stringify(body), headers: {}, multiValueHeaders: {}, isBase64Encoded: false, path: '/', pathParameters: null, queryStringParameters: null, multiValueQueryStringParameters: null, stageVariables: null, requestContext: {} as any, resource: '' };

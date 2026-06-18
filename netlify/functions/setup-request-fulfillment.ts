@@ -37,7 +37,7 @@ function formatField(fields: Record<string, string>, key: string, label: string)
   return value ? `${label}: ${value}` : `${label}: not provided`;
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return json(405, { error: 'Method not allowed' });
   }
@@ -92,4 +92,5 @@ export const handler: Handler = async (event) => {
   return json(200, { ok: true, status: 'accepted' });
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

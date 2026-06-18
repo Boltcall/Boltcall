@@ -21,7 +21,7 @@ interface WizardStatePayload {
   wizard_step: string;
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), { methods: 'GET' });
   const headers = cors.headers;
 
@@ -116,4 +116,5 @@ export const handler: Handler = async (event) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

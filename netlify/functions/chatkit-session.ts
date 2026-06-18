@@ -7,7 +7,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 const WORKFLOW_ID = 'wf_68e9fd4d3bc08190ba32c0dd1efa36d107c2b86288c10974';
 const DEVICE_ID_RE = /^[A-Za-z0-9_-]{8,96}$/;
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
     { methods: 'POST' },
@@ -110,4 +110,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

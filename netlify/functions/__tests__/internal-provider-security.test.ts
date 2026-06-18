@@ -24,7 +24,7 @@ describe('internal provider endpoint hardening', () => {
 
   it('requires an internal secret before scraping with Firecrawl or fallback providers', async () => {
     process.env.FIRECRAWL_API_KEY_1 = 'firecrawl-test-key';
-    const { handler } = await import('../firecrawl-scrape');
+    const { testHandler: handler } = await import('../firecrawl-scrape');
 
     const res = await handler(makePost({ url: 'https://example.com' }), {} as any);
 
@@ -35,7 +35,7 @@ describe('internal provider endpoint hardening', () => {
 
   it('rejects private-network scrape targets before calling Firecrawl or fallback providers', async () => {
     process.env.FIRECRAWL_API_KEY_1 = 'firecrawl-test-key';
-    const { handler } = await import('../firecrawl-scrape');
+    const { testHandler: handler } = await import('../firecrawl-scrape');
 
     const res = await handler(
       makePost(
@@ -51,7 +51,7 @@ describe('internal provider endpoint hardening', () => {
   });
 
   it('rejects private-network scrape-url targets before the basic fetch fallback', async () => {
-    const { handler } = await import('../scrape-url');
+    const { testHandler: handler } = await import('../scrape-url');
 
     const res = await handler(
       makePost(
@@ -69,7 +69,7 @@ describe('internal provider endpoint hardening', () => {
   it('requires an internal secret before issuing Greeninvoice documents', async () => {
     process.env.GREENINVOICE_API_KEY = 'greeninvoice-test-key';
     process.env.GREENINVOICE_SECRET = 'greeninvoice-test-secret';
-    const { handler } = await import('../greeninvoice-issue');
+    const { testHandler: handler } = await import('../greeninvoice-issue');
 
     const res = await handler(
       makePost({
@@ -87,7 +87,7 @@ describe('internal provider endpoint hardening', () => {
 
   it('does not operate as an unauthenticated email relay', async () => {
     process.env.BREVO_API_KEY = 'brevo-test-key';
-    const { handler } = await import('../send-email');
+    const { testHandler: handler } = await import('../send-email');
 
     const res = await handler(
       makePost({
@@ -105,7 +105,7 @@ describe('internal provider endpoint hardening', () => {
 
   it('rejects Cal.com webhooks when the signing secret is not configured', async () => {
     delete process.env.CALCOM_WEBHOOK_SECRET;
-    const { handler } = await import('../appointment-handler');
+    const { testHandler: handler } = await import('../appointment-handler');
 
     const res = await handler(
       makePost({ triggerEvent: 'BOOKING_CREATED', payload: {} }),

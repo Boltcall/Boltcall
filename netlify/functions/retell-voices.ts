@@ -4,7 +4,7 @@ import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { requireUser } from './_shared/user-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string | undefined>),
     { methods: 'GET' },
@@ -85,4 +85,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

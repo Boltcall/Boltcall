@@ -34,7 +34,7 @@ vi.mock('../_shared/outbound-url', () => ({
 
 vi.mock('../_shared/notify', () => ({ notifyError: vi.fn(), notifyInfo: vi.fn() }));
 
-import { handler } from '../integration-sync';
+import { testHandler as handler } from '../integration-sync';
 
 function makeEvent(body: object) {
   return {
