@@ -8,33 +8,75 @@ const mockNavigate = vi.fn();
 const mockSignInWithGoogle = vi.fn();
 
 vi.mock('framer-motion', () => ({
-  motion: new Proxy({}, {
-    get: (_target, prop) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      React.forwardRef(({ children, ...p }: any, ref: any) => {
+  motion: new Proxy(
+    {},
+    {
+      get: (_target, prop) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const safe: any = {};
-        for (const [k, v] of Object.entries(p)) {
-          if (
-            typeof v !== 'object' &&
-            typeof v !== 'function' &&
-            !k.startsWith('while') &&
-            !k.startsWith('animate') &&
-            !k.startsWith('initial') &&
-            !k.startsWith('exit') &&
-            !k.startsWith('transition') &&
-            !k.startsWith('variants') &&
-            k !== 'layout' &&
-            k !== 'layoutId'
-          ) {
-            safe[k] = v;
+        React.forwardRef(({ children, ...p }: any, ref: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const safe: any = {};
+          for (const [k, v] of Object.entries(p)) {
+            if (
+              typeof v !== 'object' &&
+              typeof v !== 'function' &&
+              !k.startsWith('while') &&
+              !k.startsWith('animate') &&
+              !k.startsWith('initial') &&
+              !k.startsWith('exit') &&
+              !k.startsWith('transition') &&
+              !k.startsWith('variants') &&
+              k !== 'layout' &&
+              k !== 'layoutId'
+            ) {
+              safe[k] = v;
+            }
           }
-        }
-        return React.createElement(prop as string, { ...safe, ref }, children);
-      }),
-  }),
+          return React.createElement(
+            prop as string,
+            { ...safe, ref },
+            children,
+          );
+        }),
+    },
+  ),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
+
+vi.mock('motion/react', () => ({
+  motion: new Proxy(
+    {},
+    {
+      get: (_target, prop) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        React.forwardRef(({ children, ...p }: any, ref: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const safe: any = {};
+          for (const [k, v] of Object.entries(p)) {
+            if (
+              typeof v !== 'object' &&
+              typeof v !== 'function' &&
+              !k.startsWith('while') &&
+              !k.startsWith('animate') &&
+              !k.startsWith('initial') &&
+              !k.startsWith('exit') &&
+              !k.startsWith('transition') &&
+              !k.startsWith('variants') &&
+              k !== 'layout' &&
+              k !== 'layoutId'
+            ) {
+              safe[k] = v;
+            }
+          }
+          return React.createElement(
+            prop as string,
+            { ...safe, ref },
+            children,
+          );
+        }),
+    },
+  ),
 }));
 
 const mockUser = { current: null as null | { id: string; email: string } };
@@ -87,7 +129,9 @@ vi.mock('../../lib/supabase', () => ({
   supabase: {
     auth: {
       updateUser: vi.fn().mockResolvedValue({ data: null, error: null }),
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'fresh-user-id' } } }),
+      getUser: vi
+        .fn()
+        .mockResolvedValue({ data: { user: { id: 'fresh-user-id' } } }),
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
     },
   },
@@ -101,7 +145,9 @@ vi.mock('../../lib/database', () => ({
 }));
 
 vi.mock('../../lib/webhooks', () => ({
-  createAgentAndKnowledgeBase: vi.fn().mockResolvedValue({ kb_folder_id: 'kb-1' }),
+  createAgentAndKnowledgeBase: vi
+    .fn()
+    .mockResolvedValue({ kb_folder_id: 'kb-1' }),
 }));
 
 vi.mock('../../lib/locations', () => ({
@@ -114,7 +160,9 @@ vi.mock('../../lib/api', () => ({
   FUNCTIONS_BASE: '/.netlify/functions',
 }));
 
-globalThis.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) }) as never;
+globalThis.fetch = vi
+  .fn()
+  .mockResolvedValue({ ok: true, json: async () => ({}) }) as never;
 
 import Setup from '../Setup';
 
@@ -163,9 +211,12 @@ describe('Setup page', () => {
     await user.click(screen.getByRole('button', { name: /continue/i }));
 
     expect(await screen.findByLabelText(/Voice/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Transfer Number/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /continue/i }));
 
-    expect(await screen.findByRole('button', { name: /continue with google/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: /continue with google/i }),
+    ).toBeInTheDocument();
   });
 });
