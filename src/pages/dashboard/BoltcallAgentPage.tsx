@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowUp, Zap, BarChart2, Globe, Activity, CheckCircle2, Paperclip } from 'lucide-react';
+import { ArrowUp, Zap, BarChart2, Globe, Activity, CheckCircle2, Paperclip, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { authedFetch } from '../../lib/authedFetch';
 import { readJsonResponse } from '../../lib/readJsonResponse';
@@ -19,6 +19,70 @@ type AssistantResponse = {
   error?: string;
   actions?: string[];
 };
+
+type ComposerAttachment = {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  content: string | null;
+};
+
+const MAX_ATTACHMENT_SIZE_BYTES = 1024 * 1024;
+const TEXT_ATTACHMENT_EXTENSIONS = new Set([
+  'txt',
+  'md',
+  'json',
+  'csv',
+  'ts',
+  'tsx',
+  'js',
+  'jsx',
+  'html',
+  'css',
+  'xml',
+  'yaml',
+  'yml',
+  'log',
+]);
+
+function formatAttachmentSize(size: number): string {
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${Math.round(size / 102.4) / 10} KB`;
+  return `${Math.round(size / (1024 * 102.4)) / 10} MB`;
+}
+
+function canInlineAttachment(file: File): boolean {
+  if (file.type.startsWith('text/')) return true;
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  return !!ext && TEXT_ATTACHMENT_EXTENSIONS.has(ext);
+}
+
+async function readComposerAttachment(file: File): Promise<ComposerAttachment> {
+  const content = canInlineAttachment(file) ? await file.text() : null;
+  return {
+    id: crypto.randomUUID(),
+    name: file.name,
+    size: file.size,
+    type: file.type || 'unknown',
+    content,
+  };
+}
+
+function buildMessageContent(message: string, attachments: ComposerAttachment[]): string {
+  if (attachments.length === 0) return message;
+
+  const attachmentLines = attachments.map((attachment) => {
+    const header = `Attached file: ${attachment.name} (${formatAttachmentSize(attachment.size)}, ${attachment.type})`;
+    if (!attachment.content) {
+      return `${header}\nContent preview unavailable for this file type. Use the file name and metadata only.`;
+    }
+
+    return `${header}\n${attachment.content}`;
+  });
+
+  return `${message}\n\n${attachmentLines.join('\n\n')}`;
+}
 
 // ─── Simple markdown renderer ─────────────────────────────────────────────────
 
@@ -115,9 +179,12 @@ const BoltcallAgentPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const hasMsgs = messages.length > 0;
 
   const firstName = (user?.name ?? '').split(' ')[0] || 'there';
@@ -147,11 +214,12 @@ const BoltcallAgentPage: React.FC = () => {
     async (text?: string) => {
       const trimmed = (text ?? input).trim();
       if (!trimmed || isLoading) return;
+      const composedContent = buildMessageContent(trimmed, attachments);
 
       const userMsg: Message = {
         id: crypto.randomUUID(),
         role: 'user',
-        content: trimmed,
+        content: composedContent,
       };
       const loadingMsg: Message = {
         id: crypto.randomUUID(),
@@ -162,6 +230,8 @@ const BoltcallAgentPage: React.FC = () => {
 
       setMessages(prev => [...prev, userMsg, loadingMsg]);
       setInput('');
+      setAttachments([]);
+      setAttachmentError(null);
       setIsLoading(true);
 
       try {
@@ -202,8 +272,40 @@ const BoltcallAgentPage: React.FC = () => {
         setIsLoading(false);
       }
     },
-    [input, isLoading, messages, user?.id]
+    [attachments, input, isLoading, messages, user?.id]
   );
+
+  const handleAttachClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFilesSelected = useCallback(
+    async (files: FileList | null) => {
+      if (!files?.length) return;
+
+      const file = files[0];
+      if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+        setAttachmentError(`Files must be under ${formatAttachmentSize(MAX_ATTACHMENT_SIZE_BYTES)}.`);
+        return;
+      }
+
+      try {
+        const attachment = await readComposerAttachment(file);
+        setAttachments([attachment]);
+        setAttachmentError(null);
+      } catch {
+        setAttachmentError('Could not read that file. Try a plain text document.');
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    },
+    [],
+  );
+
+  const removeAttachment = useCallback((attachmentId: string) => {
+    setAttachments((prev) => prev.filter((attachment) => attachment.id !== attachmentId));
+    setAttachmentError(null);
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -216,6 +318,15 @@ const BoltcallAgentPage: React.FC = () => {
 
   const InputToolbar = (ref: React.RefObject<HTMLTextAreaElement | null>) => (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
+      <input
+        ref={fileInputRef}
+        type="file"
+        aria-label="Attach file"
+        className="sr-only"
+        onChange={(e) => {
+          void handleFilesSelected(e.target.files);
+        }}
+      />
       <div className="px-4 pt-4 pb-2">
         <textarea
           ref={ref}
@@ -228,9 +339,39 @@ const BoltcallAgentPage: React.FC = () => {
           style={{ maxHeight: '120px' }}
           disabled={isLoading}
         />
+        {(attachments.length > 0 || attachmentError) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs text-blue-700"
+              >
+                <Paperclip className="h-3.5 w-3.5" />
+                <span>{attachment.name}</span>
+                <span className="text-blue-500">{formatAttachmentSize(attachment.size)}</span>
+                <button
+                  type="button"
+                  onClick={() => removeAttachment(attachment.id)}
+                  className="rounded-full text-blue-500 hover:text-blue-700"
+                  aria-label={`Remove ${attachment.name}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+            {attachmentError && (
+              <div className="w-full text-xs text-rose-600">{attachmentError}</div>
+            )}
+          </div>
+        )}
       </div>
       <div className="flex items-center gap-2 px-3 pb-3">
-        <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-md hover:bg-gray-50">
+        <button
+          type="button"
+          onClick={handleAttachClick}
+          className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-md hover:bg-gray-50"
+          aria-label="Attach file"
+        >
           <Paperclip className="w-4 h-4" />
         </button>
         <div className="flex-1" />
