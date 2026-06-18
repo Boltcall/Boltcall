@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
 
 export interface Lead {
   id: string;
@@ -74,6 +75,30 @@ interface SpeedToLeadPageProps {
 }
 
 const EMPTY_PREVIEW_LEADS: Lead[] = [];
+
+function normalizeV1StatusFilter(status: string): 'new' | 'contacted' | 'booked' | 'lost' | '' {
+  if (status === 'all') return '';
+
+  switch (status.toLowerCase()) {
+    case 'pending':
+    case 'new':
+      return 'new';
+    case 'qualified':
+    case 'contacted':
+      return 'contacted';
+    case 'booked':
+    case 'confirmed':
+    case 'completed':
+      return 'booked';
+    case 'lost':
+    case 'dead':
+    case 'rejected':
+    case 'unqualified':
+      return 'lost';
+    default:
+      return '';
+  }
+}
 
 const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   previewMode = false,
@@ -551,6 +576,19 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             </div>
           </div>
         </div>
+
+        {!previewMode && leads.length > 0 && (
+          <div className="border-b border-gray-100 p-4 sm:p-5">
+            <LeadStatusFlowCard
+              filters={{
+                status: normalizeV1StatusFilter(statusFilter),
+                date_from: '',
+                date_to: '',
+                source: sourceFilter === 'all' ? '' : sourceFilter,
+              }}
+            />
+          </div>
+        )}
 
         {/* Table */}
         {isLoadingLeads ? (
