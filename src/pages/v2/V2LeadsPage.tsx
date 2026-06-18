@@ -42,6 +42,7 @@ import {
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { Badge } from '../../components/ui/badge';
+import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
 
 // ─── Types (mirror the server contract) ─────────────────────────────────────
 
@@ -619,6 +620,10 @@ const V2LeadsPage: React.FC = () => {
 
       {/* Filters */}
       <FilterBar value={filters} onChange={setFilters} knownSources={knownSources} />
+
+      {!loading && !error && data && data.leads.length > 0 && (
+        <LeadStatusFlowCard filters={filters} />
+      )}
 
       {/* Body */}
       {loading && (
