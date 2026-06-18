@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { emitSaasV2Event } from './_shared/saas-v2-events';
+import { withLegacyHandler } from './_shared/runtime-compat';
 import { getServiceSupabase } from './_shared/token-utils';
 
 type LeadStatus = 'new' | 'contacted' | 'booked' | 'lost';
@@ -263,3 +264,5 @@ export const handler: Handler = async (event) => {
 
   return json(200, response);
 };
+
+export default withLegacyHandler(handler);
