@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback, useRef, useId } from 
 import { User, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { authedFetch } from '../../lib/authedFetch';
+import { FUNCTIONS_BASE } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
@@ -74,6 +76,22 @@ interface SpeedToLeadPageProps {
   previewLeads?: Lead[];
 }
 
+interface BackendLeadCard {
+  id: string;
+  name: string;
+  source: string;
+  captured_at: string;
+  ai_summary: string;
+  status: 'new' | 'contacted' | 'booked' | 'lost';
+  next_action: string;
+}
+
+interface BackendLeadsResponse {
+  hot_lead: (BackendLeadCard & { why_hot: string }) | null;
+  leads: BackendLeadCard[];
+  total: number;
+}
+
 const EMPTY_PREVIEW_LEADS: Lead[] = [];
 
 function normalizeV1StatusFilter(status: string): 'new' | 'contacted' | 'booked' | 'lost' | '' {
@@ -100,6 +118,35 @@ function normalizeV1StatusFilter(status: string): 'new' | 'contacted' | 'booked'
   }
 }
 
+function fallbackSummaryForLead(lead: Lead): string {
+  if (lead.status === 'contacted' || lead.status === 'qualified') {
+    return 'Reached lead and waiting on the next scheduling step.';
+  }
+  if (lead.status === 'lost') {
+    return 'Lead fell out of the pipeline and may need a recovery attempt.';
+  }
+  return 'New inbound lead captured and ready for a fast follow-up.';
+}
+
+function fallbackNextActionForLead(lead: Lead): string {
+  const normalized = normalizeV1StatusFilter(lead.status);
+  switch (normalized) {
+    case 'contacted':
+      return 'Send follow-up';
+    case 'booked':
+      return 'Confirm appointment';
+    case 'lost':
+      return 'Archive lead';
+    case 'new':
+    default:
+      return 'Call in 2 min';
+  }
+}
+
+function humanizeLeadSource(source: string): string {
+  return source.replace(/_/g, ' ');
+}
+
 const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   previewMode = false,
   previewLeads,
@@ -107,7 +154,9 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const { user } = useAuth();
   const { showToast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [backendLeads, setBackendLeads] = useState<BackendLeadCard[]>([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
+  const [isLoadingBackendLeads, setIsLoadingBackendLeads] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
@@ -137,12 +186,25 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const fetchLeads = useCallback(async () => {
     if (previewMode) {
       setLeads(resolvedPreviewLeads);
+      setBackendLeads(
+        resolvedPreviewLeads.map((lead) => ({
+          id: lead.id,
+          name: lead.name,
+          source: lead.source,
+          captured_at: lead.createdAt,
+          ai_summary: fallbackSummaryForLead(lead),
+          status: normalizeV1StatusFilter(lead.status) || 'new',
+          next_action: fallbackNextActionForLead(lead),
+        })),
+      );
       setIsLoadingLeads(false);
+      setIsLoadingBackendLeads(false);
       return;
     }
 
     if (!user?.id) {
       setIsLoadingLeads(false);
+      setIsLoadingBackendLeads(false);
       return;
     }
 
@@ -188,6 +250,50 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   useEffect(() => {
     void fetchLeads();
   }, [fetchLeads]);
+
+  const fetchBackendLeads = useCallback(async () => {
+    if (previewMode) return;
+    if (!user?.id) {
+      setIsLoadingBackendLeads(false);
+      return;
+    }
+
+    setIsLoadingBackendLeads(true);
+    try {
+      const qs = new URLSearchParams();
+      const normalizedStatus = normalizeV1StatusFilter(statusFilter);
+      if (normalizedStatus) qs.set('status', normalizedStatus);
+      if (sourceFilter !== 'all') qs.set('source', sourceFilter);
+      qs.set('limit', '50');
+
+      const res = await authedFetch(`${FUNCTIONS_BASE}/saas-v2-leads?${qs.toString()}`);
+      if (!res.ok) {
+        throw new Error(`Failed to load backend leads (${res.status})`);
+      }
+
+      const payload = (await res.json()) as BackendLeadsResponse;
+      setBackendLeads(payload.leads);
+    } catch (error) {
+      console.error('Error fetching backend leads:', error);
+      setBackendLeads(
+        leads.map((lead) => ({
+          id: lead.id,
+          name: lead.name,
+          source: lead.source,
+          captured_at: lead.createdAt,
+          ai_summary: fallbackSummaryForLead(lead),
+          status: normalizeV1StatusFilter(lead.status) || 'new',
+          next_action: fallbackNextActionForLead(lead),
+        })),
+      );
+    } finally {
+      setIsLoadingBackendLeads(false);
+    }
+  }, [leads, previewMode, sourceFilter, statusFilter, user?.id]);
+
+  useEffect(() => {
+    void fetchBackendLeads();
+  }, [fetchBackendLeads]);
 
   // --- KPI Calculations ---
   const kpis = useMemo(() => {
@@ -333,19 +439,23 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
 
   // --- Filtered leads for table ---
   const filteredLeads = useMemo(() => {
-    return leads.filter(l => {
-      if (statusFilter !== 'all' && l.status !== statusFilter) return false;
-      if (sourceFilter !== 'all' && l.source !== sourceFilter) return false;
+    return backendLeads.filter(l => {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        return l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q) || l.source.toLowerCase().includes(q);
+        return (
+          l.name.toLowerCase().includes(q) ||
+          l.ai_summary.toLowerCase().includes(q) ||
+          l.next_action.toLowerCase().includes(q) ||
+          l.source.toLowerCase().includes(q)
+        );
       }
       return true;
     });
-  }, [leads, statusFilter, sourceFilter, searchQuery]);
+  }, [backendLeads, searchQuery]);
 
   const uniqueStatuses = useMemo(() => [...new Set(leads.map(l => l.status))], [leads]);
   const uniqueSources = useMemo(() => [...new Set(leads.map(l => l.source))], [leads]);
+  const isLeadTableLoading = isLoadingLeads || isLoadingBackendLeads;
 
   // --- Trend Badge ---
   const TrendBadge = ({ value }: { value: number }) => {
@@ -530,7 +640,32 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         )}
       </motion.div>
 
-      {/* Section 3: Lead List Table */}
+      {/* Section 3: Backend lead status flow */}
+      {!previewMode && leads.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="bg-white rounded-lg border border-gray-200 p-5"
+        >
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Lead flow overview</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              A second graph powered by the backend so you can see how leads move from fresh inquiry to booking or loss.
+            </p>
+          </div>
+          <LeadStatusFlowCard
+            filters={{
+              status: normalizeV1StatusFilter(statusFilter),
+              date_from: '',
+              date_to: '',
+              source: sourceFilter === 'all' ? '' : sourceFilter,
+            }}
+          />
+        </motion.div>
+      )}
+
+      {/* Section 4: Lead List Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -577,21 +712,8 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
           </div>
         </div>
 
-        {!previewMode && leads.length > 0 && (
-          <div className="border-b border-gray-100 p-4 sm:p-5">
-            <LeadStatusFlowCard
-              filters={{
-                status: normalizeV1StatusFilter(statusFilter),
-                date_from: '',
-                date_to: '',
-                source: sourceFilter === 'all' ? '' : sourceFilter,
-              }}
-            />
-          </div>
-        )}
-
         {/* Table */}
-        {isLoadingLeads ? (
+        {isLeadTableLoading ? (
           <div className="p-12 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
             <p className="text-gray-500 mt-4">Loading leads...</p>
@@ -606,13 +728,15 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px]">
+            <table className="w-full min-w-[960px]">
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
                   <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Source</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Captured</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Summary</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Next Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -622,16 +746,13 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                   const srcData = sourceCounts[lead.source];
                   return (
                     <tr key={lead.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <td className="px-5 py-3 text-sm font-medium text-gray-900">{lead.name}</td>
                       <td className="px-5 py-3">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusClass}`}>
-                          {lead.status === 'pending' ? 'New' : lead.status}
-                        </span>
+                        <div className="text-sm font-medium text-gray-900">{lead.name}</div>
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: srcColor }} />
-                          <span className="text-sm text-gray-700">{lead.source.replace(/_/g, ' ')}</span>
+                          <span className="text-sm text-gray-700">{humanizeLeadSource(lead.source)}</span>
                           {srcData && (
                             <span className="text-[10px] text-gray-400 font-medium ml-1">
                               {srcData.total}
@@ -644,7 +765,14 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-sm text-gray-500">{formatShortDate(lead.createdAt)}</td>
+                      <td className="px-5 py-3 text-sm text-gray-500">{formatShortDate(lead.captured_at)}</td>
+                      <td className="px-5 py-3 text-sm text-gray-700">{lead.ai_summary}</td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusClass}`}>
+                          {lead.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-sm font-medium text-blue-600">{lead.next_action}</td>
                     </tr>
                   );
                 })}
