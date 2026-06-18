@@ -5,6 +5,7 @@ import { Mail, CheckCircle, Clock, Sparkles } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
+import { InfiniteRibbon } from '@/components/ui/infinite-ribbon';
 
 const ComingSoon: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -56,6 +57,17 @@ const ComingSoon: React.FC = () => {
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
         </div>
+
+        <div className="pointer-events-none absolute inset-x-0 top-28 hidden lg:block">
+          <InfiniteRibbon
+            className="absolute left-1/2 w-[1100px] -translate-x-1/2 border border-yellow-500/50 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.2em] shadow-lg shadow-yellow-500/10"
+            duration={68}
+            repeat={6}
+            rotation={5}
+          >
+            WhatsApp Coming Soon
+          </InfiniteRibbon>
+        </div>
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
@@ -87,6 +99,26 @@ const ComingSoon: React.FC = () => {
                 <CheckCircle className="w-4 h-4" />
                 <span>Early Access</span>
               </div>
+            </div>
+
+            <div className="mx-auto mb-10 max-w-3xl overflow-hidden rounded-2xl border border-blue-100 bg-white/80 shadow-sm backdrop-blur-sm lg:hidden">
+              <InfiniteRibbon
+                className="border-b border-yellow-500/30 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.16em]"
+                duration={68}
+                repeat={4}
+                rotation={2}
+              >
+                WhatsApp Coming Soon
+              </InfiniteRibbon>
+              <InfiniteRibbon
+                className="bg-slate-950 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-white dark:bg-slate-950 dark:text-white"
+                duration={68}
+                repeat={4}
+                reverse
+                rotation={-2}
+              >
+                WhatsApp Coming Soon
+              </InfiniteRibbon>
             </div>
           </motion.div>
         </div>
