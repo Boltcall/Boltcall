@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * V2 conversational setup wizard — turn endpoint.
  *
@@ -748,3 +749,5 @@ export const handler: Handler = async (event) => {
 function state_isEmpty(s: WizardState): boolean {
   return s.conversation.length === 0 && Object.keys(s.extracted).length === 0;
 }
+
+export default withLegacyHandler(handler);

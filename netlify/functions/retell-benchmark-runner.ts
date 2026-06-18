@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * retell-benchmark-runner
@@ -450,3 +451,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify(report, null, 2),
   };
 };
+
+export default withLegacyHandler(handler);

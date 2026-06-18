@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-settings-get — Wave 3 Page 5.
  *
@@ -233,3 +234,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-call-detail.ts — Boltcall Agency OS · Layer 7 · Client portal
  * ───────────────────────────────────────────────────────────────────────────
@@ -392,3 +393,5 @@ function loadRubricSnippet(): string {
     '- Handoff hygiene: if transferred or callback-queued, was the handoff clean?'
   );
 }
+
+export default withLegacyHandler(handler);

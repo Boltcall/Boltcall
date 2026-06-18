@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * retell-cekura-gate
@@ -402,3 +403,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

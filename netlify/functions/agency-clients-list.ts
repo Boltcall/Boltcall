@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-clients-list.ts — Boltcall Agency OS · Layer 7 · Observability
  * ─────────────────────────────────────────────────────────────────────
@@ -176,3 +177,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ clients: rows }),
   };
 };
+
+export default withLegacyHandler(handler);

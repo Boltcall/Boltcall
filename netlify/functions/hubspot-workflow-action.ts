@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import type { Handler, HandlerEvent } from '@netlify/functions';
 import Retell from 'retell-sdk';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { getAppSecret } from './_shared/app-secrets';
 import { fireWebhooks } from './_shared/fire-webhooks';
@@ -194,3 +195,5 @@ export const handler: Handler = async (event) => {
     },
   });
 };
+
+export default withLegacyHandler(handler);

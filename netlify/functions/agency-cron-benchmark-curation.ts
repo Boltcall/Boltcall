@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-cron-benchmark-curation — Cross-cutting feature #4 (BENCHMARK curator)
  * ==============================================================================
@@ -590,3 +591,5 @@ function resolveProposalsDir(agent: FleetAgent): string {
 function todayStamp(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+export default withLegacyHandler(handler);

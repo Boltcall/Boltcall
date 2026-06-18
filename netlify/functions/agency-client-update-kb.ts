@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-update-kb.ts — Boltcall Agency OS · Layer 8 · Client-portal
  * ─────────────────────────────────────────────────────────────────────────
@@ -256,3 +257,5 @@ export const handler: Handler = async (event) => {
     version: nextVersion,
   });
 };
+
+export default withLegacyHandler(handler);

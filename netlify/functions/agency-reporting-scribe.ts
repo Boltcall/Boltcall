@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-reporting-scribe — Friday weekly client report runner (Agency OS Phase C)
  * ================================================================================
@@ -1523,3 +1524,5 @@ async function runWithConcurrency<T, R>(
   await Promise.all(workers);
   return results;
 }
+
+export default withLegacyHandler(handler);

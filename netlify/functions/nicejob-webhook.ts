@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { Handler } from '@netlify/functions';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -86,3 +87,5 @@ export const handler: Handler = async (event) => {
     entity_id: payload.entity_id || null,
   });
 };
+
+export default withLegacyHandler(handler);

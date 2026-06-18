@@ -26,6 +26,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@netlify/aws-lambda-compat": "^1.0.2",
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.2.2",
     "@hugeicons/core-free-icons": "^4.1.1",

@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * POST /.netlify/functions/saas-v2-qa-run
  *
@@ -429,3 +430,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

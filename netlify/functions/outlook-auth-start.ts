@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createOAuthState } from './_shared/oauth-state';
 import { requireMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Outlook OAuth — Step 1: Generate the Microsoft OAuth authorization URL.
@@ -76,3 +77,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ url }),
   };
 };
+
+export default withLegacyHandler(handler);

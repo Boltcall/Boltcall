@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-ask-ai.ts — V2 SaaS · Ask Boltcall AI strategist (single-tenant)
  * ──────────────────────────────────────────────────────────────────────
@@ -412,3 +413,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

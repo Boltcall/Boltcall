@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-smoke-test-cleanup — POST. Founder-only.
  *
@@ -402,3 +403,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

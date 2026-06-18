@@ -1,4 +1,5 @@
 import type { Handler } from '@netlify/functions';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
@@ -117,3 +118,5 @@ export const handler: Handler = async (event) => {
     cold_start: false,
   });
 };
+
+export default withLegacyHandler(handler);

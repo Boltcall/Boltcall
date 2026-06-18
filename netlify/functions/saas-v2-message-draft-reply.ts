@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-message-draft-reply — POST endpoint that drafts an AI reply for a
  * specific thread.
@@ -308,3 +309,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ draft, tone, reasoning_oneliner }),
   };
 };
+
+export default withLegacyHandler(handler);

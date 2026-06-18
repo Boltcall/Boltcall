@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { getServiceSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const WORKFLOW_ID = 'wf_68e9fd4d3bc08190ba32c0dd1efa36d107c2b86288c10974';
 const DEVICE_ID_RE = /^[A-Za-z0-9_-]{8,96}$/;
@@ -108,3 +109,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

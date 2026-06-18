@@ -5,6 +5,7 @@ import { handleInboundLead } from './_shared/lead-response-service';
 import { notifyError } from './_shared/notify';
 import { getSupabase } from './_shared/token-utils';
 import { authenticateApiKey } from './_shared/validate-api-key';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -137,3 +138,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Housecall Pro lead processing failed' }) };
   }
 };
+
+export default withLegacyHandler(handler);

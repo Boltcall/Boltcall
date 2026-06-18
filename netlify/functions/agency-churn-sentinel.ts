@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * Agency OS — churn-sentinel daily runner
  * ========================================
@@ -1409,3 +1410,5 @@ export const handler: Handler = async (event: HandlerEvent) => {
 export const config = {
   schedule: '0 6 * * *',
 };
+
+export default withLegacyHandler(handler);

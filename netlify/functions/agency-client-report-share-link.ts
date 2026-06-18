@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-report-share-link.ts — Generate a read-only share URL for a report.
  * ==================================================================================
@@ -202,3 +203,5 @@ async function tryFallbackBuckets(
   }
   return null;
 }
+
+export default withLegacyHandler(handler);

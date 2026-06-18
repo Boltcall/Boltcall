@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 // Create a PayPal subscription for the authenticated user.
 //
 // Flow:
@@ -173,3 +174,5 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

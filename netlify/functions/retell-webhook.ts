@@ -3,6 +3,7 @@ import { notifyError } from './_shared/notify';
 import { getSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { verifyRetellSignature } from './_shared/verify-signatures';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Retell Post-Call Webhook
@@ -671,3 +672,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

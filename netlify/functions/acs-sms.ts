@@ -3,6 +3,7 @@ import { deductTokens, deductTokensBatch, getServiceSupabase, TOKEN_COSTS } from
 import { authenticateApiKey } from './_shared/validate-api-key';
 import { sendAcsSms } from './_shared/acs-sdk';
 import { requireUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * ACS SMS — replaces twilio-sms.ts
@@ -180,3 +181,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

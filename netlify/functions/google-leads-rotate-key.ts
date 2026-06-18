@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Server-side rotation of the Google Ads webhook key.
@@ -105,3 +106,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ error: 'Failed to generate unique key after retries' }),
   };
 };
+
+export default withLegacyHandler(handler);

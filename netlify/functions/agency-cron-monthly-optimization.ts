@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-cron-monthly-optimization — Monthly optimization-strategist trigger
  * ==========================================================================
@@ -196,3 +197,5 @@ async function postToOptimizationStrategist(
     clearTimeout(timer);
   }
 }
+
+export default withLegacyHandler(handler);

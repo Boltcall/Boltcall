@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { verifyOAuthState } from './_shared/oauth-state';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Outlook OAuth — Step 2: Exchange the authorization code for tokens.
@@ -157,3 +158,5 @@ export const handler: Handler = async (event) => {
     return redirect('/dashboard/email?connect=error');
   }
 };
+
+export default withLegacyHandler(handler);

@@ -1,6 +1,7 @@
 import type { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2026-02-25.clover',
@@ -268,3 +269,5 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 }
 
 export { handler };
+
+export default withLegacyHandler(handler);

@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-delivery-monitor — Hourly delivery monitor (Phase C, Layer 7)
  * ===================================================================
@@ -1154,3 +1155,5 @@ export const __internal = {
 // Keep getBookings imported so future "no-show rate" metric can be added
 // without touching the import block.
 void getBookings;
+
+export default withLegacyHandler(handler);

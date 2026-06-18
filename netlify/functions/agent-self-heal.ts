@@ -4,6 +4,7 @@ import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-u
 import { chatCompletion } from './_shared/azure-ai';
 import { requireInternalOrMatchingUser, requireUser } from './_shared/user-auth';
 import { userOwnsAgent } from './_shared/require-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Agent Self-Healing Pipeline
@@ -928,3 +929,5 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
     };
   }
 };
+
+export default withLegacyHandler(handler);

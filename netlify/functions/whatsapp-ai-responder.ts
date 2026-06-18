@@ -3,6 +3,7 @@ import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * WhatsApp AI Responder — Generates AI replies for inbound WhatsApp messages.
@@ -399,3 +400,5 @@ Generate a reply to the latest customer message and qualify the lead.`;
     };
   }
 };
+
+export default withLegacyHandler(handler);

@@ -1,6 +1,7 @@
 import type { Handler } from '@netlify/functions';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 function clean(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') return null;
@@ -73,3 +74,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

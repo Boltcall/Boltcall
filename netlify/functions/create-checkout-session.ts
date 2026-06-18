@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import Stripe from 'stripe';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2026-02-25.clover',
@@ -172,3 +173,5 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -219,3 +220,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ error: 'Not found' }),
   };
 };
+
+export default withLegacyHandler(handler);

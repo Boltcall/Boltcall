@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-lead-detail — V2 single-lead drawer endpoint.
  *
@@ -475,3 +476,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify(response),
   };
 };
+
+export default withLegacyHandler(handler);

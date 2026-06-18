@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-settings — GET (read) + PATCH (update). Client-authenticated.
  *
@@ -438,3 +439,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

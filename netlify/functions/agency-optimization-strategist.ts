@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-optimization-strategist
  * ──────────────────────────────────────────────────────────────────────────────
@@ -1151,3 +1152,5 @@ function inferMaturityBucket(signed_up_at: string | null): string {
   if (ageMonths < 12) return '6-12mo';
   return '12mo+';
 }
+
+export default withLegacyHandler(handler);

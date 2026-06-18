@@ -4,6 +4,7 @@ import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-u
 import { notifyError } from './_shared/notify';
 import { getUserAgentIds, getUserPhoneNumbers } from './_shared/require-auth';
 import { requireMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -324,3 +325,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Outbound call processing failed' }) };
   }
 };
+
+export default withLegacyHandler(handler);

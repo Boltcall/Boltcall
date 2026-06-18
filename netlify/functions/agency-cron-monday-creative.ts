@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-cron-monday-creative — Weekly creative-foundry kickoff (Layer 2)
  * =======================================================================
@@ -190,3 +191,5 @@ async function postToCreativeFoundry(client_id: string): Promise<{ ok: boolean; 
     clearTimeout(timer);
   }
 }
+
+export default withLegacyHandler(handler);

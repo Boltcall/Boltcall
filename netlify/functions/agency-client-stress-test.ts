@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-stress-test.ts — Boltcall Agency OS · Layer 8 · Client-portal
  * ───────────────────────────────────────────────────────────────────────────
@@ -301,3 +302,5 @@ export const __test__ = {
   buildPersona,
   SCENARIO_LABELS,
 };
+
+export default withLegacyHandler(handler);

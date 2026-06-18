@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import * as crypto from 'crypto';
 import { getSupabase } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * WhatsApp Settings — manage WhatsApp integration config.
@@ -257,3 +258,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

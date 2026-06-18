@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': 'https://boltcall.org',
@@ -92,3 +93,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ ok: true, action: existing?.first_visit_at ? 'revisit' : 'first_visit' }),
   };
 };
+
+export default withLegacyHandler(handler);

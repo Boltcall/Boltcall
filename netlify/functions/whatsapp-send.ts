@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * WhatsApp Send — Sends an outbound WhatsApp message via Meta Cloud API.
@@ -149,3 +150,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

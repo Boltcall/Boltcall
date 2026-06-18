@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * GET /.netlify/functions/saas-v2-qa-list
  *
@@ -303,3 +304,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ kpi, calls, total: calls.length }),
   };
 };
+
+export default withLegacyHandler(handler);

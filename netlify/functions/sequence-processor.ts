@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -218,3 +219,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify({ error: 'Sequence processing failed' }) };
   }
 };
+
+export default withLegacyHandler(handler);

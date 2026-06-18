@@ -1,4 +1,5 @@
 import type { Handler } from '@netlify/functions';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { notifyInfo } from './_shared/notify';
 
@@ -90,3 +91,5 @@ export const handler: Handler = async (event) => {
 
   return json(200, { ok: true, status: 'accepted' });
 };
+
+export default withLegacyHandler(handler);

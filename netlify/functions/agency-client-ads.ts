@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-ads.ts — Client-facing creative review surface (Bolt System SKU only).
  * ====================================================================================
@@ -558,3 +559,5 @@ function buildVariantRationale(args: {
   const opener = anglePhrase[args.angle] ?? `Tests the ${args.angle} angle.`;
   return `${opener} Predicted CTR ${ctr}, predicted CPL ${cpl}.`;
 }
+
+export default withLegacyHandler(handler);

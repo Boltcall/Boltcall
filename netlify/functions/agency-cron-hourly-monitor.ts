@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-cron-hourly-monitor — Hourly delivery-monitor heartbeat (Layer 2)
  * =========================================================================
@@ -112,3 +113,5 @@ const inner: Handler = async (event: HandlerEvent) => {
   };
 };
 export const handler = wrapCronWithAlert('agency-cron-hourly-monitor', inner);
+
+export default withLegacyHandler(handler);

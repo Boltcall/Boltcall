@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-intake-officer.ts — Boltcall Agency OS · Layer 3 · Agent #1
  * ────────────────────────────────────────────────────────────────────
@@ -981,3 +982,5 @@ export const __internals = {
   SENTINEL_INJECT_AFTER_MINUTE,
   PROFILE_FIELDS_40,
 };
+
+export default withLegacyHandler(handler);

@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -112,3 +113,5 @@ Rules: Extract REAL services; estimate duration 15-60 min; price 0 if not listed
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

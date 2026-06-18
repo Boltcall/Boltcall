@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { extractApiKey, validateApiKey } from './_shared/validate-api-key';
 import { getSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * GET /.netlify/functions/api-me
@@ -75,3 +76,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

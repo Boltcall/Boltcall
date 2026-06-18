@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 // Instantly webhook receiver — captures lead-level events for attribution.
 // Configured in Instantly dashboard at:
@@ -108,3 +109,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ ok: true, event: eventType, uid }),
   };
 };
+
+export default withLegacyHandler(handler);

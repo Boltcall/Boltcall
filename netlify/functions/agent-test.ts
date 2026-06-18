@@ -3,6 +3,7 @@ import { getSupabase } from './_shared/token-utils';
 import { userOwnsAgent } from './_shared/require-auth';
 import { requireUser } from './_shared/user-auth';
 import { chatCompletion } from './_shared/azure-ai';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const RETELL_API = 'https://api.retellai.com';
 const RETELL_KEY = process.env.RETELL_API_KEY || '';
@@ -385,3 +386,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

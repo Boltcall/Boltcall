@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { getCorsHeaders } from './_shared/cors';
 import { randomUUID, createHash } from 'crypto';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
@@ -115,3 +116,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

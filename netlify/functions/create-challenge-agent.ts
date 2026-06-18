@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { createClient } from '@supabase/supabase-js';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -241,3 +242,5 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

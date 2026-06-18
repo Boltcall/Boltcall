@@ -4,6 +4,7 @@ import { getSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { handleInboundLead } from './_shared/lead-response-service';
 import { notifyError } from './_shared/notify';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Google Ads Lead Form Webhook
@@ -375,3 +376,5 @@ export const handler: Handler = async (event) => {
     return serverError();
   }
 };
+
+export default withLegacyHandler(handler);

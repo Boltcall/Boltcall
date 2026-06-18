@@ -4,6 +4,7 @@ import Retell from 'retell-sdk';
 import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 const TWILIO_API_BASE = 'https://api.twilio.com/2010-04-01';
@@ -311,3 +312,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

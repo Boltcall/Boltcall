@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-reports.ts — Client-facing report archive endpoint.
  * ==================================================================
@@ -191,3 +192,5 @@ function formatHumanDate(iso: string): string {
     return iso;
   }
 }
+
+export default withLegacyHandler(handler);

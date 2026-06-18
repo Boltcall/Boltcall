@@ -3,6 +3,7 @@ import { getSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { inferVertical } from './_shared/vertical-utils';
 import { hasSharedSecret } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * retell-call-scorer
@@ -282,3 +283,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

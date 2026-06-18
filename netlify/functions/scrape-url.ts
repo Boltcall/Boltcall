@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 import { validatePublicHttpUrl } from './_shared/outbound-url';
 import { requireUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 // Firecrawl API keys — waterfall: use key 1 first, if exhausted try key 2, then key 3
 const FIRECRAWL_KEYS = [
@@ -279,3 +280,5 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

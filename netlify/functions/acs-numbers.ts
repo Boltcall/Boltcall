@@ -10,6 +10,7 @@ import {
 import { getServiceSupabase } from './_shared/token-utils';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getHeader, hasSharedSecret } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * ACS Phone Numbers — replaces twilio-numbers.ts
@@ -204,3 +205,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

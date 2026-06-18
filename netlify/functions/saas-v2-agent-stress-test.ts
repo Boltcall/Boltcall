@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * POST /.netlify/functions/saas-v2-agent-stress-test
  * Body: { scenario_id: string }
@@ -426,3 +427,5 @@ export const __test__ = {
   SCENARIOS,
   SCENARIO_INDEX,
 };
+
+export default withLegacyHandler(handler);
