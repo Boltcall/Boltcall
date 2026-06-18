@@ -2,6 +2,7 @@ import { Handler, HandlerEvent } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
 import { notifyError } from './_shared/notify';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -197,3 +198,5 @@ export const handler: Handler = async (event) => {
 
   return { statusCode: 200, body: '' };
 };
+
+export default withLegacyHandler(handler);

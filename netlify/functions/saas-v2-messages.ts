@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-messages — GET endpoint returning the V2 unified inbox feed.
  *
@@ -415,3 +416,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireAuth, getUserAgentIds, userOwnsAgent } from './_shared/require-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -1099,3 +1100,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

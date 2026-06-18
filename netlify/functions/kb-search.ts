@@ -3,6 +3,7 @@ import { notifyError } from './_shared/notify';
 import { getSupabase } from './_shared/token-utils';
 import { generateEmbedding } from './_shared/azure-ai';
 import { requireAuth } from './_shared/require-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Knowledge Base Search Function
@@ -636,3 +637,5 @@ A: ${content}
     return { statusCode: 500, headers, body: JSON.stringify({ error: errMsg }) };
   }
 };
+
+export default withLegacyHandler(handler);

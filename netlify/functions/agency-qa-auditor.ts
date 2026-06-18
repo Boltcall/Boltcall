@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-qa-auditor — Daily call-quality auditor for the Agency OS.
  *
@@ -1244,3 +1245,5 @@ export const __INTERNAL_FOR_TESTS = {
   runClusteringPass,
   randomUUID,
 };
+
+export default withLegacyHandler(handler);

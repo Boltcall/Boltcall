@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-leads — V2 Leads list endpoint.
  *
@@ -638,3 +639,5 @@ function statusCandidates(v2Status: LeadStatus): string[] {
       return ['lost', 'dead', 'rejected', 'unqualified'];
   }
 }
+
+export default withLegacyHandler(handler);

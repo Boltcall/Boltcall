@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { getSupabase } from './_shared/token-utils';
 import { buildRetellStartTimestampFilter, normalizeRetellCallList } from './_shared/retell-call-list';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -231,3 +232,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

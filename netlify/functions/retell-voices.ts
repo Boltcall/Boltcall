@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { requireUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 export const handler: Handler = async (event) => {
   const cors = getV2CorsHeaders(
@@ -83,3 +84,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

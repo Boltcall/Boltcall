@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-circle — GET. Client-authenticated.
  *
@@ -301,3 +302,5 @@ export const handler: Handler = async (event) => {
 
   return { statusCode: 200, headers: CORS, body: JSON.stringify(body) };
 };
+
+export default withLegacyHandler(handler);

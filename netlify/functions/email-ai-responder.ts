@@ -5,6 +5,7 @@ import { getValidAccessToken, type EmailAccount } from './_shared/email-token-re
 import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Email AI Responder — Generates AI draft responses for inbound email threads.
@@ -402,3 +403,5 @@ async function sendViaOutlook(
 
   return { success: true, messageId: `outlook_${Date.now()}` };
 }
+
+export default withLegacyHandler(handler);

@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * daily-lead-summary
@@ -200,3 +201,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, body: JSON.stringify({ error: String(err) }) };
   }
 };
+
+export default withLegacyHandler(handler);

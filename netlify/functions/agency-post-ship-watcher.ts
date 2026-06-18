@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-post-ship-watcher — Cross-cutting feature #2 (post-ship critic + auto-revert)
  * =====================================================================================
@@ -866,3 +867,5 @@ function countByVerdict(
   }
   return out;
 }
+
+export default withLegacyHandler(handler);

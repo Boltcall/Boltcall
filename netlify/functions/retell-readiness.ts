@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import type { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { buildRetellAgentFilter, normalizeRetellCallList } from './_shared/retell-call-list';
@@ -189,3 +190,5 @@ export const handler: Handler = async (event) => {
     });
   }
 };
+
+export default withLegacyHandler(handler);

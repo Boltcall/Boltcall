@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { getServiceSupabase } from './_shared/token-utils';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -134,3 +135,5 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * GET /.netlify/functions/saas-v2-agent-suggest-edits
  *
@@ -332,3 +333,5 @@ export const handler: Handler = async (event) => {
     cold_start: false,
   });
 };
+
+export default withLegacyHandler(handler);

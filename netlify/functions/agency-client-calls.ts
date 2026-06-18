@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-calls.ts — Boltcall Agency OS · Layer 7 · Client portal
  * ──────────────────────────────────────────────────────────────────────
@@ -357,3 +358,5 @@ function fallbackSummary(args: {
       }`;
   }
 }
+
+export default withLegacyHandler(handler);

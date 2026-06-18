@@ -3,6 +3,7 @@ import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { authenticateApiKey } from './_shared/validate-api-key';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const BREVO_API_BASE = 'https://api.brevo.com/v3';
 
@@ -122,3 +123,5 @@ export const handler: Handler = async (event) => {
 
 // Export for use by message-dispatcher
 export { sendBrevoEmail };
+
+export default withLegacyHandler(handler);

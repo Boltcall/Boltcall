@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-integrations — GET endpoint returning the V2 Integrations catalog
  * for the currently-authenticated workspace owner.
@@ -619,3 +620,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ integrations, cold_start }),
   };
 };
+
+export default withLegacyHandler(handler);

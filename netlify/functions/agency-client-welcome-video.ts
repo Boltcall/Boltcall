@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-welcome-video.ts — Boltcall Agency OS · Layer 8 · Client-portal
  * ─────────────────────────────────────────────────────────────────────────────
@@ -388,3 +389,5 @@ export const handler: Handler = async (event) => {
     artifact_id: artifactRow?.id ?? null,
   });
 };
+
+export default withLegacyHandler(handler);

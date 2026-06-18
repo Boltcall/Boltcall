@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { verifyRetellSignature } from './_shared/verify-signatures';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Agent Tools Webhook
@@ -885,3 +886,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

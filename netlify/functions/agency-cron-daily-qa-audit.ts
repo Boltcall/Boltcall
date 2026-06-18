@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-cron-daily-qa-audit — Daily QA-auditor trigger (Layer 2)
  * ================================================================
@@ -162,3 +163,5 @@ async function postToQaAuditor(client_id: string): Promise<{ ok: boolean; status
     clearTimeout(timer);
   }
 }
+
+export default withLegacyHandler(handler);

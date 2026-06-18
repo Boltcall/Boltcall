@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase, deductTokens } from './_shared/token-utils';
 import { requireMatchingUser } from './_shared/user-auth';
 import { getValidAccessToken, type EmailAccount } from './_shared/email-token-refresh';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Email Actions — CRUD endpoint for the email service dashboard.
@@ -484,3 +485,5 @@ async function sendViaProvider(
     return { success: true, messageId: `outlook_${Date.now()}` };
   }
 }
+
+export default withLegacyHandler(handler);

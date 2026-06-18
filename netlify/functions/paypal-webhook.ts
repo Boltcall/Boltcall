@@ -5,6 +5,7 @@ import {
   getPayPalAccessToken,
 } from './_shared/paypal-client';
 import { getServiceSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 type SupabaseAdmin = ReturnType<typeof getServiceSupabase>;
 
@@ -361,3 +362,5 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

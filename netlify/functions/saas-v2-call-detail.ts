@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * GET /.netlify/functions/saas-v2-call-detail?call_id=<id>
  *
@@ -318,3 +319,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

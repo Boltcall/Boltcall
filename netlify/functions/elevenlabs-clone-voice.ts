@@ -3,6 +3,7 @@ import Retell from 'retell-sdk';
 import { getServiceSupabase } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { requireMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * ElevenLabs Voice Cloning + Retell custom voice registration.
@@ -213,3 +214,5 @@ export const handler: Handler = async (event) => {
     return json(500, { error: 'Internal error', details: err?.message });
   }
 };
+
+export default withLegacyHandler(handler);

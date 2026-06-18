@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * V2 conversational setup wizard — finalize / deploy endpoint.
  *
@@ -521,3 +522,5 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
     }),
   };
 };
+
+export default withLegacyHandler(handler);

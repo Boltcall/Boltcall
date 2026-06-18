@@ -7,6 +7,7 @@ import { fireWebhooks } from './_shared/fire-webhooks';
 import { authenticateApiKey } from './_shared/validate-api-key';
 import { verifyFacebookSignature } from './_shared/verify-signatures';
 import { handleInboundLead } from './_shared/lead-response-service';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Lead Webhook — receives leads from external sources and inserts into Supabase `leads` table.
@@ -362,3 +363,5 @@ export const handler: Handler = async (event) => {
 
   return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 };
+
+export default withLegacyHandler(handler);

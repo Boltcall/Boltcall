@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-ad-action.ts — Client-side approval action for queued ad_creative artifacts.
  * ==========================================================================================
@@ -243,3 +244,5 @@ export const handler: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

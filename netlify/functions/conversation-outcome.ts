@@ -4,6 +4,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
 import { userOwnsAgent } from './_shared/require-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Universal Post-Conversation Outcome Evaluator
@@ -238,3 +239,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

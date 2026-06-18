@@ -3,6 +3,7 @@ import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { validatePublicHttpUrl } from './_shared/outbound-url';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 function json(headers: Record<string, string>, statusCode: number, body: Record<string, unknown>) {
   return { statusCode, headers, body: JSON.stringify(body) };
@@ -100,3 +101,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

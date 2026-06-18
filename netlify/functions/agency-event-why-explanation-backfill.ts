@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-event-why-explanation-backfill — Cross-cutting feature #3 (Why-Log)
  * ===========================================================================
@@ -378,3 +379,5 @@ function estimateHaikuCostUsd(input: number, output: number): number {
   //   output ≈ $5 / 1M
   return (input / 1_000_000) * 1.0 + (output / 1_000_000) * 5.0;
 }
+
+export default withLegacyHandler(handler);

@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * GET /.netlify/functions/saas-v2-agent-summary
  *
@@ -340,3 +341,5 @@ export const handler: Handler = async (event) => {
     cold_start: coldStart,
   });
 };
+
+export default withLegacyHandler(handler);

@@ -1,6 +1,7 @@
 import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
@@ -431,3 +432,5 @@ export const handler: Handler = async (event) => {
 
   return { statusCode: 200, headers: cors, body: JSON.stringify(body) };
 };
+
+export default withLegacyHandler(handler);

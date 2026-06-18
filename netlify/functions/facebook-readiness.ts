@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import type { Handler } from '@netlify/functions';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const GRAPH_VERSION = 'v20.0';
 
@@ -111,3 +112,5 @@ export const handler: Handler = async (event) => {
     });
   }
 };
+
+export default withLegacyHandler(handler);

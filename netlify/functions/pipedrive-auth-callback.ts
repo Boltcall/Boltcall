@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getAppSecret } from './_shared/app-secrets';
 import { getServiceSupabase } from './_shared/token-utils';
 import { verifyOAuthState } from './_shared/oauth-state';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Pipedrive OAuth callback for the public Marketplace app.
@@ -150,3 +151,5 @@ export const handler: Handler = async (event) => {
     return redirect('/dashboard/integrations?pipedrive=error');
   }
 };
+
+export default withLegacyHandler(handler);

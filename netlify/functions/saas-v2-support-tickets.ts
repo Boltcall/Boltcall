@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-support-tickets — founder-only support inbox API.
  *
@@ -182,3 +183,5 @@ export const handler: Handler = async (event) => {
 
   return json(cors, 200, { ticket: data });
 };
+
+export default withLegacyHandler(handler);

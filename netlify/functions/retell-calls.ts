@@ -7,6 +7,7 @@ import {
   buildRetellStartTimestampFilter,
   normalizeRetellCallList,
 } from './_shared/retell-call-list';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -117,3 +118,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

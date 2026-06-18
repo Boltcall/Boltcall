@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-integration-suggest — GET endpoint that recommends the 2-3
  * highest-leverage integrations for a workspace to connect next, based on:
@@ -671,3 +672,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ suggestions, cold_start: false }),
   };
 };
+
+export default withLegacyHandler(handler);

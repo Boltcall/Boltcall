@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * Agency OS — expansion-spotter runner
  * ====================================
@@ -971,3 +972,5 @@ function json(status: number, body: unknown) {
     body: JSON.stringify(body),
   };
 }
+
+export default withLegacyHandler(handler);

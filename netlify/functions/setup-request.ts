@@ -1,5 +1,6 @@
 import type { Handler } from '@netlify/functions';
 import { createHash } from 'node:crypto';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { notifyInfo } from './_shared/notify';
@@ -251,3 +252,5 @@ export const __internals = {
   offerSpecs,
   getFulfillmentWebhookUrl,
 };
+
+export default withLegacyHandler(handler);

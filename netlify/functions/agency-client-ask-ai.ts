@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-ask-ai.ts — Boltcall Agency OS · Client Portal · Phase E
  * ──────────────────────────────────────────────────────────────────────
@@ -531,3 +532,5 @@ function extractKbSnippet(content: unknown): string {
     return '';
   }
 }
+
+export default withLegacyHandler(handler);

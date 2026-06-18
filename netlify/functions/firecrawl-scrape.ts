@@ -1,6 +1,7 @@
 import type { Handler } from '@netlify/functions';
 import { hasSharedSecret } from './_shared/user-auth';
 import { validatePublicHttpUrl } from './_shared/outbound-url';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 // Firecrawl API keys — waterfall: use key 1 first, if exhausted try key 2, then key 3
 const FIRECRAWL_KEYS = [
@@ -245,3 +246,5 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
+
+export default withLegacyHandler(handler);

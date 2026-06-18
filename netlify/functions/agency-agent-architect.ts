@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-agent-architect.ts — Phase C runner for the agent-architect agent.
  *
@@ -1138,3 +1139,5 @@ export const __test__ = {
   inlineKbIntoPrompt,
   PERSONA_CATEGORIES,
 };
+
+export default withLegacyHandler(handler);

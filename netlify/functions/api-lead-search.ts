@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { extractApiKey, validateApiKey } from './_shared/validate-api-key';
 import { getSupabase } from './_shared/token-utils';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * GET /.netlify/functions/api-lead-search
@@ -151,3 +152,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Failed to search leads' }) };
   }
 };
+
+export default withLegacyHandler(handler);

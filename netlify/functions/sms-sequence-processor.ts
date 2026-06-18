@@ -3,6 +3,7 @@ import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { requireMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * SMS Sequence Processor — Executes follow-up drip sequences via SMS.
@@ -413,3 +414,5 @@ function buildThreadId(phone1: string, phone2: string): string {
   const sorted = [phone1, phone2].sort();
   return `${sorted[0]}_${sorted[1]}`;
 }
+
+export default withLegacyHandler(handler);

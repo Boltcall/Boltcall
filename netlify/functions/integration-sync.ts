@@ -3,6 +3,7 @@ import { notifyError, notifyInfo } from './_shared/notify';
 import { getServiceSupabase } from './_shared/token-utils';
 import { hasSharedSecret, requireMatchingUser } from './_shared/user-auth';
 import { validateOutboundHttpsUrl } from './_shared/outbound-url';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Integration Sync Function
@@ -1205,3 +1206,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -254,3 +255,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ error: 'Method not allowed' }),
   };
 };
+
+export default withLegacyHandler(handler);

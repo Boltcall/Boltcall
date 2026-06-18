@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -108,3 +109,5 @@ export const handler: Handler = async (event) => {
     };
   }
 };
+
+export default withLegacyHandler(handler);

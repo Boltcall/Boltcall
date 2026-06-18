@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-home.ts — Boltcall Agency OS · Client Portal · Phase E
  * ────────────────────────────────────────────────────────────────────
@@ -713,3 +714,5 @@ async function generateStarterQuestions(args: {
   const qs = Array.isArray(result.output?.questions) ? result.output.questions : [];
   return qs.filter((q): q is string => typeof q === 'string' && q.trim().length > 0);
 }
+
+export default withLegacyHandler(handler);

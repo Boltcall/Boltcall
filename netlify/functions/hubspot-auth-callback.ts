@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getAppSecret } from './_shared/app-secrets';
 import { getServiceSupabase } from './_shared/token-utils';
 import { verifyOAuthState } from './_shared/oauth-state';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 function redirect(path: string) {
   const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
@@ -129,3 +130,5 @@ export const handler: Handler = async (event) => {
     return redirect('/dashboard/integrations?hubspot=error');
   }
 };
+
+export default withLegacyHandler(handler);

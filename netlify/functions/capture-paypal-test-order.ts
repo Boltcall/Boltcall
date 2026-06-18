@@ -1,4 +1,5 @@
 import type { Handler } from '@netlify/functions';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { paypalFetch } from './_shared/paypal-client';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
@@ -147,3 +148,5 @@ export const handler: Handler = async (event) => {
     return json(headers, 500, { error: message });
   }
 };
+
+export default withLegacyHandler(handler);

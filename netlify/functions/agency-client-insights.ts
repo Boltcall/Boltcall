@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-client-insights.ts — Boltcall Agency OS · Layer 7 · Client portal
  * ────────────────────────────────────────────────────────────────────────
@@ -863,3 +864,5 @@ function numberFrom(p: Record<string, unknown>, k: string): number | null {
   }
   return null;
 }
+
+export default withLegacyHandler(handler);

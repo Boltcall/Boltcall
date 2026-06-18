@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * saas-v2-toggle — POST endpoint to flip workspaces.v2_enabled for the
  * currently-authenticated workspace owner.
@@ -212,3 +213,5 @@ export const handler: Handler = async (event) => {
     }),
   };
 };
+
+export default withLegacyHandler(handler);

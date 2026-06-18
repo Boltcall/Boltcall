@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-cron-friday-report — Per-client Friday auto-report fan-out (Layer 2)
  * ============================================================================
@@ -241,3 +242,5 @@ async function postToReportingScribe(client_id: string): Promise<{ ok: boolean; 
     clearTimeout(timer);
   }
 }
+
+export default withLegacyHandler(handler);

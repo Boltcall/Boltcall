@@ -5,6 +5,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { authenticateApiKey } from './_shared/validate-api-key';
 import { hasSharedSecret, requireMatchingUser } from './_shared/user-auth';
 import { validateOutboundHttpsUrl } from './_shared/outbound-url';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Webhook Manager Function
@@ -470,3 +471,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: errMsg }) };
   }
 };
+
+export default withLegacyHandler(handler);

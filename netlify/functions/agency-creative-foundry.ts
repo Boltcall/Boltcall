@@ -1,3 +1,4 @@
+import { withLegacyHandler } from './_shared/runtime-compat';
 /**
  * agency-creative-foundry.ts — Phase C runner for the creative-foundry agent.
  *
@@ -1386,3 +1387,5 @@ function cosineSimilarity(a: number[], b: number[]): number {
 
 // Re-export for tests / unit harness imports.
 export { runForClient, runDiverger, applyCriticKillRules, runPredictor, fitRidge, maxNgramOverlap };
+
+export default withLegacyHandler(handler);

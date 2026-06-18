@@ -1,5 +1,6 @@
 import type { Handler } from '@netlify/functions';
 import { hasSharedSecret } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Greeninvoice integration — issues Israeli tax invoices (חשבונית מס) for ILS payments.
@@ -141,3 +142,5 @@ export const handler: Handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
+
+export default withLegacyHandler(handler);

@@ -5,6 +5,7 @@ import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
 import { sendAcsSms } from './_shared/acs-sdk';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * SMS AI Responder — Generates AI-powered responses for inbound SMS.
@@ -329,3 +330,5 @@ async function getCalcomAvailability(eventSlug: string): Promise<string> {
     return '';
   }
 }
+
+export default withLegacyHandler(handler);

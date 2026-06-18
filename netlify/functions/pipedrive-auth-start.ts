@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createOAuthState } from './_shared/oauth-state';
 import { requireMatchingUser } from './_shared/user-auth';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -49,3 +50,5 @@ export const handler: Handler = async (event) => {
     body: JSON.stringify({ url: `https://oauth.pipedrive.com/oauth/authorize?${params.toString()}` }),
   };
 };
+
+export default withLegacyHandler(handler);
