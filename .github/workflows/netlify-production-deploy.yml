@@ -5,6 +5,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      full_prerender:
+        description: 'Run the slower full prerender build before deploying'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: netlify-production-deploy
@@ -34,7 +40,16 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: npm run build:prerender
+          FULL_PRERENDER: ${{ github.event_name == 'workflow_dispatch' && inputs.full_prerender || 'false' }}
+        shell: bash
+        run: |
+          if [[ "$FULL_PRERENDER" == "true" ]]; then
+            echo "Running full prerender build"
+            npm run build:prerender
+          else
+            echo "Running fast production build"
+            npm run build:fast
+          fi
 
       - name: Build functions
         run: npx netlify functions:build --src netlify/functions --functions .netlify-fn-build
