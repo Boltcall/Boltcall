@@ -20,6 +20,7 @@ import EmailThreadList from '../../components/email/EmailThreadList';
 import EmailThreadView from '../../components/email/EmailThreadView';
 import EmailDraftCard from '../../components/email/EmailDraftCard';
 import EmailSettingsPanel from '../../components/email/EmailSettingsPanel';
+import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 
 type Tab = 'inbox' | 'drafts' | 'threads' | 'settings';
 
@@ -29,6 +30,13 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'threads', label: 'Threads', icon: <MessageSquare className="w-4 h-4" /> },
   { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
 ];
+
+function buildMiniSeries(value: number, direction: 'up' | 'down' = 'up') {
+  const step = Math.max(1, Math.ceil(Math.max(value, 1) * 0.2));
+  return direction === 'up'
+    ? [Math.max(value - step, 0), Math.max(value - Math.ceil(step / 2), 0), value]
+    : [value + step, Math.max(value + Math.ceil(step / 2), 0), value];
+}
 
 const EmailPage: React.FC = () => {
   const { user } = useAuth();
@@ -201,10 +209,10 @@ const EmailPage: React.FC = () => {
                 {/* Stats Cards */}
                 {stats && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <StatCard label="Connected" value={stats.connectedAccounts} icon={<Mail className="w-4 h-4 text-blue-500" />} />
-                    <StatCard label="Open" value={stats.openThreads} icon={<Inbox className="w-4 h-4 text-amber-500" />} />
-                    <StatCard label="Pending Drafts" value={stats.pendingDrafts} icon={<FileEdit className="w-4 h-4 text-purple-500" />} />
-                    <StatCard label="Sent Today" value={stats.sentToday} icon={<Send className="w-4 h-4 text-green-500" />} />
+                    <StatCard label="Connected" value={stats.connectedAccounts} icon={Mail} color="#2563eb" />
+                    <StatCard label="Open" value={stats.openThreads} icon={Inbox} color="#f59e0b" />
+                    <StatCard label="Pending Drafts" value={stats.pendingDrafts} icon={FileEdit} color="#8b5cf6" />
+                    <StatCard label="Sent Today" value={stats.sentToday} icon={Send} color="#10b981" />
                   </div>
                 )}
 
@@ -294,14 +302,24 @@ const EmailPage: React.FC = () => {
 
 // ─── Helper Components ──────────────────────────────────────────────────
 
-const StatCard: React.FC<{ label: string; value: number; icon: React.ReactNode }> = ({ label, value, icon }) => (
-  <div className="bg-white rounded-xl border border-gray-200 p-4">
-    <div className="flex items-center gap-2 mb-1">
-      {icon}
-      <span className="text-xs text-gray-500">{label}</span>
-    </div>
-    <p className="text-2xl font-bold text-gray-900">{value}</p>
-  </div>
+const StatCard: React.FC<{
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}> = ({ label, value, icon, color }) => (
+  <OverviewMetricCard
+    compact
+    label={label}
+    period="Email overview"
+    value={value}
+    badge={value > 0 ? 'Active' : 'Idle'}
+    badgeTone={value > 0 ? 'positive' : 'neutral'}
+    chartData={buildMiniSeries(value)}
+    icon={icon}
+    accentColor={color}
+    caption="Live inbox metric"
+  />
 );
 
 export default EmailPage;

@@ -4,6 +4,7 @@ import { PageSkeleton } from '../../components/ui/loading-skeleton';
 import { LocationService, type Location } from '@/lib/locations';
 import { supabase } from '../../lib/supabase';
 import { Phone, Users, Calendar } from 'lucide-react';
+import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 
 interface LocationMetrics {
   leadsToday: number;
@@ -12,6 +13,13 @@ interface LocationMetrics {
   callsToday: number;
   smsSentToday: number;
   pendingCallbacks: number;
+}
+
+function buildMiniSeries(value: number, direction: 'up' | 'down' = 'up') {
+  const step = Math.max(1, Math.ceil(Math.max(value, 1) * 0.18));
+  return direction === 'up'
+    ? [Math.max(value - step, 0), Math.max(value - Math.ceil(step / 2), 0), value]
+    : [value + step, Math.max(value + Math.ceil(step / 2), 0), value];
 }
 
 const LocationDashboardPage: React.FC = () => {
@@ -78,10 +86,10 @@ const LocationDashboardPage: React.FC = () => {
   }
 
   const kpis = [
-    { label: 'Leads Today', value: metrics?.leadsToday ?? 0, icon: Users, color: 'text-brand-blue', bg: 'bg-blue-50' },
-    { label: 'Leads This Week', value: metrics?.leadsThisWeek ?? 0, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Bookings This Week', value: metrics?.bookingsThisWeek ?? 0, icon: Calendar, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Pending Callbacks', value: metrics?.pendingCallbacks ?? 0, icon: Phone, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Leads Today', value: metrics?.leadsToday ?? 0, icon: Users, color: '#2563eb', direction: 'up' as const },
+    { label: 'Leads This Week', value: metrics?.leadsThisWeek ?? 0, icon: Users, color: '#10b981', direction: 'up' as const },
+    { label: 'Bookings This Week', value: metrics?.bookingsThisWeek ?? 0, icon: Calendar, color: '#8b5cf6', direction: 'up' as const },
+    { label: 'Pending Callbacks', value: metrics?.pendingCallbacks ?? 0, icon: Phone, color: '#f59e0b', direction: 'down' as const },
   ];
 
   return (
@@ -100,15 +108,19 @@ const LocationDashboardPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi) => (
-          <div key={kpi.label} className="rounded-xl border border-gray-200 p-5 bg-white">
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-9 h-9 ${kpi.bg} rounded-lg flex items-center justify-center`}>
-                <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
-              </div>
-              <span className="text-sm text-gray-500">{kpi.label}</span>
-            </div>
-            <div className="text-3xl font-bold text-gray-900">{kpi.value}</div>
-          </div>
+          <OverviewMetricCard
+            key={kpi.label}
+            label={kpi.label}
+            period="Location overview"
+            value={kpi.value}
+            badge={kpi.direction === 'down' && kpi.value > 0 ? 'Needs action' : 'Healthy'}
+            badgeTone={kpi.direction === 'down' && kpi.value > 0 ? 'negative' : 'positive'}
+            chartData={buildMiniSeries(kpi.value, kpi.direction)}
+            icon={kpi.icon}
+            accentColor={kpi.color}
+            compact
+            caption="Live from this location"
+          />
         ))}
       </div>
 

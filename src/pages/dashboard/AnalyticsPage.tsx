@@ -17,6 +17,7 @@ import {
 import { Link } from 'react-router-dom';
 import { BarChart3 } from 'lucide-react';
 import KpiTile from '../../components/dashboard/KpiTile';
+import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 import TimeSeriesCard from '../../components/dashboard/TimeSeriesCard';
 import Card from '../../components/ui/Card';
 import {
@@ -454,11 +455,25 @@ const AnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, delay: i * 0.05 }}
           >
-            <Card className="p-4 flex flex-col items-center text-center gap-1">
-              <item.icon className={`w-5 h-5 ${item.color}`} />
-              <span className="text-lg font-bold text-text-main">{item.value}</span>
-              <span className="text-xs text-text-muted">{item.label}</span>
-            </Card>
+            <OverviewMetricCard
+              compact
+              label={item.label}
+              period="Analytics overview"
+              value={item.value}
+              badge="Live"
+              badgeTone="neutral"
+              icon={item.icon}
+              accentColor={
+                item.color === 'text-brand-blue' ? '#2563eb' :
+                item.color === 'text-amber-500' ? '#f59e0b' :
+                item.color === 'text-purple-500' ? '#8b5cf6' :
+                item.color === 'text-green-500' ? '#10b981' :
+                item.color === 'text-sky-500' ? '#0ea5e9' :
+                '#4f46e5'
+              }
+              chartData={emptySparkline}
+              caption="Live metric from the current dashboard snapshot"
+            />
           </motion.div>
         ))}
       </div>

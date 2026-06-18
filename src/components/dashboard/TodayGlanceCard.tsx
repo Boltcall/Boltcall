@@ -1,15 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Bot, TrendingUp, Users, PhoneMissed } from 'lucide-react';
 import { useDashboardStore } from '../../stores/dashboardStore';
+import OverviewMetricCard from './OverviewMetricCard';
+
+function buildMiniSeries(value: number, direction: 'up' | 'down' = 'up') {
+  const step = Math.max(1, Math.ceil(Math.max(value, 1) * 0.18));
+  return direction === 'up'
+    ? [Math.max(value - step, 0), Math.max(value - Math.ceil(step / 2), 0), value]
+    : [value + step, Math.max(value + Math.ceil(step / 2), 0), value];
+}
 
 const TodayGlanceCard: React.FC = () => {
   const { liveStats, callbackStats, loading } = useDashboardStore();
 
   const handled = liveStats?.retell?.successful_calls_today ?? 0;
   const missed = liveStats?.retell?.missed_calls_today ?? 0;
-  const pending = (callbackStats as any)?.pending ?? 0;
-  const totalToday = (callbackStats as any)?.total ?? 0;
+  const pending = (callbackStats as { pending?: number } | null)?.pending ?? 0;
+  const totalToday = (callbackStats as { total?: number } | null)?.total ?? 0;
   const needsAction = missed + pending;
 
   const total = handled + missed;
@@ -21,82 +30,89 @@ const TodayGlanceCard: React.FC = () => {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="rounded-lg border border-border/30 bg-background/40 px-5 py-4 backdrop-blur-sm"
+      className="space-y-4"
       role="status"
       aria-live="polite"
       aria-label="Today's activity summary"
     >
-      <div className="flex flex-wrap items-center gap-8">
-        {/* Missed — anxiety hook */}
-        <div className="flex flex-col gap-0.5">
-          {loading ? (
-            <span className="h-7 w-10 rounded bg-foreground/10 animate-pulse" />
-          ) : (
-            <span className={`text-2xl font-bold tabular-nums leading-none ${missed > 0 ? 'text-red-500' : 'text-foreground/80'}`}>
-              {missed}
-            </span>
-          )}
-          <span className="text-[10px] uppercase tracking-[0.14em] text-foreground/50 font-medium">Missed today</span>
-        </div>
-
-        <div className="h-8 w-px bg-border/40 hidden sm:block" aria-hidden="true" />
-
-        {/* Handled by AI */}
-        <div className="flex flex-col gap-0.5">
-          {loading ? (
-            <span className="h-7 w-10 rounded bg-foreground/10 animate-pulse" />
-          ) : (
-            <span className="text-2xl font-bold tabular-nums leading-none text-emerald-500">
-              {handled}
-            </span>
-          )}
-          <span className="text-[10px] uppercase tracking-[0.14em] text-foreground/50 font-medium">Handled by AI</span>
-        </div>
-
-        <div className="h-8 w-px bg-border/40 hidden sm:block" aria-hidden="true" />
-
-        {/* Leads captured today */}
-        <div className="flex flex-col gap-0.5">
-          {loading ? (
-            <span className="h-7 w-10 rounded bg-foreground/10 animate-pulse" />
-          ) : (
-            <span className="text-2xl font-bold tabular-nums leading-none text-blue-500">
-              {leadsToday}
-            </span>
-          )}
-          <span className="text-[10px] uppercase tracking-[0.14em] text-foreground/50 font-medium">Leads today</span>
-        </div>
-
-        <div className="h-8 w-px bg-border/40 hidden sm:block" aria-hidden="true" />
-
-        {/* AI win rate */}
-        <div className="flex flex-col gap-0.5">
-          {loading ? (
-            <span className="h-7 w-12 rounded bg-foreground/10 animate-pulse" />
-          ) : (
-            <span className={`text-2xl font-bold tabular-nums leading-none ${winRate >= 80 ? 'text-emerald-500' : winRate >= 50 ? 'text-amber-500' : 'text-red-500'}`}>
-              {winRate}%
-            </span>
-          )}
-          <span className="text-[10px] uppercase tracking-[0.14em] text-foreground/50 font-medium">AI win rate</span>
-        </div>
-
-        {/* Contextual CTA */}
-        {!loading && needsAction > 0 && (
-          <Link
-            to="/dashboard/leads"
-            className="ml-auto text-xs font-medium text-foreground/60 hover:text-foreground/90 transition-colors underline-offset-2 hover:underline"
-          >
-            {needsAction} lead{needsAction !== 1 ? 's' : ''} need a callback →
-          </Link>
-        )}
-
-        {!loading && needsAction === 0 && handled > 0 && (
-          <p className="ml-auto text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            All caught up — AI handled everything today ✓
-          </p>
-        )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {loading
+          ? [0, 1, 2, 3].map((index) => (
+              <div
+                key={index}
+                className="h-[152px] animate-pulse rounded-[24px] border border-slate-200/80 bg-white/70"
+              />
+            ))
+          : (
+              <>
+                <OverviewMetricCard
+                  label="Missed today"
+                  period="Overview"
+                  value={missed}
+                  badge={missed > 0 ? 'Risk' : 'Clear'}
+                  badgeTone={missed > 0 ? 'negative' : 'neutral'}
+                  chartData={buildMiniSeries(missed, 'down')}
+                  icon={PhoneMissed}
+                  accentColor="#ef4444"
+                  caption={missed > 0 ? 'Calls waiting on cleanup' : 'No calls slipped today'}
+                />
+                <OverviewMetricCard
+                  label="Handled by AI"
+                  period="Overview"
+                  value={handled}
+                  badge={handled > 0 ? 'Live' : 'Idle'}
+                  badgeTone={handled > 0 ? 'positive' : 'neutral'}
+                  chartData={buildMiniSeries(handled, 'up')}
+                  icon={Bot}
+                  accentColor="#10b981"
+                  caption="Resolved without a human handoff"
+                />
+                <OverviewMetricCard
+                  label="Leads today"
+                  period="Overview"
+                  value={leadsToday}
+                  badge={pending > 0 ? `${pending} pending` : 'Captured'}
+                  badgeTone={pending > 0 ? 'negative' : 'positive'}
+                  chartData={buildMiniSeries(leadsToday, 'up')}
+                  icon={Users}
+                  accentColor="#2563eb"
+                  caption="New callback opportunities created"
+                />
+                <OverviewMetricCard
+                  label="AI win rate"
+                  period="Overview"
+                  value={`${winRate}%`}
+                  badge={winRate >= 80 ? 'Strong' : winRate >= 50 ? 'Stable' : 'Watch'}
+                  badgeTone={winRate >= 80 ? 'positive' : winRate >= 50 ? 'neutral' : 'negative'}
+                  chartData={buildMiniSeries(winRate, 'up')}
+                  icon={TrendingUp}
+                  accentColor={winRate >= 80 ? '#10b981' : winRate >= 50 ? '#f59e0b' : '#ef4444'}
+                  caption="Share of handled calls versus misses"
+                />
+              </>
+            )}
       </div>
+
+      {!loading && (
+        <div className="rounded-[24px] border border-slate-200/80 bg-white/80 px-5 py-4 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.35)]">
+          {needsAction > 0 ? (
+            <Link
+              to="/dashboard/leads"
+              className="inline-flex items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 hover:underline underline-offset-4"
+            >
+              {needsAction} lead{needsAction !== 1 ? 's' : ''} need a callback right now →
+            </Link>
+          ) : handled > 0 ? (
+            <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+              All caught up. AI handled everything today.
+            </p>
+          ) : (
+            <p className="text-sm font-medium text-slate-500">
+              Your daily overview will light up as soon as activity starts coming in.
+            </p>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 };

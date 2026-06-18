@@ -82,12 +82,12 @@ describe('KpiTile', () => {
   it('should render sparkline SVG when data has 2+ points', () => {
     const { container } = render(<KpiTile {...defaultProps} />);
     expect(container.querySelector('svg')).toBeInTheDocument();
-    expect(container.querySelector('polyline')).toBeInTheDocument();
+    expect(container.querySelector('.recharts-area-area')).toBeInTheDocument();
   });
 
   it('should not render sparkline when data has fewer than 2 points', () => {
     const { container } = render(<KpiTile {...defaultProps} sparkline={[5]} />);
-    expect(container.querySelector('polyline')).not.toBeInTheDocument();
+    expect(container.querySelector('svg')).not.toBeInTheDocument();
   });
 
   it('should accept custom className', () => {
