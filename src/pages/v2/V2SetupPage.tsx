@@ -41,7 +41,7 @@ const V2SetupPage: React.FC = () => {
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link
-                to="/login?redirect=/v2/setup"
+                to="/login?redirect=/setup"
                 className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
               >
                 Sign in
@@ -53,7 +53,7 @@ const V2SetupPage: React.FC = () => {
                 Create account
               </Link>
               <Link
-                to="/setup"
+                to="/setup/classic"
                 className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
               >
                 Classic setup

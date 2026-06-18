@@ -91,14 +91,21 @@ const V2SetupChat: React.FC = () => {
           const data = await res.json();
           if (data.conversation && data.conversation.length > 0) {
             setMessages(
-              data.conversation.map((t: { role: 'user' | 'assistant'; content: string; ts: string; tool?: { name: string; result_summary?: string } }) => ({
-                id: genId(),
-                role: t.role,
-                content: t.content,
-                ts: t.ts,
-                displayed: t.content.length,
-                toolNote: t.tool ? `Ran ${t.tool.name}` : undefined,
-              })),
+              data.conversation.map(
+                (t: {
+                  role: 'user' | 'assistant';
+                  content: string;
+                  ts: string;
+                  tool?: { name: string; result_summary?: string };
+                }) => ({
+                  id: genId(),
+                  role: t.role,
+                  content: t.content,
+                  ts: t.ts,
+                  displayed: t.content.length,
+                  toolNote: t.tool ? `Ran ${t.tool.name}` : undefined,
+                }),
+              ),
             );
             setExtracted(data.extracted || {});
             if (typeof data.state_version === 'number') {
@@ -151,7 +158,9 @@ const V2SetupChat: React.FC = () => {
 
   function seedOpening() {
     const id = genId();
-    setMessages([{ id, role: 'assistant', content: SEED_GREETING, displayed: 0, ts: new Date().toISOString() }]);
+    setMessages([
+      { id, role: 'assistant', content: SEED_GREETING, displayed: 0, ts: new Date().toISOString() },
+    ]);
     typewriterAnimate(id, SEED_GREETING);
   }
 
@@ -221,7 +230,14 @@ const V2SetupChat: React.FC = () => {
       const toolNote = data.tool ? `Ran ${data.tool.name}` : undefined;
       setMessages((m) => [
         ...m,
-        { id: aid, role: 'assistant', content: data.assistant_message, displayed: 0, ts: new Date().toISOString(), toolNote },
+        {
+          id: aid,
+          role: 'assistant',
+          content: data.assistant_message,
+          displayed: 0,
+          ts: new Date().toISOString(),
+          toolNote,
+        },
       ]);
       typewriterAnimate(aid, data.assistant_message);
     } catch (e) {
@@ -366,11 +382,17 @@ const V2SetupChat: React.FC = () => {
 
 const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
   const isUser = message.role === 'user';
-  const visible = message.displayed != null ? message.content.slice(0, message.displayed) : message.content;
+  const visible =
+    message.displayed != null ? message.content.slice(0, message.displayed) : message.content;
 
   return (
     <div className={cn('flex w-full', isUser ? 'justify-end' : 'justify-start')}>
-      <div className={cn('max-w-[82%] text-sm leading-relaxed', isUser ? 'text-zinc-500' : 'text-zinc-950')}>
+      <div
+        className={cn(
+          'max-w-[82%] text-sm leading-relaxed',
+          isUser ? 'text-zinc-500' : 'text-zinc-950',
+        )}
+      >
         {message.toolNote && !isUser && (
           <div className="mb-1 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-700">
             {message.toolNote}
@@ -393,7 +415,16 @@ const TypingIndicator: React.FC = () => (
 );
 
 const SendIcon: React.FC = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M22 2L11 13" />
     <path d="M22 2l-7 20-4-9-9-4 20-7z" />
   </svg>

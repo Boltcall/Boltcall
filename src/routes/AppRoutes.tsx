@@ -443,12 +443,13 @@ const NavigationWrapper: React.FC = () => {
           </Route>
         </Route>
         {/* ── V2 Conversational Setup Wizard ───────────────────────────────
-            Standalone /v2/setup route — NOT inside the V2OptInGate parent
-            block because a brand-new signup must be able to reach the wizard
-            before V2 is enabled on the workspace. The wizard's finalize step
-            flips the v2_enabled flag and graduates the user into the gated
-            /v2/* tree below. Public so unauthenticated users can start setup;
-            auth happens in the wizard. */}
+            /setup is the canonical setup route. /v2/setup remains as an alias
+            for existing V2 dashboard links. Both routes stay outside the
+            V2OptInGate parent block because a brand-new signup must be able
+            to reach the wizard before V2 is enabled on the workspace. The
+            wizard's finalize step flips the v2_enabled flag and graduates
+            the user into the gated /v2/* tree below. */}
+        <Route path="/setup" element={<V2SetupPage />} />
         <Route path="/v2/setup" element={<V2SetupPage />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this
@@ -570,8 +571,8 @@ const NavigationWrapper: React.FC = () => {
         </Route>
 
 
-        {/* /setup is intentionally PUBLIC — wizard collects data pre-signup; auth happens in the final step */}
-        <Route path="/setup" element={<Setup />} />
+        {/* Classic setup remains available as the V2 fallback escape hatch. */}
+        <Route path="/setup/classic" element={<Setup />} />
         <Route path="/setup/loading" element={<ProtectedRoute><DashboardProviders><SetupLoading /></DashboardProviders></ProtectedRoute>} />
         <Route path="/setup/talk-to-agent" element={<ProtectedRoute><DashboardProviders><TalkToAgentPage /></DashboardProviders></ProtectedRoute>} />
         <Route path="/help-center" element={<HelpCenter />} />
