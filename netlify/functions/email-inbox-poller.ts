@@ -504,3 +504,4 @@ const emailPoller: Handler = async (event) => {
 
 // Run every 3 minutes
 export const handler = schedule('*/3 * * * *', emailPoller);
+export default handler;
