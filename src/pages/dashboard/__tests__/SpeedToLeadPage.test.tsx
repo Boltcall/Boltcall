@@ -106,6 +106,9 @@ describe('SpeedToLeadPage', () => {
         return {
           ok: true,
           status: 200,
+          headers: {
+            get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null),
+          },
           json: async () => ({
             period: '30d',
             period_label: 'Last 30 days',
@@ -126,7 +129,27 @@ describe('SpeedToLeadPage', () => {
               { key: 'lost', current_total: 0, previous_total: 0, delta: 0 },
             ],
           }),
-          text: async () => '',
+          text: async () =>
+            JSON.stringify({
+              period: '30d',
+              period_label: 'Last 30 days',
+              comparison_label: 'previous last 30 days',
+              filtered_total: 1,
+              series: [
+                { label: 'Week 1', new: 1, contacted: 0, booked: 0, lost: 0 },
+                { label: 'Week 2', new: 0, contacted: 0, booked: 0, lost: 0 },
+                { label: 'Week 3', new: 0, contacted: 0, booked: 0, lost: 0 },
+                { label: 'Week 4', new: 0, contacted: 0, booked: 0, lost: 0 },
+                { label: 'Week 5', new: 0, contacted: 0, booked: 0, lost: 0 },
+                { label: 'Week 6', new: 0, contacted: 0, booked: 0, lost: 0 },
+              ],
+              metrics: [
+                { key: 'new', current_total: 1, previous_total: 0, delta: 100 },
+                { key: 'contacted', current_total: 0, previous_total: 0, delta: 0 },
+                { key: 'booked', current_total: 0, previous_total: 0, delta: 0 },
+                { key: 'lost', current_total: 0, previous_total: 0, delta: 0 },
+              ],
+            }),
         };
       }
 
