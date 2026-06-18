@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { CallHistorySkeleton } from '../../components/ui/loading-skeleton';
 import ModalShell from '../../components/ui/modal-shell';
@@ -20,8 +20,10 @@ import {
 
 import { getRetellCallHistory, type RetellCall } from '../../lib/retell';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 const CallHistoryPage: React.FC = () => {
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [calls, setCalls] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +38,10 @@ const CallHistoryPage: React.FC = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   // Fetch user's agents from Supabase
-  const fetchUserAgents = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  const fetchUserAgents = useCallback(async () => {
+    if (!user?.id) return [];
 
+    try {
       const { data: agents, error } = await supabase
         .from('agents')
         .select('retell_agent_id')
@@ -55,10 +56,10 @@ const CallHistoryPage: React.FC = () => {
       console.error('Error fetching user agents:', error);
       return [];
     }
-  };
+  }, [user?.id]);
 
   // Fetch call history from Retell AI
-  const fetchCallHistory = async () => {
+  const fetchCallHistory = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -101,11 +102,20 @@ const CallHistoryPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateRange.end, dateRange.start, directionFilter, fetchUserAgents, statusFilter]);
 
   useEffect(() => {
-    fetchCallHistory();
-  }, [statusFilter, directionFilter, dateRange]);
+    if (isAuthLoading) return;
+
+    if (!user?.id) {
+      setCalls([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    void fetchCallHistory();
+  }, [fetchCallHistory, isAuthLoading, user?.id]);
 
   // Filter calls based on search term
   const filteredCalls = calls.filter(call => 

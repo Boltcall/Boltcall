@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, useId } from 'react';
 import { User, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
@@ -49,11 +49,6 @@ function formatShortDate(dateString: string): string {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function shortId(id: string): string {
-  const hash = id.replace(/-/g, '').slice(0, 5);
-  return `#${hash}`;
-}
-
 /** Build smooth cubic bezier SVG path from points */
 function smoothPath(points: { x: number; y: number }[]): string {
   if (points.length < 2) return '';
@@ -95,7 +90,24 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const [chartRange, setChartRange] = useState<'7' | '30'>('7');
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; date: string; value: string } | null>(null);
   const chartRef = useRef<SVGSVGElement>(null);
+  const showToastRef = useRef(showToast);
   const resolvedPreviewLeads = previewLeads ?? EMPTY_PREVIEW_LEADS;
+  const chartId = useId().replace(/:/g, '');
+  const areaGradientId = `lead-performance-area-${chartId}`;
+  const clipPathId = `lead-performance-clip-${chartId}`;
+
+  useEffect(() => {
+    showToastRef.current = showToast;
+  }, [showToast]);
+
+  const showLeadsErrorToast = useCallback(() => {
+    showToastRef.current({
+      title: 'Error',
+      message: 'Failed to fetch leads',
+      variant: 'error',
+      duration: 3000,
+    });
+  }, []);
 
   const fetchLeads = useCallback(async () => {
     if (previewMode) {
@@ -119,12 +131,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
 
       if (error) {
         console.error('Error fetching leads:', error);
-        showToast({
-          title: 'Error',
-          message: 'Failed to fetch leads',
-          variant: 'error',
-          duration: 3000
-        });
+        showLeadsErrorToast();
         setLeads([]);
         return;
       }
@@ -146,17 +153,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
-      showToast({
-        title: 'Error',
-        message: 'Failed to fetch leads',
-        variant: 'error',
-        duration: 3000
-      });
+      showLeadsErrorToast();
       setLeads([]);
     } finally {
       setIsLoadingLeads(false);
     }
-  }, [previewMode, resolvedPreviewLeads, showToast, user?.id]);
+  }, [previewMode, resolvedPreviewLeads, user?.id]);
 
   useEffect(() => {
     void fetchLeads();
@@ -412,19 +414,22 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         </div>
 
         {/* SVG Chart */}
-        <div className="w-full overflow-x-auto">
+        <div className="w-full overflow-hidden">
           <svg
             ref={chartRef}
             viewBox={`0 0 ${chartW} ${chartH}`}
-            className="w-full h-auto min-w-[500px]"
+            className="w-full h-auto"
             onMouseMove={handleChartMouseMove}
             onMouseLeave={handleChartMouseLeave}
           >
             <defs>
-              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#2563EB" stopOpacity="0.2" />
                 <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
               </linearGradient>
+              <clipPath id={clipPathId}>
+                <rect x={padL} y={padT} width={plotW} height={plotH} />
+              </clipPath>
             </defs>
 
             {/* Horizontal grid lines */}
@@ -440,18 +445,20 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
               );
             })}
 
-            {/* Area fill */}
-            {areaPath && <path d={areaPath} fill="url(#areaGradient)" />}
+            <g clipPath={`url(#${clipPathId})`}>
+              {/* Area fill */}
+              {areaPath && <path d={areaPath} fill={`url(#${areaGradientId})`} />}
 
-            {/* Line */}
-            {linePath && (
-              <path d={linePath} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
-            )}
+              {/* Line */}
+              {linePath && (
+                <path d={linePath} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+              )}
 
-            {/* Data points */}
-            {chartPoints.map((pt, i) => (
-              <circle key={i} cx={pt.x} cy={pt.y} r="4" fill="white" stroke="#2563EB" strokeWidth="2" />
-            ))}
+              {/* Data points */}
+              {chartPoints.map((pt, i) => (
+                <circle key={i} cx={pt.x} cy={pt.y} r="4" fill="white" stroke="#2563EB" strokeWidth="2" />
+              ))}
+            </g>
 
             {/* X-axis labels */}
             {chartData.map((d, i) => {
@@ -564,9 +571,8 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
                   <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
                   <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Source</th>
                   <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
                 </tr>
@@ -578,13 +584,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                   const srcData = sourceCounts[lead.source];
                   return (
                     <tr key={lead.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <td className="px-5 py-3 text-sm text-gray-400 font-mono">{shortId(lead.id)}</td>
+                      <td className="px-5 py-3 text-sm font-medium text-gray-900">{lead.name}</td>
                       <td className="px-5 py-3">
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusClass}`}>
                           {lead.status === 'pending' ? 'New' : lead.status}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-sm font-medium text-gray-900">{lead.name}</td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: srcColor }} />
