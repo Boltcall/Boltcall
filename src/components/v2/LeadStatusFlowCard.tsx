@@ -10,7 +10,7 @@ import {
   MessageSquareReply,
   OctagonX,
 } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { authedFetch } from '../../lib/authedFetch';
@@ -52,6 +52,11 @@ interface LeadStatusFlowResponse {
     previous_total: number;
     delta: number;
   }>;
+}
+
+interface StatusSparkPoint {
+  index: number;
+  value: number;
 }
 
 const PERIODS: Record<
@@ -125,6 +130,37 @@ function emptySeries(period: PeriodKey): BucketRow[] {
   }));
 }
 
+function buildStatusSparkline(series: BucketRow[], key: MetricKey): StatusSparkPoint[] {
+  return series.map((row, index) => ({
+    index,
+    value: row[key],
+  }));
+}
+
+function parseLeadStatusFlowError(
+  body: string,
+  res: Pick<Response, 'status' | 'headers'>,
+): Error {
+  const contentType = res.headers.get('content-type') ?? '';
+  const trimmed = body.trim();
+  const htmlLike =
+    contentType.includes('text/html') ||
+    trimmed.startsWith('<!DOCTYPE') ||
+    trimmed.startsWith('<html');
+
+  if (htmlLike) {
+    return new Error(
+      'Lead status flow endpoint returned HTML instead of JSON. This usually means the function is missing or failed to deploy.',
+    );
+  }
+
+  try {
+    return new Error(JSON.parse(body).error ?? `Failed to load lead status flow (${res.status})`);
+  } catch {
+    return new Error(trimmed.slice(0, 160) || `Failed to load lead status flow (${res.status})`);
+  }
+}
+
 export default function LeadStatusFlowCard({ filters }: LeadStatusFlowCardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodKey>('30d');
   const [data, setData] = useState<LeadStatusFlowResponse | null>(null);
@@ -147,12 +183,18 @@ export default function LeadStatusFlowCard({ filters }: LeadStatusFlowCardProps)
         if (filters.source) qs.set('source', filters.source);
 
         const res = await authedFetch(`${FUNCTIONS_BASE}/saas-v2-lead-status-flow?${qs.toString()}`);
+        const body = await res.text();
         if (!res.ok) {
-          const body = await res.text().catch(() => '');
-          throw new Error(`Failed to load lead status flow (${res.status}) ${body.slice(0, 120)}`);
+          throw parseLeadStatusFlowError(body, res);
         }
 
-        const json = (await res.json()) as LeadStatusFlowResponse;
+        let json: LeadStatusFlowResponse;
+        try {
+          json = JSON.parse(body) as LeadStatusFlowResponse;
+        } catch {
+          throw parseLeadStatusFlowError(body, res);
+        }
+
         if (!cancelled) {
           setData(json);
         }
@@ -213,6 +255,8 @@ export default function LeadStatusFlowCard({ filters }: LeadStatusFlowCardProps)
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => {
           const DeltaIcon = metric.delta >= 0 ? ArrowUpRight : ArrowDownRight;
+          const sparkline = buildStatusSparkline(data?.series ?? emptySeries(selectedPeriod), metric.key);
+          const sparklineColor = (chartConfig[metric.key] as { color: string }).color;
 
           return (
             <div key={metric.key} className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-4">
@@ -244,6 +288,33 @@ export default function LeadStatusFlowCard({ filters }: LeadStatusFlowCardProps)
               <p className="mt-1 text-xs text-zinc-500">
                 Compared with the {data?.comparison_label ?? `previous ${PERIODS[selectedPeriod].label.toLowerCase()}`}.
               </p>
+              <div
+                data-testid={`lead-status-mini-chart-${metric.key}`}
+                className="mt-3 h-12 w-full rounded-lg bg-white/80 px-1 py-1.5"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={sparkline}
+                    margin={{ top: 2, right: 0, bottom: 0, left: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id={`mini-fill-${metric.key}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={sparklineColor} stopOpacity={0.22} />
+                        <stop offset="95%" stopColor={sparklineColor} stopOpacity={0.03} />
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke={sparklineColor}
+                      fill={`url(#mini-fill-${metric.key})`}
+                      strokeWidth={2}
+                      dot={false}
+                      isAnimationActive={false}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           );
         })}

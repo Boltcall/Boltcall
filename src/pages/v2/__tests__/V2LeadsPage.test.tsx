@@ -83,6 +83,9 @@ describe('V2LeadsPage', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        headers: {
+          get: (name: string) => (name.toLowerCase() === 'content-type' ? 'application/json' : null),
+        },
         json: async () => ({
           period: '30d',
           period_label: 'Last 30 days',
@@ -103,7 +106,27 @@ describe('V2LeadsPage', () => {
             { key: 'lost', current_total: 4, previous_total: 2, delta: 100 },
           ],
         }),
-        text: async () => '',
+        text: async () =>
+          JSON.stringify({
+            period: '30d',
+            period_label: 'Last 30 days',
+            comparison_label: 'previous last 30 days',
+            filtered_total: 4,
+            series: [
+              { label: 'Week 1', new: 4, contacted: 1, booked: 0, lost: 0 },
+              { label: 'Week 2', new: 2, contacted: 2, booked: 1, lost: 0 },
+              { label: 'Week 3', new: 1, contacted: 1, booked: 2, lost: 0 },
+              { label: 'Week 4', new: 0, contacted: 1, booked: 1, lost: 1 },
+              { label: 'Week 5', new: 0, contacted: 0, booked: 2, lost: 1 },
+              { label: 'Week 6', new: 0, contacted: 0, booked: 1, lost: 2 },
+            ],
+            metrics: [
+              { key: 'new', current_total: 7, previous_total: 3, delta: 133 },
+              { key: 'contacted', current_total: 5, previous_total: 4, delta: 25 },
+              { key: 'booked', current_total: 7, previous_total: 5, delta: 40 },
+              { key: 'lost', current_total: 4, previous_total: 2, delta: 100 },
+            ],
+          }),
       });
 
     render(
@@ -130,6 +153,56 @@ describe('V2LeadsPage', () => {
       const comparisonRows = flowCardQueries.getAllByText(/previous last 30 days/i);
       expect(comparisonRows.length).toBe(4);
       expect(comparisonRows[0].parentElement).toHaveTextContent('7');
+      expect(flowCardQueries.getByTestId('lead-status-mini-chart-new')).toBeInTheDocument();
+      expect(flowCardQueries.getByTestId('lead-status-mini-chart-contacted')).toBeInTheDocument();
+      expect(flowCardQueries.getByTestId('lead-status-mini-chart-booked')).toBeInTheDocument();
+      expect(flowCardQueries.getByTestId('lead-status-mini-chart-lost')).toBeInTheDocument();
+    });
+  });
+
+  it('shows a clear deploy-style error when the status-flow endpoint returns HTML instead of JSON', async () => {
+    authedFetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          hot_lead: null,
+          total: 1,
+          leads: [
+            {
+              id: 'lead-1',
+              name: 'Alice Plumbing',
+              source: 'Google Ads',
+              captured_at: '2026-06-17T10:00:00.000Z',
+              ai_summary: 'Asked for a same-day plumbing estimate.',
+              status: 'new',
+              next_action: 'Call in 2 min',
+            },
+          ],
+        }),
+        text: async () => '',
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (name: string) => (name.toLowerCase() === 'content-type' ? 'text/html' : null),
+        },
+        text: async () => '<!DOCTYPE html><html><body>Not found</body></html>',
+      });
+
+    render(
+      <MemoryRouter>
+        <V2LeadsPage />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'Lead status flow endpoint returned HTML instead of JSON. This usually means the function is missing or failed to deploy.',
+        ),
+      ).toBeInTheDocument();
     });
   });
 });
