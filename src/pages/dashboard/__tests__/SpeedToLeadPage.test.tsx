@@ -74,4 +74,17 @@ describe('SpeedToLeadPage', () => {
     expect(screen.queryByText('Loading leads...')).not.toBeInTheDocument();
     expect(orderMock).toHaveBeenCalledTimes(1);
   });
+
+  it('shows name before status and removes the id column from the lead table', async () => {
+    render(<SpeedToLeadPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('ID')).not.toBeInTheDocument();
+
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+    expect(headers).toEqual(['Name', 'Status', 'Source', 'Date']);
+  });
 });

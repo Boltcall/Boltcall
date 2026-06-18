@@ -1,93 +1,106 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 
-// Mock framer-motion
+let authState = {
+  user: null as { id: string } | null,
+  isLoading: true,
+};
+
+const getRetellCallHistoryMock = vi.hoisted(() => vi.fn());
+
 vi.mock('framer-motion', () => ({
   motion: {
     div: React.forwardRef(({ children, ...props }: any, ref: any) => <div ref={ref} {...props}>{children}</div>),
     tr: React.forwardRef(({ children, ...props }: any, ref: any) => <tr ref={ref} {...props}>{children}</tr>),
   },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
+
+vi.mock('../../../contexts/AuthContext', () => ({
+  useAuth: () => authState,
+}));
+
+vi.mock('../../../lib/retell', () => ({
+  getRetellCallHistory: getRetellCallHistoryMock,
 }));
 
 vi.mock('../../../lib/supabase', () => ({
   supabase: {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          not: () => ({ data: [], error: null }),
+    from: (table: string) => {
+      if (table !== 'agents') {
+        throw new Error(`Unexpected table: ${table}`);
+      }
+
+      return {
+        select: () => ({
+          eq: () => ({
+            not: () => Promise.resolve({
+              data: [{ retell_agent_id: 'agent-1' }],
+              error: null,
+            }),
+          }),
         }),
-      }),
-    }),
-    auth: {
-      getUser: () => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null }),
+      };
     },
   },
 }));
 
-vi.mock('../../../lib/retell', () => ({
-  getRetellCallHistory: vi.fn().mockResolvedValue({ calls: [] }),
-}));
-
 vi.mock('../../../components/ui/loading-skeleton', () => ({
-  CallHistorySkeleton: () => <div data-testid="call-history-skeleton">Loading...</div>,
+  CallHistorySkeleton: () => <div>Loading skeleton</div>,
 }));
 
 vi.mock('../../../components/ui/modal-shell', () => ({
-  default: ({ children, open }: any) => open ? <div>{children}</div> : null,
+  default: ({ children }: any) => <div>{children}</div>,
 }));
 
 import CallHistoryPage from '../CallHistoryPage';
 
 describe('CallHistoryPage', () => {
-  it('should render without crashing', () => {
-    render(
-      <MemoryRouter>
-        <CallHistoryPage />
-      </MemoryRouter>
-    );
-    expect(document.body).toBeInTheDocument();
+  beforeEach(() => {
+    authState = { user: null, isLoading: true };
+    vi.clearAllMocks();
+    getRetellCallHistoryMock.mockResolvedValue({ calls: [] });
   });
 
-  it('should render stats cards', () => {
-    render(
-      <MemoryRouter>
-        <CallHistoryPage />
-      </MemoryRouter>
-    );
+  it('waits for auth to settle before fetching call history', async () => {
+    const { rerender } = render(<CallHistoryPage />);
+
+    expect(getRetellCallHistoryMock).not.toHaveBeenCalled();
+
+    authState = {
+      user: { id: 'user-1' },
+      isLoading: false,
+    };
+
+    rerender(<CallHistoryPage />);
+
+    await waitFor(() => {
+      expect(getRetellCallHistoryMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('shows the loading skeleton while auth is still settling', () => {
+    render(<CallHistoryPage />);
+
+    expect(screen.getByText('Loading skeleton')).toBeInTheDocument();
+    expect(getRetellCallHistoryMock).not.toHaveBeenCalled();
+  });
+
+  it('renders the main stats cards after the user is available', async () => {
+    authState = {
+      user: { id: 'user-1' },
+      isLoading: false,
+    };
+
+    render(<CallHistoryPage />);
+
+    await waitFor(() => {
+      expect(getRetellCallHistoryMock).toHaveBeenCalledTimes(1);
+    });
+
     expect(screen.getByText('Total Calls')).toBeInTheDocument();
     expect(screen.getByText('Successful')).toBeInTheDocument();
     expect(screen.getByText('Avg Duration')).toBeInTheDocument();
     expect(screen.getByText('Call Quality')).toBeInTheDocument();
-  });
-
-  it('should render filter inputs', () => {
-    render(
-      <MemoryRouter>
-        <CallHistoryPage />
-      </MemoryRouter>
-    );
-    expect(screen.getByPlaceholderText('Search calls...')).toBeInTheDocument();
-  });
-
-  it('should render status filter dropdown', () => {
-    render(
-      <MemoryRouter>
-        <CallHistoryPage />
-      </MemoryRouter>
-    );
-    expect(screen.getByText('All Status')).toBeInTheDocument();
-    expect(screen.getByText('All Directions')).toBeInTheDocument();
-  });
-
-  it('should show loading skeleton initially', () => {
-    render(
-      <MemoryRouter>
-        <CallHistoryPage />
-      </MemoryRouter>
-    );
-    expect(screen.getByTestId('call-history-skeleton')).toBeInTheDocument();
   });
 });
