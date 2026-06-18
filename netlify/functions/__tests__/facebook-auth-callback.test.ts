@@ -85,7 +85,7 @@ describe('facebook-auth-callback', () => {
   });
 
   it('stores the Page token under access_token and scopes the connection to the resolved workspace', async () => {
-    const { handler } = await import('../facebook-auth-callback');
+    const { testHandler: handler } = await import('../facebook-auth-callback');
 
     const res = await handler(makeEvent(), {} as any);
 
@@ -107,7 +107,7 @@ describe('facebook-auth-callback', () => {
 
   it('does not report success when every Page upsert fails', async () => {
     upsertMock.mockResolvedValue({ error: { message: 'no unique constraint' } });
-    const { handler } = await import('../facebook-auth-callback');
+    const { testHandler: handler } = await import('../facebook-auth-callback');
 
     const res = await handler(makeEvent(), {} as any);
 
@@ -125,7 +125,7 @@ describe('facebook-auth-callback', () => {
       }))
       .mockResolvedValueOnce(jsonResponse({ error: { message: 'missing permission' } }, false));
     vi.stubGlobal('fetch', fetchMock);
-    const { handler } = await import('../facebook-auth-callback');
+    const { testHandler: handler } = await import('../facebook-auth-callback');
 
     const res = await handler(makeEvent(), {} as any);
 

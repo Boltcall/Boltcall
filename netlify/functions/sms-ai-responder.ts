@@ -26,7 +26,7 @@ const CORS_HEADERS = {
 
 const SMS_AI_TOKEN_COST = 8;
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   }
@@ -331,4 +331,5 @@ async function getCalcomAvailability(eventSlug: string): Promise<string> {
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

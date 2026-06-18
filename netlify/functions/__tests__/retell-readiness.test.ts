@@ -107,7 +107,7 @@ describe('retell-readiness', () => {
   });
 
   it('requires the internal secret before touching Retell or Supabase', async () => {
-    const { handler } = await import('../retell-readiness');
+    const { testHandler: handler } = await import('../retell-readiness');
 
     const res = await handler(event(), {} as any);
 
@@ -119,7 +119,7 @@ describe('retell-readiness', () => {
 
   it('fails closed when the Retell API key is missing', async () => {
     vi.stubEnv('RETELL_API_KEY', '');
-    const { handler } = await import('../retell-readiness');
+    const { testHandler: handler } = await import('../retell-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -134,7 +134,7 @@ describe('retell-readiness', () => {
   });
 
   it('passes only when Retell and Boltcall runtime wiring are both ready', async () => {
-    const { handler } = await import('../retell-readiness');
+    const { testHandler: handler } = await import('../retell-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -164,7 +164,7 @@ describe('retell-readiness', () => {
 
   it('does not pass when Boltcall has no active phone number for the Retell agent owner', async () => {
     getServiceSupabaseMock.mockReturnValue(supabaseMock({ phoneRows: [] }));
-    const { handler } = await import('../retell-readiness');
+    const { testHandler: handler } = await import('../retell-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -186,7 +186,7 @@ describe('retell-readiness', () => {
         weight: 1,
       }],
     });
-    const { handler } = await import('../retell-readiness');
+    const { testHandler: handler } = await import('../retell-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -208,7 +208,7 @@ describe('retell-readiness', () => {
       response_engine: { type: 'custom-llm' },
       is_published: false,
     });
-    const { handler } = await import('../retell-readiness');
+    const { testHandler: handler } = await import('../retell-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);
@@ -224,7 +224,7 @@ describe('retell-readiness', () => {
 
   it('returns a sanitized failure when Retell rejects the API request', async () => {
     agentRetrieveMock.mockRejectedValue(new Error('Retell auth failed: 401 invalid_api_key'));
-    const { handler } = await import('../retell-readiness');
+    const { testHandler: handler } = await import('../retell-readiness');
 
     const res = await handler(event({ 'x-internal-secret': 'test-internal-secret' }), {} as any);
     const body = JSON.parse(res.body);

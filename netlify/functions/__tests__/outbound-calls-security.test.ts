@@ -74,7 +74,7 @@ describe('outbound-calls tenant hardening', () => {
   });
 
   it('rejects campaign creation with an agent outside the authenticated user tenant', async () => {
-    const { handler } = await import('../outbound-calls');
+    const { testHandler: handler } = await import('../outbound-calls');
 
     const res = await handler(
       makePost({
@@ -95,7 +95,7 @@ describe('outbound-calls tenant hardening', () => {
   }, 10_000);
 
   it('rejects campaign creation with a phone number outside the authenticated user tenant', async () => {
-    const { handler } = await import('../outbound-calls');
+    const { testHandler: handler } = await import('../outbound-calls');
 
     const res = await handler(
       makePost({
@@ -126,7 +126,7 @@ describe('outbound-calls tenant hardening', () => {
       },
       error: null,
     });
-    const { handler } = await import('../outbound-calls');
+    const { testHandler: handler } = await import('../outbound-calls');
 
     const res = await handler(
       makePost({

@@ -30,7 +30,7 @@ describe('retell-webhook', () => {
   });
 
   it('returns 400 for malformed JSON instead of the generic 500 handler', async () => {
-    const { handler } = await import('../retell-webhook');
+    const { testHandler: handler } = await import('../retell-webhook');
 
     const res = await handler(
       {
@@ -50,7 +50,7 @@ describe('retell-webhook', () => {
     vi.stubEnv('RETELL_API_KEY', 'test-retell-secret');
     verifyRetellSignatureMock.mockReturnValue('missing');
 
-    const { handler } = await import('../retell-webhook');
+    const { testHandler: handler } = await import('../retell-webhook');
 
     const res = await handler(
       {
@@ -86,7 +86,7 @@ describe('retell-webhook', () => {
       }),
     });
 
-    const { handler } = await import('../retell-webhook');
+    const { testHandler: handler } = await import('../retell-webhook');
 
     const res = await handler(
       {
@@ -203,7 +203,7 @@ describe('retell-webhook', () => {
       }),
     });
 
-    const { handler } = await import('../retell-webhook');
+    const { testHandler: handler } = await import('../retell-webhook');
 
     const res = await handler(
       {
@@ -344,7 +344,7 @@ describe('retell-webhook', () => {
       }),
     });
 
-    const { handler } = await import('../retell-webhook');
+    const { testHandler: handler } = await import('../retell-webhook');
 
     const res = await handler(
       {

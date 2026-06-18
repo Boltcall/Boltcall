@@ -97,7 +97,7 @@ function leadResponseDeps(supabase: any) {
   };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
   if (event.httpMethod !== 'POST') {
@@ -139,4 +139,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

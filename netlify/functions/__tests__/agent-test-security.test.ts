@@ -58,7 +58,7 @@ describe('agent-test tenant hardening', () => {
         body: JSON.stringify({ error: 'Authentication required' }),
       },
     });
-    const { handler } = await import('../agent-test');
+    const { testHandler: handler } = await import('../agent-test');
 
     const res = await handler(makePost({ action: 'list-scenarios' }), {} as any);
 
@@ -68,7 +68,7 @@ describe('agent-test tenant hardening', () => {
   });
 
   it('returns 400 for malformed JSON before auth or Retell work', async () => {
-    const { handler } = await import('../agent-test');
+    const { testHandler: handler } = await import('../agent-test');
 
     const res = await handler(
       { httpMethod: 'POST', headers: { 'content-type': 'application/json' }, body: '{' } as any,
@@ -82,7 +82,7 @@ describe('agent-test tenant hardening', () => {
   });
 
   it('rejects full test runs for agents outside the authenticated user tenant', async () => {
-    const { handler } = await import('../agent-test');
+    const { testHandler: handler } = await import('../agent-test');
 
     const res = await handler(
       makePost({
@@ -130,7 +130,7 @@ describe('agent-test tenant hardening', () => {
         json: async () => ({}),
       });
 
-    const { handler } = await import('../agent-test');
+    const { testHandler: handler } = await import('../agent-test');
 
     const res = await handler(
       makePost({
@@ -158,7 +158,7 @@ describe('agent-test tenant hardening', () => {
   });
 
   it('rejects single scenario runs for agents outside the authenticated user tenant', async () => {
-    const { handler } = await import('../agent-test');
+    const { testHandler: handler } = await import('../agent-test');
 
     const res = await handler(
       makePost({

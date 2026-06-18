@@ -13,7 +13,7 @@ function hashKey(key: string): string {
   return createHash('sha256').update(key).digest('hex');
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const cors = getCorsHeaders(event.headers.origin);
 
   if (event.httpMethod === 'OPTIONS') {
@@ -117,4 +117,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

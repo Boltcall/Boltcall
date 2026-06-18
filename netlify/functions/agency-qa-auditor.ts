@@ -218,7 +218,7 @@ interface JudgmentRecord {
 
 // ─── 2. HTTP handler ─────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, body: '' };
   }
@@ -1246,4 +1246,5 @@ export const __INTERNAL_FOR_TESTS = {
   randomUUID,
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

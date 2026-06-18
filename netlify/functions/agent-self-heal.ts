@@ -454,7 +454,7 @@ async function applyPromptFix(
 
 // ─── Main Handler ─────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
@@ -930,4 +930,5 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

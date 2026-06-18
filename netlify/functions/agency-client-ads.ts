@@ -158,7 +158,7 @@ const VERTICAL_CPL_MEDIAN: Record<string, number> = {
 //   Handler
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
@@ -560,4 +560,5 @@ function buildVariantRationale(args: {
   return `${opener} Predicted CTR ${ctr}, predicted CPL ${cpl}.`;
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

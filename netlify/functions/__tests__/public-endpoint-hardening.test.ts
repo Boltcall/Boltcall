@@ -33,7 +33,7 @@ describe('challenge-submit hardening', () => {
 
   it('does not fall back to a public default challenge word', async () => {
     delete process.env.CHALLENGE_SECRET_WORD;
-    const { handler } = await import('../challenge-submit');
+    const { testHandler: handler } = await import('../challenge-submit');
 
     const res = await handler(
       makeEvent({ body: { word: 'boltcall', name: 'Noam', email: 'noam@example.com' } }) as any,
@@ -44,7 +44,7 @@ describe('challenge-submit hardening', () => {
   });
 
   it('returns a signed claim token only for the configured winner word', async () => {
-    const { handler } = await import('../challenge-submit');
+    const { testHandler: handler } = await import('../challenge-submit');
 
     const res = await handler(
       makeEvent({ body: { word: 'swordfish', name: 'Noam', email: 'noam@example.com' } }) as any,
@@ -65,7 +65,7 @@ describe('challenge-submit hardening', () => {
   });
 
   it('rejects disallowed browser origins', async () => {
-    const { handler } = await import('../challenge-submit');
+    const { testHandler: handler } = await import('../challenge-submit');
 
     const res = await handler(
       makeEvent({
@@ -84,7 +84,7 @@ describe('chatkit-session hardening', () => {
   it('is disabled unless CHATKIT_PUBLIC_ENABLED is explicitly true', async () => {
     delete process.env.CHATKIT_PUBLIC_ENABLED;
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../chatkit-session');
+    const { testHandler: handler } = await import('../chatkit-session');
 
     const res = await handler(
       makeEvent({ body: { deviceId: 'device_123456789' } }) as any,
@@ -99,7 +99,7 @@ describe('chatkit-session hardening', () => {
 describe('acs-numbers hardening', () => {
   it('rejects unauthenticated phone-number administration requests', async () => {
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../acs-numbers');
+    const { testHandler: handler } = await import('../acs-numbers');
 
     const res = await handler(
       makeEvent({
@@ -115,7 +115,7 @@ describe('acs-numbers hardening', () => {
 
   it('rejects disallowed browser origins before phone-provider access', async () => {
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../acs-numbers');
+    const { testHandler: handler } = await import('../acs-numbers');
 
     const res = await handler(
       makeEvent({
@@ -135,7 +135,7 @@ describe('public cost endpoint hardening', () => {
   it('does not create challenge Retell agents when the admin token is missing', async () => {
     delete process.env.ADMIN_API_TOKEN;
     process.env.RETELL_API_KEY = 'test-retell-key';
-    const { handler } = await import('../create-challenge-agent');
+    const { testHandler: handler } = await import('../create-challenge-agent');
 
     const res = await handler(
       makeEvent({ body: {} }) as any,
@@ -150,7 +150,7 @@ describe('public cost endpoint hardening', () => {
     delete process.env.INTERNAL_API_SECRET;
     delete process.env.INTERNAL_WEBHOOK_SECRET;
     delete process.env.CRON_SECRET;
-    const { handler } = await import('../cekura-test');
+    const { testHandler: handler } = await import('../cekura-test');
 
     const res = await handler(
       makeEvent({
@@ -165,7 +165,7 @@ describe('public cost endpoint hardening', () => {
 
   it('rejects unauthenticated Cekura phone verification provider calls', async () => {
     process.env.CEKURA_API_KEY = 'test-cekura-key';
-    const { handler } = await import('../cekura-verify');
+    const { testHandler: handler } = await import('../cekura-verify');
 
     const res = await handler(
       makeEvent({
@@ -180,7 +180,7 @@ describe('public cost endpoint hardening', () => {
 
   it('rejects unauthenticated Retell voice provider listing calls', async () => {
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../retell-voices');
+    const { testHandler: handler } = await import('../retell-voices');
 
     const res = await handler(
       makeEvent({ httpMethod: 'GET' }) as any,
@@ -194,7 +194,7 @@ describe('public cost endpoint hardening', () => {
   it('rejects cross-site PageSpeed proxy calls before using the API key', async () => {
     delete process.env.PAGESPEED_API_KEY;
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../pagespeed');
+    const { testHandler: handler } = await import('../pagespeed');
 
     const res = await handler(
       makeEvent({
@@ -211,7 +211,7 @@ describe('public cost endpoint hardening', () => {
   it('rejects non-http PageSpeed URLs before calling the provider', async () => {
     process.env.PAGESPEED_API_KEY = 'test-pagespeed-key';
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../pagespeed');
+    const { testHandler: handler } = await import('../pagespeed');
 
     const res = await handler(
       makeEvent({ body: { url: 'file:///etc/passwd' } }) as any,
@@ -226,7 +226,7 @@ describe('public cost endpoint hardening', () => {
     delete process.env.PAGESPEED_API_KEY;
     delete process.env.GOOGLE_PAGESPEED_API_KEY;
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../pagespeed');
+    const { testHandler: handler } = await import('../pagespeed');
 
     const res = await handler(
       makeEvent({ body: { url: 'http://127.0.0.1:54321/admin' } }) as any,
@@ -241,7 +241,7 @@ describe('public cost endpoint hardening', () => {
     delete process.env.BREVO_API_KEY;
     delete process.env.BREVO_LIST_ID;
     process.env.URL = 'https://boltcall.org';
-    const { handler } = await import('../brevo-subscribe');
+    const { testHandler: handler } = await import('../brevo-subscribe');
 
     const res = await handler(
       makeEvent({
@@ -263,7 +263,7 @@ describe('break-my-ai legacy endpoint hardening', () => {
     delete process.env.CHALLENGE_SECRET_WORD;
     process.env.URL = 'https://boltcall.org';
 
-    const { handler } = await import('../break-my-ai');
+    const { testHandler: handler } = await import('../break-my-ai');
     const res = await handler(
       makeEvent({
         path: '/.netlify/functions/break-my-ai/submit',

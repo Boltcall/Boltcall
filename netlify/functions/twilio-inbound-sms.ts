@@ -27,7 +27,7 @@ function buildThreadId(phone1: string, phone2: string): string {
  * handles appointment confirmations/cancellations, and triggers AI auto-reply.
  * URL: /.netlify/functions/twilio-inbound-sms
  */
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   // Twilio sends POST with application/x-www-form-urlencoded
   if (event.httpMethod !== 'POST') {
     return {
@@ -196,4 +196,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

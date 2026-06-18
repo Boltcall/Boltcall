@@ -88,7 +88,7 @@ type Source = {
 
 // ─── Handler ────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
@@ -533,4 +533,5 @@ function extractKbSnippet(content: unknown): string {
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

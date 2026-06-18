@@ -32,7 +32,7 @@ describe('nicejob-webhook', () => {
       event_code: 'Review.created',
     };
     const timestamp = Math.floor(Date.now() / 1000);
-    const { handler } = await import('../nicejob-webhook');
+    const { testHandler: handler } = await import('../nicejob-webhook');
 
     const res = await handler(makeEvent({
       payload,
@@ -53,7 +53,7 @@ describe('nicejob-webhook', () => {
 
   it('rejects unsigned NiceJob webhook events when the secret is configured', async () => {
     vi.stubEnv('NICEJOB_WEBHOOK_SECRET', 'nicejob_test_secret');
-    const { handler } = await import('../nicejob-webhook');
+    const { testHandler: handler } = await import('../nicejob-webhook');
 
     const res = await handler(makeEvent({
       payload: {

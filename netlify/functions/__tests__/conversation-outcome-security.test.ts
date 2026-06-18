@@ -70,7 +70,7 @@ describe('conversation-outcome tenant hardening', () => {
   });
 
   it('rejects outcome writes and self-heal triggers for agents outside the requested user tenant', async () => {
-    const { handler } = await import('../conversation-outcome');
+    const { testHandler: handler } = await import('../conversation-outcome');
 
     const res = await handler(
       makePost({
@@ -93,7 +93,7 @@ describe('conversation-outcome tenant hardening', () => {
   });
 
   it('returns 400 for malformed JSON before auth or persistence work', async () => {
-    const { handler } = await import('../conversation-outcome');
+    const { testHandler: handler } = await import('../conversation-outcome');
 
     const res = await handler(
       { httpMethod: 'POST', headers: { 'content-type': 'application/json' }, body: '{' } as any,
@@ -113,7 +113,7 @@ describe('conversation-outcome tenant hardening', () => {
     getServiceSupabaseMock.mockReturnValue(supabase.client);
     (fetch as any).mockResolvedValue({ ok: true });
 
-    const { handler } = await import('../conversation-outcome');
+    const { testHandler: handler } = await import('../conversation-outcome');
 
     const res = await handler(
       makePost({
@@ -158,7 +158,7 @@ describe('conversation-outcome tenant hardening', () => {
     getServiceSupabaseMock.mockReturnValue(supabase.client);
     (fetch as any).mockResolvedValue({ ok: true });
 
-    const { handler } = await import('../conversation-outcome');
+    const { testHandler: handler } = await import('../conversation-outcome');
 
     const res = await handler(
       makePost({

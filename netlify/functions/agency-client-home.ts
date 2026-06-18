@@ -119,7 +119,7 @@ const DEFAULT_STARTER_QUESTIONS = [
 
 // ─── Handler ────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
@@ -715,4 +715,5 @@ async function generateStarterQuestions(args: {
   return qs.filter((q): q is string => typeof q === 'string' && q.trim().length > 0);
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -32,7 +32,7 @@ describe('embed-config function', () => {
     process.env.VITE_SUPABASE_ANON_KEY = 'test-anon-key';
 
     const mod = await import('../embed-config');
-    handler = mod.handler;
+    handler = mod.testHandler ?? mod.default;
   });
 
   beforeEach(() => {

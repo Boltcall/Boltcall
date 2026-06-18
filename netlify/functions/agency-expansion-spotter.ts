@@ -251,7 +251,7 @@ const OUTPUT_SCHEMA: JsonSchemaObject = {
 //   Handler
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (
+const handler: Handler = async (
   event: HandlerEvent,
   _context: HandlerContext,
 ) => {
@@ -973,4 +973,5 @@ function json(status: number, body: unknown) {
   };
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

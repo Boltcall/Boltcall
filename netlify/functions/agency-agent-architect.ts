@@ -370,7 +370,7 @@ function ensureVerticalGuardrailsInPrompt(prompt: string, verticalContextBlock: 
   return [verticalContextBlock, '# Agent Prompt', prompt].join('\n\n');
 }
 
-export const handler: Handler = async (event: HandlerEvent): Promise<HandlerResponse> => {
+const handler: Handler = async (event: HandlerEvent): Promise<HandlerResponse> => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -1140,4 +1140,5 @@ export const __test__ = {
   PERSONA_CATEGORIES,
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

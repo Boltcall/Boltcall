@@ -156,7 +156,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-cron-monthly-optimization', inner);
+const handler = wrapCronWithAlert('agency-cron-monthly-optimization', inner);
 
 // ───────────────────────────────────────────────────────────────────────────
 //   Helpers
@@ -198,4 +198,5 @@ async function postToOptimizationStrategist(
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -30,7 +30,7 @@ vi.mock('../_shared/notify', () => ({
   notifyError: vi.fn(),
 }));
 
-import { handler } from '../angi-lead-webhook';
+import { testHandler as handler } from '../angi-lead-webhook';
 
 function makeEvent(body: Record<string, any>, headers: Record<string, string> = { authorization: 'Bearer bc_test' }) {
   return {

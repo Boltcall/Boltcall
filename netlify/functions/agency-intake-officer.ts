@@ -838,7 +838,7 @@ async function runIntake(payload: RunPayload): Promise<{
  *
  * GET /agency-intake-officer?mode=health → static 200 for liveness checks.
  */
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const mode = (event.queryStringParameters?.mode ?? 'run').toLowerCase();
 
   if (event.httpMethod === 'GET' && mode === 'health') {
@@ -983,4 +983,5 @@ export const __internals = {
   PROFILE_FIELDS_40,
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

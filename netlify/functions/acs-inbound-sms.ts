@@ -54,7 +54,7 @@ function validateAcsSecret(event: HandlerEvent): boolean {
  *   - Microsoft.EventGrid.SubscriptionValidationEvent  (required handshake)
  *   - Microsoft.Communication.SMSReceived              (inbound SMS)
  */
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method not allowed' };
   }
@@ -199,4 +199,5 @@ export const handler: Handler = async (event) => {
   return { statusCode: 200, body: '' };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

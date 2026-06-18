@@ -164,7 +164,7 @@ describe('saas-v2-help-ask support escalation', () => {
   });
 
   it('keeps routine help questions self-serve', async () => {
-    const { handler } = await import('../saas-v2-help-ask');
+    const { testHandler: handler } = await import('../saas-v2-help-ask');
 
     const res = await handler(makeEvent('How do I add a phone number?'), {} as any);
     const body = JSON.parse(res.body || '{}');
@@ -175,7 +175,7 @@ describe('saas-v2-help-ask support escalation', () => {
   });
 
   it('returns current public docs sources for common customer questions', async () => {
-    const { handler } = await import('../saas-v2-help-ask');
+    const { testHandler: handler } = await import('../saas-v2-help-ask');
 
     const phoneRes = await handler(makeEvent('How do I add a phone number?'), {} as any);
     const phoneBody = JSON.parse(phoneRes.body || '{}');
@@ -200,7 +200,7 @@ describe('saas-v2-help-ask support escalation', () => {
   });
 
   it('deduplicates repeated docs sources and followups', async () => {
-    const { handler } = await import('../saas-v2-help-ask');
+    const { testHandler: handler } = await import('../saas-v2-help-ask');
 
     const res = await handler(
       makeEvent('Why are failed calls failing for my phone number?'),
@@ -216,7 +216,7 @@ describe('saas-v2-help-ask support escalation', () => {
   it('alerts internal support when the customer asks for urgent human help', async () => {
     const supabase = makeSupabase();
     mocks.getServiceSupabase.mockReturnValue(supabase);
-    const { handler } = await import('../saas-v2-help-ask');
+    const { testHandler: handler } = await import('../saas-v2-help-ask');
 
     const res = await handler(
       makeEvent('Urgent: calls are broken and I need a human to help me now.'),
@@ -256,7 +256,7 @@ describe('saas-v2-help-ask support escalation', () => {
     mocks.chatCompletion.mockImplementation(() => new Promise(() => {}));
     const supabase = makeSupabase();
     mocks.getServiceSupabase.mockReturnValue(supabase);
-    const { handler } = await import('../saas-v2-help-ask');
+    const { testHandler: handler } = await import('../saas-v2-help-ask');
 
     const res = await handler(
       makeEvent('Urgent: calls are broken and I need a human to help me now.'),
@@ -280,7 +280,7 @@ describe('saas-v2-help-ask support escalation', () => {
   });
 
   it('adds a live workspace diagnostic snapshot to the support prompt', async () => {
-    const { handler } = await import('../saas-v2-help-ask');
+    const { testHandler: handler } = await import('../saas-v2-help-ask');
 
     await handler(makeEvent('Why are calls failing for my phone number?'), {} as any);
 

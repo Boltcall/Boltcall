@@ -80,7 +80,7 @@ async function getOperationStatus(operationId: string): Promise<any> {
   return res.json();
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const origin = getRequestOrigin(event.headers as Record<string, string | undefined>);
   const cors = getV2CorsHeaders(origin, { methods: 'GET, POST' });
   const headers = cors.headers;
@@ -206,4 +206,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

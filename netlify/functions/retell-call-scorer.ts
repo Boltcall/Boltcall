@@ -106,7 +106,7 @@ async function scoreCall(
   }
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
@@ -284,4 +284,5 @@ export const handler: Handler = async (event) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

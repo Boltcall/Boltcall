@@ -35,7 +35,7 @@ function generateKey(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: HEADERS, body: '' };
   }
@@ -107,4 +107,5 @@ export const handler: Handler = async (event) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -134,6 +134,6 @@ const handler: Handler = async (event) => {
   }
 };
 
-export { handler };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

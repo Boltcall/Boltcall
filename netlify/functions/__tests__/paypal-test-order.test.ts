@@ -66,7 +66,7 @@ describe('PayPal live test order endpoints', () => {
         links: [{ rel: 'payer-action', href: 'https://www.paypal.com/checkoutnow?token=ORDER-1' }],
       }),
     );
-    const { handler } = await import('../create-paypal-test-order');
+    const { testHandler: handler } = await import('../create-paypal-test-order');
 
     const res = await handler(event(), {} as any);
     const body = JSON.parse(res.body);
@@ -88,7 +88,7 @@ describe('PayPal live test order endpoints', () => {
 
   it('rejects non-founder users before creating a PayPal order', async () => {
     role = 'user';
-    const { handler } = await import('../create-paypal-test-order');
+    const { testHandler: handler } = await import('../create-paypal-test-order');
 
     const res = await handler(event(), {} as any);
 
@@ -131,7 +131,7 @@ describe('PayPal live test order endpoints', () => {
           ],
         }),
       );
-    const { handler } = await import('../capture-paypal-test-order');
+    const { testHandler: handler } = await import('../capture-paypal-test-order');
 
     const res = await handler(event({ orderId: 'ORDER-1' }), {} as any);
     const body = JSON.parse(res.body);
@@ -168,7 +168,7 @@ describe('PayPal live test order endpoints', () => {
         ],
       }),
     );
-    const { handler } = await import('../capture-paypal-test-order');
+    const { testHandler: handler } = await import('../capture-paypal-test-order');
 
     const res = await handler(event({ orderId: 'ORDER-OTHER' }), {} as any);
 
@@ -213,7 +213,7 @@ describe('PayPal live test order endpoints', () => {
           ],
         }),
       );
-    const { handler, signPayPalTestState } = await import('../capture-paypal-test-return');
+    const { testHandler: handler, signPayPalTestState } = await import('../capture-paypal-test-return');
     const state = signPayPalTestState({
       founderUserId: 'founder-1',
       issuedAt: Date.now(),
@@ -246,7 +246,7 @@ describe('PayPal live test order endpoints', () => {
 
   it('rejects expired signed PayPal returns before touching PayPal', async () => {
     vi.stubEnv('INTERNAL_API_SECRET', 'return-secret');
-    const { handler, signPayPalTestState } = await import('../capture-paypal-test-return');
+    const { testHandler: handler, signPayPalTestState } = await import('../capture-paypal-test-return');
     const state = signPayPalTestState({
       founderUserId: 'founder-1',
       issuedAt: Date.now() - 25 * 60 * 60 * 1000,
@@ -282,7 +282,7 @@ describe('PayPal live test order endpoints', () => {
         ],
       }),
     );
-    const { handler, signPayPalTestState } = await import('../capture-paypal-test-return');
+    const { testHandler: handler, signPayPalTestState } = await import('../capture-paypal-test-return');
     const state = signPayPalTestState({
       founderUserId: 'founder-1',
       issuedAt: Date.now(),
@@ -313,7 +313,7 @@ describe('PayPal live test order endpoints', () => {
         links: [{ rel: 'approve', href: 'https://www.paypal.com/checkoutnow?token=ORDER-INTERNAL' }],
       }),
     );
-    const { handler } = await import('../create-paypal-test-approval-link');
+    const { testHandler: handler } = await import('../create-paypal-test-approval-link');
 
     const res = await handler({
       httpMethod: 'POST',
@@ -342,7 +342,7 @@ describe('PayPal live test order endpoints', () => {
   it('requires the internal secret before creating the internal approval link', async () => {
     vi.stubEnv('INTERNAL_API_SECRET', 'return-secret');
     vi.stubEnv('FOUNDER_UUID', 'founder-1');
-    const { handler } = await import('../create-paypal-test-approval-link');
+    const { testHandler: handler } = await import('../create-paypal-test-approval-link');
 
     const res = await handler({
       httpMethod: 'POST',

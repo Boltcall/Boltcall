@@ -166,7 +166,7 @@ describe('agent-self-heal tenant hardening', () => {
   });
 
   it('rejects self-heal runs for agents outside the requested user tenant before token or provider work', async () => {
-    const { handler } = await import('../agent-self-heal');
+    const { testHandler: handler } = await import('../agent-self-heal');
 
     const res = await handler(
       makePost({
@@ -188,7 +188,7 @@ describe('agent-self-heal tenant hardening', () => {
   });
 
   it('returns 400 for malformed JSON before auth or provider work', async () => {
-    const { handler } = await import('../agent-self-heal');
+    const { testHandler: handler } = await import('../agent-self-heal');
 
     const res = await handler(
       { httpMethod: 'POST', headers: { 'content-type': 'application/json' }, body: '{' } as any,
@@ -203,7 +203,7 @@ describe('agent-self-heal tenant hardening', () => {
   });
 
   it('rejects success analysis for agents outside the requested user tenant before charging tokens', async () => {
-    const { handler } = await import('../agent-self-heal');
+    const { testHandler: handler } = await import('../agent-self-heal');
 
     const res = await handler(
       makePost({
@@ -225,7 +225,7 @@ describe('agent-self-heal tenant hardening', () => {
   });
 
   it('rejects filtered history reads for agents outside the effective user tenant', async () => {
-    const { handler } = await import('../agent-self-heal');
+    const { testHandler: handler } = await import('../agent-self-heal');
 
     const res = await handler(
       makePost({
@@ -301,7 +301,7 @@ describe('agent-self-heal tenant hardening', () => {
       throw new Error(`Unexpected Retell path: ${path}`);
     });
 
-    const { handler } = await import('../agent-self-heal');
+    const { testHandler: handler } = await import('../agent-self-heal');
     const res = await handler(
       makePost({
         action: 'heal',

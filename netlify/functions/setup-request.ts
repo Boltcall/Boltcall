@@ -133,7 +133,7 @@ async function forwardToFulfillment(args: {
   return { status: 'sent' as const };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const requestOrigin = getRequestOrigin(event.headers as Record<string, string>);
   const cors = getV2CorsHeaders(requestOrigin, { methods: 'POST' });
   const headers = cors.headers;
@@ -253,4 +253,5 @@ export const __internals = {
   getFulfillmentWebhookUrl,
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

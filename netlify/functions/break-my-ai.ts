@@ -38,7 +38,7 @@ function getCurrentCode(): string | null {
   return `${w1}${w2}${num}`;
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
     { methods: 'GET, POST' },
@@ -221,4 +221,5 @@ export const handler: Handler = async (event) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

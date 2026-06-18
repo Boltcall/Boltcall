@@ -28,7 +28,7 @@ describe('facebook-auth-start', () => {
   });
 
   it('requests the Page permissions needed to subscribe and test Lead Ads forms', async () => {
-    const { handler } = await import('../facebook-auth-start');
+    const { testHandler: handler } = await import('../facebook-auth-start');
 
     const res = await handler({
       httpMethod: 'GET',

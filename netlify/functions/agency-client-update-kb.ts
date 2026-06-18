@@ -88,7 +88,7 @@ async function ownsClient(
   return data as ClientRow;
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: CORS_HEADERS, body: '' };
   }
@@ -258,4 +258,5 @@ export const handler: Handler = async (event) => {
   });
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

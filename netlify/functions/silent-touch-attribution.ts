@@ -13,7 +13,7 @@ const headers = {
 // charset to avoid abuse via malformed payloads from random web traffic.
 const UID_RE = /^[A-Za-z0-9_-]{6,128}$/;
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -94,4 +94,5 @@ export const handler: Handler = async (event) => {
   };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -35,7 +35,7 @@ function json(statusCode: number, body: any) {
   return { statusCode, headers: CORS_HEADERS, body: JSON.stringify(body) };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   }
@@ -486,4 +486,5 @@ async function sendViaProvider(
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

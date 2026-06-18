@@ -1025,7 +1025,7 @@ async function runForClient(client_id: string): Promise<{
 
 // ─── Netlify handler ────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const HEADERS = { 'Content-Type': 'application/json' };
 
   const authz = await authorizeRunner(event);
@@ -1153,4 +1153,5 @@ function inferMaturityBucket(signed_up_at: string | null): string {
   return '12mo+';
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

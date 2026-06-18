@@ -68,7 +68,7 @@ interface ReportEntry {
   next_week_ask: string | null;
 }
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers, body: '' };
   }
@@ -193,4 +193,5 @@ function formatHumanDate(iso: string): string {
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -112,6 +112,6 @@ Rules: Extract REAL services; estimate duration 15-60 min; price 0 if not listed
   }
 };
 
-export { handler };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

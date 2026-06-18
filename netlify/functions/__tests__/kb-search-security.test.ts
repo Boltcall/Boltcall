@@ -66,7 +66,7 @@ describe('kb-search tenant hardening', () => {
   });
 
   it('rejects linking a KB folder to an agent outside the authenticated user tenant', async () => {
-    const { handler } = await import('../kb-search');
+    const { testHandler: handler } = await import('../kb-search');
 
     const res = await handler(
       makePost({
@@ -83,7 +83,7 @@ describe('kb-search tenant hardening', () => {
   });
 
   it('rejects linking an owned agent to a KB folder outside the authenticated user tenant', async () => {
-    const { handler } = await import('../kb-search');
+    const { testHandler: handler } = await import('../kb-search');
 
     const res = await handler(
       makePost({
@@ -100,7 +100,7 @@ describe('kb-search tenant hardening', () => {
   });
 
   it('rejects folder reads for agents outside the authenticated user tenant', async () => {
-    const { handler } = await import('../kb-search');
+    const { testHandler: handler } = await import('../kb-search');
 
     const res = await handler(
       makePost({

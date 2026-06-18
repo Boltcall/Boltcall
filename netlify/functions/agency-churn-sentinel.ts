@@ -1342,7 +1342,7 @@ function estimateOpusCost(resp: Anthropic.Message): number {
 //   Netlify handler — cron entrypoint
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const startedAt = Date.now();
 
   const authz = await authorizeRunner(event);
@@ -1411,4 +1411,5 @@ export const config = {
   schedule: '0 6 * * *',
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

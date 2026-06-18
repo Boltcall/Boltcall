@@ -22,7 +22,7 @@ describe('setup-request-fulfillment', () => {
   });
 
   it('rejects public calls without the internal secret', async () => {
-    const { handler } = await import('../setup-request-fulfillment');
+    const { testHandler: handler } = await import('../setup-request-fulfillment');
 
     const res = await handler(
       makeEvent({
@@ -46,7 +46,7 @@ describe('setup-request-fulfillment', () => {
 
   it('accepts a setup request handoff and notifies fulfillment', async () => {
     const { notifyInfo } = await import('../_shared/notify');
-    const { handler } = await import('../setup-request-fulfillment');
+    const { testHandler: handler } = await import('../setup-request-fulfillment');
 
     const res = await handler(
       makeEvent(

@@ -109,7 +109,7 @@ describe('google-leads-webhook', () => {
       retry_after_seconds: 57,
       reason: 'rate_limit_exceeded',
     }];
-    const { handler } = await import('../google-leads-webhook');
+    const { testHandler: handler } = await import('../google-leads-webhook');
 
     const res = await handler(makeEvent({
       google_key: 'valid-key',
@@ -123,7 +123,7 @@ describe('google-leads-webhook', () => {
   });
 
   it('records Google test pings for the dashboard without requiring lead_id', async () => {
-    const { handler } = await import('../google-leads-webhook');
+    const { testHandler: handler } = await import('../google-leads-webhook');
 
     const res = await handler(makeEvent({
       google_key: 'valid-key',
@@ -140,7 +140,7 @@ describe('google-leads-webhook', () => {
   });
 
   it('starts Google lead first touch in non-blocking mode', async () => {
-    const { handler } = await import('../google-leads-webhook');
+    const { testHandler: handler } = await import('../google-leads-webhook');
 
     const res = await handler(makeEvent({
       google_key: 'valid-key',

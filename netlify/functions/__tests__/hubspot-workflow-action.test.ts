@@ -25,7 +25,7 @@ vi.mock('retell-sdk', () => ({
   default: vi.fn(),
 }));
 
-import { handler } from '../hubspot-workflow-action';
+import { testHandler as handler } from '../hubspot-workflow-action';
 
 const rawUrl = 'https://boltcall.org/.netlify/functions/hubspot-workflow-action';
 

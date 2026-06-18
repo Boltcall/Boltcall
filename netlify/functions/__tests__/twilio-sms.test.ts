@@ -39,7 +39,7 @@ process.env.TWILIO_ACCOUNT_SID = 'AC_TEST';
 process.env.TWILIO_AUTH_TOKEN = 'test_token';
 process.env.TWILIO_FROM_NUMBER = '+15551234567';
 
-import { handler } from '../twilio-sms';
+import { testHandler as handler } from '../twilio-sms';
 
 function makeEvent(overrides: any = {}) {
   const { body, ...rest } = overrides;

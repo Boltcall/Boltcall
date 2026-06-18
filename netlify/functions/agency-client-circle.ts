@@ -109,7 +109,7 @@ function daysBetween(a: Date, b: Date): number {
   return Math.floor((b.getTime() - a.getTime()) / 86_400_000);
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: CORS, body: '' };
   }
@@ -303,4 +303,5 @@ export const handler: Handler = async (event) => {
   return { statusCode: 200, headers: CORS, body: JSON.stringify(body) };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

@@ -26,7 +26,7 @@ vi.mock('../_shared/user-auth', () => ({
   )),
 }));
 
-import { handler } from '../record-usage';
+import { testHandler as handler } from '../record-usage';
 
 function makeEvent(overrides: any = {}) {
   const { body, ...rest } = overrides;

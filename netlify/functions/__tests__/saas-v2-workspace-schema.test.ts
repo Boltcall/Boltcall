@@ -125,7 +125,7 @@ describe('saas-v2 workspace schema compatibility', () => {
   });
 
   it('opens a V2 message thread without selecting the removed workspaces.owner_id column', async () => {
-    const { handler } = await import('../saas-v2-message-thread');
+    const { testHandler: handler } = await import('../saas-v2-message-thread');
 
     const res = await handler(
       {
@@ -142,7 +142,7 @@ describe('saas-v2 workspace schema compatibility', () => {
   });
 
   it('drafts a V2 message reply without selecting the removed workspaces.owner_id column', async () => {
-    const { handler } = await import('../saas-v2-message-draft-reply');
+    const { testHandler: handler } = await import('../saas-v2-message-draft-reply');
 
     const res = await handler(
       {

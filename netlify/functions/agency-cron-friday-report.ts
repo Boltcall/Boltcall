@@ -148,7 +148,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-cron-friday-report', inner);
+const handler = wrapCronWithAlert('agency-cron-friday-report', inner);
 
 // ───────────────────────────────────────────────────────────────────────────
 //   Helpers
@@ -243,4 +243,5 @@ async function postToReportingScribe(client_id: string): Promise<{ ok: boolean; 
   }
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

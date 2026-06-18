@@ -27,7 +27,7 @@ function validatePhone(phone: string): boolean {
  * POST: inbound messages with HMAC-SHA256 signature verification
  * URL: /.netlify/functions/whatsapp-webhook
  */
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const supabase = getServiceClient();
 
   // GET: Meta verification challenge
@@ -210,4 +210,5 @@ export const handler: Handler = async (event) => {
   return { statusCode: 200, body: 'ok' };
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

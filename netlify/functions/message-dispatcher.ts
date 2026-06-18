@@ -47,7 +47,7 @@ async function sendTwilioSms(to: string, message: string): Promise<{ sid: string
   return { sid: data.sid };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   // Support both Netlify scheduled invocations and manual POST calls
   const isScheduled = !event.httpMethod || event.httpMethod === 'POST';
   if (!isScheduled && event.httpMethod !== 'GET') {
@@ -313,4 +313,5 @@ export const handler: Handler = async (event) => {
   }
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

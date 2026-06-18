@@ -259,7 +259,7 @@ interface RunSummary {
 //   Handler
 // ────────────────────────────────────────────────────────────────────────────
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handler: Handler = async (event: HandlerEvent) => {
   const t0 = Date.now();
 
   const authz = await authorizeRunner(event);
@@ -1388,4 +1388,5 @@ function cosineSimilarity(a: number[], b: number[]): number {
 // Re-export for tests / unit harness imports.
 export { runForClient, runDiverger, applyCriticKillRules, runPredictor, fitRidge, maxNgramOverlap };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

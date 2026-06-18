@@ -93,7 +93,7 @@ function counts(tickets: Array<Record<string, unknown>>): SupportTicketSummary {
   );
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(getRequestOrigin(event.headers as Record<string, string>), {
     methods: 'GET, PATCH',
   });
@@ -184,4 +184,5 @@ export const handler: Handler = async (event) => {
   return json(cors, 200, { ticket: data });
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

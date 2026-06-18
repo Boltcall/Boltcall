@@ -31,7 +31,7 @@ const CORS_HEADERS = {
   'Content-Type': 'application/json',
 };
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   }
@@ -415,4 +415,5 @@ function buildThreadId(phone1: string, phone2: string): string {
   return `${sorted[0]}_${sorted[1]}`;
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

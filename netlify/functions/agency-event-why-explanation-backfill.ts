@@ -208,7 +208,7 @@ const inner: Handler = async (event: HandlerEvent) => {
     }),
   };
 };
-export const handler = wrapCronWithAlert('agency-event-why-explanation-backfill', inner);
+const handler = wrapCronWithAlert('agency-event-why-explanation-backfill', inner);
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Helpers
@@ -380,4 +380,5 @@ function estimateHaikuCostUsd(input: number, output: number): number {
   return (input / 1_000_000) * 1.0 + (output / 1_000_000) * 5.0;
 }
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);

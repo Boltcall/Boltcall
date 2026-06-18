@@ -285,7 +285,7 @@ async function loadAgentPrompt(
   return { prompt: '', agent_id: null };
 }
 
-export const handler: Handler = async (event) => {
+const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
     { methods: 'POST' },
@@ -428,4 +428,5 @@ export const __test__ = {
   SCENARIO_INDEX,
 };
 
+export const testHandler = handler;
 export default withLegacyHandler(handler);
