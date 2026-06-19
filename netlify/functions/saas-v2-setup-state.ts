@@ -14,6 +14,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
+import { ensureWorkspaceForUser } from './_shared/setup-workspace';
 
 interface WizardStatePayload {
   conversation: Array<{ role: string; content: string; ts: string }>;
@@ -54,22 +55,18 @@ const handler: Handler = async (event) => {
   }
   const userId = userResult.user.id;
 
-  // Resolve workspace via user_id then owner_id (compat with both schemas).
-  let { data: ws } = await supa
-    .from('workspaces')
-    .select('id, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  if (!ws) {
-    const r = await supa
-      .from('workspaces')
-      .select('id, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at')
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle();
-    ws = r.data || null;
-  }
+  const ws = await ensureWorkspaceForUser<{
+    id: string;
+    v2_setup_state?: WizardStatePayload | null;
+    v2_setup_state_version?: number | null;
+    v2_setup_conversation_id?: string | null;
+    v2_setup_status?: string | null;
+    v2_setup_started_at?: string | null;
+    v2_setup_completed_at?: string | null;
+  }>(
+    userId,
+    'id, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_status, v2_setup_started_at, v2_setup_completed_at',
+  );
 
   if (!ws) {
     return {
@@ -80,7 +77,7 @@ const handler: Handler = async (event) => {
   }
 
   const queryConvoId = event.queryStringParameters?.conversation_id;
-  const state = (ws.v2_setup_state || null) as WizardStatePayload | null;
+  const state = ws.v2_setup_state || null;
 
   // If the client asked for a specific conversation_id and we have a different one,
   // treat as a fresh session (state=null). Otherwise return what we have.
@@ -109,7 +106,7 @@ const handler: Handler = async (event) => {
       extracted: state?.extracted || {},
       wizard_step: state?.wizard_step || 'intake',
       status: ws.v2_setup_status || 'not_started',
-      state_version: (ws.v2_setup_state_version as number | null) ?? 0,
+      state_version: ws.v2_setup_state_version ?? 0,
       started_at: ws.v2_setup_started_at || null,
       completed_at: ws.v2_setup_completed_at || null,
     }),

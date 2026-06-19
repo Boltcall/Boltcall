@@ -25,6 +25,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 import { redactSecrets, redactSecretsDeep } from './_shared/redact-secrets';
+import { ensureWorkspaceForUser } from './_shared/setup-workspace';
 
 type Role = 'user' | 'assistant' | 'system';
 interface ConversationTurn {
@@ -375,23 +376,15 @@ async function loadWorkspaceState(userId: string): Promise<{
   conversationId: string | null;
   stateVersion: number;
 }> {
-  const supa = getServiceSupabase();
-  // Try user_id (live database.ts pattern), fall back to owner_id (rbac migration).
-  let { data: ws } = await supa
-    .from('workspaces')
-    .select('id, v2_setup_state, v2_setup_conversation_id, v2_setup_state_version')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  if (!ws) {
-    const r = await supa
-      .from('workspaces')
-      .select('id, v2_setup_state, v2_setup_conversation_id, v2_setup_state_version')
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle();
-    ws = r.data || null;
-  }
+  const ws = await ensureWorkspaceForUser<{
+    id: string;
+    v2_setup_state?: WizardState | null;
+    v2_setup_conversation_id?: string | null;
+    v2_setup_state_version?: number | null;
+  }>(
+    userId,
+    'id, v2_setup_state, v2_setup_conversation_id, v2_setup_state_version',
+  );
   if (!ws) {
     return {
       workspaceId: null,
@@ -402,10 +395,10 @@ async function loadWorkspaceState(userId: string): Promise<{
   }
   const state: WizardState = (ws.v2_setup_state as WizardState) || emptyState();
   return {
-    workspaceId: ws.id as string,
+    workspaceId: ws.id,
     state,
-    conversationId: (ws.v2_setup_conversation_id as string | null) || null,
-    stateVersion: (ws.v2_setup_state_version as number | null) ?? 0,
+    conversationId: ws.v2_setup_conversation_id || null,
+    stateVersion: ws.v2_setup_state_version ?? 0,
   };
 }
 
