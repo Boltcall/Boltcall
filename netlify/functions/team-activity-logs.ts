@@ -4,7 +4,7 @@ import { getCorsHeaders } from './_shared/cors';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL || '',
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co',
   process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 

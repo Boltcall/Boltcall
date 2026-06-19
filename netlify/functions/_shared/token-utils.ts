@@ -1,5 +1,9 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+const DEFAULT_SUPABASE_URL = 'https://hbwogktdajorojljkjwg.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhid29na3RkYWpvcm9qbGprandnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5Nzk3OTAsImV4cCI6MjA3NDU1NTc5MH0.5OGNa0_WfxPMFqxj9sY4Tq6WZtOaxjejS7Z4HNzbe7w';
+
 /**
  * Lenient Supabase client factory — falls back to the anon key when no service
  * key is configured. Kept for backwards compatibility with read-only/utility
@@ -9,9 +13,9 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
  * instead, which throws if SUPABASE_SERVICE_KEY is missing.
  */
 export function getSupabase(): SupabaseClient {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_KEY || '';
-  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
   const key = serviceKey || anonKey;
   if (!serviceKey && anonKey) {
     console.warn(
@@ -27,7 +31,7 @@ export function getSupabase(): SupabaseClient {
  * misconfigured environment fails loud instead of silently degrading to anon.
  */
 export function getServiceSupabase(): SupabaseClient {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_KEY || '';
   if (!url || !key) {
     throw new Error('SUPABASE_SERVICE_KEY is required for this operation');

@@ -62,6 +62,10 @@ import { createClient } from '@supabase/supabase-js';
 
 import { getServiceSupabase } from './_shared/token-utils';
 
+const DEFAULT_SUPABASE_URL = 'https://hbwogktdajorojljkjwg.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhid29na3RkYWpvcm9qbGprandnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5Nzk3OTAsImV4cCI6MjA3NDU1NTc5MH0.5OGNa0_WfxPMFqxj9sY4Tq6WZtOaxjejS7Z4HNzbe7w';
+
 // ─────────────────────────────────────────────────────────────────────────────
 //   Constants
 // ─────────────────────────────────────────────────────────────────────────────
@@ -116,8 +120,8 @@ async function requireFounder(event: HandlerEvent): Promise<FounderCheckResult> 
   }
   const token = authHeader.substring(7);
 
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || '';
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
   if (!url || !anonKey) {
     return { ok: false, reason: 'server_misconfigured' };
   }

@@ -9,7 +9,7 @@ export function validateClientEnv(env = process.env) {
   );
 
   return {
-    ok: missing.length === 0 && placeholder.length === 0,
+    ok: placeholder.length === 0,
     missing,
     placeholder,
   };
@@ -18,7 +18,13 @@ export function validateClientEnv(env = process.env) {
 function main() {
   const result = validateClientEnv();
   if (result.ok) {
-    console.log('assert-vite-env: browser Supabase env present');
+    if (result.missing.length > 0) {
+      console.warn(
+        `assert-vite-env: missing ${result.missing.join(', ')}; using the checked-in Boltcall public Supabase defaults`,
+      );
+    } else {
+      console.log('assert-vite-env: browser Supabase env present');
+    }
     return;
   }
 
@@ -32,9 +38,8 @@ function main() {
 
   console.error(`assert-vite-env: ${problems.join('; ')}`);
   console.error(
-    'Load production env before building, for example: ' +
-      '$env:VITE_SUPABASE_URL=(netlify env:get VITE_SUPABASE_URL --context production).Trim(); ' +
-      '$env:VITE_SUPABASE_ANON_KEY=(netlify env:get VITE_SUPABASE_ANON_KEY --context production).Trim()',
+    'Set real public Supabase values or rely on the checked-in Boltcall defaults. ' +
+      'Placeholder values still block the build because they usually indicate a broken environment.',
   );
   process.exit(1);
 }
