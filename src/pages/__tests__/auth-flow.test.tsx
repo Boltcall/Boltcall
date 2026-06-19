@@ -59,10 +59,13 @@ vi.mock('../../lib/auth', () => ({
 
 import AuthSwitch from '../../components/ui/auth-switch';
 
-const renderAuth = (mode: 'login' | 'signup' = 'login') => {
+const renderAuth = (
+  mode: 'login' | 'signup' = 'login',
+  initialEntries: string[] = ['/'],
+) => {
   const user = userEvent.setup();
   const result = render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <AuthSwitch defaultMode={mode} />
     </MemoryRouter>
   );
@@ -161,6 +164,10 @@ describe('Auth flow — Signup', () => {
         company: '',
       });
     });
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
   });
 
   it('shows error on signup failure', async () => {
@@ -175,6 +182,21 @@ describe('Auth flow — Signup', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/email already registered/i)).toBeInTheDocument();
+    });
+  });
+
+  it('uses the requested redirect after signup', async () => {
+    mockSignup.mockResolvedValue({ id: 'u1' });
+    const { user } = renderAuth('signup', ['/signup?redirect=%2Fsetup%2Fclassic']);
+
+    await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
+    await user.type(screen.getByPlaceholderText('Password'), 'securepass');
+    const buttons = screen.getAllByRole('button', { name: /sign up/i });
+    const submitBtn = buttons.find(b => b.getAttribute('type') === 'submit') || buttons[buttons.length - 1];
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/setup/classic');
     });
   });
 });
@@ -208,12 +230,11 @@ describe('Auth flow — Mode switching', () => {
     });
   });
 
-  it('signup redirects to /setup, login redirects to /dashboard', () => {
-    // This is tested implicitly: signup defaultRedirect="/setup", login defaultRedirect="/dashboard"
+  it('accepts custom default redirects for both auth modes', () => {
     // Verifying the component accepts these props
     const { unmount } = render(
       <MemoryRouter>
-        <AuthSwitch defaultMode="signup" defaultRedirect="/setup" />
+        <AuthSwitch defaultMode="signup" defaultRedirect="/setup/classic" />
       </MemoryRouter>
     );
     unmount();

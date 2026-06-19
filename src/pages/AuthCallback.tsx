@@ -49,7 +49,7 @@ const AuthCallback: React.FC = () => {
             clearPendingAgentSetup();
           }
 
-          navigate(profile ? '/dashboard' : '/setup');
+          navigate(profile ? '/dashboard' : '/setup/classic');
         } else {
           navigate('/login');
         }

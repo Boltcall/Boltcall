@@ -41,13 +41,13 @@ const V2SetupPage: React.FC = () => {
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link
-                to="/login?redirect=/setup"
+                to="/login?redirect=/setup/classic"
                 className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800"
               >
                 Sign in
               </Link>
               <Link
-                to="/signup"
+                to="/signup?redirect=/setup/classic"
                 className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-300 px-5 text-sm font-semibold text-zinc-800 transition hover:border-zinc-400 hover:bg-zinc-50"
               >
                 Create account

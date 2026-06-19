@@ -10,7 +10,7 @@ const StepAccount: React.FC = () => {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
         <Button
-          onClick={() => navigate('/login?redirect=/setup')}
+          onClick={() => navigate('/login?redirect=/setup/classic')}
           variant="primary"
           className="px-8 py-3 text-lg font-semibold"
         >
@@ -18,7 +18,7 @@ const StepAccount: React.FC = () => {
           Sign In
         </Button>
         <Button
-          onClick={() => navigate('/signup?redirect=/setup')}
+          onClick={() => navigate('/signup?redirect=/setup/classic')}
           variant="secondary"
           className="px-8 py-3 text-lg font-semibold"
         >

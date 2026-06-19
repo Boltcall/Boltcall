@@ -284,10 +284,11 @@ const ReceptionistDemo = React.lazy(() => import('../pages/ReceptionistDemo'));
 const V2HomePage = React.lazy(() => import('../pages/v2/V2HomePage'));
 const V2AnalyticsPage = React.lazy(() => import('../pages/v2/V2AnalyticsPage'));
 const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
+const SetupEntry = React.lazy(() => import('../pages/SetupEntry'));
 
 // ── Lazy loads — V2 conversational setup wizard ──────────────────────────
 // Standalone route reached BEFORE opt-in; not wrapped in V2OptInGate so a
-// brand-new signup can reach the wizard before V2 is flipped on. The finalize
+// signed-in user can reach the wizard before V2 is flipped on. The finalize
 // endpoint is where V2 actually goes live for the workspace.
 const V2SetupPage = React.lazy(() => import('../pages/v2/V2SetupPage'));
 
@@ -443,13 +444,11 @@ const NavigationWrapper: React.FC = () => {
           </Route>
         </Route>
         {/* ── V2 Conversational Setup Wizard ───────────────────────────────
-            /setup is the canonical setup route. /v2/setup remains as an alias
-            for existing V2 dashboard links. Both routes stay outside the
-            V2OptInGate parent block because a brand-new signup must be able
-            to reach the wizard before V2 is enabled on the workspace. The
-            wizard's finalize step flips the v2_enabled flag and graduates
-            the user into the gated /v2/* tree below. */}
-        <Route path="/setup" element={<V2SetupPage />} />
+            /setup is the marketing entry point: signed-out users go to signup
+            and then land in classic V1 setup, while signed-in users skip
+            straight to V1. /v2/setup remains available for the AI-native
+            setup flow when we explicitly send someone there. */}
+        <Route path="/setup" element={<SetupEntry />} />
         <Route path="/v2/setup" element={<V2SetupPage />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this
