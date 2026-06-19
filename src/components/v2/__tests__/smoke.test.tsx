@@ -217,6 +217,7 @@ describe('SidebarV2 — smoke', () => {
 
 describe('V2OptInGate — smoke', () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     __resetV2OptInGateCache();
   });
 
@@ -358,27 +359,43 @@ describe('V2SetupChat — smoke', () => {
   });
 
   it('renders setup as inline questions without chat chrome', async () => {
+    vi.useFakeTimers();
     await act(async () => {
       renderInRouter(<V2SetupChat />);
     });
 
-    expect(screen.getByLabelText(/your setup answer/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/company name/i)).not.toBeInTheDocument();
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    expect(screen.getByLabelText(/company name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/website/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/your answer/i)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/type your reply/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Boltcall Setup')).not.toBeInTheDocument();
     expect(screen.queryByText(/conversational setup/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/classic setup/i)).not.toBeInTheDocument();
   });
 
-  it('hits the saas-v2-setup-conversation endpoint when the user sends a turn', async () => {
+  it('sends company name and website from the opening setup form', async () => {
+    vi.useFakeTimers();
     await act(async () => {
       renderInRouter(<V2SetupChat />);
     });
 
-    const composer = screen.getByLabelText(/your setup answer/i) as HTMLTextAreaElement;
-    fireEvent.change(composer, { target: { value: 'Boltcall Plumbing' } });
-    const sendBtn = screen.getByLabelText('Send');
     await act(async () => {
-      fireEvent.click(sendBtn);
+      vi.runAllTimers();
+    });
+
+    fireEvent.change(screen.getByLabelText(/company name/i), {
+      target: { value: 'Boltcall Plumbing' },
+    });
+    fireEvent.change(screen.getByLabelText(/website/i), {
+      target: { value: 'https://boltcall.org' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     });
 
     const conversationCalls = mockAuthedFetch.mock.calls.filter(([u]) =>
@@ -387,6 +404,8 @@ describe('V2SetupChat — smoke', () => {
     expect(conversationCalls.length).toBeGreaterThanOrEqual(1);
     const [, init] = conversationCalls[0];
     expect(init.method).toBe('POST');
-    expect(JSON.parse(init.body).user_message).toBe('Boltcall Plumbing');
+    expect(JSON.parse(init.body).user_message).toBe(
+      'Company name: Boltcall Plumbing\nWebsite: https://boltcall.org'
+    );
   });
 });

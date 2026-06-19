@@ -48,7 +48,7 @@ const STORAGE_KEY = 'boltcall_v2_setup_conversation_id';
 const STALL_MS = 5 * 60 * 1000;
 
 const SEED_GREETING =
-  "Hey - I'm Boltcall's setup agent. I'll get your instant lead response system ready through a quick setup. What's the name of your business?";
+  "Hi, welcome to Boltcall. I'll get your instant lead response system ready through a quick setup. Start with your company name and website.";
 
 function genId() {
   return 'm_' + Math.random().toString(36).slice(2, 10);
@@ -61,7 +61,9 @@ const V2SetupChat: React.FC = () => {
   const [conversationId, setConversationId] = useState<string | null>(
     typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null,
   );
-  const [draft, setDraft] = useState('');
+  const [businessNameDraft, setBusinessNameDraft] = useState('');
+  const [websiteDraft, setWebsiteDraft] = useState('');
+  const [answerDraft, setAnswerDraft] = useState('');
   const [extracted, setExtracted] = useState<ExtractedDraft>({});
   const [stateVersion, setStateVersion] = useState<number>(0);
   const [readyToDeploy, setReadyToDeploy] = useState(false);
@@ -156,6 +158,15 @@ const V2SetupChat: React.FC = () => {
     scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, isStreaming]);
 
+  useEffect(() => {
+    if (typeof extracted.businessName === 'string' && extracted.businessName.trim()) {
+      setBusinessNameDraft((prev) => prev || extracted.businessName || '');
+    }
+    if (typeof extracted.websiteUrl === 'string' && extracted.websiteUrl.trim()) {
+      setWebsiteDraft((prev) => prev || extracted.websiteUrl || '');
+    }
+  }, [extracted.businessName, extracted.websiteUrl]);
+
   function seedOpening() {
     const id = genId();
     setMessages([
@@ -180,12 +191,12 @@ const V2SetupChat: React.FC = () => {
     tick();
   }
 
-  async function sendMessage() {
-    const text = draft.trim();
+  async function sendMessage(rawText: string) {
+    const text = rawText.trim();
     if (!text || isStreaming || isFinalizing) return;
 
     setError(null);
-    setDraft('');
+    setAnswerDraft('');
     lastUserActivity.current = Date.now();
     setShowStallBanner(false);
 
@@ -284,14 +295,35 @@ const V2SetupChat: React.FC = () => {
     }
   }
 
-  function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+  function submitOpeningStep() {
+    const companyName = businessNameDraft.trim();
+    const website = websiteDraft.trim();
+    if (!companyName) return;
+
+    const text = website
+      ? `Company name: ${companyName}\nWebsite: ${website}`
+      : `Company name: ${companyName}`;
+
+    void sendMessage(text);
+  }
+
+  function onAnswerKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      void sendMessage(answerDraft);
     }
   }
 
   const completeness = useMemo(() => computeCompleteness(extracted), [extracted]);
+  const hasUserMessages = messages.some((m) => m.role === 'user');
+  const latestAssistantMessage = [...messages].reverse().find((m) => m.role === 'assistant') || null;
+  const latestAssistantFinished =
+    !!latestAssistantMessage &&
+    (latestAssistantMessage.displayed ?? latestAssistantMessage.content.length) >=
+      latestAssistantMessage.content.length;
+  const showResponseFields =
+    hasHydrated && !isStreaming && !isFinalizing && !readyToDeploy && latestAssistantFinished;
+  const showOpeningFields = showResponseFields && !hasUserMessages;
 
   return (
     <div className="flex h-full min-h-[640px] w-full max-w-3xl flex-col bg-white">
@@ -331,32 +363,74 @@ const V2SetupChat: React.FC = () => {
         ))}
         {isStreaming && <TypingIndicator />}
 
-        <div className="pt-1">
-          <label htmlFor="v2-setup-answer" className="sr-only">
-            Your setup answer
-          </label>
-          <div className="flex items-start gap-2">
-            <textarea
-              id="v2-setup-answer"
-              aria-label="Your setup answer"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={onKeyDown}
-              disabled={isFinalizing}
-              placeholder={isStreaming ? 'Waiting for Boltcall...' : 'Write your answer...'}
-              rows={1}
-              className="min-h-11 max-h-32 flex-1 resize-none rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100 disabled:opacity-50"
-            />
+        {showOpeningFields && (
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label htmlFor="v2-company-name" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  Company name
+                </label>
+                <input
+                  id="v2-company-name"
+                  aria-label="Company name"
+                  type="text"
+                  value={businessNameDraft}
+                  onChange={(e) => setBusinessNameDraft(e.target.value)}
+                  placeholder="Acme Plumbing"
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="v2-website-url" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  Website
+                </label>
+                <input
+                  id="v2-website-url"
+                  aria-label="Website"
+                  type="url"
+                  value={websiteDraft}
+                  onChange={(e) => setWebsiteDraft(e.target.value)}
+                  placeholder="https://example.com"
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                />
+              </div>
+            </div>
             <button
-              onClick={sendMessage}
-              disabled={!draft.trim() || isStreaming || isFinalizing}
-              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
-              aria-label="Send"
+              onClick={submitOpeningStep}
+              disabled={!businessNameDraft.trim() || isStreaming || isFinalizing}
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
             >
-              <SendIcon />
+              Continue
             </button>
           </div>
-        </div>
+        )}
+
+        {showResponseFields && hasUserMessages && (
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <label htmlFor="v2-setup-answer" className="mb-1.5 block text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+              Your answer
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="v2-setup-answer"
+                aria-label="Your answer"
+                type="text"
+                value={answerDraft}
+                onChange={(e) => setAnswerDraft(e.target.value)}
+                onKeyDown={onAnswerKeyDown}
+                placeholder="Type your answer"
+                className="h-11 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+              />
+              <button
+                onClick={() => void sendMessage(answerDraft)}
+                disabled={!answerDraft.trim() || isStreaming || isFinalizing}
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {readyToDeploy && (
@@ -412,22 +486,6 @@ const TypingIndicator: React.FC = () => (
       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400 [animation-delay:300ms]" />
     </div>
   </div>
-);
-
-const SendIcon: React.FC = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M22 2L11 13" />
-    <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-  </svg>
 );
 
 function computeCompleteness(e: ExtractedDraft): number {

@@ -20,6 +20,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
+import { ensureWorkspaceForUser } from './_shared/setup-workspace';
 
 interface ExtractedDraft {
   businessName?: string;
@@ -104,30 +105,27 @@ const handler: Handler = async (event) => {
   }
 
   // ── Resolve workspace via user_id then owner_id ─────────────────────────
-  let { data: ws } = await supa
-    .from('workspaces')
-    .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at, v2_setup_status')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  if (!ws) {
-    const r = await supa
-      .from('workspaces')
-      .select('id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at, v2_setup_status')
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle();
-    ws = r.data || null;
-  }
+  const ws = await ensureWorkspaceForUser<{
+    id: string;
+    name?: string | null;
+    v2_setup_state?: { extracted?: ExtractedDraft; conversation?: unknown[] } | null;
+    v2_setup_state_version?: number | null;
+    v2_setup_conversation_id?: string | null;
+    v2_setup_started_at?: string | null;
+    v2_setup_status?: string | null;
+  }>(
+    userId,
+    'id, name, v2_setup_state, v2_setup_state_version, v2_setup_conversation_id, v2_setup_started_at, v2_setup_status',
+  );
   if (!ws) {
     return { statusCode: 404, headers, body: JSON.stringify({ error: 'No workspace found' }) };
   }
 
-  const workspaceId = ws.id as string;
+  const workspaceId = ws.id;
 
   // ── Version pinning — refuse to deploy a stale review ───────────────────
-  const currentConvoId = (ws.v2_setup_conversation_id as string | null) || null;
-  const currentVersion = (ws.v2_setup_state_version as number | null) ?? 0;
+  const currentConvoId = ws.v2_setup_conversation_id || null;
+  const currentVersion = ws.v2_setup_state_version ?? 0;
   if (currentConvoId !== body.conversation_id) {
     emitEvent('saas_v2_setup_finalize_version_mismatch', {
       workspace_id: workspaceId,
@@ -160,7 +158,7 @@ const handler: Handler = async (event) => {
       }),
     };
   }
-  const state = ws.v2_setup_state as { extracted?: ExtractedDraft; conversation?: unknown[] } | null;
+  const state = ws.v2_setup_state || null;
   const extracted: ExtractedDraft = state?.extracted || {};
 
   if (!extracted.businessName) {
@@ -179,7 +177,7 @@ const handler: Handler = async (event) => {
   // ('in_progress' from the conversation handler, or 'not_started' for a
   // direct API caller). Exactly one of two concurrent finalize calls will
   // match → the other gets 0 rows and returns 409.
-  const currentStatus = (ws.v2_setup_status as string | null) || 'not_started';
+  const currentStatus = ws.v2_setup_status || 'not_started';
   if (currentStatus === 'completed' || currentStatus === 'deploying') {
     return {
       statusCode: 409,
@@ -478,7 +476,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
   // ── Mark workspace as v2-completed ──────────────────────────────────────
   // Filter on status='deploying' so we only flip the lock we acquired — if a
   // human/admin already reverted us, we leave their decision intact.
-  const startedAt = ws.v2_setup_started_at ? new Date(ws.v2_setup_started_at as string) : new Date();
+  const startedAt = ws.v2_setup_started_at ? new Date(ws.v2_setup_started_at) : new Date();
   const durationSec = Math.floor((Date.now() - startedAt.getTime()) / 1000);
   try {
     await supa

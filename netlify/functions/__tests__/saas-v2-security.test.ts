@@ -106,6 +106,43 @@ function makeWorkspacesChain() {
       updatePatch = patch;
       return chain;
     },
+    insert: (payload: Record<string, unknown>) => {
+      mode = null;
+      return {
+        select: (_cols?: string) => ({
+          single: async () => {
+            const created = {
+              id: 'ws_created_1',
+              v2_setup_state: null,
+              v2_setup_state_version: 0,
+              v2_setup_conversation_id: null,
+              v2_setup_status: 'not_started',
+              v2_setup_started_at: null,
+              v2_setup_completed_at: null,
+              name: 'My Workspace',
+              ...payload,
+            };
+            workspaceRow.current = created;
+            return { data: created, error: null };
+          },
+        }),
+        then: (cb: (r: { data: Record<string, unknown>; error: null }) => unknown) => {
+          const created = {
+            id: 'ws_created_1',
+            v2_setup_state: null,
+            v2_setup_state_version: 0,
+            v2_setup_conversation_id: null,
+            v2_setup_status: 'not_started',
+            v2_setup_started_at: null,
+            v2_setup_completed_at: null,
+            name: 'My Workspace',
+            ...payload,
+          };
+          workspaceRow.current = created;
+          return Promise.resolve(cb({ data: created, error: null }));
+        },
+      };
+    },
     eq: (col: string, val: unknown) => {
       applyEq(col, val);
       return chain;
@@ -421,6 +458,81 @@ describe('saas-v2-setup-conversation: scan_website fails closed without INTERNAL
 // ─────────────────────────────────────────────────────────────────────────────
 // FIX 4 — Finalize version pinning
 // ─────────────────────────────────────────────────────────────────────────────
+
+describe('saas-v2 setup: workspace recovery for fresh or legacy users', () => {
+  let conversationHandler: any;
+  let stateHandler: any;
+
+  beforeAll(async () => {
+    const conversationMod = await import('../saas-v2-setup-conversation');
+    conversationHandler = conversationMod.testHandler ?? conversationMod.default;
+
+    const stateMod = await import('../saas-v2-setup-state');
+    stateHandler = stateMod.testHandler ?? stateMod.default;
+  });
+
+  beforeEach(resetTestState);
+
+  it('creates a workspace on the first setup turn when signup has not provisioned one yet', async () => {
+    workspaceRow.current = null;
+    chatCompletionMock.mockResolvedValueOnce('What city is your business in?');
+
+    const res = await conversationHandler(
+      makeEvent({
+        headers: { authorization: 'Bearer fake-jwt' },
+        body: { user_message: 'My business is Fresh Start Plumbing' },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(workspaceRow.current).toMatchObject({
+      id: 'ws_created_1',
+      user_id: 'user_test_1',
+      name: 'My Workspace',
+    });
+
+    const stateRes = await stateHandler(
+      makeEvent({
+        httpMethod: 'GET',
+        headers: { authorization: 'Bearer fake-jwt' },
+      }),
+      {} as any,
+    );
+
+    expect(stateRes.statusCode).toBe(200);
+    const stateBody = JSON.parse(stateRes.body);
+    expect(stateBody.status).toBe('in_progress');
+    expect(stateBody.conversation.length).toBe(2);
+  });
+
+  it('loads a legacy owner_id workspace instead of failing the setup turn', async () => {
+    workspaceRow.current = {
+      ...(workspaceRow.current as Record<string, unknown>),
+      user_id: undefined,
+      owner_id: 'user_test_1',
+      v2_setup_state: null,
+      v2_setup_conversation_id: null,
+      v2_setup_state_version: 0,
+      v2_setup_status: 'not_started',
+    };
+    chatCompletionMock.mockResolvedValueOnce('Which city should we use?');
+
+    const res = await conversationHandler(
+      makeEvent({
+        headers: { authorization: 'Bearer fake-jwt' },
+        body: { user_message: 'Legacy workspace user here' },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(workspaceRow.current).toMatchObject({
+      id: 'ws_test_1',
+      owner_id: 'user_test_1',
+    });
+  });
+});
 
 describe('saas-v2-setup-finalize: state_version pinning (Fix 4)', () => {
   let handler: any;
