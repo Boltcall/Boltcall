@@ -42,4 +42,18 @@ describe('TableOfContents', () => {
     expect(screen.getByRole('link', { name: 'Start for free' })).toHaveAttribute('href', '/signup');
     expect(screen.getByLabelText('Missed jobs?')).toBeInTheDocument();
   });
+
+  it('keeps the right rail sticky without creating its own scroll container', () => {
+    render(<TableOfContents headings={headings} />);
+
+    expect(screen.getByTestId('table-of-contents-panel')).toHaveStyle({
+      position: 'sticky',
+      top: '96px',
+      zIndex: '10',
+    });
+    expect(screen.getByTestId('table-of-contents-panel')).not.toHaveStyle({
+      overflowY: 'auto',
+      maxHeight: 'calc(100vh - 112px)',
+    });
+  });
 });
