@@ -52,6 +52,15 @@ const blogPosts: BlogPost[] = [
     featured: true,
   },
   {
+    title: 'HVAC Virtual Receptionist: How to Answer Every Service Call <span className="text-blue-600">24/7</span>',
+    slug: '/blog/hvac-virtual-receptionist',
+    excerpt: 'HVAC virtual receptionist strategies that help contractors answer every inbound call, book more service jobs, and stop losing peak-season leads after hours.',
+    date: 'June 19, 2026',
+    readTime: '9 min read',
+    category: 'HVAC|AI Receptionist|Industry Guide',
+    image: '/images/blog/previews/blog-hvac-virtual-receptionist.svg',
+  },
+  {
     title: 'AI Appointment Scheduling for HVAC Companies: The 2026 Guide',
     slug: '/blog/ai-appointment-scheduling-hvac',
     excerpt: 'AI appointment scheduling for HVAC companies — how to automatically book service calls 24/7, handle seasonal surges, and never lose a lead to a competitor again.',
@@ -68,6 +77,15 @@ const blogPosts: BlogPost[] = [
     readTime: '10 min read',
     category: 'Roofing|Speed to Lead|Industry Guide',
     image: '/images/blog/roofing-missed-calls.png',
+  },
+  {
+    title: 'Roofer Answering Service: How Roofing Companies Stop Losing Storm Leads',
+    slug: '/blog/roofer-answering-service',
+    excerpt: 'Roofer answering service options for storm-season call spikes, after-hours lead capture, and faster appointment booking without adding office headcount.',
+    date: 'June 19, 2026',
+    readTime: '9 min read',
+    category: 'Roofing|AI Receptionist|Industry Guide',
+    image: '/images/blog/previews/blog-roofer-answering-service.svg',
   },
   {
     title: 'Best AI Answering Service for Dental and Medical Practices (2026)',
@@ -122,6 +140,15 @@ const blogPosts: BlogPost[] = [
     readTime: '11 min read',
     category: 'Plumbing|WhatsApp|How-to',
     image: '/images/blog/whatsapp-plumbing.png',
+  },
+  {
+    title: '24/7 Plumbing Answering Service: The Playbook for Capturing Emergency Jobs',
+    slug: '/blog/24-7-plumbing-answering-service',
+    excerpt: 'How a 24/7 plumbing answering service helps shops capture emergency calls, qualify real jobs, and book more after-hours revenue before competitors reply.',
+    date: 'June 19, 2026',
+    readTime: '10 min read',
+    category: 'Plumbing|After-Hours|Industry Guide',
+    image: '/images/blog/previews/blog-24-7-plumbing-answering-service.svg',
   },
   {
     title: 'After-Hours Leads Are <span className="text-blue-600">Killing</span> Your Home Service Business',
