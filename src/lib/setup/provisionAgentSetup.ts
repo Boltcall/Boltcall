@@ -8,6 +8,7 @@ import type { PendingAgentSetup } from './onboarding';
 export async function provisionAgentSetup(userId: string, setup: PendingAgentSetup) {
   const { workspace, businessProfile } = await createUserWorkspaceAndProfile(userId, {
     business_name: setup.businessName,
+    website_url: setup.websiteUrl.trim() || undefined,
     main_category: setup.industry,
     country: 'us',
     service_areas: [],
@@ -42,7 +43,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
 
   const commonAgentData = {
     businessName: setup.businessName,
-    websiteUrl: '',
+    websiteUrl: setup.websiteUrl.trim(),
     mainCategory: setup.industry,
     country: 'us',
     serviceAreas: [],
@@ -66,17 +67,14 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     agentName: `${setup.businessName} AI Receptionist`,
     voiceId: setup.voiceId,
     transferNumber: setup.transferNumber.trim(),
-  }).catch((error) => {
-    console.error('Agent creation failed:', error);
-    return null;
   });
 
-  createAgentAndKnowledgeBase({
+  await createAgentAndKnowledgeBase({
     ...commonAgentData,
     agentType: 'speed_to_lead',
     agentName: `${setup.businessName} Follow-Up Agent`,
     kbFolderId: primaryResult?.kb_folder_id || undefined,
-  }).catch((error) => console.error('Follow-up agent creation failed:', error));
+  });
 
   localStorage.setItem('boltcall_setup_complete', userId);
 

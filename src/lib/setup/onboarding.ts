@@ -24,6 +24,7 @@ export const TONE_OPTIONS = [
 
 export interface PendingAgentSetup {
   businessName: string;
+  websiteUrl: string;
   industry: (typeof INDUSTRY_OPTIONS)[number]['value'];
   voiceId: (typeof VOICE_OPTIONS)[number]['value'];
   goal: (typeof GOAL_OPTIONS)[number]['value'];

@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import {
+  clearPendingAgentSetup,
+  readPendingAgentSetup,
+} from '../lib/setup/onboarding';
+import { provisionAgentSetup } from '../lib/setup/provisionAgentSetup';
 
 const TOTAL_SEGMENTS = 20;
+const TOTAL_DURATION_MS = 10000;
 
 const LOADER_WORDS = [
   'Analyzing',
@@ -15,23 +22,30 @@ const LOADER_WORDS = [
 const LOADING_STEPS = [
   { at: 0, text: 'Initializing your workspace...' },
   { at: 8, text: 'Setting up your AI receptionist...' },
-  { at: 22, text: 'Configuring call handling...' },
-  { at: 40, text: 'Connecting your integrations...' },
-  { at: 60, text: 'Preparing your dashboard...' },
-  { at: 80, text: 'Almost ready...' },
+  { at: 22, text: 'Creating inbound and speed-to-lead agents...' },
+  { at: 40, text: 'Connecting your business website and knowledge...' },
+  { at: 60, text: 'Configuring call handling...' },
+  { at: 80, text: 'Preparing your dashboard...' },
   { at: 100, text: 'Done!' },
 ];
 
 const SetupLoading: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(LOADING_STEPS[0].text);
   const [fadeOut, setFadeOut] = useState(false);
+  const [provisioningError, setProvisioningError] = useState<string | null>(
+    null,
+  );
+  const [provisioningDone, setProvisioningDone] = useState(false);
+  const [minDurationMet, setMinDurationMet] = useState(false);
   const wordLoaderRef = useRef<HTMLDivElement>(null);
   const wordLoaderStopped = useRef(false);
   const segmentsBuilt = useRef(false);
+  const provisioningStarted = useRef(false);
+  const hasNavigated = useRef(false);
 
-  // Build segmented bar
   const buildSegments = useCallback(() => {
     const bar = document.getElementById('segmented-bar');
     if (!bar || segmentsBuilt.current) return;
@@ -44,7 +58,6 @@ const SetupLoading: React.FC = () => {
     }
   }, []);
 
-  // Update progress bar segments
   const updateSegments = useCallback((pct: number) => {
     const filled = Math.round((pct / 100) * TOTAL_SEGMENTS);
     const segs = document.querySelectorAll('.setup-seg');
@@ -61,44 +74,58 @@ const SetupLoading: React.FC = () => {
     });
   }, []);
 
-  // Character animation helpers
-  const animateCharsIn = useCallback((wordIndex: number, duration: number): Promise<void> => {
-    const chars = document.querySelectorAll(`.setup-word-${wordIndex} .setup-char`);
-    return new Promise(resolve => {
-      let completed = 0;
-      if (chars.length === 0) { resolve(); return; }
-      chars.forEach((ch, i) => {
-        const el = ch as HTMLElement;
-        setTimeout(() => {
-          el.style.transition = `opacity ${duration}ms ease-out, transform ${duration}ms ease-out`;
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-          completed++;
-          if (completed === chars.length) setTimeout(resolve, duration);
-        }, i * 40);
+  const animateCharsIn = useCallback(
+    (wordIndex: number, duration: number): Promise<void> => {
+      const chars = document.querySelectorAll(
+        `.setup-word-${wordIndex} .setup-char`,
+      );
+      return new Promise((resolve) => {
+        let completed = 0;
+        if (chars.length === 0) {
+          resolve();
+          return;
+        }
+        chars.forEach((ch, i) => {
+          const el = ch as HTMLElement;
+          setTimeout(() => {
+            el.style.transition = `opacity ${duration}ms ease-out, transform ${duration}ms ease-out`;
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+            completed++;
+            if (completed === chars.length) setTimeout(resolve, duration);
+          }, i * 40);
+        });
       });
-    });
-  }, []);
+    },
+    [],
+  );
 
-  const animateCharsOut = useCallback((wordIndex: number, duration: number): Promise<void> => {
-    const chars = document.querySelectorAll(`.setup-word-${wordIndex} .setup-char`);
-    return new Promise(resolve => {
-      let completed = 0;
-      if (chars.length === 0) { resolve(); return; }
-      chars.forEach((ch, i) => {
-        const el = ch as HTMLElement;
-        setTimeout(() => {
-          el.style.transition = `opacity ${duration}ms ease-in, transform ${duration}ms ease-in`;
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(-8px)';
-          completed++;
-          if (completed === chars.length) setTimeout(resolve, duration);
-        }, i * 40);
+  const animateCharsOut = useCallback(
+    (wordIndex: number, duration: number): Promise<void> => {
+      const chars = document.querySelectorAll(
+        `.setup-word-${wordIndex} .setup-char`,
+      );
+      return new Promise((resolve) => {
+        let completed = 0;
+        if (chars.length === 0) {
+          resolve();
+          return;
+        }
+        chars.forEach((ch, i) => {
+          const el = ch as HTMLElement;
+          setTimeout(() => {
+            el.style.transition = `opacity ${duration}ms ease-in, transform ${duration}ms ease-in`;
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            completed++;
+            if (completed === chars.length) setTimeout(resolve, duration);
+          }, i * 40);
+        });
       });
-    });
-  }, []);
+    },
+    [],
+  );
 
-  // Build word loader DOM
   const buildWordLoader = useCallback(() => {
     const container = wordLoaderRef.current;
     if (!container) return;
@@ -108,7 +135,7 @@ const SetupLoading: React.FC = () => {
       const span = document.createElement('span');
       span.className = `setup-word setup-word-${i}`;
       if (i === allWords.length - 1) span.classList.add('setup-done-word');
-      word.split('').forEach(ch => {
+      word.split('').forEach((ch) => {
         const c = document.createElement('span');
         c.className = 'setup-char';
         c.textContent = ch === ' ' ? '\u00A0' : ch;
@@ -118,32 +145,26 @@ const SetupLoading: React.FC = () => {
     });
   }, []);
 
-  // Run word cycling animation
   const runWordLoader = useCallback(async () => {
     const allWords = [...LOADER_WORDS, 'Done!'];
     for (let i = 0; i < allWords.length; i++) {
       if (wordLoaderStopped.current) return;
       await animateCharsIn(i, 350);
       if (i < allWords.length - 1) {
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 2000));
         await animateCharsOut(i, 300);
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 200));
       }
     }
   }, [animateCharsIn, animateCharsOut]);
 
-  // Main effect: run loading animation
   useEffect(() => {
     buildSegments();
     buildWordLoader();
+    void runWordLoader();
 
-    // Start word cycling
-    runWordLoader();
-
-    // Animate progress from 0 to 100 over ~10 seconds
-    const totalDuration = 10000;
     const intervalMs = 80;
-    const steps = totalDuration / intervalMs;
+    const steps = TOTAL_DURATION_MS / intervalMs;
     const increment = 100 / steps;
     let current = 0;
 
@@ -152,29 +173,58 @@ const SetupLoading: React.FC = () => {
       if (current >= 100) {
         current = 100;
         clearInterval(interval);
-
-        // At 100%, wait a beat then fade out and navigate
-        setTimeout(() => {
-          wordLoaderStopped.current = true;
-          setFadeOut(true);
-
-          // Navigate after fade-out transition completes
-          setTimeout(() => {
-            navigate('/setup/talk-to-agent', { replace: true });
-          }, 800);
-        }, 600);
+        setMinDurationMet(true);
       }
 
       setProgress(current);
       updateSegments(current);
 
-      // Update step text
-      const step = [...LOADING_STEPS].reverse().find(s => current >= s.at);
+      const step = [...LOADING_STEPS].reverse().find((item) => current >= item.at);
       if (step) setCurrentStep(step.text);
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [buildSegments, buildWordLoader, runWordLoader, updateSegments, navigate]);
+  }, [buildSegments, buildWordLoader, runWordLoader, updateSegments]);
+
+  useEffect(() => {
+    if (!user?.id || provisioningStarted.current) return;
+    provisioningStarted.current = true;
+
+    const pendingSetup = readPendingAgentSetup();
+    if (!pendingSetup) {
+      setProvisioningDone(true);
+      return;
+    }
+
+    void provisionAgentSetup(user.id, pendingSetup)
+      .then(() => {
+        clearPendingAgentSetup();
+        setProvisioningDone(true);
+      })
+      .catch((error) => {
+        console.error('Setup provisioning failed:', error);
+        setProvisioningError(
+          error instanceof Error
+            ? error.message
+            : 'Setup provisioning failed. Please refresh and try again.',
+        );
+      });
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (hasNavigated.current || provisioningError || !minDurationMet || !provisioningDone) {
+      return;
+    }
+
+    hasNavigated.current = true;
+    setTimeout(() => {
+      wordLoaderStopped.current = true;
+      setFadeOut(true);
+      setTimeout(() => {
+        navigate('/setup/talk-to-agent', { replace: true });
+      }, 800);
+    }, 600);
+  }, [minDurationMet, navigate, provisioningDone, provisioningError]);
 
   return (
     <>
@@ -202,8 +252,6 @@ const SetupLoading: React.FC = () => {
           align-items: center;
           gap: 2.5rem;
         }
-
-        /* Word Loader */
         .setup-word-loader {
           position: relative;
           height: 4rem;
@@ -232,8 +280,6 @@ const SetupLoading: React.FC = () => {
           opacity: 0;
           transform: translateY(12px);
         }
-
-        /* Progress */
         .setup-progress-wrapper {
           width: 100%;
           display: flex;
@@ -286,6 +332,17 @@ const SetupLoading: React.FC = () => {
           min-height: 1.2em;
           transition: opacity 0.3s ease;
         }
+        .setup-loading-error {
+          width: 100%;
+          border-radius: 16px;
+          border: 1px solid #fecaca;
+          background: #fff1f2;
+          padding: 0.875rem 1rem;
+          color: #9f1239;
+          font-size: 0.9rem;
+          line-height: 1.5;
+          text-align: center;
+        }
       `}</style>
 
       <div className={`setup-loading-page ${fadeOut ? 'fade-out' : ''}`}>
@@ -299,6 +356,9 @@ const SetupLoading: React.FC = () => {
             </div>
             <div className="setup-segmented-bar" id="segmented-bar" />
             <div className="setup-loading-step">{currentStep}</div>
+            {provisioningError && (
+              <div className="setup-loading-error">{provisioningError}</div>
+            )}
           </div>
         </div>
       </div>

@@ -11,7 +11,6 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button-shadcn';
 import {
-  clearPendingAgentSetup,
   getGoalLabel,
   getIndustryLabel,
   getToneLabel,
@@ -23,7 +22,6 @@ import {
   type PendingAgentSetup,
   VOICE_OPTIONS,
 } from '../lib/setup/onboarding';
-import { provisionAgentSetup } from '../lib/setup/provisionAgentSetup';
 import { supabase } from '../lib/supabase';
 
 type Message = {
@@ -36,7 +34,8 @@ type Message = {
 type Step = 'business' | 'preferences' | 'auth';
 type AuthMode = 'gate' | 'email';
 
-const BUSINESS_PROMPT = "Great, what's the name of your business and industry?";
+const BUSINESS_PROMPT =
+  "Great, what's the name of your business, your website, and your industry?";
 const PREFERENCES_PROMPT =
   'Perfect. Now choose the voice and lead-handling style you want Boltcall to use.';
 const AUTH_PROMPT =
@@ -60,6 +59,7 @@ const SetupInner: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [businessName, setBusinessName] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
   const [industry, setIndustry] = useState<
     (typeof INDUSTRY_OPTIONS)[number]['value'] | ''
   >('');
@@ -108,6 +108,7 @@ const SetupInner: React.FC = () => {
   const currentSetup = useMemo<PendingAgentSetup>(
     () => ({
       businessName: businessName.trim(),
+      websiteUrl: websiteUrl.trim(),
       industry: (industry ||
         INDUSTRY_OPTIONS[0].value) as PendingAgentSetup['industry'],
       voiceId,
@@ -116,7 +117,7 @@ const SetupInner: React.FC = () => {
       transferNumber: transferNumber.trim(),
       createdAt: new Date().toISOString(),
     }),
-    [businessName, industry, voiceId, goal, tone, transferNumber],
+    [businessName, websiteUrl, industry, voiceId, goal, tone, transferNumber],
   );
 
   function typewriterAnimate(id: string, text: string) {
@@ -159,10 +160,11 @@ const SetupInner: React.FC = () => {
   }
 
   function syncDraftToStore() {
-    if (!businessName.trim() || !industry) return;
+    if (!businessName.trim() || !websiteUrl.trim() || !industry) return;
 
     updateBusinessProfile({
       businessName: businessName.trim(),
+      websiteUrl: websiteUrl.trim(),
       mainCategory: industry,
       country: 'us',
       languages: 'en',
@@ -181,13 +183,20 @@ const SetupInner: React.FC = () => {
     });
   }
 
-  const isBusinessStepValid = businessName.trim().length >= 2 && !!industry;
+  const isBusinessStepValid =
+    businessName.trim().length >= 2 &&
+    websiteUrl.trim().length >= 4 &&
+    !!industry;
 
   async function handleBusinessContinue() {
     if (!isBusinessStepValid) return;
     setError(null);
     syncDraftToStore();
-    appendUserMessage(`${businessName.trim()} · ${getIndustryLabel(industry)}`);
+    appendUserMessage(
+      `${businessName.trim()} · ${websiteUrl.trim()} · ${getIndustryLabel(
+        industry,
+      )}`,
+    );
     setStep('preferences');
     await enqueueAssistant(PREFERENCES_PROMPT);
   }
@@ -200,7 +209,7 @@ const SetupInner: React.FC = () => {
     );
 
     if (user?.id) {
-      await finalizeAuthenticatedSetup(user.id);
+      await finalizeAuthenticatedSetup();
       return;
     }
 
@@ -209,13 +218,12 @@ const SetupInner: React.FC = () => {
     await enqueueAssistant(AUTH_PROMPT);
   }
 
-  async function finalizeAuthenticatedSetup(userId: string) {
+  async function finalizeAuthenticatedSetup() {
     try {
       setIsSubmitting(true);
       setError(null);
       syncDraftToStore();
-      await provisionAgentSetup(userId, currentSetup);
-      clearPendingAgentSetup();
+      savePendingAgentSetup(currentSetup);
       navigate('/setup/loading', { replace: true });
     } catch (setupError) {
       console.error('Setup provisioning failed:', setupError);
@@ -259,7 +267,7 @@ const SetupInner: React.FC = () => {
       return;
     }
 
-    await finalizeAuthenticatedSetup(freshUser.id);
+    await finalizeAuthenticatedSetup();
   }
 
   if (step === 'auth' && authMode === 'email') {
@@ -391,6 +399,16 @@ const SetupInner: React.FC = () => {
                       onChange={(event) => setBusinessName(event.target.value)}
                       placeholder="Sunrise Roofing"
                     />
+                    <Input
+                      id="websiteUrl"
+                      label="Website"
+                      value={websiteUrl}
+                      onChange={(event) => setWebsiteUrl(event.target.value)}
+                      placeholder="https://sunriseroofing.com"
+                    />
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
                     <FieldGroup label="Industry" htmlFor="industry">
                       <select
                         id="industry"
