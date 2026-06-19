@@ -388,7 +388,7 @@ export default function AeoMarkdownArticlePage() {
             <BlogRelatedArticles />
           </article>
 
-          <aside className="hidden xl:block w-64 shrink-0">
+          <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-32">
               <TableOfContents
                 headings={headings}
