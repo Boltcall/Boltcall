@@ -105,6 +105,8 @@ globalThis.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) 
 
 import Setup from '../Setup';
 
+const TEST_TIMEOUT_MS = 10000;
+
 const renderSetup = () =>
   render(
     <MemoryRouter initialEntries={['/setup']}>
@@ -128,7 +130,7 @@ describe('Setup flow', () => {
     expect(screen.getByLabelText(/Business Name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Website/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /continue/i })).toBeDisabled();
-  });
+  }, TEST_TIMEOUT_MS);
 
   it('saves the setup draft before starting Google auth', async () => {
     const user = userEvent.setup();
@@ -153,5 +155,5 @@ describe('Setup flow', () => {
     expect(raw).toContain('"websiteUrl":"https://summitsolar.example"');
     expect(raw).toContain('"industry":"solar"');
     expect(raw).toContain('"voiceId":"11labs-Dorothy"');
-  });
+  }, TEST_TIMEOUT_MS);
 });

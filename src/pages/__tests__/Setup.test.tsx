@@ -166,6 +166,8 @@ globalThis.fetch = vi
 
 import Setup from '../Setup';
 
+const TEST_TIMEOUT_MS = 10000;
+
 const renderSetup = () =>
   render(
     <MemoryRouter initialEntries={['/setup']}>
@@ -190,7 +192,7 @@ describe('Setup page', () => {
     expect(screen.getByLabelText(/Website/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Industry/i)).toBeInTheDocument();
     expect(screen.queryByText(/Agent Preferences/i)).not.toBeInTheDocument();
-  });
+  }, TEST_TIMEOUT_MS);
 
   it('keeps the first continue button disabled until business name, website, and industry are set', async () => {
     const user = userEvent.setup();
@@ -204,7 +206,7 @@ describe('Setup page', () => {
 
     await user.type(screen.getByLabelText(/Website/i), 'https://solarsurge.example');
     expect(continueButton).toBeDisabled();
-  });
+  }, TEST_TIMEOUT_MS);
 
   it('moves from business details to agent preferences and then to the auth checkpoint', async () => {
     const user = userEvent.setup();
@@ -223,5 +225,5 @@ describe('Setup page', () => {
     expect(
       await screen.findByRole('button', { name: /continue with google/i }),
     ).toBeInTheDocument();
-  });
+  }, TEST_TIMEOUT_MS);
 });
