@@ -22,7 +22,7 @@
  */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import React from 'react';
 
 // ── Hoisted mutable mock state (vi.hoisted runs before vi.mock factories) ──
@@ -179,12 +179,6 @@ vi.mock('@supabase/supabase-js', () => ({
   }),
 }));
 
-// V2 sub-components — stub heavy chat surfaces so smoke tests stay fast and
-// deterministic. These have their own internal fetches that we don't want firing.
-vi.mock('../../../components/v2/V2SetupChat', () => ({
-  __esModule: true,
-  default: () => <div data-testid="v2-setup-chat-stub">V2SetupChat</div>,
-}));
 vi.mock('../../../components/v2/AskBoltcallAIV2', () => ({
   __esModule: true,
   default: () => <div data-testid="ask-boltcall-ai-stub">AskBoltcallAIV2</div>,
@@ -236,6 +230,16 @@ const renderGated = (Page: React.ComponentType) =>
       </V2OptInGate>
     </MemoryRouter>
   );
+
+const LocationEcho: React.FC = () => {
+  const location = useLocation();
+  return (
+    <div data-testid="location">
+      {location.pathname}
+      {location.search}
+    </div>
+  );
+};
 
 // Pages that should be wrapped in V2OptInGate at the route level (12 of 13).
 const GATED_PAGES: [string, React.ComponentType][] = [
@@ -306,34 +310,23 @@ describe('V2 pages — smoke tests', () => {
         // ...and the gate must NOT have rendered children, so page-specific
         // stub markers from heavy V2 sub-components must be absent.
         expect(screen.queryByTestId('ask-boltcall-ai-stub')).not.toBeInTheDocument();
-        expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
       });
     }
   });
 
-  // ── Ungated test for V2SetupPage ───────────────────────────────────────
-  describe('V2SetupPage is NOT gated', () => {
-    it('V2SetupPage renders without v2_enabled flag set', () => {
-      // Even with the gate "disabled", V2SetupPage is NOT wrapped — it must
-      // still render so brand-new users can reach the wizard before opt-in.
-      __v2State.mode = 'disabled';
-      renderInRouter(V2SetupPage);
+  // ── Legacy /v2/setup compatibility redirect ────────────────────────────
+  describe('V2SetupPage redirects into V1 setup', () => {
+    it('sends /v2/setup traffic to /setup', () => {
+      render(
+        <MemoryRouter initialEntries={['/v2/setup']}>
+          <Routes>
+            <Route path="/v2/setup" element={<V2SetupPage />} />
+            <Route path="/setup" element={<LocationEcho />} />
+          </Routes>
+        </MemoryRouter>,
+      );
 
-      // The V2SetupChat stub must be present (proves page rendered fully).
-      expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
-      // And the gate-disabled sentinel must NOT appear (page bypasses the gate).
-      expect(screen.queryByTestId('v2-gate-disabled')).not.toBeInTheDocument();
-      expect(screen.queryByText(/skip to v1 setup/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/setup data is saved as you go/i)).not.toBeInTheDocument();
-    });
-
-    it('V2SetupPage blocks unauthenticated users before chat fetches run', () => {
-      __authState.isAuthenticated = false;
-
-      renderInRouter(V2SetupPage);
-
-      expect(screen.getByText('Sign in before starting V2 setup')).toBeInTheDocument();
-      expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
+      expect(screen.getByTestId('location')).toHaveTextContent('/setup');
     });
   });
 });
