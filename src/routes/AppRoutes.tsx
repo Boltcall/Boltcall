@@ -2,6 +2,7 @@ import React, { useEffect, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useLenis } from '../hooks/useLenis';
+import ErrorBoundary from '../components/ErrorBoundary';
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
 // critical-path modulepreload list on marketing pages.
 const AuthProvider = React.lazy(() =>
@@ -118,6 +119,48 @@ const NotificationPage = React.lazy(() => import('../pages/dashboard/settings/No
 const RolesPage = React.lazy(() => import('../pages/dashboard/settings/RolesPage'));
 const ActivityLogPage = React.lazy(() => import('../pages/dashboard/settings/ActivityLogPage'));
 const ApiKeysPage = React.lazy(() => import('../pages/dashboard/settings/ApiKeysPage'));
+
+const SetupTransitionFallback: React.FC<{ message?: string }> = ({
+  message = 'Loading setup...',
+}) => (
+  <div className="flex min-h-screen items-center justify-center bg-white px-4 text-sm font-medium text-zinc-500">
+    {message}
+  </div>
+);
+
+const SetupTransitionErrorState: React.FC = () => (
+  <div className="flex min-h-screen items-center justify-center bg-white px-4">
+    <div className="max-w-md text-center">
+      <h1 className="text-2xl font-semibold text-zinc-950">
+        Setup hit a snag
+      </h1>
+      <p className="mt-3 text-sm leading-6 text-zinc-600">
+        Refresh the page and Boltcall will resume from your latest saved setup
+        state.
+      </p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="mt-6 inline-flex items-center justify-center rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+      >
+        Refresh page
+      </button>
+    </div>
+  </div>
+);
+
+const PostSetupRouteShell: React.FC<{
+  children: React.ReactNode;
+  fallbackMessage?: string;
+}> = ({ children, fallbackMessage }) => (
+  <ErrorBoundary fallback={<SetupTransitionErrorState />}>
+    <Suspense fallback={<SetupTransitionFallback message={fallbackMessage} />}>
+      <ProtectedRoute>
+        <DashboardProviders>{children}</DashboardProviders>
+      </ProtectedRoute>
+    </Suspense>
+  </ErrorBoundary>
+);
 const WorkspacePage = React.lazy(() => import('../pages/dashboard/settings/WorkspacePage'));
 const PackagesPage = React.lazy(() => import('../pages/dashboard/settings/PackagesPage'));
 
@@ -571,8 +614,22 @@ const NavigationWrapper: React.FC = () => {
 
         {/* Classic setup remains available as the V2 fallback escape hatch. */}
         <Route path="/setup/classic" element={<Setup />} />
-        <Route path="/setup/loading" element={<ProtectedRoute><DashboardProviders><SetupLoading /></DashboardProviders></ProtectedRoute>} />
-        <Route path="/setup/talk-to-agent" element={<ProtectedRoute><DashboardProviders><TalkToAgentPage /></DashboardProviders></ProtectedRoute>} />
+        <Route
+          path="/setup/loading"
+          element={
+            <PostSetupRouteShell fallbackMessage="Loading setup...">
+              <SetupLoading />
+            </PostSetupRouteShell>
+          }
+        />
+        <Route
+          path="/setup/talk-to-agent"
+          element={
+            <PostSetupRouteShell fallbackMessage="Loading setup...">
+              <TalkToAgentPage />
+            </PostSetupRouteShell>
+          }
+        />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/contact" element={<Contact />} />

@@ -6,7 +6,6 @@ import {
   clearPendingAgentSetup,
   readPendingAgentSetup,
 } from '../lib/setup/onboarding';
-import { provisionAgentSetup } from '../lib/setup/provisionAgentSetup';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -39,8 +38,6 @@ const AuthCallback: React.FC = () => {
             .maybeSingle();
 
           if (!profile && pendingSetup) {
-            await provisionAgentSetup(session.user.id, pendingSetup);
-            clearPendingAgentSetup();
             navigate('/setup/loading', { replace: true });
             return;
           }

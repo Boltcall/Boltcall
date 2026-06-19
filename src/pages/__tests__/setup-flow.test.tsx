@@ -126,6 +126,7 @@ describe('Setup flow', () => {
 
     expect(await screen.findByText(/business details/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Business Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Website/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /continue/i })).toBeDisabled();
   });
 
@@ -134,6 +135,7 @@ describe('Setup flow', () => {
     renderSetup();
 
     await user.type(screen.getByLabelText(/Business Name/i), 'Summit Solar');
+    await user.type(screen.getByLabelText(/Website/i), 'https://summitsolar.example');
     await user.selectOptions(screen.getByLabelText(/Industry/i), 'solar');
     await user.click(screen.getByRole('button', { name: /continue/i }));
 
@@ -148,6 +150,7 @@ describe('Setup flow', () => {
     const raw = window.localStorage.getItem('boltcall_pending_agent_setup');
     expect(raw).toBeTruthy();
     expect(raw).toContain('"businessName":"Summit Solar"');
+    expect(raw).toContain('"websiteUrl":"https://summitsolar.example"');
     expect(raw).toContain('"industry":"solar"');
     expect(raw).toContain('"voiceId":"11labs-Dorothy"');
   });

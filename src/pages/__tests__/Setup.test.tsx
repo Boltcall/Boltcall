@@ -187,11 +187,12 @@ describe('Setup page', () => {
 
     expect(await screen.findByText(/business details/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Business Name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Website/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Industry/i)).toBeInTheDocument();
     expect(screen.queryByText(/Agent Preferences/i)).not.toBeInTheDocument();
   });
 
-  it('keeps the first continue button disabled until both business name and industry are set', async () => {
+  it('keeps the first continue button disabled until business name, website, and industry are set', async () => {
     const user = userEvent.setup();
     renderSetup();
 
@@ -200,6 +201,9 @@ describe('Setup page', () => {
 
     await user.type(screen.getByLabelText(/Business Name/i), 'Solar Surge');
     expect(continueButton).toBeDisabled();
+
+    await user.type(screen.getByLabelText(/Website/i), 'https://solarsurge.example');
+    expect(continueButton).toBeDisabled();
   });
 
   it('moves from business details to agent preferences and then to the auth checkpoint', async () => {
@@ -207,6 +211,7 @@ describe('Setup page', () => {
     renderSetup();
 
     await user.type(screen.getByLabelText(/Business Name/i), 'Solar Surge');
+    await user.type(screen.getByLabelText(/Website/i), 'https://solarsurge.example');
     await user.selectOptions(screen.getByLabelText(/Industry/i), 'solar');
     await user.click(screen.getByRole('button', { name: /continue/i }));
 
