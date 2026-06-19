@@ -373,7 +373,7 @@ const DashboardLayout: React.FC = () => {
     { to: '/dashboard/ai-receptionist', label: t('nav.aiReceptionist'), icon: <Bot className="w-3.5 h-3.5 scale-[0.95]" />, needsSetup: !services.aiReceptionist },
     { to: '/dashboard/calls', label: t('nav.missedCalls'), icon: <PhoneMissed className="w-3.5 h-3.5 scale-[0.95]" />, badge: t('beta') as string, needsSetup: !services.phoneSystem },
     { to: '/dashboard/sms', label: 'SMS Agent', icon: <MessageSquare className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/whatsapp', label: 'WhatsApp', icon: <WhatsAppIcon className="w-3.5 h-3.5 scale-[0.95]" />, needsSetup: !services.whatsapp },
+    { to: '/dashboard/whatsapp', label: 'WhatsApp', icon: <WhatsAppIcon className="w-3.5 h-3.5 scale-[0.95]" />, badge: 'Coming Soon', needsSetup: !services.whatsapp },
     { to: '/dashboard/website-instant-response', label: 'Website Response', icon: <Globe className="w-3.5 h-3.5 scale-[0.95]" />, needsSetup: !services.instantLeadResponse },
     { to: '/dashboard/ad-instant-response', label: 'Ad Response', icon: <Reply className="w-3.5 h-3.5 scale-[0.95]" /> },
     { to: '/dashboard/email', label: 'AI Email', icon: <Mail className="w-3.5 h-3.5 scale-[0.95]" /> },
@@ -440,6 +440,8 @@ const DashboardLayout: React.FC = () => {
           <span className={`ml-auto px-1.5 py-0.5 text-[9px] font-semibold rounded-full leading-none ${
             item.badge === 'Beta'
               ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+              : item.badge === 'Coming Soon'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
               : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
           }`}>
             {item.badge}

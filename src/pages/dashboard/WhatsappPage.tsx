@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ServiceEmptyState from '../../components/dashboard/ServiceEmptyState';
 import {
   MessageCircle, Send, Check, X, RefreshCw, Copy,
   Loader2, Phone, ExternalLink, Eye, EyeOff,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { InfiniteRibbon } from '@/components/ui/infinite-ribbon';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -129,7 +129,6 @@ const WhatsappPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('connection');
   const [settings, setSettings] = useState<WhatsAppSettings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
-  const [showSetupFlow, setShowSetupFlow] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
@@ -551,16 +550,74 @@ const WhatsappPage: React.FC = () => {
     );
   }
 
-  if (!isConnected && !showSetupFlow) {
+  if (!isConnected) {
     return (
-      <ServiceEmptyState
-        icon={<MessageCircle className="w-7 h-7 text-green-600" />}
-        iconBg="bg-green-50"
-        title="WhatsApp Not Connected"
-        description="Connect your WhatsApp Business API to start capturing leads and sending instant AI replies via WhatsApp."
-        setupLabel="Connect WhatsApp"
-        onSetup={() => setShowSetupFlow(true)}
-      />
+      <div className="min-h-[60vh] px-4 py-8">
+        <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-900">
+            <MessageCircle className="h-4 w-4" />
+            Coming Soon
+          </div>
+
+          <div className="w-full overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)]">
+            <div className="hidden lg:block">
+              <InfiniteRibbon
+                className="border-b border-yellow-500/30 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.18em]"
+                duration={42}
+                repeat={6}
+                rotation={4}
+              >
+                WhatsApp AI follow-up is coming soon
+              </InfiniteRibbon>
+            </div>
+
+            <div className="p-6 sm:p-10">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                WhatsApp is coming soon
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-gray-600 sm:text-base">
+                We&apos;re polishing the WhatsApp experience for V1 so you can capture leads, respond
+                instantly, and keep conversations moving without manual follow-up.
+              </p>
+
+              <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
+                {[
+                  'Instant lead capture from inbound WhatsApp messages',
+                  'AI replies that keep speed-to-lead working after hours',
+                  'A cleaner launch flow instead of manual credential setup',
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm font-medium text-gray-700"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-slate-950 lg:hidden">
+                <InfiniteRibbon
+                  className="border-b border-white/10 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.16em]"
+                  duration={42}
+                  repeat={4}
+                  rotation={2}
+                >
+                  WhatsApp AI follow-up is coming soon
+                </InfiniteRibbon>
+                <InfiniteRibbon
+                  className="bg-slate-950 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-white dark:bg-slate-950 dark:text-white"
+                  duration={42}
+                  repeat={4}
+                  reverse
+                  rotation={-2}
+                >
+                  Instant response for every lead
+                </InfiniteRibbon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
