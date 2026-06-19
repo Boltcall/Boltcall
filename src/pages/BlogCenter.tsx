@@ -61,6 +61,15 @@ const blogPosts: BlogPost[] = [
     image: '/images/blog/previews/blog-hvac-virtual-receptionist.svg',
   },
   {
+    title: 'After-Hours Answering Service for HVAC: How to Capture Night and Weekend Calls',
+    slug: '/blog/after-hours-answering-service-hvac',
+    excerpt: 'How HVAC companies stop losing emergency evening and weekend calls with a faster after-hours answering workflow built for real booking and dispatch.',
+    date: 'June 19, 2026',
+    readTime: '9 min read',
+    category: 'HVAC|After-Hours|Industry Guide',
+    image: '/images/blog/previews/blog-after-hours-answering-service-hvac.svg',
+  },
+  {
     title: 'AI Appointment Scheduling for HVAC Companies: The 2026 Guide',
     slug: '/blog/ai-appointment-scheduling-hvac',
     excerpt: 'AI appointment scheduling for HVAC companies — how to automatically book service calls 24/7, handle seasonal surges, and never lose a lead to a competitor again.',
