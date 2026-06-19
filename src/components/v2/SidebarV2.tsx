@@ -5,12 +5,13 @@
  * V2 grouping (calmer, by user intent):
  *   - Home
  *   - Conversations  (Calls + Messages + Leads)
- *   - Agent          (Setup + Agent + Knowledge)
+ *   - Agent          (V1 Setup + Agent + Knowledge)
  *   - Insights       (Analytics + QA)
  *   - Growth         (Reputation + Integrations)
  *   - Help           (Help + Settings)
  *
- * All routes point at /v2/* paths — these are the V2 pages mounted by Day 8.
+ * Setup intentionally breaks out to /setup so onboarding stays canonical in
+ * V1 while the rest of the dashboard remains in V2.
  *
  * Polish layer (2026-06-03):
  *   - "V2" badge upgraded to a gradient pill with Sparkles icon
@@ -85,7 +86,7 @@ const SidebarV2: React.FC<SidebarV2Props> = ({
     {
       title: 'Agent',
       items: [
-        { to: '/v2/setup', label: 'Setup', icon: <Wrench className="w-4 h-4" /> },
+        { to: '/setup', label: 'Setup', icon: <Wrench className="w-4 h-4" /> },
         { to: '/v2/agent', label: 'Agent', icon: <Bot className="w-4 h-4" /> },
         { to: '/v2/knowledge', label: 'Knowledge', icon: <BookOpen className="w-4 h-4" /> },
       ],

@@ -389,7 +389,7 @@ const V2HomePage: React.FC = () => {
                 <ArrowUpRight className="w-3 h-3" />
               </Link>
               <Link
-                to="/v2/setup"
+                to="/setup"
                 className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 Finish setup

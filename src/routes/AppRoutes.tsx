@@ -444,10 +444,9 @@ const NavigationWrapper: React.FC = () => {
           </Route>
         </Route>
         {/* ── V2 Conversational Setup Wizard ───────────────────────────────
-            /setup is the marketing entry point: signed-out users go to signup
-            and then land in classic V1 setup, while signed-in users skip
-            straight to V1. /v2/setup remains available for the AI-native
-            setup flow when we explicitly send someone there. */}
+            /setup is the canonical onboarding entry point: signed-out users go
+            to signup/login first, then land in classic V1 setup. /v2/setup is
+            kept only as a compatibility redirect back into /setup. */}
         <Route path="/setup" element={<SetupEntry />} />
         <Route path="/v2/setup" element={<V2SetupPage />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────

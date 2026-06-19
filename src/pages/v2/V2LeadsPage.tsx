@@ -291,7 +291,7 @@ const EmptyState: React.FC = () => (
         Install lead-capture widget
       </a>
       <a
-        href="/v2/setup"
+        href="/setup"
         className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-zinc-200 bg-white text-sm font-medium text-zinc-700 hover:border-zinc-300"
       >
         Finish setup
