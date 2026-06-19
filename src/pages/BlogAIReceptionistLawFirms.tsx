@@ -664,7 +664,7 @@ const BlogAIReceptionistLawFirms: React.FC = () => {
 
           {/* Sidebar TOC */}
           <aside className="hidden xl:block w-64 shrink-0">
-            <div className="sticky top-32">
+            <div>
               <TableOfContents headings={headings} />
             </div>
           </aside>

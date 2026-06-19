@@ -328,7 +328,7 @@ const BlogNeverMissCallAfterHours: React.FC = () => {
           </article>
 
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-32"><TableOfContents headings={headings} /></div>
+            <TableOfContents headings={headings} />
           </aside>
         </div>
       </div>

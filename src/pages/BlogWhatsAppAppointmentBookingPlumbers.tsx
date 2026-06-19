@@ -659,7 +659,7 @@ const BlogWhatsAppAppointmentBookingPlumbers: React.FC = () => {
 
           {/* Table of Contents sidebar */}
           <aside className="hidden xl:block w-64 flex-shrink-0">
-            <div className="sticky top-24">
+            <div>
               <TableOfContents headings={headings} />
             </div>
           </aside>

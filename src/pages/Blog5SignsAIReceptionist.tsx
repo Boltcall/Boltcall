@@ -489,7 +489,7 @@ const Blog5SignsAIReceptionist: React.FC = () => {
 
           {/* Sidebar — Table of Contents */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-32">
+            <div>
               <TableOfContents headings={headings} />
             </div>
           </aside>

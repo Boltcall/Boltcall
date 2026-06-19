@@ -95,7 +95,7 @@ const HowAiReceptionistWorks: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex">
         {/* Sidebar */}
         <div className="hidden xl:block w-80 p-8">
-          <div className="sticky top-24">
+          <div>
             <TableOfContents headings={headings} activeId={activeId} />
           </div>
         </div>

@@ -128,7 +128,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-8">
+              <div>
                 <TableOfContents headings={headings} />
               </div>
             </div>
