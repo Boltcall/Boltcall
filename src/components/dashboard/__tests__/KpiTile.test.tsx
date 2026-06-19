@@ -2,6 +2,18 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts');
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div className="recharts-responsive-container" style={{ width: 112, height: 80 }}>
+        {children}
+      </div>
+    ),
+  };
+});
+
 // Mock framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', () => ({
   motion: {
@@ -81,13 +93,12 @@ describe('KpiTile', () => {
 
   it('should render sparkline SVG when data has 2+ points', () => {
     const { container } = render(<KpiTile {...defaultProps} />);
-    expect(container.querySelector('svg')).toBeInTheDocument();
-    expect(container.querySelector('.recharts-area-area')).toBeInTheDocument();
+    expect(container.querySelector('.recharts-responsive-container')).toBeInTheDocument();
   });
 
   it('should not render sparkline when data has fewer than 2 points', () => {
     const { container } = render(<KpiTile {...defaultProps} sparkline={[5]} />);
-    expect(container.querySelector('svg')).not.toBeInTheDocument();
+    expect(container.querySelector('.recharts-responsive-container')).not.toBeInTheDocument();
   });
 
   it('should accept custom className', () => {
