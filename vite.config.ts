@@ -153,6 +153,7 @@ export default defineConfig({
           /^\/api/,
           /^\/.netlify/,
           /^\/auth\/callback/,
+          /^\/blog(?:\/.*)?$/,
           /^\/after-hours-lead-rescue\/?$/,
           /^\/automatic-reviews-agent\/?$/,
           /^\/reminders-agent\/?$/,
