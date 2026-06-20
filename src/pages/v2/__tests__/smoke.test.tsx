@@ -21,7 +21,7 @@
  *     internal fetches and DOM heaviness don't dominate the smoke run.
  */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import React from 'react';
 
@@ -321,7 +321,9 @@ describe('V2 pages — smoke tests', () => {
 
   // ── Canonical setup entry ───────────────────────────────────────────────
   describe('V2SetupPage', () => {
-    it('renders the V2 setup chat for signed-in users', () => {
+    it('shows a welcome intro before starting the V2 setup chat', () => {
+      vi.useFakeTimers();
+
       render(
         <MemoryRouter initialEntries={['/setup']}>
           <Routes>
@@ -330,7 +332,16 @@ describe('V2 pages — smoke tests', () => {
         </MemoryRouter>,
       );
 
+      expect(screen.getByRole('heading', { name: /welcome to boltcall/i })).toBeInTheDocument();
+      expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(2300);
+      });
+
       expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
+
+      vi.useRealTimers();
     });
 
     it('sends signed-out setup visitors to signup first', () => {

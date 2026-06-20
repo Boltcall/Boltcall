@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { updateMetaDescription } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
@@ -7,11 +7,21 @@ import { Component as BgGradient } from '../../components/ui/bg-gredient';
 
 const V2SetupPage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const [showPrompting, setShowPrompting] = useState(false);
 
   useEffect(() => {
     document.title = 'Set Up Boltcall';
     updateMetaDescription('Set up Boltcall with an AI-guided onboarding flow.');
   }, []);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated) return;
+
+    setShowPrompting(false);
+    const welcomeTimer = window.setTimeout(() => setShowPrompting(true), 2300);
+
+    return () => window.clearTimeout(welcomeTimer);
+  }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
     return (
@@ -27,34 +37,71 @@ const V2SetupPage: React.FC = () => {
 
   return (
     <div className="relative isolate min-h-screen overflow-hidden bg-white">
+      <style>
+        {`
+          @keyframes boltcallSetupWelcome {
+            0% {
+              opacity: 0;
+              transform: translateY(18px) scale(0.96);
+              filter: blur(14px);
+              letter-spacing: 0.18em;
+            }
+            42% {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+              filter: blur(0);
+              letter-spacing: 0.11em;
+            }
+            78% {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+              filter: blur(0);
+            }
+            100% {
+              opacity: 0;
+              transform: translateY(-10px) scale(0.985);
+              filter: blur(8px);
+            }
+          }
+
+          @keyframes boltcallSetupPromptIn {
+            0% {
+              opacity: 0;
+              transform: translateY(18px);
+              filter: blur(10px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+              filter: blur(0);
+            }
+          }
+        `}
+      </style>
       <BgGradient
         gradientFrom="#ffffff"
-        gradientTo="#f2ecff"
+        gradientTo="#6633ee"
         gradientSize="125% 125%"
         gradientPosition="50% 10%"
         gradientStop="40%"
       />
-      <main className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <header className="flex items-center justify-between py-2">
-          <img
-            src="/boltcall_full_logo.png"
-            alt="Boltcall"
-            className="h-11 w-auto"
-            width={160}
-            height={52}
-            loading="eager"
-            decoding="async"
-          />
-          <div className="hidden rounded-full border border-zinc-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-zinc-500 shadow-sm sm:block">
-            AI-guided setup
-          </div>
-        </header>
-
-        <section className="mt-8 flex flex-1 justify-center">
-          <div className="w-full max-w-3xl rounded-[32px] border border-zinc-200 bg-white/92 p-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur">
+      <main className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+        {!showPrompting ? (
+          <h1
+            className="text-center text-5xl font-black uppercase tracking-[0.11em] text-zinc-950 sm:text-7xl lg:text-8xl"
+            style={{ animation: 'boltcallSetupWelcome 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
+          >
+            Welcome to Boltcall
+          </h1>
+        ) : (
+          <section
+            aria-label="Boltcall setup assistant"
+            className="w-full max-w-3xl"
+            style={{ animation: 'boltcallSetupPromptIn 800ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
+          >
             <V2SetupChat />
-          </div>
-        </section>
+          </section>
+        )}
       </main>
     </div>
   );
