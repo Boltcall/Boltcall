@@ -10,6 +10,7 @@ import AuthSwitch from '../components/ui/auth-switch';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button-shadcn';
+import { Component as BgGradient } from '../components/ui/bg-gredient';
 import {
   getGoalLabel,
   getIndustryLabel,
@@ -281,7 +282,14 @@ const SetupInner: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#fffdf5_0%,#ffffff_28%,#f8fafc_100%)]">
+    <div className="relative isolate min-h-screen overflow-hidden bg-white">
+      <BgGradient
+        gradientFrom="#ffffff"
+        gradientTo="#f2ecff"
+        gradientSize="125% 125%"
+        gradientPosition="50% 10%"
+        gradientStop="40%"
+      />
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 sm:px-6 lg:px-8">
         <header className="flex items-center justify-between py-2">
           <Link to="/" className="inline-flex items-center">
@@ -365,7 +373,7 @@ const SetupInner: React.FC = () => {
                 </div>
               </div>
               <Link
-                to="/login?redirect=/dashboard"
+                to="/login?redirect=/setup"
                 className="text-xs font-medium text-zinc-500 underline-offset-2 hover:text-zinc-900 hover:underline"
               >
                 Already have an account?

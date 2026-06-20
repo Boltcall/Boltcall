@@ -64,7 +64,7 @@ vi.mock('../../pages/GlassDemo', () => ({
 }));
 
 vi.mock('../../pages/Setup', () => ({
-  default: () => <div>Classic setup</div>,
+  default: () => <div>Agent setup</div>,
 }));
 
 vi.mock('../../pages/SetupLoading', () => ({
@@ -106,5 +106,21 @@ describe('AppRoutes post-setup transitions', () => {
     render(<AppRoutes />);
 
     expect(await screen.findByText(/loading setup/i)).toBeInTheDocument();
+  });
+
+  it('renders the agent-led setup page at the canonical /setup route', async () => {
+    routeState.initialEntries = ['/setup'];
+
+    render(<AppRoutes />);
+
+    expect(await screen.findByText('Agent setup')).toBeInTheDocument();
+  });
+
+  it('keeps /setup/agent as a compatibility alias for /setup', async () => {
+    routeState.initialEntries = ['/setup/agent'];
+
+    render(<AppRoutes />);
+
+    expect(await screen.findByText('Agent setup')).toBeInTheDocument();
   });
 });
