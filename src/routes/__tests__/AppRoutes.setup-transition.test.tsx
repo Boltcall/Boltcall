@@ -67,6 +67,10 @@ vi.mock('../../pages/Setup', () => ({
   default: () => <div>Agent setup</div>,
 }));
 
+vi.mock('../../pages/v2/V2SetupPage', () => ({
+  default: () => <div>V2 setup page</div>,
+}));
+
 vi.mock('../../pages/SetupLoading', () => ({
   default: () => <div>Setup loading page</div>,
 }));
@@ -113,7 +117,7 @@ describe('AppRoutes post-setup transitions', () => {
 
     render(<AppRoutes />);
 
-    expect(await screen.findByText('Agent setup')).toBeInTheDocument();
+    expect(await screen.findByText('V2 setup page')).toBeInTheDocument();
   });
 
   it('keeps /setup/agent as a compatibility alias for /setup', async () => {
@@ -121,6 +125,6 @@ describe('AppRoutes post-setup transitions', () => {
 
     render(<AppRoutes />);
 
-    expect(await screen.findByText('Agent setup')).toBeInTheDocument();
+    expect(await screen.findByText('V2 setup page')).toBeInTheDocument();
   });
 });

@@ -187,6 +187,11 @@ vi.mock('../../../components/v2/AskBoltcallAIV2', () => ({
 // V2OptInGate — module-level mock that flips behavior based on __v2State.mode.
 // 'enabled'  → renders children (passthrough, page content shows).
 // 'disabled' → renders a sentinel that simulates the "Enable V2" gate screen.
+vi.mock('../../../components/v2/V2SetupChat', () => ({
+  __esModule: true,
+  default: () => <div data-testid="v2-setup-chat-stub">V2 setup chat</div>,
+}));
+
 vi.mock('../../../components/v2/V2OptInGate', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) =>
@@ -314,19 +319,33 @@ describe('V2 pages — smoke tests', () => {
     }
   });
 
-  // ── Legacy /v2/setup compatibility redirect ────────────────────────────
-  describe('V2SetupPage redirects into V1 setup', () => {
-    it('sends /v2/setup traffic to /setup', () => {
+  // ── Canonical setup entry ───────────────────────────────────────────────
+  describe('V2SetupPage', () => {
+    it('renders the V2 setup chat for signed-in users', () => {
       render(
-        <MemoryRouter initialEntries={['/v2/setup']}>
+        <MemoryRouter initialEntries={['/setup']}>
           <Routes>
-            <Route path="/v2/setup" element={<V2SetupPage />} />
-            <Route path="/setup" element={<LocationEcho />} />
+            <Route path="/setup" element={<V2SetupPage />} />
           </Routes>
         </MemoryRouter>,
       );
 
-      expect(screen.getByTestId('location')).toHaveTextContent('/setup');
+      expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
+    });
+
+    it('sends signed-out setup visitors to signup first', () => {
+      __authState.isAuthenticated = false;
+
+      render(
+        <MemoryRouter initialEntries={['/setup']}>
+          <Routes>
+            <Route path="/setup" element={<V2SetupPage />} />
+            <Route path="/signup" element={<LocationEcho />} />
+          </Routes>
+        </MemoryRouter>,
+      );
+
+      expect(screen.getByTestId('location')).toHaveTextContent('/signup?redirect=%2Fsetup');
     });
   });
 });

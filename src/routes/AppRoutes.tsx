@@ -23,8 +23,6 @@ import AeoGlobalIntro from '../components/seo/AeoGlobalIntro';
 import Home from '../pages/Home';
 import GlassDemo from '../pages/GlassDemo';
 import BlogSchemaWrapper from '../components/BlogSchemaWrapper';
-// Setup is eagerly loaded — lazy+Suspense(fallback=null) caused blank screen on first visit
-import Setup from '../pages/Setup';
 import SetupLoading from '../pages/SetupLoading';
 import SetupClassic from '../pages/SetupClassic';
 const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'));
@@ -492,9 +490,9 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
-        {/* /setup is the canonical agent-led onboarding page. */}
-        <Route path="/setup" element={<Setup />} />
-        <Route path="/v2/setup" element={<V2SetupPage />} />
+        {/* /setup is the canonical V2 AI-guided onboarding page. */}
+        <Route path="/setup" element={<V2SetupPage />} />
+        <Route path="/v2/setup" element={<Navigate to="/setup" replace />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this
             tree is added at root so V2 has its own URL prefix and shell.

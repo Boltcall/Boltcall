@@ -36,7 +36,7 @@ const FinalCTA: React.FC<FinalCTAProps> = ({
   headline,
   description,
   buttonText,
-  buttonHref = '/setup',
+  buttonHref = '/signup?redirect=/setup',
   icons,
   presetKey,
 }) => {
