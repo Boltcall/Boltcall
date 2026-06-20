@@ -369,13 +369,13 @@ describe('V2SetupChat — smoke', () => {
       vi.runAllTimers();
     });
 
-    expect(screen.getByLabelText(/company name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/website/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/industry/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/voice/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/primary goal/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/tone/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/transfer number/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/primary goal/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/tone/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/transfer number/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/your answer/i)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/type your reply/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Boltcall Setup')).not.toBeInTheDocument();
@@ -393,17 +393,11 @@ describe('V2SetupChat — smoke', () => {
       vi.runAllTimers();
     });
 
-    fireEvent.change(screen.getByLabelText(/company name/i), {
+    fireEvent.change(screen.getByLabelText(/business name/i), {
       target: { value: 'Boltcall Plumbing' },
     });
-    fireEvent.change(screen.getByLabelText(/website/i), {
+    fireEvent.change(screen.getByLabelText(/business website - optional/i), {
       target: { value: 'https://boltcall.org' },
-    });
-    fireEvent.change(screen.getByLabelText(/industry/i), {
-      target: { value: 'roofing' },
-    });
-    fireEvent.change(screen.getByLabelText(/transfer number/i), {
-      target: { value: '+15551234567' },
     });
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /continue/i }));
@@ -419,11 +413,6 @@ describe('V2SetupChat — smoke', () => {
       [
         'Company name: Boltcall Plumbing',
         'Website: https://boltcall.org',
-        'Industry: Roofing',
-        'Voice: Adrian (11labs-Adrian)',
-        'Primary goal: Book appointments',
-        'Tone: Friendly and concise',
-        'Transfer number: +15551234567',
       ].join('\n')
     );
   });
