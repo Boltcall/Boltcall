@@ -262,11 +262,18 @@ const AiReceptionistForPlumbers: React.FC = () => {
                 <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>What an AI Receptionist Does for Your Plumbing Business
               </h2>
 
-              <div className="prose prose-lg max-w-none mb-8">
-                <p className="text-gray-700 leading-relaxed">
-                  An AI receptionist isn't just a fancy voicemail. It's a fully capable virtual team member that handles the entire front-office workflow — from the moment a customer calls to the moment their appointment is confirmed.
-                </p>
-              </div>
+            <div className="prose prose-lg max-w-none mb-8">
+              <p className="text-gray-700 leading-relaxed">
+                An AI receptionist isn't just a fancy voicemail. It's a fully capable virtual team member that handles the entire front-office workflow — from the moment a customer calls to the moment their appointment is confirmed.
+              </p>
+              <p className="text-gray-700 leading-relaxed">
+                If you want the cleaner commercial page for this category, start with{' '}
+                <Link className="font-semibold text-blue-700" to="/industries/plumbing-answering-service">
+                  plumbing answering service
+                </Link>
+                .
+              </p>
+            </div>
 
               <div className="grid md:grid-cols-2 gap-6 mb-8">
                 <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">

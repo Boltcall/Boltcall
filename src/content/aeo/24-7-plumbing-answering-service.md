@@ -26,6 +26,8 @@ A good plumbing answering setup should do more than say hello. It should:
 
 If it only takes a message, you still have a conversion problem. The goal is to keep the lead moving while intent is strongest.
 
+If you want the core buyer page for this category, see Boltcall's [plumbing answering service](/industries/plumbing-answering-service/) page.
+
 ## Revenue Case
 
 Plumbing is one of the clearest examples of speed beating brand.

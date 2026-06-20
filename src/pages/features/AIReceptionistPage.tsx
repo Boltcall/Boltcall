@@ -358,6 +358,13 @@ const AIReceptionistPage: React.FC = () => {
                   with service details. For emergency calls, it can immediately route to the appropriate 
                   technician or schedule urgent appointments.
                 </p>
+                <p className="text-gray-600 leading-relaxed mt-3">
+                  For the main category page built around this buyer intent, see{' '}
+                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/contractor-answering-service">
+                    contractor answering service
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
           </motion.div>

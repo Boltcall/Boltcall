@@ -230,6 +230,9 @@ const RankOnGoogleOfferPage = React.lazy(() => import('../pages/RankOnGoogleOffe
 const NicheToolPage = React.lazy(() => import('../pages/NicheToolPage'));
 const FunnelOptimizer = React.lazy(() => import('../pages/FunnelOptimizer'));
 const FunnelOptimiser = React.lazy(() => import('../pages/FunnelOptimiser'));
+const HVACAnsweringServicePage = React.lazy(() => import('../pages/HVACAnsweringServicePage'));
+const PlumbingAnsweringServicePage = React.lazy(() => import('../pages/PlumbingAnsweringServicePage'));
+const ContractorAnsweringServicePage = React.lazy(() => import('../pages/ContractorAnsweringServicePage'));
 const SolarIndustryHub = React.lazy(() => import('../pages/SolarIndustryHub'));
 const SolarSpeedToLeadPlaybook = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybook'));
 const SolarSpeedToLeadPlaybookThankYou = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybookThankYou'));
@@ -784,6 +787,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/strike-ai" element={<Strike />} />
         <Route path="/drhazak" element={<DrHazakLandingPage />} />
         <Route path="/rank-on-google-offer" element={<RankOnGoogleOfferPage />} />
+        <Route path="/industries/hvac-answering-service" element={<HVACAnsweringServicePage />} />
+        <Route path="/industries/plumbing-answering-service" element={<PlumbingAnsweringServicePage />} />
+        <Route path="/industries/contractor-answering-service" element={<ContractorAnsweringServicePage />} />
         {/* Solar Industry Hub */}
         <Route path="/solar" element={<SolarIndustryHub />} />
         {/* Solar Speed-to-Lead Playbook */}

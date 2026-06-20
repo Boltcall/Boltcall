@@ -26,6 +26,8 @@ In practice, that means the system should know:
 
 The goal is simple: fewer missed calls, faster first response, and more booked service appointments.
 
+If you are comparing category language and want the core commercial page, start with Boltcall's [HVAC answering service](/industries/hvac-answering-service/) page.
+
 ## Revenue Case
 
 The business case for an HVAC virtual receptionist is not subtle. HVAC is one of the highest-urgency local service categories, which means response time has outsized impact on close rate.

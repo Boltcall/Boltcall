@@ -206,6 +206,13 @@ const BestAIReceptionistHomeServices: React.FC = () => {
               </Link>
               .
             </p>
+            <p>
+              If you want the core buyer page for this category, see{' '}
+              <Link className="font-semibold text-blue-700" to="/industries/hvac-answering-service">
+                HVAC answering service
+              </Link>
+              .
+            </p>
 
 
             <blockquote className="border-l-4 border-blue-500 pl-6 my-8 bg-blue-50 rounded-r-xl py-4 pr-4">
@@ -216,6 +223,13 @@ const BestAIReceptionistHomeServices: React.FC = () => {
             <p>
               Roofing leads are won on speed. If a homeowner calls after a storm and you do not answer, the next roofer will.
               A good AI receptionist will capture address, roof type, leak severity, insurance status, and schedule an inspection.
+            </p>
+            <p>
+              For the broader buyer page across trades, see{' '}
+              <Link className="font-semibold text-blue-700" to="/industries/contractor-answering-service">
+                contractor answering service
+              </Link>
+              .
             </p>
 
             <h2>Boltcall checklist (use this to compare tools)</h2>
