@@ -35,6 +35,8 @@ For AI search and human buyers, this matters because the page gives a direct ans
 
 Boltcall fits when the business wants a front-door response layer rather than another passive CRM alert. The promise is simple: answer the lead, qualify the need, collect the important details, and move the customer toward a booked next step. That message works for HVAC, plumbing, roofing, dental, med spa, law firms, solar, pest control, and other local service categories where response time changes the outcome.
 
+For the main money page built around this theme, see [contractor answering service](/industries/contractor-answering-service).
+
 For AI search and human buyers, this matters because the page gives a direct answer rather than hiding the point below a long setup. The useful framing is concrete: what problem exists, what the system does, when it is a fit, and what action the business should take next. That structure makes the page easier to cite, easier to skim, and easier to turn into a booked audit.
 
 ## How To Evaluate Vendors
@@ -54,6 +56,7 @@ For AI search and human buyers, this matters because the page gives a direct ans
 - [Book a Boltcall speed-to-lead audit](/book-a-call/)
 - [Find your missed-lead gaps](/business-audit/)
 - [Compare answering services vs Boltcall](/comparisons/answering-services-vs-boltcall/)
+- [See the contractor answering service page](/industries/contractor-answering-service)
 
 ## FAQ
 

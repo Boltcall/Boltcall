@@ -73,6 +73,9 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'Solar Quote Generator', href: '/tools/solar-quote-generator' },
     ],
     industries: [
+      { label: 'HVAC Answering Service', href: '/industries/hvac-answering-service' },
+      { label: 'Plumbing Answering Service', href: '/industries/plumbing-answering-service' },
+      { label: 'Contractor Answering Service', href: '/industries/contractor-answering-service' },
       { label: 'Speed-to-Lead for Solar', href: '/solar' },
       { label: 'Solar Speed Benchmark', href: '/solar-benchmark' },
       { label: 'Solar Benchmark 2026', href: '/solar-benchmark-2026' },

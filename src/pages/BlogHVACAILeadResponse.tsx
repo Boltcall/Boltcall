@@ -301,6 +301,15 @@ const BlogHVACAILeadResponse: React.FC = () => {
                 </p>
 
                 <p>
+                  If you are evaluating the commercial solution side of this problem, start with
+                  Boltcall&apos;s{' '}
+                  <Link className="font-semibold text-blue-700" to="/industries/hvac-answering-service">
+                    HVAC answering service
+                  </Link>{' '}
+                  page.
+                </p>
+
+                <p>
                   The compounding problem is that this happens most often during peak season — exactly
                   when you can least afford to lose jobs. When one tech is on a call, another is
                   driving, and the phone rings for the fifth time in an hour, something falls through

@@ -25,6 +25,8 @@ That is why a roofing business needs more than basic voicemail coverage. A good 
 
 The point is not to sound fancy. The point is to make sure each call gets a useful next step while the homeowner is still actively choosing a contractor.
 
+If you want the broader category page for this kind of buyer intent, see [contractor answering service](/industries/contractor-answering-service).
+
 ## Revenue Case
 
 Roofing companies often lose leads in bunches, not one at a time.

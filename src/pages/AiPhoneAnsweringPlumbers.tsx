@@ -142,6 +142,13 @@ const AiPhoneAnsweringPlumbers: React.FC = () => {
               <p className="text-lg text-gray-700 mb-6">
                 The plumbing industry faces unique challenges when it comes to customer communication. Unlike other businesses, plumbing emergencies happen at any hour, and customers often need immediate assistance or quotes.
               </p>
+              <p className="text-lg text-gray-700 mb-6">
+                If you are evaluating the direct buyer page for this problem, see Boltcall&apos;s{' '}
+                <Link className="font-semibold text-blue-700" to="/industries/plumbing-answering-service">
+                  plumbing answering service
+                </Link>{' '}
+                page.
+              </p>
 
               <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
                 <h3 className="text-xl font-semibold text-red-800 mb-4">The Hidden Costs of Missed Calls</h3>
