@@ -379,7 +379,7 @@ const V2SetupChat: React.FC = () => {
   const showOpeningFields = showResponseFields && !hasUserMessages;
 
   return (
-    <div className="flex h-full min-h-[640px] w-full max-w-3xl flex-col bg-white">
+    <div className="flex h-full min-h-[640px] w-full max-w-3xl flex-col bg-transparent">
       <div className="px-1 pt-3">
         <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>Profile {completeness}% ready</span>
@@ -417,7 +417,7 @@ const V2SetupChat: React.FC = () => {
         {isStreaming && <TypingIndicator />}
 
         {showOpeningFields && (
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="rounded-2xl border border-white/50 bg-white/30 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-md">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="v2-company-name" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
@@ -546,7 +546,7 @@ const V2SetupChat: React.FC = () => {
         )}
 
         {showResponseFields && hasUserMessages && (
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="rounded-2xl border border-white/50 bg-white/30 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-md">
             <label htmlFor="v2-setup-answer" className="mb-1.5 block text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
               Your answer
             </label>
