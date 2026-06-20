@@ -4,7 +4,6 @@ import {
   ArrowRight,
   CalendarCheck2,
   CheckCircle2,
-  Clock3,
   MessageSquare,
   Phone,
   ShieldCheck,
