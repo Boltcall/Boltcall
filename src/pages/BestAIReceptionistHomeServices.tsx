@@ -175,6 +175,13 @@ const BestAIReceptionistHomeServices: React.FC = () => {
               <li><strong>Instant follow-up</strong> by SMS/email so leads don’t go cold</li>
               <li><strong>Reminders</strong> to reduce no-shows and “forgotten” estimates</li>
             </ul>
+            <p>
+              If you are evaluating the problem through pure response speed, read{' '}
+              <Link className="font-semibold text-blue-700" to="/blog/how-fast-contractor-respond-new-lead">
+                how fast a contractor should respond to a new lead
+              </Link>
+              .
+            </p>
 
             <h2>Best AI receptionist for plumbers</h2>
             <p>
@@ -200,9 +207,9 @@ const BestAIReceptionistHomeServices: React.FC = () => {
               and protect your team from wasting time on out-of-area or price-shopping inquiries.
             </p>
             <p>
-              HVAC FAQ:{' '}
-              <Link className="font-semibold text-blue-700" to="/blog/ai-receptionist-hvac-faq">
-                20 questions HVAC owners ask
+              HVAC buyer guide:{' '}
+              <Link className="font-semibold text-blue-700" to="/blog/ai-receptionist-for-hvac-speed-to-lead">
+                AI receptionist for HVAC
               </Link>
               .
             </p>
@@ -228,6 +235,17 @@ const BestAIReceptionistHomeServices: React.FC = () => {
               For the broader buyer page across trades, see{' '}
               <Link className="font-semibold text-blue-700" to="/industries/contractor-answering-service">
                 contractor answering service
+              </Link>
+              .
+            </p>
+            <p>
+              For the exact roofing buyer-intent pages, read{' '}
+              <Link className="font-semibold text-blue-700" to="/blog/ai-receptionist-for-roofers">
+                AI receptionist for roofers
+              </Link>{' '}
+              and{' '}
+              <Link className="font-semibold text-blue-700" to="/blog/roofer-answering-service">
+                roofer answering service
               </Link>
               .
             </p>
