@@ -9,9 +9,23 @@ import React from 'react';
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
 
-const mockLogin = vi.fn();
-const mockSignup = vi.fn();
-const mockNavigate = vi.fn();
+const {
+  mockLogin,
+  mockSignup,
+  mockNavigate,
+  mockSignInWithGoogle,
+  mockSignInWithMicrosoft,
+  mockSignInWithFacebook,
+  mockSavePendingAuthRedirect,
+} = vi.hoisted(() => ({
+  mockLogin: vi.fn(),
+  mockSignup: vi.fn(),
+  mockNavigate: vi.fn(),
+  mockSignInWithGoogle: vi.fn(),
+  mockSignInWithMicrosoft: vi.fn(),
+  mockSignInWithFacebook: vi.fn(),
+  mockSavePendingAuthRedirect: vi.fn(),
+}));
 
 vi.mock('framer-motion', () => ({
   motion: new Proxy({}, {
@@ -36,9 +50,9 @@ vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({
     login: mockLogin,
     signup: mockSignup,
-    signInWithGoogle: vi.fn(),
-    signInWithMicrosoft: vi.fn(),
-    signInWithFacebook: vi.fn(),
+    signInWithGoogle: mockSignInWithGoogle,
+    signInWithMicrosoft: mockSignInWithMicrosoft,
+    signInWithFacebook: mockSignInWithFacebook,
     user: null,
     isAuthenticated: false,
     isLoading: false,
@@ -55,6 +69,10 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('../../lib/auth', () => ({
   resetPassword: vi.fn(),
+}));
+
+vi.mock('../../lib/authRedirect', () => ({
+  savePendingAuthRedirect: mockSavePendingAuthRedirect,
 }));
 
 import AuthSwitch from '../../components/ui/auth-switch';
@@ -197,6 +215,18 @@ describe('Auth flow — Signup', () => {
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/setup/classic');
+    });
+  });
+
+  it('stores the setup redirect before Google signup leaves for OAuth', async () => {
+    mockSignInWithGoogle.mockRejectedValue(new Error('OAuth redirect initiated'));
+    const { user } = renderAuth('signup', ['/signup?redirect=%2Fsetup']);
+
+    await user.click(screen.getByTitle('Google'));
+
+    await waitFor(() => {
+      expect(mockSavePendingAuthRedirect).toHaveBeenCalledWith('/setup');
+      expect(mockSignInWithGoogle).toHaveBeenCalled();
     });
   });
 });

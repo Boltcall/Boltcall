@@ -36,14 +36,14 @@ function renderSetupEntry() {
 }
 
 describe('SetupEntry', () => {
-  it('sends signed-out visitors to signup with the classic setup redirect', () => {
+  it('sends signed-out visitors to signup with the setup entry redirect', () => {
     authState.isAuthenticated = false;
     authState.isLoading = false;
 
     renderSetupEntry();
 
     expect(screen.getByTestId('location')).toHaveTextContent(
-      '/signup?redirect=%2Fsetup%2Fclassic',
+      '/signup?redirect=%2Fsetup',
     );
   });
 
