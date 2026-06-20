@@ -26,6 +26,7 @@ import BlogSchemaWrapper from '../components/BlogSchemaWrapper';
 // Setup is eagerly loaded — lazy+Suspense(fallback=null) caused blank screen on first visit
 import Setup from '../pages/Setup';
 import SetupLoading from '../pages/SetupLoading';
+import SetupClassic from '../pages/SetupClassic';
 const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'));
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
@@ -619,8 +620,9 @@ const NavigationWrapper: React.FC = () => {
         </Route>
 
 
-        {/* Classic setup remains available as the V2 fallback escape hatch. */}
-        <Route path="/setup/classic" element={<Setup />} />
+        {/* Classic setup is the old V1 form wizard, without the agent-led chat. */}
+        <Route path="/setup/classic" element={<SetupClassic />} />
+        <Route path="/setup/agent" element={<Setup />} />
         <Route
           path="/setup/loading"
           element={
