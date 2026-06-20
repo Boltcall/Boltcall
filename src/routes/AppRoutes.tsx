@@ -334,8 +334,6 @@ const ReceptionistDemo = React.lazy(() => import('../pages/ReceptionistDemo'));
 const V2HomePage = React.lazy(() => import('../pages/v2/V2HomePage'));
 const V2AnalyticsPage = React.lazy(() => import('../pages/v2/V2AnalyticsPage'));
 const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
-const SetupEntry = React.lazy(() => import('../pages/SetupEntry'));
-
 // ── Lazy loads — V2 conversational setup wizard ──────────────────────────
 // Standalone route reached BEFORE opt-in; not wrapped in V2OptInGate so a
 // signed-in user can reach the wizard before V2 is flipped on. The finalize
@@ -494,11 +492,8 @@ const NavigationWrapper: React.FC = () => {
             <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
           </Route>
         </Route>
-        {/* ── V2 Conversational Setup Wizard ───────────────────────────────
-            /setup is the canonical onboarding entry point: signed-out users go
-            to signup/login first, then land in classic V1 setup. /v2/setup is
-            kept only as a compatibility redirect back into /setup. */}
-        <Route path="/setup" element={<SetupEntry />} />
+        {/* /setup is the canonical agent-led onboarding page. */}
+        <Route path="/setup" element={<Setup />} />
         <Route path="/v2/setup" element={<V2SetupPage />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this
@@ -622,7 +617,7 @@ const NavigationWrapper: React.FC = () => {
 
         {/* Classic setup is the old V1 form wizard, without the agent-led chat. */}
         <Route path="/setup/classic" element={<SetupClassic />} />
-        <Route path="/setup/agent" element={<Setup />} />
+        <Route path="/setup/agent" element={<Navigate to="/setup" replace />} />
         <Route
           path="/setup/loading"
           element={

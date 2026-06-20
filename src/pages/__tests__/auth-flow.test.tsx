@@ -204,9 +204,9 @@ describe('Auth flow — Signup', () => {
     });
   });
 
-  it('uses the requested redirect after signup', async () => {
+  it('uses the requested setup redirect after signup', async () => {
     mockSignup.mockResolvedValue({ id: 'u1' });
-    const { user } = renderAuth('signup', ['/signup?redirect=%2Fsetup%2Fclassic']);
+    const { user } = renderAuth('signup', ['/signup?redirect=%2Fsetup']);
 
     await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
     await user.type(screen.getByPlaceholderText('Password'), 'securepass');
@@ -215,8 +215,8 @@ describe('Auth flow — Signup', () => {
     await user.click(submitBtn);
 
     await waitFor(() => {
-      expect(mockSavePendingAuthRedirect).toHaveBeenCalledWith('/setup/classic');
-      expect(mockNavigate).toHaveBeenCalledWith('/setup/classic');
+      expect(mockSavePendingAuthRedirect).toHaveBeenCalledWith('/setup');
+      expect(mockNavigate).toHaveBeenCalledWith('/setup');
     });
   });
 
@@ -266,7 +266,7 @@ describe('Auth flow — Mode switching', () => {
     // Verifying the component accepts these props
     const { unmount } = render(
       <MemoryRouter>
-        <AuthSwitch defaultMode="signup" defaultRedirect="/setup/classic" />
+        <AuthSwitch defaultMode="signup" defaultRedirect="/setup" />
       </MemoryRouter>
     );
     unmount();
