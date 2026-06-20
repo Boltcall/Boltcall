@@ -11,16 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { cn } from '../../lib/utils';
-import {
-  getGoalLabel,
-  getIndustryLabel,
-  getToneLabel,
-  getVoiceLabel,
-  GOAL_OPTIONS,
-  INDUSTRY_OPTIONS,
-  TONE_OPTIONS,
-  VOICE_OPTIONS,
-} from '../../lib/setup/onboarding';
+import { Input } from '../ui/input';
 
 interface ChatMessage {
   id: string;
@@ -73,19 +64,6 @@ const V2SetupChat: React.FC = () => {
   );
   const [businessNameDraft, setBusinessNameDraft] = useState('');
   const [websiteDraft, setWebsiteDraft] = useState('');
-  const [industryDraft, setIndustryDraft] = useState<
-    (typeof INDUSTRY_OPTIONS)[number]['value'] | ''
-  >('');
-  const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['value']>(
-    VOICE_OPTIONS[0].value,
-  );
-  const [goalDraft, setGoalDraft] = useState<(typeof GOAL_OPTIONS)[number]['value']>(
-    GOAL_OPTIONS[0].value,
-  );
-  const [toneDraft, setToneDraft] = useState<(typeof TONE_OPTIONS)[number]['value']>(
-    TONE_OPTIONS[0].value,
-  );
-  const [transferNumberDraft, setTransferNumberDraft] = useState('');
   const [answerDraft, setAnswerDraft] = useState('');
   const [extracted, setExtracted] = useState<ExtractedDraft>({});
   const [stateVersion, setStateVersion] = useState<number>(0);
@@ -98,7 +76,6 @@ const V2SetupChat: React.FC = () => {
 
   const lastUserActivity = useRef<number>(Date.now());
   const stallTimer = useRef<number | null>(null);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
   const typewriterTimers = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
@@ -177,39 +154,13 @@ const V2SetupChat: React.FC = () => {
   }, [messages.length]);
 
   useEffect(() => {
-    if (!scrollRef.current) return;
-    scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, isStreaming]);
-
-  useEffect(() => {
     if (typeof extracted.businessName === 'string' && extracted.businessName.trim()) {
       setBusinessNameDraft((prev) => prev || extracted.businessName || '');
     }
     if (typeof extracted.websiteUrl === 'string' && extracted.websiteUrl.trim()) {
       setWebsiteDraft((prev) => prev || extracted.websiteUrl || '');
     }
-    if (
-      typeof extracted.industry === 'string' &&
-      INDUSTRY_OPTIONS.some((option) => option.value === extracted.industry)
-    ) {
-      setIndustryDraft((prev) => prev || (extracted.industry as typeof industryDraft));
-    }
-    if (
-      typeof extracted.agentConfig?.voiceId === 'string' &&
-      VOICE_OPTIONS.some((option) => option.value === extracted.agentConfig?.voiceId)
-    ) {
-      setVoiceDraft((prev) => prev || (extracted.agentConfig?.voiceId as typeof voiceDraft));
-    }
-    if (typeof extracted.agentConfig?.transferNumber === 'string') {
-      setTransferNumberDraft((prev) => prev || extracted.agentConfig?.transferNumber || '');
-    }
-  }, [
-    extracted.agentConfig?.transferNumber,
-    extracted.agentConfig?.voiceId,
-    extracted.businessName,
-    extracted.industry,
-    extracted.websiteUrl,
-  ]);
+  }, [extracted.businessName, extracted.websiteUrl]);
 
   function seedOpening() {
     const id = genId();
@@ -342,17 +293,11 @@ const V2SetupChat: React.FC = () => {
   function submitOpeningStep() {
     const companyName = businessNameDraft.trim();
     const website = websiteDraft.trim();
-    const transferNumber = transferNumberDraft.trim();
-    if (!companyName || !industryDraft) return;
+    if (!companyName) return;
 
     const text = [
       `Company name: ${companyName}`,
       website ? `Website: ${website}` : '',
-      `Industry: ${getIndustryLabel(industryDraft)}`,
-      `Voice: ${getVoiceLabel(voiceDraft)} (${voiceDraft})`,
-      `Primary goal: ${getGoalLabel(goalDraft)}`,
-      `Tone: ${getToneLabel(toneDraft)}`,
-      transferNumber ? `Transfer number: ${transferNumber}` : '',
     ]
       .filter(Boolean)
       .join('\n');
@@ -379,8 +324,24 @@ const V2SetupChat: React.FC = () => {
   const showOpeningFields = showResponseFields && !hasUserMessages;
 
   return (
-    <div className="flex h-full min-h-[640px] w-full max-w-3xl flex-col bg-transparent">
-      <div className="px-1 pt-3">
+    <div className="flex h-full min-h-[640px] w-full max-w-3xl flex-col justify-center bg-transparent">
+      <style>
+        {`
+          @keyframes v2SetupFieldFadeIn {
+            0% {
+              opacity: 0;
+              transform: translateY(16px);
+              filter: blur(10px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+              filter: blur(0);
+            }
+          }
+        `}
+      </style>
+      <div className="mx-auto w-full max-w-xl px-1 pt-3">
         <div className="flex items-center justify-between text-xs text-zinc-500">
           <span>Profile {completeness}% ready</span>
           {readyToDeploy && <span className="font-medium text-emerald-600">Ready to deploy</span>}
@@ -405,7 +366,7 @@ const V2SetupChat: React.FC = () => {
         </div>
       )}
 
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-1 py-4" aria-live="polite">
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center space-y-8 overflow-visible px-1 py-8" aria-live="polite">
         {!hasHydrated && (
           <div className="flex items-center justify-center py-12 text-sm text-zinc-400">
             Loading your setup...
@@ -417,128 +378,41 @@ const V2SetupChat: React.FC = () => {
         {isStreaming && <TypingIndicator />}
 
         {showOpeningFields && (
-          <div className="rounded-2xl border border-white/50 bg-white/30 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-md">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label htmlFor="v2-company-name" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Company name
-                </label>
-                <input
-                  id="v2-company-name"
-                  aria-label="Company name"
-                  type="text"
-                  value={businessNameDraft}
-                  onChange={(e) => setBusinessNameDraft(e.target.value)}
-                  placeholder="Acme Plumbing"
-                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label htmlFor="v2-website-url" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Website
-                </label>
-                <input
-                  id="v2-website-url"
-                  aria-label="Website"
-                  type="url"
-                  value={websiteDraft}
-                  onChange={(e) => setWebsiteDraft(e.target.value)}
-                  placeholder="https://example.com"
-                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label htmlFor="v2-industry" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Industry
-                </label>
-                <select
-                  id="v2-industry"
-                  aria-label="Industry"
-                  value={industryDraft}
-                  onChange={(e) => setIndustryDraft(e.target.value as typeof industryDraft)}
-                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                >
-                  <option value="">Select an industry</option>
-                  {INDUSTRY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label htmlFor="v2-voice" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Voice
-                </label>
-                <select
-                  id="v2-voice"
-                  aria-label="Voice"
-                  value={voiceDraft}
-                  onChange={(e) => setVoiceDraft(e.target.value as typeof voiceDraft)}
-                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                >
-                  {VOICE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label} - {option.description}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label htmlFor="v2-goal" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Primary goal
-                </label>
-                <select
-                  id="v2-goal"
-                  aria-label="Primary goal"
-                  value={goalDraft}
-                  onChange={(e) => setGoalDraft(e.target.value as typeof goalDraft)}
-                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                >
-                  {GOAL_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <label htmlFor="v2-tone" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Tone
-                </label>
-                <select
-                  id="v2-tone"
-                  aria-label="Tone"
-                  value={toneDraft}
-                  onChange={(e) => setToneDraft(e.target.value as typeof toneDraft)}
-                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                >
-                  {TONE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <label htmlFor="v2-transfer-number" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Transfer number
-                </label>
-                <input
-                  id="v2-transfer-number"
-                  aria-label="Transfer number"
-                  type="tel"
-                  value={transferNumberDraft}
-                  onChange={(e) => setTransferNumberDraft(e.target.value)}
-                  placeholder="+1 555 000 0000"
-                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
-                />
-              </div>
+          <div className="w-full max-w-xl space-y-8">
+            <div
+              className="opacity-0"
+              style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
+            >
+              <Input
+                id="v2-company-name"
+                aria-label="Business Name"
+                label="Business Name"
+                value={businessNameDraft}
+                onChange={(e) => setBusinessNameDraft(e.target.value)}
+                className="w-full"
+                autoComplete="organization"
+              />
+            </div>
+            <div
+              className="opacity-0"
+              style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
+            >
+              <Input
+                id="v2-website-url"
+                aria-label="Business website - optional"
+                label="Business website - optional"
+                type="url"
+                value={websiteDraft}
+                onChange={(e) => setWebsiteDraft(e.target.value)}
+                className="w-full"
+                autoComplete="url"
+              />
             </div>
             <button
               onClick={submitOpeningStep}
-              disabled={!businessNameDraft.trim() || !industryDraft || isStreaming || isFinalizing}
-              className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+              disabled={!businessNameDraft.trim() || isStreaming || isFinalizing}
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-5 text-sm font-semibold text-white opacity-0 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+              style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both' }}
             >
               Continue
             </button>
@@ -546,29 +420,25 @@ const V2SetupChat: React.FC = () => {
         )}
 
         {showResponseFields && hasUserMessages && (
-          <div className="rounded-2xl border border-white/50 bg-white/30 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-md">
-            <label htmlFor="v2-setup-answer" className="mb-1.5 block text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-              Your answer
-            </label>
-            <div className="flex items-center gap-2">
-              <input
+          <div className="flex w-full max-w-xl items-end gap-3">
+            <div className="flex-1">
+              <Input
                 id="v2-setup-answer"
                 aria-label="Your answer"
-                type="text"
+                label="Your answer"
                 value={answerDraft}
                 onChange={(e) => setAnswerDraft(e.target.value)}
                 onKeyDown={onAnswerKeyDown}
-                placeholder="Type your answer"
-                className="h-11 flex-1 rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                className="w-full"
               />
-              <button
-                onClick={() => void sendMessage(answerDraft)}
-                disabled={!answerDraft.trim() || isStreaming || isFinalizing}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
-              >
-                Continue
-              </button>
             </div>
+            <button
+              onClick={() => void sendMessage(answerDraft)}
+              disabled={!answerDraft.trim() || isStreaming || isFinalizing}
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+            >
+              Continue
+            </button>
           </div>
         )}
       </div>
@@ -600,11 +470,13 @@ const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
     message.displayed != null ? message.content.slice(0, message.displayed) : message.content;
 
   return (
-    <div className={cn('flex w-full', isUser ? 'justify-end' : 'justify-start')}>
+    <div className="flex w-full justify-center">
       <div
         className={cn(
-          'max-w-[82%] text-sm leading-relaxed',
-          isUser ? 'text-zinc-500' : 'text-zinc-950',
+          'max-w-2xl whitespace-pre-wrap text-center leading-tight',
+          isUser
+            ? 'text-base font-medium text-zinc-500'
+            : 'text-2xl font-semibold tracking-[-0.03em] text-zinc-950 sm:text-3xl',
         )}
       >
         {message.toolNote && !isUser && (
@@ -612,7 +484,7 @@ const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
             {message.toolNote}
           </div>
         )}
-        <div className="whitespace-pre-wrap">{visible}</div>
+        <div>{visible}</div>
       </div>
     </div>
   );
