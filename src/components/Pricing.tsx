@@ -9,13 +9,13 @@ const Pricing: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('marketing');
 
-  // Self-serve plans (Starter / Pro / Ultimate) start the free trial via /setup;
+  // Self-serve plans (Starter / Pro / Ultimate) start at signup, then continue to /setup.
   // payment is handled inside the dashboard once the user is signed in.
   // High-touch plans (Enterprise / Custom) route to /book-a-call for sales.
   const PLAN_ROUTES: Record<string, string> = {
-    starter: '/setup',
-    pro: '/setup',
-    ultimate: '/setup',
+    starter: '/signup?redirect=/setup',
+    pro: '/signup?redirect=/setup',
+    ultimate: '/signup?redirect=/setup',
     custom: '/book-a-call',
   };
 
@@ -124,7 +124,7 @@ const Pricing: React.FC = () => {
               custom: 'custom',
             };
             const planKey = planMap[plan] || plan;
-            const route = PLAN_ROUTES[planKey] || '/setup';
+            const route = PLAN_ROUTES[planKey] || '/signup?redirect=/setup';
             navigate(route);
           }}
           containerClassName="py-0"

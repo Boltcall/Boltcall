@@ -11,6 +11,16 @@ import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { cn } from '../../lib/utils';
+import {
+  getGoalLabel,
+  getIndustryLabel,
+  getToneLabel,
+  getVoiceLabel,
+  GOAL_OPTIONS,
+  INDUSTRY_OPTIONS,
+  TONE_OPTIONS,
+  VOICE_OPTIONS,
+} from '../../lib/setup/onboarding';
 
 interface ChatMessage {
   id: string;
@@ -63,6 +73,19 @@ const V2SetupChat: React.FC = () => {
   );
   const [businessNameDraft, setBusinessNameDraft] = useState('');
   const [websiteDraft, setWebsiteDraft] = useState('');
+  const [industryDraft, setIndustryDraft] = useState<
+    (typeof INDUSTRY_OPTIONS)[number]['value'] | ''
+  >('');
+  const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['value']>(
+    VOICE_OPTIONS[0].value,
+  );
+  const [goalDraft, setGoalDraft] = useState<(typeof GOAL_OPTIONS)[number]['value']>(
+    GOAL_OPTIONS[0].value,
+  );
+  const [toneDraft, setToneDraft] = useState<(typeof TONE_OPTIONS)[number]['value']>(
+    TONE_OPTIONS[0].value,
+  );
+  const [transferNumberDraft, setTransferNumberDraft] = useState('');
   const [answerDraft, setAnswerDraft] = useState('');
   const [extracted, setExtracted] = useState<ExtractedDraft>({});
   const [stateVersion, setStateVersion] = useState<number>(0);
@@ -165,7 +188,28 @@ const V2SetupChat: React.FC = () => {
     if (typeof extracted.websiteUrl === 'string' && extracted.websiteUrl.trim()) {
       setWebsiteDraft((prev) => prev || extracted.websiteUrl || '');
     }
-  }, [extracted.businessName, extracted.websiteUrl]);
+    if (
+      typeof extracted.industry === 'string' &&
+      INDUSTRY_OPTIONS.some((option) => option.value === extracted.industry)
+    ) {
+      setIndustryDraft((prev) => prev || (extracted.industry as typeof industryDraft));
+    }
+    if (
+      typeof extracted.agentConfig?.voiceId === 'string' &&
+      VOICE_OPTIONS.some((option) => option.value === extracted.agentConfig?.voiceId)
+    ) {
+      setVoiceDraft((prev) => prev || (extracted.agentConfig?.voiceId as typeof voiceDraft));
+    }
+    if (typeof extracted.agentConfig?.transferNumber === 'string') {
+      setTransferNumberDraft((prev) => prev || extracted.agentConfig?.transferNumber || '');
+    }
+  }, [
+    extracted.agentConfig?.transferNumber,
+    extracted.agentConfig?.voiceId,
+    extracted.businessName,
+    extracted.industry,
+    extracted.websiteUrl,
+  ]);
 
   function seedOpening() {
     const id = genId();
@@ -298,11 +342,20 @@ const V2SetupChat: React.FC = () => {
   function submitOpeningStep() {
     const companyName = businessNameDraft.trim();
     const website = websiteDraft.trim();
-    if (!companyName) return;
+    const transferNumber = transferNumberDraft.trim();
+    if (!companyName || !industryDraft) return;
 
-    const text = website
-      ? `Company name: ${companyName}\nWebsite: ${website}`
-      : `Company name: ${companyName}`;
+    const text = [
+      `Company name: ${companyName}`,
+      website ? `Website: ${website}` : '',
+      `Industry: ${getIndustryLabel(industryDraft)}`,
+      `Voice: ${getVoiceLabel(voiceDraft)} (${voiceDraft})`,
+      `Primary goal: ${getGoalLabel(goalDraft)}`,
+      `Tone: ${getToneLabel(toneDraft)}`,
+      transferNumber ? `Transfer number: ${transferNumber}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
 
     void sendMessage(text);
   }
@@ -394,10 +447,97 @@ const V2SetupChat: React.FC = () => {
                   className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
               </div>
+              <div className="space-y-1.5">
+                <label htmlFor="v2-industry" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  Industry
+                </label>
+                <select
+                  id="v2-industry"
+                  aria-label="Industry"
+                  value={industryDraft}
+                  onChange={(e) => setIndustryDraft(e.target.value as typeof industryDraft)}
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                >
+                  <option value="">Select an industry</option>
+                  {INDUSTRY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="v2-voice" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  Voice
+                </label>
+                <select
+                  id="v2-voice"
+                  aria-label="Voice"
+                  value={voiceDraft}
+                  onChange={(e) => setVoiceDraft(e.target.value as typeof voiceDraft)}
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                >
+                  {VOICE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} - {option.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="v2-goal" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  Primary goal
+                </label>
+                <select
+                  id="v2-goal"
+                  aria-label="Primary goal"
+                  value={goalDraft}
+                  onChange={(e) => setGoalDraft(e.target.value as typeof goalDraft)}
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                >
+                  {GOAL_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="v2-tone" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  Tone
+                </label>
+                <select
+                  id="v2-tone"
+                  aria-label="Tone"
+                  value={toneDraft}
+                  onChange={(e) => setToneDraft(e.target.value as typeof toneDraft)}
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                >
+                  {TONE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <label htmlFor="v2-transfer-number" className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
+                  Transfer number
+                </label>
+                <input
+                  id="v2-transfer-number"
+                  aria-label="Transfer number"
+                  type="tel"
+                  value={transferNumberDraft}
+                  onChange={(e) => setTransferNumberDraft(e.target.value)}
+                  placeholder="+1 555 000 0000"
+                  className="h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-100"
+                />
+              </div>
             </div>
             <button
               onClick={submitOpeningStep}
-              disabled={!businessNameDraft.trim() || isStreaming || isFinalizing}
+              disabled={!businessNameDraft.trim() || !industryDraft || isStreaming || isFinalizing}
               className="mt-4 inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
             >
               Continue

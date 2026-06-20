@@ -98,7 +98,7 @@ const PricingSection: React.FC = () => {
   ];
 
   const handlePlanSelect = () => {
-    navigate('/setup');
+    navigate('/signup?redirect=/setup');
   };
 
   const handleContactUs = () => {
