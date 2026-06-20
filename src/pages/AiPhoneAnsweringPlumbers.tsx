@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Wrench, Phone, DollarSign, CheckCircle } from 'lucide-react';
 import Header from '../components/Header';
