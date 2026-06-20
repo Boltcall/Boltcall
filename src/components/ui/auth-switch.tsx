@@ -171,6 +171,7 @@ export default function AuthSwitch({
     try {
       setIsLoading(true);
       setError("");
+      savePendingAuthRedirect(redirectTo);
       await signup({ name: '', email: data.email, password: data.password, company: "" });
       if (onAuthenticated) {
         await onAuthenticated({ mode: "signup", email: data.email });

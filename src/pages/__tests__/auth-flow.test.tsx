@@ -184,6 +184,7 @@ describe('Auth flow — Signup', () => {
     });
 
     await waitFor(() => {
+      expect(mockSavePendingAuthRedirect).toHaveBeenCalledWith('/dashboard');
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
     });
   });
@@ -214,6 +215,7 @@ describe('Auth flow — Signup', () => {
     await user.click(submitBtn);
 
     await waitFor(() => {
+      expect(mockSavePendingAuthRedirect).toHaveBeenCalledWith('/setup/classic');
       expect(mockNavigate).toHaveBeenCalledWith('/setup/classic');
     });
   });

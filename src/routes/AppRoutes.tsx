@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { useTranslation } from 'react-i18next';
 import { useLenis } from '../hooks/useLenis';
 import ErrorBoundary from '../components/ErrorBoundary';
+const AuthRedirectRecovery = React.lazy(() =>
+  import('../components/auth/AuthRedirectRecovery')
+);
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
 // critical-path modulepreload list on marketing pages.
 const AuthProvider = React.lazy(() =>
@@ -371,6 +374,7 @@ const NavigationWrapper: React.FC = () => {
 
   return (
     <Suspense fallback={null}>
+      <AuthRedirectRecovery />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/glass-demo" element={<GlassDemo />} />
