@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { consumePendingAuthRedirect } from '../lib/authRedirect';
 import {
   clearPendingAgentSetup,
   readPendingAgentSetup,
@@ -12,7 +13,7 @@ const AuthCallback: React.FC = () => {
 
   useEffect(() => {
     document.title = 'Authentication Callback | Boltcall';
-    updateMetaDescription('Authentication callback page. Processing your login. Redirecting to your Boltcall dashboard.');
+    updateMetaDescription('Authentication callback page. Processing your login and sending you to the right Boltcall next step.');
   }, []);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ const AuthCallback: React.FC = () => {
 
         if (session) {
           const pendingSetup = readPendingAgentSetup();
+          const pendingAuthRedirect = consumePendingAuthRedirect();
 
           // Check if user has completed setup
           const { data: profile } = await supabase
@@ -46,7 +48,12 @@ const AuthCallback: React.FC = () => {
             clearPendingAgentSetup();
           }
 
-          navigate(profile ? '/dashboard' : '/setup/classic');
+          if (pendingAuthRedirect) {
+            navigate(pendingAuthRedirect, { replace: true });
+            return;
+          }
+
+          navigate(profile ? '/dashboard' : '/setup', { replace: true });
         } else {
           navigate('/login');
         }

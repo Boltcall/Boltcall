@@ -8,7 +8,7 @@ const Signup: React.FC = () => {
     updateMetaDescription('Sign up for Boltcall and start your free trial. Get AI receptionist with free setup in 5 minutes. No credit card required. Join now.');
   }, []);
 
-  return <AuthSwitch defaultMode="signup" defaultRedirect="/setup/classic" />;
+  return <AuthSwitch defaultMode="signup" defaultRedirect="/setup" />;
 };
 
 export default Signup;

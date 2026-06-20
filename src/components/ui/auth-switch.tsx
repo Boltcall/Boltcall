@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { resetPassword } from "../../lib/auth";
+import { savePendingAuthRedirect } from "../../lib/authRedirect";
 import PasswordInput from "./password-input";
 
 const loginSchema = z.object({
@@ -202,17 +203,17 @@ export default function AuthSwitch({
   };
 
   const handleGoogleLogin = async () => {
-    try { setIsLoading(true); setError(""); await signInWithGoogle(); }
+    try { setIsLoading(true); setError(""); savePendingAuthRedirect(redirectTo); await signInWithGoogle(); }
     catch (err) { if (err instanceof Error && err.message === "OAuth redirect initiated") return; setError("Google login failed."); }
     finally { setIsLoading(false); }
   };
   const handleMicrosoftLogin = async () => {
-    try { setIsLoading(true); setError(""); await signInWithMicrosoft(); }
+    try { setIsLoading(true); setError(""); savePendingAuthRedirect(redirectTo); await signInWithMicrosoft(); }
     catch (err) { if (err instanceof Error && err.message === "OAuth redirect initiated") return; setError("Microsoft login failed."); }
     finally { setIsLoading(false); }
   };
   const handleFacebookLogin = async () => {
-    try { setIsLoading(true); setError(""); await signInWithFacebook(); }
+    try { setIsLoading(true); setError(""); savePendingAuthRedirect(redirectTo); await signInWithFacebook(); }
     catch (err) { if (err instanceof Error && err.message === "OAuth redirect initiated") return; setError("Facebook login failed."); }
     finally { setIsLoading(false); }
   };

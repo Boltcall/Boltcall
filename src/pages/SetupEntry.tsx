@@ -2,8 +2,9 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
+export const SETUP_ENTRY_PATH = '/setup';
 export const CLASSIC_SETUP_PATH = '/setup/classic';
-export const SETUP_SIGNUP_PATH = `/signup?redirect=${encodeURIComponent(CLASSIC_SETUP_PATH)}`;
+export const SETUP_SIGNUP_PATH = `/signup?redirect=${encodeURIComponent(SETUP_ENTRY_PATH)}`;
 
 const SetupEntry: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
