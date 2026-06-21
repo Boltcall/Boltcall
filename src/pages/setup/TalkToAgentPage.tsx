@@ -8,6 +8,7 @@ import { FUNCTIONS_BASE } from '../../lib/api';
 import { authedFetch } from '../../lib/authedFetch';
 import { useAuth } from '../../contexts/AuthContext';
 import { VoicePoweredOrb } from '../../components/ui/voice-powered-orb';
+import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 
 type Phase = 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
 
@@ -157,11 +158,8 @@ const TalkToAgentPage: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 via-white to-slate-100 overflow-hidden">
-      {/* Background ambient gradient */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[140%] h-[80%] bg-gradient-radial from-blue-100/40 via-transparent to-transparent blur-3xl" />
-      </div>
+    <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center justify-center overflow-hidden bg-white">
+      <SetupGradientBackground />
 
       <div className="relative z-10 flex flex-col items-center px-6 text-center">
         {/* Heading */}

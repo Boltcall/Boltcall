@@ -6,6 +6,7 @@ import {
   readPendingAgentSetup,
 } from '../lib/setup/onboarding';
 import { provisionAgentSetup } from '../lib/setup/provisionAgentSetup';
+import { SetupGradientBackground } from '../components/setup/SetupGradientBackground';
 
 const TOTAL_SEGMENTS = 20;
 const TOTAL_DURATION_MS = 10000;
@@ -345,7 +346,8 @@ const SetupLoading: React.FC = () => {
         }
       `}</style>
 
-      <div className={`setup-loading-page ${fadeOut ? 'fade-out' : ''}`}>
+      <div className={`setup-loading-page relative isolate overflow-hidden ${fadeOut ? 'fade-out' : ''}`}>
+        <SetupGradientBackground />
         <div className="setup-loading-content">
           <div className="setup-word-loader" ref={wordLoaderRef} />
 

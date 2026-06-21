@@ -532,6 +532,47 @@ describe('saas-v2 setup: workspace recovery for fresh or legacy users', () => {
       owner_id: 'user_test_1',
     });
   });
+
+  it('saves the opening setup fields without depending on the AI provider', async () => {
+    chatCompletionMock.mockRejectedValueOnce(new Error('provider unavailable'));
+
+    const res = await conversationHandler(
+      makeEvent({
+        headers: { authorization: 'Bearer fake-jwt' },
+        body: {
+          user_message: [
+            'Owner name: Noam Jacoby',
+            'Country: ישראל',
+            'Company name: Boltcall',
+            'AI agent voice: Marcus (11labs-Marcus)',
+            'More KB files: Campaign Template.md',
+          ].join('\n'),
+        },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(chatCompletionMock).not.toHaveBeenCalled();
+
+    const body = JSON.parse(res.body);
+    expect(body.assistant_message).toMatch(/top services/i);
+    expect(body.ready_to_deploy).toBe(false);
+    expect(body.extracted).toMatchObject({
+      ownerName: 'Noam Jacoby',
+      country: 'ישראל',
+      businessName: 'Boltcall',
+      additionalKbFiles: ['Campaign Template.md'],
+      agentConfig: {
+        agentName: 'Boltcall AI Receptionist',
+        voiceId: '11labs-Marcus',
+      },
+    });
+    const savedState = lastWorkspaceUpdate.current?.v2_setup_state as
+      | { conversation?: unknown[] }
+      | undefined;
+    expect(savedState?.conversation).toHaveLength(2);
+  });
 });
 
 describe('saas-v2-setup-finalize: state_version pinning (Fix 4)', () => {

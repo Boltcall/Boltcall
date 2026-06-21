@@ -371,12 +371,14 @@ describe('V2SetupChat — smoke', () => {
 
     expect(screen.getByLabelText(/owner name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/country/i)).toBeInTheDocument();
-    expect(screen.getByText(/First, tell me who owns this setup/i).closest('p')).toHaveClass('text-right');
+    expect(screen.getByText(/First, tell me who owns this setup/i).closest('p')).toHaveClass('text-left');
     expect(screen.queryByLabelText(/business name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/business website - optional/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/choose voice/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/more kb files - optional/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/profile 0% ready/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Stuck\? You can keep going here/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Loading your setup/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/your answer/i)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/type your reply/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Boltcall Setup')).not.toBeInTheDocument();
