@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { updateMetaDescription } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import V2SetupChat from '../../components/v2/V2SetupChat';
-import { Component as BgGradient } from '../../components/ui/bg-gredient';
+import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 
 const V2SetupPage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -24,11 +24,7 @@ const V2SetupPage: React.FC = () => {
   }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4 text-sm font-medium text-zinc-500">
-        Loading setup...
-      </div>
-    );
+    return <div className="min-h-screen bg-white" />;
   }
 
   if (!isAuthenticated) {
@@ -78,13 +74,7 @@ const V2SetupPage: React.FC = () => {
           }
         `}
       </style>
-      <BgGradient
-        gradientFrom="#ffffff"
-        gradientTo="#6633ee"
-        gradientSize="125% 125%"
-        gradientPosition="50% 10%"
-        gradientStop="40%"
-      />
+      <SetupGradientBackground />
       <main className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
         {!showPrompting ? (
           <h1

@@ -371,11 +371,14 @@ describe('V2SetupChat — smoke', () => {
 
     expect(screen.getByLabelText(/owner name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/country/i)).toBeInTheDocument();
+    expect(screen.getByText(/First, tell me who owns this setup/i).closest('p')).toHaveClass('text-left');
     expect(screen.queryByLabelText(/business name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/business website - optional/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/choose voice/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/more kb files - optional/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/profile 0% ready/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Stuck\? You can keep going here/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Loading your setup/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/your answer/i)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/type your reply/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Boltcall Setup')).not.toBeInTheDocument();
@@ -400,6 +403,10 @@ describe('V2SetupChat — smoke', () => {
       target: { value: 'Israel' },
     });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    expect(screen.getByLabelText(/owner name/i).closest('.transition-all')).toHaveClass('opacity-0');
+    await act(async () => {
+      vi.advanceTimersByTime(360);
+    });
 
     expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
@@ -417,6 +424,9 @@ describe('V2SetupChat — smoke', () => {
       target: { value: 'https://boltcall.org' },
     });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await act(async () => {
+      vi.advanceTimersByTime(360);
+    });
 
     expect(screen.getByLabelText(/choose voice/i)).toBeInTheDocument();
     expect(screen.getByText(/Adrian/i)).toBeInTheDocument();
@@ -442,6 +452,9 @@ describe('V2SetupChat — smoke', () => {
       target: { value: 'Israel' },
     });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await act(async () => {
+      vi.advanceTimersByTime(360);
+    });
 
     fireEvent.change(screen.getByLabelText(/business name/i), {
       target: { value: 'Boltcall Plumbing' },
@@ -450,6 +463,9 @@ describe('V2SetupChat — smoke', () => {
       target: { value: 'https://boltcall.org' },
     });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await act(async () => {
+      vi.advanceTimersByTime(360);
+    });
 
     fireEvent.click(screen.getByRole('radio', { name: /Dorothy/i }));
     fireEvent.change(screen.getByLabelText(/more kb files - optional/i), {
