@@ -4,10 +4,12 @@ import { Plus, Minus } from 'lucide-react';
 import Section from './ui/Section';
 import WhisperText from './ui/whisper-text';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../hooks/useDirection';
 
 const FAQ: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const { t } = useTranslation('marketing');
+  const isRtl = useDirection() === 'rtl';
 
   const faqItems = t('faq.items', { returnObjects: true }) as Array<{ q: string; a: string }>;
 
@@ -34,7 +36,7 @@ const FAQ: React.FC = () => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="text-center mb-8">
+      <div className={`mb-8 ${isRtl ? 'text-right' : 'text-center'}`}>
         <h2 className="text-2xl md:text-4xl font-bold text-text-main mb-4">
           <WhisperText
             text={t('faq.heading1')}
@@ -57,7 +59,7 @@ const FAQ: React.FC = () => {
         </h2>
       </div>
 
-      <div className="max-w-3xl mx-auto">
+      <div className={`max-w-3xl ${isRtl ? 'ml-0 mr-auto' : 'mx-auto'}`}>
         <div className="space-y-3">
           {faqItems.map((faq, index) => (
             <motion.div
@@ -70,11 +72,11 @@ const FAQ: React.FC = () => {
               <div className="group bg-white rounded-xl border border-gray-200/50 overflow-hidden shadow-sm transition-all duration-300" style={{ contain: 'layout style' }}>
                 <button
                   onClick={() => toggleFAQ(index)}
-                  className="w-full px-5 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-all duration-300 focus:outline-none rounded-t-xl"
+                  className={`w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-all duration-300 focus:outline-none rounded-t-xl ${isRtl ? 'text-right flex-row-reverse' : 'text-left'}`}
                   aria-expanded={openIndex === index}
                   aria-controls={`faq-answer-${index}`}
                 >
-                  <span className="text-base font-semibold text-gray-900 pr-4 group-hover:text-blue-600 transition-colors duration-300">
+                  <span className={`text-base font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300 ${isRtl ? 'pl-4' : 'pr-4'}`}>
                     {faq.q}
                   </span>
                   <motion.div
@@ -104,7 +106,7 @@ const FAQ: React.FC = () => {
                       className="overflow-hidden"
                       style={{ willChange: 'height, opacity' }}
                     >
-                      <div className="px-5 pb-4 bg-white">
+                      <div className={`px-5 pb-4 bg-white ${isRtl ? 'text-right' : ''}`}>
                         <p className="text-gray-600 leading-relaxed text-sm">
                           {faq.a}
                         </p>

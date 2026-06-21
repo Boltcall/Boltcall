@@ -17,10 +17,12 @@ import {
   ResponsiveContainer
 } from "recharts";
 import CountUp from "react-countup";
+import { useDirection } from '../../hooks/useDirection';
 
 function Feature() {
   const { t } = useTranslation('marketing');
   const [isChartVisible, setIsChartVisible] = useState(false);
+  const isRtl = useDirection() === 'rtl';
 
   const chartData = [
     { month: "Jan", value: 50 },
@@ -38,7 +40,7 @@ function Feature() {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl ml-0 sm:ml-8">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl ${isRtl ? 'mr-0 sm:mr-8 ml-0' : 'ml-0 sm:ml-8'}`}>
             {/* Wide Card - Text on Left */}
             <motion.div
               className="bg-muted rounded-xl lg:col-span-2 p-6 flex items-center shadow-2xl h-64 w-full"
@@ -52,16 +54,16 @@ function Feature() {
                 }, 100);
               }}
             >
-              {/* Left side - Text content */}
-              <div className="flex flex-col text-left max-w-xs">
+              {/* Text content */}
+              <div className={`flex flex-col max-w-xs ${isRtl ? 'text-right order-2' : 'text-left'}`}>
                 <h3 className="text-2xl font-semibold tracking-tight mb-2 text-black">{t('features.closingRates.title')}</h3>
                 <p className="text-muted-foreground text-base mb-4">
                   {t('features.closingRates.description')}
                 </p>
               </div>
 
-              {/* Right side - Chart */}
-              <div className="flex-1 flex items-center justify-center ml-6">
+              {/* Chart */}
+              <div className={`flex-1 flex items-center justify-center ${isRtl ? 'mr-6 order-1' : 'ml-6'}`}>
                 <div className="relative w-full h-48 bg-muted rounded-xl overflow-hidden">
                   {/* Chart */}
                   <ResponsiveContainer width="100%" height="100%">
@@ -151,13 +153,13 @@ function Feature() {
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
             >
-              <div className="flex flex-col text-left max-w-sm">
+              <div className={`flex flex-col max-w-sm ${isRtl ? 'text-right order-2' : 'text-left'}`}>
                 <h3 className="text-lg md:text-2xl font-semibold tracking-tight mb-2 text-black">{t('features.customerSatisfaction.title')}</h3>
                 <p className="text-muted-foreground text-sm md:text-base">
                   {t('features.customerSatisfaction.description')}
                 </p>
               </div>
-              <div className="flex-1 flex items-center justify-center">
+              <div className={`flex-1 flex items-center justify-center ${isRtl ? 'order-1' : ''}`}>
                 <div className="w-56 h-56 md:w-80 md:h-80">
                   <LazyLottie
                     src="/costumer_statisfication.lottie"
