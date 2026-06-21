@@ -224,7 +224,7 @@ const Privacy: React.FC = () => {
               <p><strong>Essential cookies:</strong> Auth session, language preference, cookie consent record. Always active.</p>
               <p><strong>Analytics (requires consent):</strong> Google Analytics 4 (G-LY9H4ZQW81), GTM (GTM-5LWRPT5N), and Microsoft Clarity. Track pages, feature usage, heatmaps, and public-site session behavior. Clarity is not enabled on authenticated dashboard or setup areas. No personal data shared for advertising.</p>
             </div>
-            <p>Withdraw consent anytime by clearing the <code className="bg-gray-100 px-1 rounded text-xs">cookie_consent</code> key in your browser's localStorage and refreshing.</p>
+            <p>If you choose <strong>Essential only</strong>, Boltcall removes the Boltcall-managed analytics cookies it can control on this browser and stops loading GA4, GTM, and Clarity on future page loads. If you already dismissed the banner and want to change your choice, clear the <code className="bg-gray-100 px-1 rounded text-xs">cookie_consent</code> key in your browser's localStorage and refresh to show the banner again.</p>
           </div>
         </motion.div>
 
