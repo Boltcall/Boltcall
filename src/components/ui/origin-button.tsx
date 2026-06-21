@@ -1,12 +1,12 @@
+import { type VariantProps } from 'class-variance-authority';
 import { motion } from 'motion/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-const componentThemeClassName =
-  '[--ic-background:#ffffff] [--ic-foreground:#111111] [--ic-primary:#111111] [--ic-secondary:#646b75] [--ic-surface-border:#e9edf2] [--ic-border:#e3e7ec] [--ic-card:#ffffff] [--ic-card-foreground:#111111] [--ic-muted:#f5f7fa] [--ic-muted-foreground:#6d7480] [--ic-accent:#f3f5f8] [--color-accent:var(--ic-accent)] [--color-accent-foreground:var(--ic-accent-foreground)] [--ic-accent-foreground:#111111] [--ic-input:#e3e7ec] [--ic-ring:rgba(17,17,17,0.16)] [--ic-destructive:#dc2626] [--ic-paper:#fcfcfd] [--ic-popover-foreground:#111111] [--ic-brand:#0ea5e9] [--ic-brand-soft:#bae6fd] [--ic-shadow-soft:0_18px_38px_-24px_rgba(15,23,42,0.35)] [--ic-chart-1:oklch(0.52_0.19_254)] [--ic-chart-2:oklch(0.74_0.11_232)] [--ic-chart-3:oklch(0.42_0.16_262)] [--ic-chart-4:oklch(0.84_0.07_228)] [--ic-chart-5:oklch(0.62_0.14_240)] [--color-background:var(--ic-background)] [--color-foreground:var(--ic-foreground)] [--color-primary:var(--ic-primary)] [--color-secondary:var(--ic-secondary)] [--color-border:var(--ic-border)] [--color-card:var(--ic-card)] [--color-card-foreground:var(--ic-card-foreground)] [--color-muted:var(--ic-muted)] [--color-muted-foreground:var(--ic-muted-foreground)] [--color-accent:var(--ic-accent)] [--color-accent-foreground:var(--ic-accent-foreground)] [--color-input:var(--ic-input)] [--color-ring:var(--ic-ring)] [--color-destructive:var(--ic-destructive)] [--color-paper:var(--ic-paper)] [--color-popover-foreground:var(--ic-popover-foreground)] [--color-brand:var(--ic-brand)] [--color-brand-soft:var(--ic-brand-soft)] [--color-chart-1:var(--ic-chart-1)] [--color-chart-2:var(--ic-chart-2)] [--color-chart-3:var(--ic-chart-3)] [--color-chart-4:var(--ic-chart-4)] [--color-chart-5:var(--ic-chart-5)] dark:[--ic-background:#111111] dark:[--ic-foreground:#f6f3ec] dark:[--ic-primary:#f6f3ec] dark:[--ic-secondary:#cbc6bb] dark:[--ic-surface-border:#2a2a25] dark:[--ic-border:#2b2a25] dark:[--ic-card:#111111] dark:[--ic-card-foreground:#f6f3ec] dark:[--ic-muted:#171716] dark:[--ic-muted-foreground:#9a958a] dark:[--ic-accent:#1a1a18] [--color-accent:var(--ic-accent)] [--color-accent-foreground:var(--ic-accent-foreground)] dark:[--ic-accent-foreground:#f6f3ec] dark:[--ic-input:#2b2a25] dark:[--ic-ring:rgba(246,243,236,0.18)] dark:[--ic-destructive:#f87171] dark:[--ic-paper:#171716] dark:[--ic-popover-foreground:#f6f3ec] dark:[--ic-brand:#38bdf8] dark:[--ic-brand-soft:#0c4a6e] dark:[--ic-shadow-soft:0_20px_44px_-28px_rgba(0,0,0,0.6)] dark:[--ic-chart-1:oklch(0.68_0.17_250)] dark:[--ic-chart-2:oklch(0.82_0.09_225)] dark:[--ic-chart-3:oklch(0.58_0.15_260)] dark:[--ic-chart-4:oklch(0.75_0.12_235)] dark:[--ic-chart-5:oklch(0.88_0.06_220)]';
+import { buttonVariants } from './Button';
 
-const FILL_DURATION = 0.5;
+const FILL_DURATION = 0.45;
 const FILL_EASE = [0.16, 1, 0.3, 1] as const;
 
 type ButtonHTMLAttributesForMotion = Omit<
@@ -63,10 +63,11 @@ function hasTextContent(node: React.ReactNode): boolean {
   return false;
 }
 
-type OriginButtonProps = ButtonHTMLAttributesForMotion & {
-  children?: React.ReactNode;
-  loading?: boolean;
-};
+type OriginButtonProps = ButtonHTMLAttributesForMotion &
+  VariantProps<typeof buttonVariants> & {
+    children?: React.ReactNode;
+    loading?: boolean;
+  };
 
 const OriginButton = React.forwardRef<HTMLButtonElement, OriginButtonProps>(
   (
@@ -75,7 +76,9 @@ const OriginButton = React.forwardRef<HTMLButtonElement, OriginButtonProps>(
       className,
       disabled = false,
       loading = false,
+      size = 'default',
       type = 'button',
+      variant = 'default',
       onBlur,
       onClick,
       onFocus,
@@ -155,15 +158,8 @@ const OriginButton = React.forwardRef<HTMLButtonElement, OriginButtonProps>(
       const observer = new ResizeObserver(measure);
       observer.observe(node);
 
-      const fonts = document.fonts;
-      if (fonts?.ready) {
-        fonts.ready.then(measure).catch(() => undefined);
-      }
-
       return () => observer.disconnect();
     }, [showFill, origin.x, origin.y]);
-
-    const fillTransition = { duration: FILL_DURATION, ease: FILL_EASE };
 
     const setMergedRef = React.useCallback(
       (node: HTMLButtonElement | null) => {
@@ -178,14 +174,9 @@ const OriginButton = React.forwardRef<HTMLButtonElement, OriginButtonProps>(
         {...props}
         aria-busy={loading || undefined}
         className={cn(
-          componentThemeClassName,
-          'relative inline-flex h-12 cursor-pointer touch-manipulation select-none items-center justify-center overflow-hidden rounded-xl px-8 font-medium text-[15px] tracking-[-0.02em]',
-          'border-[0.5px] border-border bg-card text-card-foreground',
-          'dark:bg-muted dark:text-foreground',
-          'transition-[color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-          'disabled:pointer-events-none disabled:opacity-50',
-          showFill && 'text-background dark:text-neutral-950',
+          buttonVariants({ size, variant }),
+          'relative overflow-hidden',
+          loading && 'cursor-wait',
           className,
         )}
         data-pressed={isPressed ? 'true' : 'false'}
@@ -273,7 +264,7 @@ const OriginButton = React.forwardRef<HTMLButtonElement, OriginButtonProps>(
         <motion.span
           animate={{ scale: showFill && coverSize > 0 ? 1 : 0 }}
           aria-hidden
-          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground dark:bg-neutral-50"
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/10"
           initial={false}
           style={{
             height: coverSize,
@@ -281,11 +272,9 @@ const OriginButton = React.forwardRef<HTMLButtonElement, OriginButtonProps>(
             top: origin.y,
             width: coverSize,
           }}
-          transition={fillTransition}
+          transition={{ duration: FILL_DURATION, ease: FILL_EASE }}
         />
-        <span className="relative z-10 inline-flex items-center justify-center gap-2">
-          {children}
-        </span>
+        <span className="relative z-10 inline-flex items-center justify-center gap-2">{children}</span>
       </motion.button>
     );
   },

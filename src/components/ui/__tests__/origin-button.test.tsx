@@ -4,6 +4,16 @@ import { describe, expect, it, vi } from 'vitest';
 import { OriginButton } from '../origin-button';
 
 describe('OriginButton', () => {
+  it('inherits the shared demo button shell by default', () => {
+    render(<OriginButton>Origin Button</OriginButton>);
+
+    const button = screen.getByRole('button', { name: /origin button/i });
+    expect(button).toHaveClass('border-2');
+    expect(button).toHaveClass('shadow-shadow');
+    expect(button).toHaveClass('rounded-base');
+    expect(button).not.toHaveClass('rounded-xl');
+  });
+
   it('anchors the fill overlay to the pointer origin', () => {
     render(<OriginButton>Origin Button</OriginButton>);
 
