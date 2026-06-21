@@ -51,6 +51,12 @@ const STALL_MS = 5 * 60 * 1000;
 const SEED_GREETING =
   "Hi, welcome to Boltcall. I'll get your instant lead response system ready through a quick setup. First, tell me who owns this setup.";
 
+const OPENING_STEP_PROMPTS: Record<OpeningStep, string> = {
+  owner: SEED_GREETING,
+  business: 'Great. Now tell me about the business we are setting up.',
+  agent: 'Perfect. Now choose how your AI agent should sound and add any knowledge files you want it to know.',
+};
+
 const VOICE_OPTIONS = [
   { id: '11labs-Adrian', name: 'Adrian', description: 'Warm and confident' },
   { id: '11labs-Dorothy', name: 'Dorothy', description: 'Polished and calm' },
@@ -71,6 +77,7 @@ const V2SetupChat: React.FC = () => {
     typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null,
   );
   const [openingStep, setOpeningStep] = useState<OpeningStep>('owner');
+  const [isOpeningTransitioning, setIsOpeningTransitioning] = useState(false);
   const [ownerNameDraft, setOwnerNameDraft] = useState('');
   const [countryDraft, setCountryDraft] = useState('');
   const [businessNameDraft, setBusinessNameDraft] = useState('');
@@ -92,6 +99,7 @@ const V2SetupChat: React.FC = () => {
   const lastUserActivity = useRef<number>(Date.now());
   const stallTimer = useRef<number | null>(null);
   const typewriterTimers = useRef<Map<string, number>>(new Map());
+  const openingTransitionTimer = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,6 +157,7 @@ const V2SetupChat: React.FC = () => {
       cancelled = true;
       timers.forEach((id) => window.clearTimeout(id));
       if (stallTimer.current) window.clearTimeout(stallTimer.current);
+      if (openingTransitionTimer.current) window.clearTimeout(openingTransitionTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -305,16 +314,25 @@ const V2SetupChat: React.FC = () => {
     }
   }
 
+  function advanceOpeningStep(nextStep: OpeningStep) {
+    setIsOpeningTransitioning(true);
+    if (openingTransitionTimer.current) window.clearTimeout(openingTransitionTimer.current);
+    openingTransitionTimer.current = window.setTimeout(() => {
+      setOpeningStep(nextStep);
+      setIsOpeningTransitioning(false);
+    }, 360);
+  }
+
   function submitOpeningStep() {
     if (openingStep === 'owner') {
       if (!ownerNameDraft.trim() || !countryDraft.trim()) return;
-      setOpeningStep('business');
+      advanceOpeningStep('business');
       return;
     }
 
     if (openingStep === 'business') {
       if (!businessNameDraft.trim()) return;
-      setOpeningStep('agent');
+      advanceOpeningStep('agent');
       return;
     }
 
@@ -355,6 +373,14 @@ const V2SetupChat: React.FC = () => {
   const showResponseFields =
     hasHydrated && !isStreaming && !isFinalizing && !readyToDeploy && latestAssistantFinished;
   const showOpeningFields = showResponseFields && !hasUserMessages;
+  const openingAssistantMessage = latestAssistantMessage;
+  const openingPromptText =
+    openingStep === 'owner' && openingAssistantMessage
+      ? openingAssistantMessage.content.slice(
+          0,
+          openingAssistantMessage.displayed ?? openingAssistantMessage.content.length,
+        )
+      : OPENING_STEP_PROMPTS[openingStep];
   const canContinueOpening =
     openingStep === 'owner'
       ? !!ownerNameDraft.trim() && !!countryDraft.trim()
@@ -375,6 +401,19 @@ const V2SetupChat: React.FC = () => {
             100% {
               opacity: 1;
               transform: translateY(0);
+              filter: blur(0);
+            }
+          }
+
+          @keyframes v2SetupPromptFadeIn {
+            0% {
+              opacity: 0;
+              transform: translateX(18px);
+              filter: blur(10px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(0);
               filter: blur(0);
             }
           }
@@ -402,13 +441,25 @@ const V2SetupChat: React.FC = () => {
             Loading your setup...
           </div>
         )}
-        {messages.map((m) => (
-          <MessageText key={m.id} message={m} />
-        ))}
+        {!showOpeningFields && messages.map((m) => <MessageText key={m.id} message={m} />)}
         {isStreaming && <TypingIndicator />}
 
         {showOpeningFields && (
-          <div className="w-full max-w-2xl space-y-8">
+          <div
+            className={cn(
+              'w-full max-w-2xl space-y-8 transition-all duration-300 ease-out',
+              isOpeningTransitioning ? 'translate-y-2 opacity-0 blur-sm' : 'translate-y-0 opacity-100 blur-0',
+            )}
+          >
+            <div
+              className="flex w-full justify-end"
+              style={{ animation: 'v2SetupPromptFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
+            >
+              <p className="max-w-2xl whitespace-pre-wrap text-right text-2xl font-semibold leading-tight tracking-[-0.03em] text-zinc-950 sm:text-3xl">
+                {openingPromptText}
+              </p>
+            </div>
+
             {openingStep === 'owner' && (
               <div className="grid gap-8 sm:grid-cols-2">
                 <div

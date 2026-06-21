@@ -24,11 +24,7 @@ const V2SetupPage: React.FC = () => {
   }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-4 text-sm font-medium text-zinc-500">
-        Loading setup...
-      </div>
-    );
+    return <div className="min-h-screen bg-white" />;
   }
 
   if (!isAuthenticated) {
@@ -79,8 +75,8 @@ const V2SetupPage: React.FC = () => {
         `}
       </style>
       <BgGradient
-        gradientFrom="#ffffff"
-        gradientTo="#6633ee"
+        gradientFrom="#f8fbff"
+        gradientTo="#2f6bff"
         gradientSize="125% 125%"
         gradientPosition="50% 10%"
         gradientStop="40%"
