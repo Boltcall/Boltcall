@@ -6,11 +6,13 @@ import { supabase } from '../supabase';
 import type { PendingAgentSetup } from './onboarding';
 
 export async function provisionAgentSetup(userId: string, setup: PendingAgentSetup) {
+  const country = setup.country?.trim() || 'us';
+
   const { workspace, businessProfile } = await createUserWorkspaceAndProfile(userId, {
     business_name: setup.businessName,
     website_url: setup.websiteUrl.trim() || undefined,
     main_category: setup.industry,
-    country: 'us',
+    country,
     service_areas: [],
     opening_hours: {},
     languages: ['en'],
@@ -30,7 +32,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
       city: null,
       state: null,
       postal_code: null,
-      country: 'us',
+      country,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       is_primary: true,
       is_active: true,
@@ -45,7 +47,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     businessName: setup.businessName,
     websiteUrl: setup.websiteUrl.trim(),
     mainCategory: setup.industry,
-    country: 'us',
+    country,
     serviceAreas: [],
     openingHours: {},
     languages: ['en'],

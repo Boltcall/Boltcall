@@ -110,6 +110,8 @@ beforeEach(() => {
   mockAuthedFetch.mockReset();
   mockSupabaseMaybeSingle.mockReset();
   mockSupabaseMaybeSingle.mockResolvedValue({ data: null, error: null });
+  window.localStorage.clear();
+  window.sessionStorage.clear();
 });
 
 afterEach(() => {
@@ -413,6 +415,8 @@ describe('V2SetupChat — smoke', () => {
 
     expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /continue/i })).toBeInTheDocument();
     expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
@@ -436,9 +440,11 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByText(/Dorothy/i)).toBeInTheDocument();
     expect(screen.getByText(/Marcus/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /finish/i })).toBeInTheDocument();
   });
 
-  it('sends all opening setup fields after the AI agent step', async () => {
+  it('saves all opening setup fields and fades into the loading step on Finish', async () => {
     vi.useFakeTimers();
     await act(async () => {
       renderInRouter(<V2SetupChat />);
@@ -480,25 +486,30 @@ describe('V2SetupChat — smoke', () => {
       },
     });
 
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /continue/i }));
-    });
+    fireEvent.click(screen.getByRole('button', { name: /finish/i }));
+    expect(screen.getByLabelText(/choose voice/i).closest('.transition-all')).toHaveClass('opacity-0');
 
     const conversationCalls = mockAuthedFetch.mock.calls.filter(([u]) =>
       typeof u === 'string' ? u.includes('saas-v2-setup-conversation') : false
     );
-    expect(conversationCalls.length).toBeGreaterThanOrEqual(1);
-    const [, init] = conversationCalls[0];
-    expect(init.method).toBe('POST');
-    expect(JSON.parse(init.body).user_message).toBe(
-      [
-        'Owner name: Noam Yakoby',
-        'Country: Israel',
-        'Company name: Boltcall Plumbing',
-        'Website: https://boltcall.org',
-        'AI agent voice: Dorothy (11labs-Dorothy)',
-        'More KB files: faq.pdf, pricing.txt',
-      ].join('\n')
-    );
+    expect(conversationCalls).toHaveLength(0);
+
+    expect(JSON.parse(window.localStorage.getItem('boltcall_pending_agent_setup') || '{}')).toMatchObject({
+      ownerName: 'Noam Yakoby',
+      country: 'Israel',
+      businessName: 'Boltcall Plumbing',
+      websiteUrl: 'https://boltcall.org',
+      industry: 'other',
+      voiceId: '11labs-Dorothy',
+      goal: 'book-appointments',
+      tone: 'friendly_concise',
+      transferNumber: '',
+      kbFileNames: ['faq.pdf', 'pricing.txt'],
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(420);
+    });
+    expect(mockNavigate).toHaveBeenCalledWith('/setup/loading', { replace: true });
   });
 });
