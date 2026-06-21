@@ -6,7 +6,7 @@
  * render as plain text, and the active answer field sits directly underneath.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
@@ -49,7 +49,15 @@ const STORAGE_KEY = 'boltcall_v2_setup_conversation_id';
 const STALL_MS = 5 * 60 * 1000;
 
 const SEED_GREETING =
-  "Hi, welcome to Boltcall. I'll get your instant lead response system ready through a quick setup. Start with your company name and website.";
+  "Hi, welcome to Boltcall. I'll get your instant lead response system ready through a quick setup. First, tell me who owns this setup.";
+
+const VOICE_OPTIONS = [
+  { id: '11labs-Adrian', name: 'Adrian', description: 'Warm and confident' },
+  { id: '11labs-Dorothy', name: 'Dorothy', description: 'Polished and calm' },
+  { id: '11labs-Marcus', name: 'Marcus', description: 'Direct and energetic' },
+] as const;
+
+type OpeningStep = 'owner' | 'business' | 'agent';
 
 function genId() {
   return 'm_' + Math.random().toString(36).slice(2, 10);
@@ -62,8 +70,15 @@ const V2SetupChat: React.FC = () => {
   const [conversationId, setConversationId] = useState<string | null>(
     typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null,
   );
+  const [openingStep, setOpeningStep] = useState<OpeningStep>('owner');
+  const [ownerNameDraft, setOwnerNameDraft] = useState('');
+  const [countryDraft, setCountryDraft] = useState('');
   const [businessNameDraft, setBusinessNameDraft] = useState('');
   const [websiteDraft, setWebsiteDraft] = useState('');
+  const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['id']>(
+    VOICE_OPTIONS[0].id,
+  );
+  const [kbFileNames, setKbFileNames] = useState<string[]>([]);
   const [answerDraft, setAnswerDraft] = useState('');
   const [extracted, setExtracted] = useState<ExtractedDraft>({});
   const [stateVersion, setStateVersion] = useState<number>(0);
@@ -291,13 +306,32 @@ const V2SetupChat: React.FC = () => {
   }
 
   function submitOpeningStep() {
+    if (openingStep === 'owner') {
+      if (!ownerNameDraft.trim() || !countryDraft.trim()) return;
+      setOpeningStep('business');
+      return;
+    }
+
+    if (openingStep === 'business') {
+      if (!businessNameDraft.trim()) return;
+      setOpeningStep('agent');
+      return;
+    }
+
+    const ownerName = ownerNameDraft.trim();
+    const country = countryDraft.trim();
     const companyName = businessNameDraft.trim();
     const website = websiteDraft.trim();
-    if (!companyName) return;
+    if (!ownerName || !country || !companyName) return;
+    const voice = VOICE_OPTIONS.find((option) => option.id === voiceDraft) ?? VOICE_OPTIONS[0];
 
     const text = [
+      `Owner name: ${ownerName}`,
+      `Country: ${country}`,
       `Company name: ${companyName}`,
       website ? `Website: ${website}` : '',
+      `AI agent voice: ${voice.name} (${voice.id})`,
+      kbFileNames.length > 0 ? `More KB files: ${kbFileNames.join(', ')}` : '',
     ]
       .filter(Boolean)
       .join('\n');
@@ -312,7 +346,6 @@ const V2SetupChat: React.FC = () => {
     }
   }
 
-  const completeness = useMemo(() => computeCompleteness(extracted), [extracted]);
   const hasUserMessages = messages.some((m) => m.role === 'user');
   const latestAssistantMessage = [...messages].reverse().find((m) => m.role === 'assistant') || null;
   const latestAssistantFinished =
@@ -322,6 +355,12 @@ const V2SetupChat: React.FC = () => {
   const showResponseFields =
     hasHydrated && !isStreaming && !isFinalizing && !readyToDeploy && latestAssistantFinished;
   const showOpeningFields = showResponseFields && !hasUserMessages;
+  const canContinueOpening =
+    openingStep === 'owner'
+      ? !!ownerNameDraft.trim() && !!countryDraft.trim()
+      : openingStep === 'business'
+        ? !!businessNameDraft.trim()
+        : !!voiceDraft;
 
   return (
     <div className="flex h-full min-h-[640px] w-full max-w-3xl flex-col justify-center bg-transparent">
@@ -342,16 +381,7 @@ const V2SetupChat: React.FC = () => {
         `}
       </style>
       <div className="mx-auto w-full max-w-xl px-1 pt-3">
-        <div className="flex items-center justify-between text-xs text-zinc-500">
-          <span>Profile {completeness}% ready</span>
-          {readyToDeploy && <span className="font-medium text-emerald-600">Ready to deploy</span>}
-        </div>
-        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-zinc-100">
-          <div
-            className={cn('h-full rounded-full transition-all duration-500', readyToDeploy ? 'bg-emerald-500' : 'bg-amber-500')}
-            style={{ width: `${completeness}%` }}
-          />
-        </div>
+        {readyToDeploy && <div className="text-center text-xs font-medium text-emerald-600">Ready to deploy</div>}
       </div>
 
       {showStallBanner && (
@@ -378,39 +408,135 @@ const V2SetupChat: React.FC = () => {
         {isStreaming && <TypingIndicator />}
 
         {showOpeningFields && (
-          <div className="w-full max-w-xl space-y-8">
-            <div
-              className="opacity-0"
-              style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
-            >
-              <Input
-                id="v2-company-name"
-                aria-label="Business Name"
-                label="Business Name"
-                value={businessNameDraft}
-                onChange={(e) => setBusinessNameDraft(e.target.value)}
-                className="w-full"
-                autoComplete="organization"
-              />
-            </div>
-            <div
-              className="opacity-0"
-              style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
-            >
-              <Input
-                id="v2-website-url"
-                aria-label="Business website - optional"
-                label="Business website - optional"
-                type="url"
-                value={websiteDraft}
-                onChange={(e) => setWebsiteDraft(e.target.value)}
-                className="w-full"
-                autoComplete="url"
-              />
-            </div>
+          <div className="w-full max-w-2xl space-y-8">
+            {openingStep === 'owner' && (
+              <div className="grid gap-8 sm:grid-cols-2">
+                <div
+                  className="opacity-0"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
+                >
+                  <Input
+                    id="v2-owner-name"
+                    aria-label="Owner name"
+                    label="Owner name"
+                    value={ownerNameDraft}
+                    onChange={(e) => setOwnerNameDraft(e.target.value)}
+                    className="w-full"
+                    autoComplete="name"
+                  />
+                </div>
+                <div
+                  className="opacity-0"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
+                >
+                  <Input
+                    id="v2-country"
+                    aria-label="Country"
+                    label="Country"
+                    value={countryDraft}
+                    onChange={(e) => setCountryDraft(e.target.value)}
+                    className="w-full"
+                    autoComplete="country-name"
+                  />
+                </div>
+              </div>
+            )}
+
+            {openingStep === 'business' && (
+              <div className="grid gap-8 sm:grid-cols-2">
+                <div
+                  className="opacity-0"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
+                >
+                  <Input
+                    id="v2-company-name"
+                    aria-label="Business Name"
+                    label="Business Name"
+                    value={businessNameDraft}
+                    onChange={(e) => setBusinessNameDraft(e.target.value)}
+                    className="w-full"
+                    autoComplete="organization"
+                  />
+                </div>
+                <div
+                  className="opacity-0"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
+                >
+                  <Input
+                    id="v2-website-url"
+                    aria-label="Business website - optional"
+                    label="Website - optional"
+                    type="url"
+                    value={websiteDraft}
+                    onChange={(e) => setWebsiteDraft(e.target.value)}
+                    className="w-full"
+                    autoComplete="url"
+                  />
+                </div>
+              </div>
+            )}
+
+            {openingStep === 'agent' && (
+              <div className="space-y-7">
+                <fieldset
+                  aria-label="Choose voice"
+                  className="grid gap-3 opacity-0 sm:grid-cols-3"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
+                >
+                  {VOICE_OPTIONS.map((voice) => (
+                    <label
+                      key={voice.id}
+                      className={cn(
+                        'cursor-pointer rounded-2xl border px-4 py-4 text-left transition',
+                        voiceDraft === voice.id
+                          ? 'border-zinc-950 bg-white/55 shadow-[0_16px_50px_rgba(15,23,42,0.10)]'
+                          : 'border-white/45 bg-white/20 hover:bg-white/35',
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="v2-agent-voice"
+                        value={voice.id}
+                        checked={voiceDraft === voice.id}
+                        onChange={() => setVoiceDraft(voice.id)}
+                        className="sr-only"
+                        aria-label={`${voice.name} voice`}
+                      />
+                      <span className="block text-sm font-semibold text-zinc-950">{voice.name}</span>
+                      <span className="mt-1 block text-xs text-zinc-600">{voice.description}</span>
+                    </label>
+                  ))}
+                </fieldset>
+                <div
+                  className="opacity-0"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
+                >
+                  <label
+                    htmlFor="v2-kb-files"
+                    className="block border-b-2 border-zinc-900 pb-3 text-left text-base font-medium text-zinc-900"
+                  >
+                    More KB files - optional
+                  </label>
+                  <input
+                    id="v2-kb-files"
+                    aria-label="More KB files - optional"
+                    type="file"
+                    multiple
+                    className="mt-3 block w-full text-sm text-zinc-700 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                    onChange={(e) =>
+                      setKbFileNames(Array.from(e.currentTarget.files ?? []).map((file) => file.name))
+                    }
+                  />
+                  {kbFileNames.length > 0 && (
+                    <p className="mt-2 text-left text-xs text-zinc-500">{kbFileNames.join(', ')}</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             <button
               onClick={submitOpeningStep}
-              disabled={!businessNameDraft.trim() || isStreaming || isFinalizing}
+              disabled={!canContinueOpening || isStreaming || isFinalizing}
               className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-5 text-sm font-semibold text-white opacity-0 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
               style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both' }}
             >
@@ -499,17 +625,5 @@ const TypingIndicator: React.FC = () => (
     </div>
   </div>
 );
-
-function computeCompleteness(e: ExtractedDraft): number {
-  let score = 0;
-  if (e.businessName) score += 20;
-  if (e.industry) score += 15;
-  if (e.websiteUrl) score += 10;
-  if (e.services && e.services.length > 0) score += 25;
-  if (e.faqs && e.faqs.length > 0) score += 15;
-  if (e.agentConfig?.agentName) score += 10;
-  if (e.agentConfig?.transferNumber !== undefined) score += 5;
-  return Math.min(100, score);
-}
 
 export default V2SetupChat;
