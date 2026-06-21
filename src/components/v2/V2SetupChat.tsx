@@ -367,7 +367,7 @@ const V2SetupChat: React.FC = () => {
         : !!voiceDraft;
 
   return (
-    <div className="flex h-full min-h-[640px] w-full max-w-3xl flex-col justify-center bg-transparent">
+    <div className="flex h-full min-h-0 w-full max-w-3xl flex-col justify-center bg-transparent">
       <style>
         {`
           @keyframes v2SetupFieldFadeIn {
@@ -407,7 +407,7 @@ const V2SetupChat: React.FC = () => {
         </div>
       )}
 
-      <div className="mx-auto flex w-full max-w-2xl flex-col items-center space-y-8 overflow-visible px-1 py-8" aria-live="polite">
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-start space-y-7 overflow-visible px-1 py-4" aria-live="polite">
         {!hasHydrated && (
           <div className="py-12" aria-hidden="true" />
         )}
@@ -617,10 +617,10 @@ const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
     message.displayed != null ? message.content.slice(0, message.displayed) : message.content;
 
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex w-full justify-start">
       <div
         className={cn(
-          'max-w-2xl whitespace-pre-wrap text-center leading-tight',
+          'max-w-2xl whitespace-pre-wrap text-left leading-tight',
           isUser
             ? 'text-base font-medium text-zinc-500'
             : 'text-2xl font-semibold tracking-[-0.03em] text-zinc-950 sm:text-3xl',

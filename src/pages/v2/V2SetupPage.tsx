@@ -15,6 +15,18 @@ const V2SetupPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
     if (isLoading || !isAuthenticated) return;
 
     setShowPrompting(false);
@@ -32,7 +44,7 @@ const V2SetupPage: React.FC = () => {
   }
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-white">
+    <div className="relative isolate h-screen h-dvh overflow-hidden bg-white">
       <style>
         {`
           @keyframes boltcallSetupWelcome {
@@ -75,7 +87,7 @@ const V2SetupPage: React.FC = () => {
         `}
       </style>
       <SetupGradientBackground />
-      <main className="mx-auto flex min-h-screen max-w-5xl items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto flex h-full min-h-0 max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         {!showPrompting ? (
           <h1
             className="text-center text-5xl font-black uppercase tracking-[0.11em] text-zinc-950 sm:text-7xl lg:text-8xl"
