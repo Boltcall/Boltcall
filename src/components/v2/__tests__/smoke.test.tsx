@@ -415,8 +415,11 @@ describe('V2SetupChat — smoke', () => {
 
     expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /previous/i })).toHaveClass('rounded-xl');
-    expect(screen.getByRole('button', { name: /continue/i })).toHaveClass('rounded-xl');
+    const previousButton = screen.getByRole('button', { name: /previous/i });
+    const continueButton = screen.getByRole('button', { name: /continue/i });
+    expect(previousButton).toHaveClass('border-border', 'bg-card', 'text-card-foreground');
+    expect(continueButton).toHaveClass('border-border', 'bg-card', 'text-card-foreground');
+    expect(continueButton.querySelector('[aria-hidden="true"]')).toHaveClass('bg-foreground');
     expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
@@ -440,8 +443,16 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByText(/Dorothy/i)).toBeInTheDocument();
     expect(screen.getByText(/Marcus/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /previous/i })).toHaveClass('rounded-xl');
-    expect(screen.getByRole('button', { name: /finish/i })).toHaveClass('rounded-xl');
+    expect(screen.getByRole('button', { name: /previous/i })).toHaveClass(
+      'border-border',
+      'bg-card',
+      'text-card-foreground',
+    );
+    expect(screen.getByRole('button', { name: /finish/i })).toHaveClass(
+      'border-border',
+      'bg-card',
+      'text-card-foreground',
+    );
   });
 
   it('saves all opening setup fields and fades into the loading step on Finish', async () => {
