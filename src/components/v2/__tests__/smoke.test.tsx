@@ -366,10 +366,10 @@ describe('V2SetupChat — smoke', () => {
       renderInRouter(<V2SetupChat />);
     });
 
-    const typewriterText = screen.getByText('H');
-    expect(typewriterText.closest('.text-left')).toBeTruthy();
-    expect(typewriterText.closest('.justify-start')).toBeTruthy();
-    expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
+    const openingPrompt = screen.getByText(/I'll get your instant lead response system ready/i);
+    expect(openingPrompt).not.toHaveTextContent(/welcome to Boltcall/i);
+    expect(openingPrompt.closest('.text-left')).toBeTruthy();
+    expect(openingPrompt.closest('.justify-start')).toBeTruthy();
     await act(async () => {
       vi.runAllTimers();
     });

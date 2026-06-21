@@ -58,7 +58,9 @@ const TalkToAgentPage: React.FC = () => {
       const { data: agents, error: agentErr } = await supabase
         .from('agents')
         .select('id, retell_agent_id, name, agent_type, workspace_id, created_at')
+        .eq('user_id', user.id)
         .or('agent_type.eq.inbound,agent_type.eq.ai_receptionist')
+        .not('retell_agent_id', 'is', null)
         .order('created_at', { ascending: false })
         .limit(1);
 
@@ -71,6 +73,10 @@ const TalkToAgentPage: React.FC = () => {
       if (agent.name) setAgentName(agent.name);
 
       setPhase('connecting');
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('Your browser needs microphone support to speak with your agent.');
+      }
 
       // Pre-prompt mic permission — gives a clean error path before SDK call
       try {
@@ -91,6 +97,9 @@ const TalkToAgentPage: React.FC = () => {
         throw new Error(err.details || err.error || 'Failed to start the call.');
       }
       const { access_token } = await response.json();
+      if (typeof access_token !== 'string' || access_token.length === 0) {
+        throw new Error('Retell did not return a web-call access token.');
+      }
 
       const { RetellWebClient } = await import('retell-client-js-sdk');
       const client = new RetellWebClient();
