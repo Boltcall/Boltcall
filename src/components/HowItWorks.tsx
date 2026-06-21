@@ -4,11 +4,13 @@ import WhisperText from './ui/whisper-text';
 import { ContainerScroll, CardSticky } from './ui/cards-stack';
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../hooks/useDirection';
 
 const PHASE_KEYS = ['receptionist', 'adsReplies', 'smsBooking'] as const;
 
 const HowItWorks: React.FC = () => {
   const { t } = useTranslation('marketing');
+  const isRtl = useDirection() === 'rtl';
 
   return (
     <section
@@ -17,7 +19,7 @@ const HowItWorks: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
         <div className="grid md:grid-cols-2 md:gap-8 xl:gap-12">
           {/* Section Header - Sticky Sidebar */}
-          <div className="left-0 md:sticky ltr:ml-4 rtl:mr-4 pt-24 ltr:pr-2 rtl:pl-2" style={{ top: '64px', height: 'fit-content' }}>
+          <div className={`left-0 md:sticky pt-24 ltr:ml-4 rtl:mr-4 ltr:pr-2 rtl:pl-2 ${isRtl ? 'text-right' : ''}`} style={{ top: '64px', height: 'fit-content' }}>
             <motion.h5
               className="text-sm uppercase tracking-wide font-medium text-white/70 mb-4 ltr:ml-5 rtl:mr-5"
               initial={{ opacity: 0, y: 20 }}
@@ -61,7 +63,7 @@ const HowItWorks: React.FC = () => {
           </div>
 
           {/* Sticky Cards */}
-          <ContainerScroll className="space-y-4 py-11 ml-0 md:ml-16" style={{ minHeight: 'calc(100vh + 400px)' }}>
+          <ContainerScroll className={`space-y-4 py-11 ${isRtl ? 'mr-0 md:mr-16 ml-0' : 'ml-0 md:ml-16'}`} style={{ minHeight: 'calc(100vh + 400px)' }}>
             {PHASE_KEYS.map((key, index) => {
               const checklist = t(`howItWorks.phases.${key}.checklist`, { returnObjects: true }) as string[];
               return (
@@ -72,7 +74,7 @@ const HowItWorks: React.FC = () => {
                   className="rounded-2xl border-2 border-gray-200 bg-white shadow-2xl overflow-hidden"
                   style={{ maxWidth: '460px', minHeight: '320px', top: `${180 + index * 40}px` }}
                 >
-                  <div className="p-5 md:p-8 h-full">
+                  <div className={`p-5 md:p-8 h-full ${isRtl ? 'text-right' : ''}`}>
                     <div className="flex items-center mb-3">
                       <h2 className="text-xl md:text-2xl font-bold tracking-tight text-gray-900">
                         {t(`howItWorks.phases.${key}.title`)}
@@ -85,7 +87,7 @@ const HowItWorks: React.FC = () => {
                     {/* Checklist */}
                     <div className="space-y-2">
                       {checklist.map((item, itemIndex) => (
-                        <div key={itemIndex} className="flex items-center gap-2">
+                        <div key={itemIndex} className={`flex items-center gap-2 ${isRtl ? 'flex-row-reverse justify-end text-right' : ''}`}>
                           <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                           <span className="text-sm text-gray-700">{item}</span>
                         </div>

@@ -4,6 +4,7 @@ import Section from './ui/Section';
 import { Users, Phone, Calendar } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../hooks/useDirection';
 
 export interface FinalCTAProps {
   headline?: string;
@@ -42,6 +43,7 @@ const FinalCTA: React.FC<FinalCTAProps> = ({
 }) => {
   const navigate = useNavigate();
   const { t } = useTranslation('marketing');
+  const isRtl = useDirection() === 'rtl';
   const [Icon1, Icon2, Icon3] = icons || [Users, Phone, Calendar];
 
   const key = presetKey || 'default';
@@ -52,16 +54,16 @@ const FinalCTA: React.FC<FinalCTAProps> = ({
   return (
     <Section id="contact" background="white">
       <div className="max-w-4xl mx-auto py-20">
-        <div className="flex flex-col items-center justify-center text-center">
+        <div className={`flex flex-col items-center justify-center ${isRtl ? 'text-right' : 'text-center'}`}>
           <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-8 w-full max-w-[800px] group hover:bg-gray-50 transition duration-500 hover:duration-200">
             <div className="flex justify-center isolate">
-              <div className="bg-white size-12 grid place-items-center rounded-xl relative left-2.5 top-1.5 -rotate-6 shadow-lg ring-1 ring-gray-200 group-hover:-translate-x-5 group-hover:-rotate-12 group-hover:-translate-y-0.5 transition duration-500 group-hover:duration-200">
+              <div className={`bg-white size-12 grid place-items-center rounded-xl relative top-1.5 shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:duration-200 ${isRtl ? 'right-2.5 rotate-6 group-hover:translate-x-5 group-hover:rotate-12 group-hover:-translate-y-0.5' : 'left-2.5 -rotate-6 group-hover:-translate-x-5 group-hover:-rotate-12 group-hover:-translate-y-0.5'}`}>
                 <Icon1 className="w-5 h-5 text-blue-500" strokeWidth={2.5} />
               </div>
               <div className="bg-white size-12 grid place-items-center rounded-xl relative z-10 shadow-lg ring-1 ring-gray-200 group-hover:-translate-y-0.5 transition duration-500 group-hover:duration-200">
                 <Icon2 className="w-5 h-5 text-blue-500" strokeWidth={2.5} />
               </div>
-              <div className="bg-white size-12 grid place-items-center rounded-xl relative right-2.5 top-1.5 rotate-6 shadow-lg ring-1 ring-gray-200 group-hover:translate-x-5 group-hover:rotate-12 group-hover:-translate-y-0.5 transition duration-500 group-hover:duration-200">
+              <div className={`bg-white size-12 grid place-items-center rounded-xl relative top-1.5 shadow-lg ring-1 ring-gray-200 transition duration-500 group-hover:duration-200 ${isRtl ? 'left-2.5 -rotate-6 group-hover:-translate-x-5 group-hover:-rotate-12 group-hover:-translate-y-0.5' : 'right-2.5 rotate-6 group-hover:translate-x-5 group-hover:rotate-12 group-hover:-translate-y-0.5'}`}>
                 <Icon3 className="w-5 h-5 text-blue-500" strokeWidth={2.5} />
               </div>
             </div>
@@ -69,7 +71,7 @@ const FinalCTA: React.FC<FinalCTAProps> = ({
             <p className="text-base text-gray-600 mt-2 whitespace-pre-line">{resolvedDescription}</p>
             <button
               onClick={() => navigate(buttonHref!)}
-              className="mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 shadow-sm active:shadow-none"
+              className={`mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 shadow-sm active:shadow-none ${isRtl ? 'ml-auto mr-0' : ''}`}
             >
               {resolvedButtonText}
             </button>

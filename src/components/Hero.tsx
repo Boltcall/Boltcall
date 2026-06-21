@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
 import { Phone, Calendar, MessageSquare, Users, Star, Megaphone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../hooks/useDirection';
 
 const SMOOTH_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 const FADE_DURATION = 0.7;
@@ -14,6 +15,8 @@ const ModalVideo = React.lazy(() => import('./ModalVideo'));
 const Hero: React.FC = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const { t } = useTranslation('marketing');
+  const dir = useDirection();
+  const isRtl = dir === 'rtl';
 
   const rotatingWords = t('hero.rotatingWords', { returnObjects: true }) as string[];
 
@@ -137,10 +140,10 @@ const Hero: React.FC = () => {
 
         {/* Center content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative z-10 text-center pt-32 md:pt-44 lg:pt-52 pb-12">
+          <div className={`relative z-10 pt-32 md:pt-44 lg:pt-52 pb-12 ${isRtl ? 'text-right md:max-w-4xl md:ml-auto' : 'text-center'}`}>
 
             <motion.h1
-              className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-text-main flex flex-col items-center justify-center leading-tight space-y-1 md:space-y-2 mb-6"
+              className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-text-main flex flex-col leading-tight space-y-1 md:space-y-2 mb-6 ${isRtl ? 'items-end justify-end' : 'items-center justify-center'}`}
               style={{ fontFamily: "'Sora', sans-serif" }}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 24 }}
@@ -148,7 +151,7 @@ const Hero: React.FC = () => {
             >
               <span className="speakable-intro">{t('hero.neverMiss')}</span>
               <LayoutGroup>
-                <motion.span layout className="flex items-center whitespace-pre">
+                <motion.span layout className={`flex items-center whitespace-pre ${isRtl ? 'flex-row-reverse' : ''}`}>
                   {t('hero.a') && <span>{t('hero.a')}</span>}
                   <TextRotate
                     texts={rotatingWords}
@@ -163,7 +166,7 @@ const Hero: React.FC = () => {
             </motion.h1>
 
             <motion.p
-              className="text-base md:text-xl text-text-muted mb-8 max-w-2xl mx-auto px-2 md:px-0 leading-relaxed"
+              className={`text-base md:text-xl text-text-muted mb-8 max-w-2xl px-2 md:px-0 leading-relaxed ${isRtl ? 'mr-0 md:mr-auto md:ml-0' : 'mx-auto'}`}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 24 }}
               transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.25 }}
@@ -172,7 +175,7 @@ const Hero: React.FC = () => {
             </motion.p>
 
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-4"
+              className={`flex flex-col gap-4 mb-4 ${isRtl ? 'items-stretch sm:flex-row-reverse sm:justify-end sm:items-center' : 'justify-center items-center sm:flex-row'}`}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 24 }}
               transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.40 }}

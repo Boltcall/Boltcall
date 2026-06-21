@@ -6,12 +6,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import GiveawayBar from './GiveawayBar';
 import LanguageSwitcher from './dashboard/LanguageSwitcher';
+import { useDirection } from '../hooks/useDirection';
 
 const HEADER_LANGS = ['en', 'he'] as const;
 
 const Header: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation('marketing');
+  const dir = useDirection();
+  const isRtl = dir === 'rtl';
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(location.pathname === '/strike-ai');
   const [isOverBlueBackground, setIsOverBlueBackground] = useState(false);
@@ -348,9 +351,8 @@ const Header: React.FC = () => {
         <GiveawayBar />
       )}
       <div className="w-full px-2 sm:px-4 lg:px-6 overflow-visible">
-        <div className="flex items-center justify-between h-14 max-w-7xl mx-auto overflow-visible">
-          {/* Left Side - Logo and Navigation */}
-          <div className="flex items-center">
+        <div className="flex items-center justify-between h-14 max-w-7xl mx-auto overflow-visible rtl:flex-row-reverse">
+          <div className="flex items-center rtl:flex-row-reverse">
             {/* Logo */}
             <Link to="/">
               <div className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105">
@@ -370,7 +372,7 @@ const Header: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8 ltr:ml-4 rtl:mr-4">
+            <nav className="hidden md:flex items-center gap-8 ltr:ml-4 rtl:mr-4 rtl:flex-row-reverse">
               {/* Features Dropdown */}
               <div
                 ref={featuresRef}
@@ -447,12 +449,12 @@ const Header: React.FC = () => {
                   <NavUnderline isBlue={isOverBlueBackground} />
                 </button>
 
-                <div className={`absolute top-full left-1/2 -translate-x-1/2 rtl:translate-x-1/2 pt-2 z-[120] transition-all duration-200 ease-in-out ${isResourcesOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2.5 pointer-events-none'}`}>
-                  <div className={`rounded-lg shadow-xl border ${isOverBlueBackground ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} py-4 px-6 flex items-stretch`}>
+                <div className={`absolute top-full pt-2 z-[120] transition-all duration-200 ease-in-out ${isRtl ? 'right-1/2 translate-x-1/2' : 'left-1/2 -translate-x-1/2'} ${isResourcesOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2.5 pointer-events-none'}`}>
+                  <div className={`rounded-lg shadow-xl border ${isOverBlueBackground ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} py-4 px-6 flex items-stretch ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
                     {/* Content Section */}
                     <div className="flex-1 min-w-[198px] py-4">
                       <div className="px-6 py-2">
-                        <p className={`text-sm font-semibold uppercase tracking-wider ${isOverBlueBackground ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p className={`text-sm font-semibold uppercase tracking-wider ${isOverBlueBackground ? 'text-gray-400' : 'text-gray-500'} ${isRtl ? 'text-right' : ''}`}>
                           {t('header.content')}
                         </p>
                       </div>
@@ -463,7 +465,7 @@ const Header: React.FC = () => {
                             <Link
                               to={item.href}
                               onClick={() => { setIsResourcesOpen(false); setIsMenuOpen(false); }}
-                              className={`group/item flex items-center gap-3 px-6 py-3 text-sm transition-colors relative ${isOverBlueBackground ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                              className={`group/item flex items-center gap-3 px-6 py-3 text-sm transition-colors relative ${isOverBlueBackground ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} ${isRtl ? 'flex-row-reverse text-right' : ''}`}
                             >
                               <Icon className="w-3.5 h-3.5 flex-shrink-0 -mt-[4px]" />
                               <span className="relative inline-block pb-1">
@@ -482,7 +484,7 @@ const Header: React.FC = () => {
                     {/* Free Tools Section */}
                     <div className="flex-1 min-w-[240px] py-4">
                       <div className="px-4 py-2">
-                        <p className={`text-sm font-semibold uppercase tracking-wider ${isOverBlueBackground ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p className={`text-sm font-semibold uppercase tracking-wider ${isOverBlueBackground ? 'text-gray-400' : 'text-gray-500'} ${isRtl ? 'text-right' : ''}`}>
                           {t('header.freeTools')}
                         </p>
                       </div>
@@ -493,7 +495,7 @@ const Header: React.FC = () => {
                             <Link
                               to={item.href}
                               onClick={() => { setIsResourcesOpen(false); setIsMenuOpen(false); }}
-                              className={`group/item flex items-center gap-3 px-4 py-3 text-sm transition-colors relative ${isOverBlueBackground ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                              className={`group/item flex items-center gap-3 px-4 py-3 text-sm transition-colors relative ${isOverBlueBackground ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} ${isRtl ? 'flex-row-reverse text-right' : ''}`}
                             >
                               <Icon className="w-3.5 h-3.5 flex-shrink-0 -mt-[4px]" />
                               <span className="relative inline-block pb-1 whitespace-nowrap">
@@ -517,7 +519,7 @@ const Header: React.FC = () => {
                         className="block w-full"
                       >
                         <div className="h-full rounded-2xl p-6 border-2 border-gray-900 bg-white shadow-xl transition-all hover:translate-y-[-2px] hover:shadow-2xl">
-                          <div className="flex items-center gap-3 mb-4">
+                          <div className={`flex items-center gap-3 mb-4 ${isRtl ? 'flex-row-reverse text-right' : ''}`}>
                             <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-black border-2 border-gray-900">
                               <Sparkles className="w-5 h-5 text-white" strokeWidth={2.5} />
                             </div>
@@ -533,7 +535,7 @@ const Header: React.FC = () => {
                           <p className="text-sm leading-relaxed text-gray-700 mb-5">
                             {t('header.strikeDesc')}
                           </p>
-                          <div className="mt-auto flex justify-end">
+                          <div className={`mt-auto flex ${isRtl ? 'justify-start' : 'justify-end'}`}>
                             <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-black text-white text-sm font-semibold shadow-md hover:bg-gray-900 transition-colors w-full justify-center">
                               {t('header.tryStrikeAi')}
                               <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
@@ -548,8 +550,7 @@ const Header: React.FC = () => {
             </nav>
           </div>
 
-          {/* Right Side - Language Switcher + Auth Buttons */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4 rtl:flex-row-reverse">
             <LanguageSwitcher
               dropdownDirection="down"
               visibleLanguages={HEADER_LANGS}
@@ -585,7 +586,7 @@ const Header: React.FC = () => {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden fixed top-2 right-4 z-[9995] min-w-[44px] min-h-[44px] flex items-center justify-center bg-white backdrop-blur-sm rounded-full shadow-xl border-2 border-gray-300 hover:bg-gray-50 transition-colors"
+            className="md:hidden fixed top-2 ltr:right-4 rtl:left-4 rtl:right-auto z-[9995] min-w-[44px] min-h-[44px] flex items-center justify-center bg-white backdrop-blur-sm rounded-full shadow-xl border-2 border-gray-300 hover:bg-gray-50 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -601,10 +602,10 @@ const Header: React.FC = () => {
 
         {/* Mobile menu */}
         {typeof document !== 'undefined' && createPortal(
-          <div className={`md:hidden fixed inset-0 z-[9999] bg-white overflow-y-auto transition-all duration-250 ease-out ${isMenuOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full pointer-events-none'}`}>
+          <div className={`md:hidden fixed inset-0 z-[9999] bg-white overflow-y-auto transition-all duration-250 ease-out ${isRtl ? 'text-right' : ''} ${isMenuOpen ? 'opacity-100 translate-x-0' : isRtl ? 'opacity-0 -translate-x-full pointer-events-none' : 'opacity-0 translate-x-full pointer-events-none'}`}>
             <button
               onClick={() => setIsMenuOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100"
+              className="absolute top-4 ltr:right-4 rtl:left-4 rtl:right-auto z-10 p-2 rounded-full bg-gray-100"
               aria-label="Close menu"
             >
               <X size={20} strokeWidth={2.5} className="text-gray-800" />
@@ -619,7 +620,7 @@ const Header: React.FC = () => {
                   key={item.labelKey}
                   to={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block w-full text-left px-4 py-4 text-lg font-semibold text-gray-900 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="block w-full text-left rtl:text-right px-4 py-4 text-lg font-semibold text-gray-900 rounded-lg hover:bg-blue-50 transition-colors"
                 >
                   {t(item.labelKey)}
                 </Link>
@@ -629,7 +630,7 @@ const Header: React.FC = () => {
               <div>
                 <button
                   onClick={() => setMobileFeatures(!mobileFeatures)}
-                  className="w-full text-left px-4 py-4 text-lg font-semibold text-gray-900 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-between"
+                  className="w-full text-left rtl:text-right px-4 py-4 text-lg font-semibold text-gray-900 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-between"
                 >
                   {t('header.features')}
                   <ChevronDown size={18} className={`text-gray-400 transition-transform ${mobileFeatures ? 'rotate-180' : ''}`} />
@@ -642,7 +643,7 @@ const Header: React.FC = () => {
                         key={item.href}
                         to={item.href}
                         onClick={() => setIsMenuOpen(false)}
-                        className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-3"
+                        className={`w-full text-left px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-3 ${isRtl ? 'rtl:text-right flex-row-reverse' : ''}`}
                       >
                         <Icon className="w-4 h-4 text-blue-500 flex-shrink-0" />
                         <span className="text-sm font-medium text-gray-700">{t(item.labelKey)}</span>
@@ -656,7 +657,7 @@ const Header: React.FC = () => {
               <div>
                 <button
                   onClick={() => setMobileResources(!mobileResources)}
-                  className="w-full text-left px-4 py-4 text-lg font-semibold text-gray-900 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-between"
+                  className="w-full text-left rtl:text-right px-4 py-4 text-lg font-semibold text-gray-900 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-between"
                 >
                   {t('header.resources')}
                   <ChevronDown size={18} className={`text-gray-400 transition-transform ${mobileResources ? 'rotate-180' : ''}`} />
@@ -669,7 +670,7 @@ const Header: React.FC = () => {
                         key={item.href}
                         to={item.href}
                         onClick={() => setIsMenuOpen(false)}
-                        className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-3"
+                        className={`w-full text-left px-4 py-2.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-3 ${isRtl ? 'rtl:text-right flex-row-reverse' : ''}`}
                       >
                         <Icon className="w-4 h-4 text-blue-500 flex-shrink-0" />
                         <span className="text-sm font-medium text-gray-700">{t(item.labelKey)}</span>

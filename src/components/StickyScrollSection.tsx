@@ -3,12 +3,14 @@ import { motion } from 'framer-motion';
 import WhisperText from './ui/whisper-text';
 import { Feature } from './ui/feature-section-with-bento-grid';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../hooks/useDirection';
 
 export const StickyScrollSection: React.FC = () => {
   const { t } = useTranslation('marketing');
+  const isRtl = useDirection() === 'rtl';
   return (
     <div className="py-20">
-      <div className="text-left mb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={`mb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${isRtl ? 'text-right' : 'text-left'}`}>
         <motion.div
           className="mb-4 ltr:ml-5 rtl:mr-5"
           initial={{ opacity: 0, y: 20 }}
