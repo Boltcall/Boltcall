@@ -324,7 +324,7 @@ describe('V2 pages — smoke tests', () => {
     it('shows a welcome intro before starting the V2 setup chat', () => {
       vi.useFakeTimers();
 
-      render(
+      const { container } = render(
         <MemoryRouter initialEntries={['/setup']}>
           <Routes>
             <Route path="/setup" element={<V2SetupPage />} />
@@ -333,6 +333,9 @@ describe('V2 pages — smoke tests', () => {
       );
 
       expect(screen.getByRole('heading', { name: /welcome to boltcall/i })).toBeInTheDocument();
+      expect(container.firstElementChild).toHaveClass('h-dvh', 'overflow-hidden');
+      expect(document.body.style.overflow).toBe('hidden');
+      expect(document.documentElement.style.overflow).toBe('hidden');
       expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
 
       act(() => {

@@ -364,6 +364,9 @@ describe('V2SetupChat — smoke', () => {
       renderInRouter(<V2SetupChat />);
     });
 
+    const typewriterText = screen.getByText('H');
+    expect(typewriterText.closest('.text-left')).toBeTruthy();
+    expect(typewriterText.closest('.justify-start')).toBeTruthy();
     expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     await act(async () => {
       vi.runAllTimers();
