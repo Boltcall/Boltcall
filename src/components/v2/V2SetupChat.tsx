@@ -19,7 +19,6 @@ interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  displayed?: number;
   ts: string;
   toolNote?: string;
 }
@@ -50,7 +49,7 @@ interface TurnResponse {
 const STORAGE_KEY = 'boltcall_v2_setup_conversation_id';
 
 const SEED_GREETING =
-  "Hi, welcome to Boltcall. I'll get your instant lead response system ready through a quick setup. First, tell me who owns this setup.";
+  "I'll get your instant lead response system ready through a quick setup. First, tell me who owns this setup.";
 
 const OPENING_STEP_PROMPTS: Record<OpeningStep, string> = {
   owner: SEED_GREETING,
@@ -96,13 +95,11 @@ const V2SetupChat: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [hasHydrated, setHasHydrated] = useState(false);
 
-  const typewriterTimers = useRef<Map<string, number>>(new Map());
   const openingTransitionTimer = useRef<number | null>(null);
   const finishTimer = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    const timers = typewriterTimers.current;
     (async () => {
       try {
         const url = conversationId
@@ -126,7 +123,6 @@ const V2SetupChat: React.FC = () => {
                   role: t.role,
                   content: t.content,
                   ts: t.ts,
-                  displayed: t.content.length,
                   toolNote: t.tool ? `Ran ${t.tool.name}` : undefined,
                 }),
               ),
@@ -154,7 +150,6 @@ const V2SetupChat: React.FC = () => {
 
     return () => {
       cancelled = true;
-      timers.forEach((id) => window.clearTimeout(id));
       if (openingTransitionTimer.current) window.clearTimeout(openingTransitionTimer.current);
       if (finishTimer.current) window.clearTimeout(finishTimer.current);
     };
@@ -173,25 +168,8 @@ const V2SetupChat: React.FC = () => {
   function seedOpening() {
     const id = genId();
     setMessages([
-      { id, role: 'assistant', content: SEED_GREETING, displayed: 0, ts: new Date().toISOString() },
+      { id, role: 'assistant', content: SEED_GREETING, ts: new Date().toISOString() },
     ]);
-    typewriterAnimate(id, SEED_GREETING);
-  }
-
-  function typewriterAnimate(id: string, text: string) {
-    const stepMs = 14;
-    let i = 0;
-    function tick() {
-      i = Math.min(text.length, i + Math.max(1, Math.floor(text.length / 80)));
-      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, displayed: i } : m)));
-      if (i < text.length) {
-        const t = window.setTimeout(tick, stepMs);
-        typewriterTimers.current.set(id, t);
-      } else {
-        typewriterTimers.current.delete(id);
-      }
-    }
-    tick();
   }
 
   async function sendMessage(rawText: string) {
@@ -205,7 +183,6 @@ const V2SetupChat: React.FC = () => {
       id: genId(),
       role: 'user',
       content: text,
-      displayed: text.length,
       ts: new Date().toISOString(),
     };
     setMessages((m) => [...m, userMsg]);
@@ -247,12 +224,10 @@ const V2SetupChat: React.FC = () => {
           id: aid,
           role: 'assistant',
           content: assistantMessage,
-          displayed: 0,
           ts: new Date().toISOString(),
           toolNote,
         },
       ]);
-      typewriterAnimate(aid, assistantMessage);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Network error. Try again.');
     } finally {
@@ -367,20 +342,14 @@ const V2SetupChat: React.FC = () => {
 
   const hasUserMessages = messages.some((m) => m.role === 'user');
   const latestAssistantMessage = [...messages].reverse().find((m) => m.role === 'assistant') || null;
-  const latestAssistantFinished =
-    !!latestAssistantMessage &&
-    (latestAssistantMessage.displayed ?? latestAssistantMessage.content.length) >=
-      latestAssistantMessage.content.length;
+  const latestAssistantFinished = !!latestAssistantMessage;
   const showResponseFields =
     hasHydrated && !isStreaming && !isFinalizing && !readyToDeploy && latestAssistantFinished;
   const showOpeningFields = showResponseFields && !hasUserMessages;
   const openingAssistantMessage = latestAssistantMessage;
   const openingPromptText =
     openingStep === 'owner' && openingAssistantMessage
-      ? openingAssistantMessage.content.slice(
-          0,
-          openingAssistantMessage.displayed ?? openingAssistantMessage.content.length,
-        )
+      ? openingAssistantMessage.content
       : OPENING_STEP_PROMPTS[openingStep];
   const canContinueOpening =
     openingStep === 'owner'
@@ -435,7 +404,6 @@ const V2SetupChat: React.FC = () => {
           <div className="py-12" aria-hidden="true" />
         )}
         {!showOpeningFields && messages.map((m) => <MessageText key={m.id} message={m} />)}
-        {isStreaming && <TypingIndicator />}
 
         {showOpeningFields && (
           <div
@@ -651,8 +619,6 @@ const V2SetupChat: React.FC = () => {
 
 const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
   const isUser = message.role === 'user';
-  const visible =
-    message.displayed != null ? message.content.slice(0, message.displayed) : message.content;
 
   return (
     <div className="flex w-full justify-start">
@@ -663,13 +629,14 @@ const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
             ? 'text-base font-medium text-zinc-500'
             : 'text-2xl font-semibold tracking-[-0.03em] text-zinc-950 sm:text-3xl',
         )}
+        style={{ animation: 'v2SetupPromptFadeIn 600ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
       >
         {message.toolNote && !isUser && (
           <div className="mb-1 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-700">
             {message.toolNote}
           </div>
         )}
-        <div>{visible}</div>
+        <div>{message.content}</div>
       </div>
     </div>
   );
@@ -697,15 +664,5 @@ async function readResponseJson<T>(
     } as Partial<T> & { error?: string };
   }
 }
-
-const TypingIndicator: React.FC = () => (
-  <div className="flex justify-start px-1 py-2.5">
-    <div className="flex gap-1">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400 [animation-delay:0ms]" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400 [animation-delay:150ms]" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-400 [animation-delay:300ms]" />
-    </div>
-  </div>
-);
 
 export default V2SetupChat;
