@@ -38,6 +38,7 @@ interface ConversationTurn {
 type WizardStep = 'intake' | 'kb_extract' | 'review' | 'deploying';
 
 interface ExtractedDraft {
+  ownerName?: string;
   businessName?: string;
   websiteUrl?: string;
   industry?: string;
@@ -61,6 +62,7 @@ interface ExtractedDraft {
   };
   callFlow?: Record<string, unknown>;
   agentPromptDraft?: string;
+  additionalKbFiles?: string[];
 }
 
 interface WizardState {
@@ -459,6 +461,56 @@ function emptyState(): WizardState {
   };
 }
 
+type OpeningSetupPayload = {
+  ownerName: string;
+  country: string;
+  businessName: string;
+  websiteUrl?: string;
+  voiceId: string;
+  voiceName?: string;
+  kbFileNames: string[];
+};
+
+function readLabeledLine(lines: string[], label: string): string | undefined {
+  const prefix = `${label.toLowerCase()}:`;
+  const line = lines.find((candidate) => candidate.toLowerCase().startsWith(prefix));
+  return line?.slice(prefix.length).trim();
+}
+
+function parseOpeningSetupMessage(message: string): OpeningSetupPayload | null {
+  const lines = message
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const ownerName = readLabeledLine(lines, 'Owner name');
+  const country = readLabeledLine(lines, 'Country');
+  const businessName = readLabeledLine(lines, 'Company name');
+  const websiteUrl = readLabeledLine(lines, 'Website');
+  const voiceLine = readLabeledLine(lines, 'AI agent voice');
+
+  if (!ownerName || !country || !businessName || !voiceLine) return null;
+
+  const voiceMatch = voiceLine.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  const voiceName = voiceMatch?.[1]?.trim() || voiceLine;
+  const voiceId = voiceMatch?.[2]?.trim() || voiceLine;
+  const kbFileNames =
+    readLabeledLine(lines, 'More KB files')
+      ?.split(',')
+      .map((name) => name.trim())
+      .filter(Boolean) || [];
+
+  return {
+    ownerName,
+    country,
+    businessName,
+    websiteUrl,
+    voiceName,
+    voiceId,
+    kbFileNames,
+  };
+}
+
 function generateConversationId(): string {
   // RFC4122-ish — no dep on uuid lib (which may not be available everywhere)
   return 'conv_' + Array.from(crypto.getRandomValues(new Uint8Array(12)))
@@ -576,6 +628,113 @@ const handler: Handler = async (event) => {
       pattern_names: userHits,
       hit_count: userHits.length,
     }).catch(() => {});
+  }
+
+  const openingSetup = parseOpeningSetupMessage(userMessage);
+  if (openingSetup && state.conversation.length === 1) {
+    state.extracted = {
+      ...state.extracted,
+      ownerName: openingSetup.ownerName,
+      country: openingSetup.country,
+      businessName: openingSetup.businessName,
+      websiteUrl: openingSetup.websiteUrl || state.extracted.websiteUrl,
+      additionalKbFiles: openingSetup.kbFileNames,
+      agentConfig: {
+        ...(state.extracted.agentConfig || {}),
+        agentName:
+          state.extracted.agentConfig?.agentName ||
+          `${openingSetup.businessName} AI Receptionist`,
+        voiceId: openingSetup.voiceId,
+      },
+    };
+    state.wizard_step = 'intake';
+
+    const rawCleanText = openingSetup.kbFileNames.length > 0
+      ? "Great, I saved the basics and noted your KB files. What are the top services this agent should handle first?"
+      : 'Great, I saved the basics. What are the top services this agent should handle first?';
+    const { redacted: cleanText, hits: assistantHits } = redactSecrets(rawCleanText);
+    const { value: cleanExtracted, hits: extractedHits } = redactSecretsDeep(state.extracted);
+    state.extracted = cleanExtracted;
+    state.conversation.push({
+      role: 'assistant',
+      content: cleanText,
+      ts: new Date().toISOString(),
+    });
+
+    if (assistantHits.length > 0) {
+      emitEvent('saas_v2_setup_secret_redacted', {
+        workspace_id: workspaceId,
+        conversation_id: existingConvoId || undefined,
+        field: 'assistant_message',
+        source: 'assistant',
+        pattern_names: assistantHits,
+        hit_count: assistantHits.length,
+      }).catch(() => {});
+    }
+    if (extractedHits.length > 0) {
+      emitEvent('saas_v2_setup_secret_redacted', {
+        workspace_id: workspaceId,
+        conversation_id: existingConvoId || undefined,
+        field: 'extracted',
+        source: 'assistant',
+        pattern_names: extractedHits,
+        hit_count: extractedHits.length,
+      }).catch(() => {});
+    }
+    emitEvent('saas_v2_setup_message_sent', {
+      workspace_id: workspaceId,
+      turn_index: state.conversation.length - 1,
+      role: 'assistant',
+      char_count: cleanText.length,
+      model_tier: 'deterministic',
+      latency_ms: 0,
+    }).catch(() => {});
+
+    let newVersion: number;
+    try {
+      newVersion = await saveWorkspaceState({
+        workspaceId,
+        state,
+        conversationId,
+        expectedVersion: stateVersion,
+        startedAt: true,
+      });
+    } catch (e) {
+      if (e instanceof LostUpdateError) {
+        emitEvent('saas_v2_setup_conversation_lost_update', {
+          workspace_id: workspaceId,
+          conversation_id: conversationId,
+          expected_version: e.expectedVersion,
+        }).catch(() => {});
+        return {
+          statusCode: 409,
+          headers,
+          body: JSON.stringify({
+            error: 'Another tab updated this setup since you started typing ג€” refresh to see the latest state.',
+            code: 'lost_update',
+            event: 'lost_update',
+            conversation_id: conversationId,
+            expected_version: e.expectedVersion,
+          }),
+        };
+      }
+      throw e;
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        conversation_id: conversationId,
+        assistant_message: cleanText,
+        tool: null,
+        extracted: state.extracted,
+        wizard_step: state.wizard_step,
+        ready_to_deploy: false,
+        state_version: newVersion,
+        latency_ms: 0,
+      }),
+    };
   }
 
   // Build the LLM input. We compress prior conversation into a serialized transcript
