@@ -100,7 +100,7 @@ If the call should become a booked visit, callback task, or dispatch alert, make
 
 The easiest improvements come from reviewing real after-hours conversations, spotting where callers hesitate, and tightening the routing logic.
 
-If you want the core buyer page for this topic, see Boltcall's [HVAC answering service](/industries/hvac-answering-service/) page. For the closely related buyer query, read [AI receptionist for HVAC](/blog/ai-receptionist-for-hvac-speed-to-lead/).
+If you want the core buyer page for this topic, see Boltcall's [HVAC answering service](/industries/hvac-answering-service/) page. For the closely related buyer query, read [AI receptionist for HVAC](/blog/ai-receptionist-for-hvac-speed-to-lead/). If you are comparing adjacent category language, also see [HVAC virtual receptionist](/blog/hvac-virtual-receptionist/).
 
 ## Best Tools and Options
 

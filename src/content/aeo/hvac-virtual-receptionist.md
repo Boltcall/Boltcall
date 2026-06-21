@@ -26,7 +26,7 @@ In practice, that means the system should know:
 
 The goal is simple: fewer missed calls, faster first response, and more booked service appointments.
 
-If you are comparing category language and want the core commercial page, start with Boltcall's [HVAC answering service](/industries/hvac-answering-service/) page. If your team is specifically evaluating the speed-to-lead angle, read [AI receptionist for HVAC](/blog/ai-receptionist-for-hvac-speed-to-lead/).
+If you are comparing category language and want the core commercial page, start with Boltcall's [HVAC answering service](/industries/hvac-answering-service/) page. If your team is specifically evaluating the speed-to-lead angle, read [AI receptionist for HVAC](/blog/ai-receptionist-for-hvac-speed-to-lead/). If nights and weekends are the real leak, see [after-hours answering service for HVAC](/blog/after-hours-answering-service-hvac/).
 
 ## Revenue Case
 

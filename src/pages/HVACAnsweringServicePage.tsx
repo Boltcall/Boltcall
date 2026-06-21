@@ -78,6 +78,11 @@ const FAQS = [
 
 const RELATED_LINKS = [
   {
+    title: 'AI Receptionist for HVAC',
+    href: '/blog/ai-receptionist-for-hvac-speed-to-lead',
+    description: "See how Boltcall's speed-to-lead angle maps to this core HVAC buyer phrase.",
+  },
+  {
     title: 'After-Hours Answering Service for HVAC',
     href: '/blog/after-hours-answering-service-hvac',
     description: 'See how evening and weekend HVAC calls turn into booked revenue instead of voicemail.',
@@ -86,11 +91,6 @@ const RELATED_LINKS = [
     title: 'HVAC Virtual Receptionist',
     href: '/blog/hvac-virtual-receptionist',
     description: 'Understand where virtual receptionist language overlaps with speed-to-lead positioning.',
-  },
-  {
-    title: 'AI Appointment Scheduling for HVAC',
-    href: '/blog/ai-appointment-scheduling-hvac',
-    description: 'Tie fast answering directly into the scheduling layer.',
   },
   {
     title: 'HVAC AI Lead Response',
@@ -252,7 +252,7 @@ export default function HVACAnsweringServicePage() {
                 </li>
                 <li className="flex gap-3">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
-                  <span>A next step they can trust instead of “leave a message.”</span>
+                  <span>A next step they can trust instead of "leave a message."</span>
                 </li>
               </ul>
             </div>
@@ -295,7 +295,7 @@ export default function HVACAnsweringServicePage() {
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
             <div className="max-w-3xl">
               <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                HVAC answering service vs. “we’ll call you back”
+                HVAC answering service vs. "we'll call you back"
               </h2>
               <p className="mt-4 text-base leading-8 text-gray-600">
                 HVAC buyers usually do not reward the company with the nicest voicemail. They reward the
@@ -344,6 +344,11 @@ export default function HVACAnsweringServicePage() {
                 <p className="mt-4 text-base leading-8 text-gray-600">
                   This page should act like the money-page hub for HVAC answering-service searches.
                   The supporting HVAC blogs then feed authority and internal links into it.
+                </p>
+                <p className="mt-4 text-base leading-8 text-gray-600">
+                  The clean split is: this page owns <strong>HVAC answering service</strong>, the AI
+                  receptionist page owns the buyer-angle wording, the after-hours page owns off-hours
+                  urgency, and the virtual receptionist page captures adjacent category language.
                 </p>
                 <p className="mt-4 text-base leading-8 text-gray-600">
                   That is why the `/industries/` base makes sense here. It gives us one clean structure
