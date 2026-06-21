@@ -90,7 +90,7 @@ const V2SetupPage: React.FC = () => {
       <main className="mx-auto flex h-full min-h-0 max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         {!showPrompting ? (
           <h1
-            className="text-center text-5xl font-black uppercase tracking-[0.11em] text-zinc-950 sm:text-7xl lg:text-8xl"
+            className="text-center text-3xl font-black uppercase tracking-[0.1em] text-zinc-950 sm:text-5xl lg:text-6xl"
             style={{ animation: 'boltcallSetupWelcome 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
           >
             Welcome to Boltcall
