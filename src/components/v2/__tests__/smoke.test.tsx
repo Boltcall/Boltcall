@@ -364,18 +364,18 @@ describe('V2SetupChat — smoke', () => {
       renderInRouter(<V2SetupChat />);
     });
 
-    expect(screen.queryByLabelText(/company name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     await act(async () => {
       vi.runAllTimers();
     });
 
-    expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/primary goal/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/tone/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/transfer number/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/owner name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/country/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/business name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/business website - optional/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/choose voice/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/more kb files - optional/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/profile 0% ready/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/your answer/i)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/type your reply/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Boltcall Setup')).not.toBeInTheDocument();
@@ -383,7 +383,7 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.queryByText(/classic setup/i)).not.toBeInTheDocument();
   });
 
-  it('sends company name and website from the opening setup form', async () => {
+  it('walks through owner, business, and AI agent opening setup steps', async () => {
     vi.useFakeTimers();
     await act(async () => {
       renderInRouter(<V2SetupChat />);
@@ -393,12 +393,74 @@ describe('V2SetupChat — smoke', () => {
       vi.runAllTimers();
     });
 
+    fireEvent.change(screen.getByLabelText(/owner name/i), {
+      target: { value: 'Noam Yakoby' },
+    });
+    fireEvent.change(screen.getByLabelText(/country/i), {
+      target: { value: 'Israel' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+
+    expect(screen.getByLabelText(/business name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/primary goal/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/tone/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/transfer number/i)).not.toBeInTheDocument();
+
     fireEvent.change(screen.getByLabelText(/business name/i), {
       target: { value: 'Boltcall Plumbing' },
     });
     fireEvent.change(screen.getByLabelText(/business website - optional/i), {
       target: { value: 'https://boltcall.org' },
     });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+
+    expect(screen.getByLabelText(/choose voice/i)).toBeInTheDocument();
+    expect(screen.getByText(/Adrian/i)).toBeInTheDocument();
+    expect(screen.getByText(/Dorothy/i)).toBeInTheDocument();
+    expect(screen.getByText(/Marcus/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
+  });
+
+  it('sends all opening setup fields after the AI agent step', async () => {
+    vi.useFakeTimers();
+    await act(async () => {
+      renderInRouter(<V2SetupChat />);
+    });
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    fireEvent.change(screen.getByLabelText(/owner name/i), {
+      target: { value: 'Noam Yakoby' },
+    });
+    fireEvent.change(screen.getByLabelText(/country/i), {
+      target: { value: 'Israel' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+
+    fireEvent.change(screen.getByLabelText(/business name/i), {
+      target: { value: 'Boltcall Plumbing' },
+    });
+    fireEvent.change(screen.getByLabelText(/business website - optional/i), {
+      target: { value: 'https://boltcall.org' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+
+    fireEvent.click(screen.getByRole('radio', { name: /Dorothy/i }));
+    fireEvent.change(screen.getByLabelText(/more kb files - optional/i), {
+      target: {
+        files: [
+          new File(['hello'], 'faq.pdf', { type: 'application/pdf' }),
+          new File(['pricing'], 'pricing.txt', { type: 'text/plain' }),
+        ],
+      },
+    });
+
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     });
@@ -411,8 +473,12 @@ describe('V2SetupChat — smoke', () => {
     expect(init.method).toBe('POST');
     expect(JSON.parse(init.body).user_message).toBe(
       [
+        'Owner name: Noam Yakoby',
+        'Country: Israel',
         'Company name: Boltcall Plumbing',
         'Website: https://boltcall.org',
+        'AI agent voice: Dorothy (11labs-Dorothy)',
+        'More KB files: faq.pdf, pricing.txt',
       ].join('\n')
     );
   });
