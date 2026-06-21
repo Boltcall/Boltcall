@@ -10,6 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
+import { savePendingAgentSetup } from '../../lib/setup/onboarding';
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
 
@@ -96,6 +97,7 @@ const V2SetupChat: React.FC = () => {
 
   const typewriterTimers = useRef<Map<string, number>>(new Map());
   const openingTransitionTimer = useRef<number | null>(null);
+  const finishTimer = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,6 +155,7 @@ const V2SetupChat: React.FC = () => {
       cancelled = true;
       timers.forEach((id) => window.clearTimeout(id));
       if (openingTransitionTimer.current) window.clearTimeout(openingTransitionTimer.current);
+      if (finishTimer.current) window.clearTimeout(finishTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -217,7 +220,7 @@ const V2SetupChat: React.FC = () => {
         }),
       });
 
-      const data = (await res.json()) as TurnResponse;
+      const data = await readResponseJson<TurnResponse>(res);
       if (!res.ok || data.error) {
         setError(data.error || `Setup error (${res.status}). Try again.`);
         setIsStreaming(false);
@@ -236,18 +239,19 @@ const V2SetupChat: React.FC = () => {
 
       const aid = genId();
       const toolNote = data.tool ? `Ran ${data.tool.name}` : undefined;
+      const assistantMessage = data.assistant_message || 'Got it.';
       setMessages((m) => [
         ...m,
         {
           id: aid,
           role: 'assistant',
-          content: data.assistant_message,
+          content: assistantMessage,
           displayed: 0,
           ts: new Date().toISOString(),
           toolNote,
         },
       ]);
-      typewriterAnimate(aid, data.assistant_message);
+      typewriterAnimate(aid, assistantMessage);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Network error. Try again.');
     } finally {
@@ -269,7 +273,7 @@ const V2SetupChat: React.FC = () => {
           confirm: true,
         }),
       });
-      const data = await res.json();
+      const data = await readResponseJson<{ code?: string; error?: string; redirect_to?: string }>(res);
       if (res.status === 409 || data.code === 'state_drift') {
         setError(
           data.error ||
@@ -301,6 +305,17 @@ const V2SetupChat: React.FC = () => {
     }, 360);
   }
 
+  function previousOpeningStep() {
+    if (isOpeningTransitioning) return;
+    if (openingStep === 'business') {
+      advanceOpeningStep('owner');
+      return;
+    }
+    if (openingStep === 'agent') {
+      advanceOpeningStep('business');
+    }
+  }
+
   function submitOpeningStep() {
     if (openingStep === 'owner') {
       if (!ownerNameDraft.trim() || !countryDraft.trim()) return;
@@ -320,19 +335,26 @@ const V2SetupChat: React.FC = () => {
     const website = websiteDraft.trim();
     if (!ownerName || !country || !companyName) return;
     const voice = VOICE_OPTIONS.find((option) => option.id === voiceDraft) ?? VOICE_OPTIONS[0];
-
-    const text = [
-      `Owner name: ${ownerName}`,
-      `Country: ${country}`,
-      `Company name: ${companyName}`,
-      website ? `Website: ${website}` : '',
-      `AI agent voice: ${voice.name} (${voice.id})`,
-      kbFileNames.length > 0 ? `More KB files: ${kbFileNames.join(', ')}` : '',
-    ]
-      .filter(Boolean)
-      .join('\n');
-
-    void sendMessage(text);
+    setError(null);
+    savePendingAgentSetup({
+      ownerName,
+      businessName: companyName,
+      websiteUrl: website,
+      country,
+      industry: 'other',
+      voiceId: voice.id,
+      goal: 'book-appointments',
+      tone: 'friendly_concise',
+      transferNumber: '',
+      kbFileNames,
+      createdAt: new Date().toISOString(),
+    });
+    sessionStorage.removeItem(STORAGE_KEY);
+    setIsOpeningTransitioning(true);
+    if (finishTimer.current) window.clearTimeout(finishTimer.current);
+    finishTimer.current = window.setTimeout(() => {
+      navigate('/setup/loading', { replace: true });
+    }, 420);
   }
 
   function onAnswerKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -555,14 +577,29 @@ const V2SetupChat: React.FC = () => {
               </div>
             )}
 
-            <button
-              onClick={submitOpeningStep}
-              disabled={!canContinueOpening || isStreaming || isFinalizing}
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-5 text-sm font-semibold text-white opacity-0 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+            <div
+              className="flex items-center gap-3 opacity-0"
               style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both' }}
             >
-              Continue
-            </button>
+              {openingStep !== 'owner' && (
+                <button
+                  type="button"
+                  onClick={previousOpeningStep}
+                  disabled={isOpeningTransitioning || isStreaming || isFinalizing}
+                  className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-900/20 bg-white/30 px-5 text-sm font-semibold text-zinc-900 transition hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  Previous
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={submitOpeningStep}
+                disabled={!canContinueOpening || isStreaming || isFinalizing}
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+              >
+                {openingStep === 'agent' ? 'Finish' : 'Continue'}
+              </button>
+            </div>
           </div>
         )}
 
@@ -636,6 +673,29 @@ const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
     </div>
   );
 };
+
+async function readResponseJson<T>(
+  res: Response,
+): Promise<Partial<T> & { error?: string }> {
+  const responseWithText = res as Response & { text?: () => Promise<string> };
+  if (typeof responseWithText.text === 'function') {
+    const raw = await responseWithText.text();
+    if (!raw) return {};
+    try {
+      return JSON.parse(raw) as Partial<T> & { error?: string };
+    } catch {
+      return { error: raw } as Partial<T> & { error?: string };
+    }
+  }
+
+  try {
+    return (await res.json()) as Partial<T> & { error?: string };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : `Setup error (${res.status}). Try again.`,
+    } as Partial<T> & { error?: string };
+  }
+}
 
 const TypingIndicator: React.FC = () => (
   <div className="flex justify-start px-1 py-2.5">

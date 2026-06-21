@@ -1,6 +1,7 @@
 export const PENDING_SETUP_STORAGE_KEY = 'boltcall_pending_agent_setup';
 
 export const INDUSTRY_OPTIONS = [
+  { value: 'other', label: 'Other' },
   { value: 'roofing', label: 'Roofing' },
   { value: 'law-firms', label: 'Law Firms' },
   { value: 'med-spa', label: 'Med Spa' },
@@ -10,6 +11,7 @@ export const INDUSTRY_OPTIONS = [
 export const VOICE_OPTIONS = [
   { value: '11labs-Adrian', label: 'Adrian', description: 'Warm and confident' },
   { value: '11labs-Dorothy', label: 'Dorothy', description: 'Polished and calm' },
+  { value: '11labs-Marcus', label: 'Marcus', description: 'Direct and energetic' },
 ] as const;
 
 export const GOAL_OPTIONS = [
@@ -23,13 +25,16 @@ export const TONE_OPTIONS = [
 ] as const;
 
 export interface PendingAgentSetup {
+  ownerName?: string;
   businessName: string;
   websiteUrl: string;
+  country?: string;
   industry: (typeof INDUSTRY_OPTIONS)[number]['value'];
   voiceId: (typeof VOICE_OPTIONS)[number]['value'];
   goal: (typeof GOAL_OPTIONS)[number]['value'];
   tone: (typeof TONE_OPTIONS)[number]['value'];
   transferNumber: string;
+  kbFileNames?: string[];
   createdAt: string;
 }
 
