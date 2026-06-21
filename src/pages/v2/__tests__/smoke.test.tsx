@@ -332,7 +332,11 @@ describe('V2 pages — smoke tests', () => {
         </MemoryRouter>,
       );
 
-      expect(screen.getByRole('heading', { name: /welcome to boltcall/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /welcome to boltcall/i })).toHaveClass(
+        'text-3xl',
+        'sm:text-5xl',
+        'lg:text-6xl',
+      );
       expect(container.firstElementChild).toHaveClass('h-dvh', 'overflow-hidden');
       expect(document.body.style.overflow).toBe('hidden');
       expect(document.documentElement.style.overflow).toBe('hidden');

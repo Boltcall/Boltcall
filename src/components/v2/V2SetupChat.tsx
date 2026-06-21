@@ -13,6 +13,7 @@ import { FUNCTIONS_BASE } from '../../lib/api';
 import { savePendingAgentSetup } from '../../lib/setup/onboarding';
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
+import { OriginButton } from '../ui/origin-button';
 
 interface ChatMessage {
   id: string;
@@ -582,23 +583,23 @@ const V2SetupChat: React.FC = () => {
               style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both' }}
             >
               {openingStep !== 'owner' && (
-                <button
+                <OriginButton
                   type="button"
                   onClick={previousOpeningStep}
                   disabled={isOpeningTransitioning || isStreaming || isFinalizing}
-                  className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-900/20 bg-white/30 px-5 text-sm font-semibold text-zinc-900 transition hover:bg-white/50 disabled:cursor-not-allowed disabled:opacity-45"
+                  className="h-11 px-5 text-sm"
                 >
                   Previous
-                </button>
+                </OriginButton>
               )}
-              <button
+              <OriginButton
                 type="button"
                 onClick={submitOpeningStep}
                 disabled={!canContinueOpening || isStreaming || isFinalizing}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+                className="h-11 px-5 text-sm"
               >
                 {openingStep === 'agent' ? 'Finish' : 'Continue'}
-              </button>
+              </OriginButton>
             </div>
           </div>
         )}
@@ -616,13 +617,13 @@ const V2SetupChat: React.FC = () => {
                 className="w-full"
               />
             </div>
-            <button
+            <OriginButton
               onClick={() => void sendMessage(answerDraft)}
               disabled={!answerDraft.trim() || isStreaming || isFinalizing}
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+              className="h-11 px-5 text-sm"
             >
               Continue
-            </button>
+            </OriginButton>
           </div>
         )}
       </div>
