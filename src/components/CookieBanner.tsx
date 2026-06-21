@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Cookie, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { loadMarketingAnalytics } from '../lib/marketingAnalytics';
+import { loadMarketingAnalytics, revokeMarketingAnalytics } from '../lib/marketingAnalytics';
 
 const CONSENT_KEY = 'cookie_consent';
 
@@ -19,7 +19,9 @@ export default function CookieBanner() {
     }
     if (stored === 'accepted') {
       loadMarketingAnalytics();
+      return;
     }
+    revokeMarketingAnalytics();
   }, []);
 
   function accept() {
@@ -30,6 +32,7 @@ export default function CookieBanner() {
 
   function reject() {
     localStorage.setItem(CONSENT_KEY, 'rejected');
+    revokeMarketingAnalytics();
     setVisible(false);
   }
 

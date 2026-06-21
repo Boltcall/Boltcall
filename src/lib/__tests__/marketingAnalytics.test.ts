@@ -15,6 +15,9 @@ afterEach(() => {
   vi.unstubAllEnvs();
   document.head.innerHTML = '';
   document.body.innerHTML = '';
+  document.cookie = '_ga=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+  document.cookie = '_ga_LY9H4ZQW81=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+  document.cookie = '_clck=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
   window.history.replaceState({}, '', '/');
   delete window._analyticsLoaded;
   delete window._clarityLoaded;
@@ -68,5 +71,28 @@ describe('marketing analytics loader', () => {
     window.history.replaceState({}, '', '/pricing');
     loadMarketingAnalytics();
     expect(scriptSources()).toContain('https://www.clarity.ms/tag/clarity-id');
+  });
+
+  it('revokes consent by removing Boltcall-managed analytics cookies and injected scripts', async () => {
+    window.history.replaceState({}, '', '/pricing');
+    const { loadMarketingAnalytics, revokeMarketingAnalytics } = await loadModule('clarity-id');
+
+    loadMarketingAnalytics();
+    document.cookie = '_ga=test; path=/';
+    document.cookie = '_ga_LY9H4ZQW81=test; path=/';
+    document.cookie = '_clck=test; path=/';
+
+    revokeMarketingAnalytics();
+
+    expect(document.cookie).not.toContain('_ga=');
+    expect(document.cookie).not.toContain('_ga_LY9H4ZQW81=');
+    expect(document.cookie).not.toContain('_clck=');
+    expect(scriptSources()).not.toContain('https://www.googletagmanager.com/gtm.js?id=GTM-5LWRPT5N');
+    expect(scriptSources()).not.toContain('https://www.googletagmanager.com/gtag/js?id=G-LY9H4ZQW81');
+    expect(scriptSources()).not.toContain('https://www.clarity.ms/tag/clarity-id');
+    expect(window._analyticsLoaded).toBe(false);
+    expect(window._clarityLoaded).toBe(false);
+    expect(window.gtag).toBeUndefined();
+    expect(window.clarity).toBeUndefined();
   });
 });
