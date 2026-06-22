@@ -163,7 +163,7 @@ describe('Auth flow — Signup', () => {
     expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
   });
 
-  it('calls signup and shows OTP on valid submission', async () => {
+  it('calls signup and uses the component default redirect on valid submission', async () => {
     mockSignup.mockResolvedValue({ id: 'u1' });
     const { user } = renderAuth('signup');
 
@@ -185,7 +185,7 @@ describe('Auth flow — Signup', () => {
 
     await waitFor(() => {
       expect(mockSavePendingAuthRedirect).toHaveBeenCalledWith('/dashboard');
-      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true });
     });
   });
 
@@ -216,7 +216,7 @@ describe('Auth flow — Signup', () => {
 
     await waitFor(() => {
       expect(mockSavePendingAuthRedirect).toHaveBeenCalledWith('/setup');
-      expect(mockNavigate).toHaveBeenCalledWith('/setup');
+      expect(mockNavigate).toHaveBeenCalledWith('/setup', { replace: true });
     });
   });
 
