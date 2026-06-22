@@ -80,8 +80,6 @@ const sliceWindow = (points: SeriesPoint[], count?: number) =>
 export default function ProgressMetricCard({
   title,
   total,
-  delta,
-  deltaLabel = 'today',
   percent,
   trend,
   unit,
@@ -94,7 +92,6 @@ export default function ProgressMetricCard({
   series,
   defaultIndex,
   size = 'md',
-  showStats = true,
   valueFormatter,
   dateFormatter,
   loading = false,
