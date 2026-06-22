@@ -459,18 +459,67 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
   const speedToLeadName = `${businessName} Follow-Up Agent`;
   const stlResult = await callRetellCreateFull('speed_to_lead', speedToLeadName, inboundResult.kb_folder_id || null);
   if (!stlResult.ok) {
-    console.error('[finalize] speed_to_lead agent creation failed (non-fatal):', stlResult.error);
+    await revertStatusOnFailure();
+    emitEvent('saas_v2_setup_abandoned', {
+      workspace_id: workspaceId,
+      last_step: 'deploying',
+      turns_completed: (state?.conversation as unknown[] | undefined)?.length || 0,
+      reason: 'error',
+    }).catch(() => {});
+    return {
+      statusCode: 502,
+      headers,
+      body: JSON.stringify({
+        error: 'Speed-to-lead agent creation failed',
+        details: stlResult.error,
+        recovery: 'Retry or switch to V1 setup at /setup',
+      }),
+    };
   }
 
   // ── Launch (flip agents.is_active=true + workspace.setup_completed) ────
   try {
-    await fetch(`${base}/.netlify/functions/setup-launch`, {
+    const launchRes = await fetch(`${base}/.netlify/functions/setup-launch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ workspaceId, isEnabled: true }),
     });
+    if (!launchRes.ok) {
+      const details = await launchRes.text().catch(() => '');
+      await revertStatusOnFailure();
+      emitEvent('saas_v2_setup_abandoned', {
+        workspace_id: workspaceId,
+        last_step: 'deploying',
+        turns_completed: (state?.conversation as unknown[] | undefined)?.length || 0,
+        reason: 'error',
+      }).catch(() => {});
+      return {
+        statusCode: 502,
+        headers,
+        body: JSON.stringify({
+          error: 'Setup activation failed',
+          details: details || `setup-launch ${launchRes.status}`,
+          recovery: 'Retry or switch to V1 setup at /setup',
+        }),
+      };
+    }
   } catch (e) {
-    console.error('[finalize] setup-launch failed (non-blocking):', e);
+    await revertStatusOnFailure();
+    emitEvent('saas_v2_setup_abandoned', {
+      workspace_id: workspaceId,
+      last_step: 'deploying',
+      turns_completed: (state?.conversation as unknown[] | undefined)?.length || 0,
+      reason: 'error',
+    }).catch(() => {});
+    return {
+      statusCode: 502,
+      headers,
+      body: JSON.stringify({
+        error: 'Setup activation failed',
+        details: e instanceof Error ? e.message : 'Unknown setup-launch error',
+        recovery: 'Retry or switch to V1 setup at /setup',
+      }),
+    };
   }
 
   // ── Mark workspace as v2-completed ──────────────────────────────────────

@@ -83,6 +83,22 @@ export const signup = async (credentials: SignupCredentials): Promise<User> => {
       throw new Error('Signup failed - no user returned');
     }
 
+    if (!data.session) {
+      const { data: loginData, error: loginError } =
+        await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        });
+
+      if (loginError) {
+        throw new Error(loginError.message);
+      }
+
+      if (!loginData.user) {
+        throw new Error('Signup failed - no session established');
+      }
+    }
+
     const transformedUser = await transformSupabaseUser(data.user);
     return transformedUser;
   } catch (error) {

@@ -80,22 +80,31 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
 
   localStorage.setItem('boltcall_setup_complete', userId);
 
-  supabase.auth
-    .getSession()
-    .then(({ data: { session } }) =>
-      fetch(`${FUNCTIONS_BASE}/setup-launch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify({
-          workspaceId: workspace.id,
-          isEnabled: true,
-        }),
-      }),
-    )
-    .catch((error) => console.error('Setup launch failed:', error));
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const launchRes = await fetch(`${FUNCTIONS_BASE}/setup-launch`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(session?.access_token
+        ? { Authorization: `Bearer ${session.access_token}` }
+        : {}),
+    },
+    body: JSON.stringify({
+      workspaceId: workspace.id,
+      isEnabled: true,
+    }),
+  });
+
+  if (!launchRes.ok) {
+    const details = await launchRes.text().catch(() => '');
+    throw new Error(
+      `Setup finalization failed (${launchRes.status}): ${
+        details || 'unknown error'
+      }`,
+    );
+  }
 
   return {
     workspace,

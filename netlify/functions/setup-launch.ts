@@ -84,13 +84,15 @@ const handler: Handler = async (event) => {
       return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized for this workspace' }) };
     }
 
+    const now = new Date().toISOString();
+
     // Mark workspace setup as complete.
     const { error: wsError } = await supabase
       .from('workspaces')
       .update({
         setup_completed: true,
-        setup_completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        setup_completed_at: now,
+        updated_at: now,
       })
       .eq('id', workspaceId);
 
@@ -103,11 +105,38 @@ const handler: Handler = async (event) => {
       };
     }
 
+    const { error: featuresError } = await supabase
+      .from('business_features')
+      .upsert(
+        {
+          user_id: authUser.id,
+          workspace_id: workspaceId,
+          voice_agent_enabled: true,
+          speed_to_lead_enabled: true,
+          updated_at: now,
+        },
+        {
+          onConflict: 'user_id',
+        },
+      );
+
+    if (featuresError) {
+      console.error('Business features activation error:', featuresError);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          error: 'Failed to activate dashboard features',
+          details: featuresError.message,
+        }),
+      };
+    }
+
     // Touch business_profiles for the authenticated user. Non-fatal if it fails —
     // workspace.setup_completed is the canonical signal the dashboard reads.
     const { error: bpError } = await supabase
       .from('business_profiles')
-      .update({ updated_at: new Date().toISOString() })
+      .update({ updated_at: now })
       .eq('user_id', authUser.id);
 
     if (bpError) {
