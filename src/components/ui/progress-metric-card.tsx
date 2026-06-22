@@ -11,7 +11,7 @@ import {
   type MetricSeries,
   type SeriesPoint,
 } from './metric-chart';
-import { PeriodSelect, ViewToggle, type PeriodOption } from './metric-controls';
+import { PeriodSelect, type PeriodOption } from './metric-controls';
 
 export type { SeriesPoint, MetricSeries, MetricAccent, ChartView, PeriodOption };
 
@@ -52,28 +52,25 @@ const NEUTRAL_PCT = 0.5;
 
 const SIZES: Record<
   CardSize,
-  { minH: string; pad: string; footer: string; title: string; headline: string }
+  { minH: string; pad: string; title: string; headline: string }
 > = {
   sm: {
-    minH: 'min-h-[220px]',
-    pad: 'px-5 pt-4',
-    footer: 'px-5 py-3',
+    minH: 'min-h-[180px]',
+    pad: 'px-4 pt-4 pb-4',
     title: 'text-[14px]',
-    headline: 'text-[40px]',
+    headline: 'text-[34px]',
   },
   md: {
-    minH: 'min-h-[320px]',
-    pad: 'px-6 pt-6',
-    footer: 'px-6 py-4',
-    title: 'text-[16px]',
-    headline: 'text-[56px]',
+    minH: 'min-h-[240px]',
+    pad: 'px-5 pt-5 pb-5',
+    title: 'text-[15px]',
+    headline: 'text-[46px]',
   },
   lg: {
-    minH: 'min-h-[400px]',
-    pad: 'px-8 pt-7',
-    footer: 'px-8 py-5',
-    title: 'text-[18px]',
-    headline: 'text-[72px]',
+    minH: 'min-h-[300px]',
+    pad: 'px-6 pt-6 pb-6',
+    title: 'text-[17px]',
+    headline: 'text-[58px]',
   },
 };
 
@@ -109,7 +106,6 @@ export default function ProgressMetricCard({
 
   const periods = periodOptions ?? DEFAULT_PERIODS;
   const [selectedLabel, setSelectedLabel] = useState(period);
-  const [view, setView] = useState<ChartView>(defaultView);
 
   const baseSeries: MetricSeries[] = useMemo(
     () => (series?.length ? series : [{ name: title, data: data ?? [], accent }]),
@@ -120,7 +116,11 @@ export default function ProgressMetricCard({
     periods.find((option) => option.label === selectedLabel) ?? periods[periods.length - 1];
 
   const visibleSeries = useMemo(
-    () => baseSeries.map((entry) => ({ ...entry, data: sliceWindow(entry.data, selectedOption?.points) })),
+    () =>
+      baseSeries.map((entry) => ({
+        ...entry,
+        data: sliceWindow(entry.data, selectedOption?.points),
+      })),
     [baseSeries, selectedOption],
   );
 
@@ -159,10 +159,8 @@ export default function ProgressMetricCard({
   const fullFormatter =
     valueFormatter ?? ((value: number) => value.toLocaleString() + (unit ? ` ${unit}` : ''));
   const formatDate = dateFormatter ?? ((value: string) => value);
-  const signedValue = (value: number) => `${value >= 0 ? '+' : '-'}${compactFormatter(Math.abs(value))}`;
 
   const displayTotal = total ?? compactFormatter(stats.sum);
-  const displayDelta = delta ?? signedValue(stats.step);
   const displayPercent = percent ?? `${Math.abs(stats.pct).toFixed(1)}%`;
 
   const chartSeries: ChartSeries[] = visibleSeries.map((entry, index) => ({
@@ -187,15 +185,12 @@ export default function ProgressMetricCard({
     return (
       <div className={shell} aria-busy="true">
         <div className={`flex flex-1 flex-col ${sz.pad}`}>
-          <div className="flex items-center justify-between">
-            <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+          <div className="flex items-center justify-between gap-3">
+            <div className="h-5 w-28 animate-pulse rounded bg-muted" />
+            <div className="h-5 w-16 animate-pulse rounded bg-muted" />
           </div>
-          <div className="mt-6 h-14 w-48 animate-pulse rounded-lg bg-muted" />
-          <div className="mt-auto h-24 w-full animate-pulse rounded-lg bg-muted/50" />
-        </div>
-        <div className={`border-t border-foreground/[0.06] ${sz.footer}`}>
-          <div className="h-4 w-40 animate-pulse rounded bg-muted" />
+          <div className="mt-5 h-12 w-32 animate-pulse rounded-lg bg-muted" />
+          <div className="mt-auto h-20 w-full animate-pulse rounded-lg bg-muted/50" />
         </div>
       </div>
     );
@@ -206,7 +201,7 @@ export default function ProgressMetricCard({
       <div className={shell}>
         <div className={`flex flex-1 flex-col ${sz.pad}`}>
           <h3 className={`${sz.title} font-semibold tracking-tight text-foreground`}>{title}</h3>
-          <div className="flex flex-1 flex-col items-center justify-center gap-1 py-10 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-1 py-6 text-center">
             <p className="text-sm font-medium text-foreground">No data yet</p>
             <p className="text-xs text-muted-foreground">
               Metrics will appear once data is available.
@@ -243,7 +238,7 @@ export default function ProgressMetricCard({
 
         <MetricChart
           series={chartSeries}
-          view={view}
+          view={defaultView}
           defaultIndex={fallbackIndex}
           valueFormatter={fullFormatter}
           dateFormatter={formatDate}
@@ -252,13 +247,10 @@ export default function ProgressMetricCard({
 
       <div className={`pointer-events-none relative z-10 flex flex-1 flex-col ${sz.pad}`}>
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h3 className={`${sz.title} font-semibold tracking-tight text-foreground`}>{title}</h3>
-            <ViewToggle value={view} onChange={setView} />
-          </div>
-          <div className="flex items-center gap-3.5 text-[14px]">
+          <h3 className={`${sz.title} font-semibold tracking-tight text-foreground`}>{title}</h3>
+          <div className="flex items-center gap-3 text-[13px]">
             <span className="flex items-center gap-1 font-medium" style={{ color: color.text }}>
-              <TrendIcon size={16} strokeWidth={2.5} />
+              <TrendIcon size={15} strokeWidth={2.5} />
               {displayPercent}
             </span>
             <PeriodSelect
@@ -271,11 +263,11 @@ export default function ProgressMetricCard({
         </div>
 
         {isMulti && (
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
             {chartSeries.map((entry) => (
               <span
                 key={entry.name}
-                className="flex items-center gap-1.5 text-[12px] text-muted-foreground"
+                className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
               >
                 <span className="h-2 w-2 rounded-full" style={{ background: entry.color }} />
                 {entry.name}
@@ -284,38 +276,9 @@ export default function ProgressMetricCard({
           </div>
         )}
 
-        <div className={`mt-5 ${sz.headline} font-medium leading-none tracking-tight text-foreground`}>
+        <div className={`mt-auto ${sz.headline} font-medium leading-none tracking-tight text-foreground`}>
           {displayTotal}
         </div>
-      </div>
-
-      <div
-        className={`relative z-10 flex items-center justify-between gap-4 border-t border-foreground/[0.06] bg-card ${sz.footer} text-[14px]`}
-      >
-        <div>
-          <span className="font-medium" style={{ color: color.text }}>
-            {displayDelta}
-          </span>{' '}
-          <span className="text-muted-foreground">{deltaLabel}</span>
-        </div>
-        {showStats && (
-          <div className="flex items-center gap-2.5 text-[12px] text-muted-foreground">
-            <span>
-              <span className="font-medium text-foreground/80">{compactFormatter(stats.peak)}</span> peak
-            </span>
-            <span className="opacity-40">/</span>
-            <span>
-              <span className="font-medium text-foreground/80">{compactFormatter(stats.low)}</span> low
-            </span>
-            <span className="opacity-40">/</span>
-            <span>
-              <span className="font-medium text-foreground/80">
-                {compactFormatter(Math.round(stats.avg))}
-              </span>{' '}
-              avg
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
