@@ -390,7 +390,7 @@ const V2SetupChat: React.FC = () => {
         `}
       </style>
       <div className="mx-auto w-full max-w-xl px-1 pt-3">
-        {readyToDeploy && <div className="text-center text-xs font-medium text-emerald-600">Ready to deploy</div>}
+        {readyToDeploy && <div className="text-center text-xs font-medium text-emerald-300">Ready to deploy</div>}
       </div>
 
       {error && (
@@ -416,7 +416,7 @@ const V2SetupChat: React.FC = () => {
               className="flex w-full justify-start"
               style={{ animation: 'v2SetupPromptFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
             >
-              <p className="max-w-2xl whitespace-pre-wrap text-left text-2xl font-semibold leading-tight tracking-[-0.03em] text-zinc-950 sm:text-3xl">
+              <p className="max-w-2xl whitespace-pre-wrap text-left text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
                 {openingPromptText}
               </p>
             </div>
@@ -501,8 +501,8 @@ const V2SetupChat: React.FC = () => {
                       className={cn(
                         'cursor-pointer rounded-2xl border px-4 py-4 text-left transition',
                         voiceDraft === voice.id
-                          ? 'border-zinc-950 bg-white/55 shadow-[0_16px_50px_rgba(15,23,42,0.10)]'
-                          : 'border-white/45 bg-white/20 hover:bg-white/35',
+                          ? 'border-white bg-white/20 shadow-[0_16px_50px_rgba(255,255,255,0.10)]'
+                          : 'border-white/25 bg-white/10 hover:bg-white/15',
                       )}
                     >
                       <input
@@ -514,8 +514,8 @@ const V2SetupChat: React.FC = () => {
                         className="sr-only"
                         aria-label={`${voice.name} voice`}
                       />
-                      <span className="block text-sm font-semibold text-zinc-950">{voice.name}</span>
-                      <span className="mt-1 block text-xs text-zinc-600">{voice.description}</span>
+                      <span className="block text-sm font-semibold text-white">{voice.name}</span>
+                      <span className="mt-1 block text-xs text-white/65">{voice.description}</span>
                     </label>
                   ))}
                 </fieldset>
@@ -525,7 +525,7 @@ const V2SetupChat: React.FC = () => {
                 >
                   <label
                     htmlFor="v2-kb-files"
-                    className="block border-b-2 border-zinc-900 pb-3 text-left text-base font-medium text-zinc-900"
+                    className="block border-b-2 border-white pb-3 text-left text-base font-medium text-white"
                   >
                     More KB files - optional
                   </label>
@@ -534,13 +534,13 @@ const V2SetupChat: React.FC = () => {
                     aria-label="More KB files - optional"
                     type="file"
                     multiple
-                    className="mt-3 block w-full text-sm text-zinc-700 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-950 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
+                    className="mt-3 block w-full text-sm text-white/70 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-zinc-950"
                     onChange={(e) =>
                       setKbFileNames(Array.from(e.currentTarget.files ?? []).map((file) => file.name))
                     }
                   />
                   {kbFileNames.length > 0 && (
-                    <p className="mt-2 text-left text-xs text-zinc-500">{kbFileNames.join(', ')}</p>
+                    <p className="mt-2 text-left text-xs text-white/55">{kbFileNames.join(', ')}</p>
                   )}
                 </div>
               </div>
@@ -626,8 +626,8 @@ const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
         className={cn(
           'max-w-2xl whitespace-pre-wrap text-left leading-tight',
           isUser
-            ? 'text-base font-medium text-zinc-500'
-            : 'text-2xl font-semibold tracking-[-0.03em] text-zinc-950 sm:text-3xl',
+            ? 'text-base font-medium text-white/60'
+            : 'text-2xl font-semibold tracking-[-0.03em] text-white sm:text-3xl',
         )}
         style={{ animation: 'v2SetupPromptFadeIn 600ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
       >
