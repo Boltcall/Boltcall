@@ -7,6 +7,7 @@ import { FUNCTIONS_BASE } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
+import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 
 export interface Lead {
   id: string;
@@ -457,18 +458,6 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const uniqueSources = useMemo(() => [...new Set(leads.map(l => l.source))], [leads]);
   const isLeadTableLoading = isLoadingLeads || isLoadingBackendLeads;
 
-  // --- Trend Badge ---
-  const TrendBadge = ({ value }: { value: number }) => {
-    const isPositive = value >= 0;
-    return (
-      <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
-        isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-      }`}>
-        {Math.abs(value)}{isPositive ? '\u2191' : '\u2193'}
-      </span>
-    );
-  };
-
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -482,11 +471,24 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
     <div className="space-y-6 px-1 md:px-0">
 
       {/* Section 1: KPI Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
-          { label: 'Total Leads', value: kpis.totalLeads, trend: kpis.totalLeadsTrend, subtitle: 'Last 7 Days' },
-          { label: 'Contacted', value: kpis.contacted, trend: kpis.contactedTrend, subtitle: 'Last 7 Days' },
-          { label: 'Conversion Rate', value: `${kpis.conversionRate}%`, trend: kpis.conversionTrend, subtitle: 'Last 7 Days' },
+          {
+            label: 'Total Leads',
+            value: kpis.totalLeads,
+            trend: kpis.totalLeadsTrend,
+            subtitle: 'Last 7 Days',
+            accentColor: '#2563eb',
+            caption: 'Inbound leads captured in the current pipeline',
+          },
+          {
+            label: 'Conversion Rate',
+            value: `${kpis.conversionRate}%`,
+            trend: kpis.conversionTrend,
+            subtitle: 'Last 7 Days',
+            accentColor: '#059669',
+            caption: 'Share of leads moved into contacted status',
+          },
         ].map((card, i) => (
           <motion.div
             key={card.label}
@@ -494,14 +496,17 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             initial="hidden"
             animate="visible"
             variants={cardVariants}
-            className="bg-white rounded-lg border border-gray-200 p-5"
           >
-            <p className="text-sm text-gray-500 mb-1">{card.label}</p>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl font-bold text-gray-900">{card.value}</span>
-              <TrendBadge value={card.trend} />
-            </div>
-            <p className="text-xs text-gray-400 mt-2">{card.subtitle}</p>
+            <OverviewMetricCard
+              label={card.label}
+              value={card.value}
+              period={card.subtitle}
+              badge={`${card.trend >= 0 ? '+' : '-'}${Math.abs(card.trend)}`}
+              badgeTone={card.trend >= 0 ? 'positive' : 'negative'}
+              accentColor={card.accentColor}
+              caption={card.caption}
+              chartData={[]}
+            />
           </motion.div>
         ))}
       </div>

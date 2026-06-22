@@ -100,7 +100,7 @@ describe('CallHistoryPage', () => {
 
     expect(screen.getByText('Total Calls')).toBeInTheDocument();
     expect(screen.getByText('Successful')).toBeInTheDocument();
-    expect(screen.getByText('Avg Duration')).toBeInTheDocument();
-    expect(screen.getByText('Call Quality')).toBeInTheDocument();
+    expect(screen.queryByText('Avg Duration')).not.toBeInTheDocument();
+    expect(screen.queryByText('Call Quality')).not.toBeInTheDocument();
   });
 });
