@@ -59,28 +59,10 @@ async function generateProfessionalPrompt(promptConfig: any): Promise<{ prompt: 
 }
 
 // Match voice to user's country — always ElevenLabs
-function getDefaultVoiceForCountry(country?: string, gender: 'female' | 'male' = 'female'): string {
-  const c = (country || '').toLowerCase();
-
-  if (gender === 'male') {
-    if (['gb', 'uk', 'ie'].includes(c)) return '11labs-Anthony';          // British male
-    if (['au', 'nz'].includes(c)) return '11labs-Billy';                  // Australian-friendly
-    if (['us', 'ca'].includes(c)) return '11labs-Adrian';                 // American male
-    if (['il'].includes(c)) return '11labs-Adrian';
-    if (['za'].includes(c)) return '11labs-Anthony';                      // British-adjacent
-    return '11labs-Adrian'; // Default male
-  }
-
-  // Female voices by region
-  if (['gb', 'uk', 'ie'].includes(c)) return '11labs-Willa';             // British female
-  if (['au', 'nz'].includes(c)) return '11labs-Lily';                    // Australian-friendly
-  if (['us', 'ca'].includes(c)) return '11labs-Marissa';                 // American female
-  if (['il'].includes(c)) return '11labs-Marissa';
-  if (['in', 'pk', 'bd'].includes(c)) return '11labs-Merritt';           // Clear English
-  if (['za'].includes(c)) return '11labs-Willa';                         // British-adjacent
-  if (['de', 'at', 'ch', 'fr', 'be', 'nl', 'se', 'no', 'dk', 'fi'].includes(c)) return '11labs-Dorothy'; // Neutral British
-  if (['es', 'mx', 'ar', 'co', 'cl', 'pe'].includes(c)) return '11labs-Lily'; // Warm tone
-  return '11labs-Willa'; // Default female — British
+export function getDefaultVoiceForCountry(country?: string, gender: 'female' | 'male' = 'female'): string {
+  void country;
+  // ponytail: keep setup on a tiny known-good voice set until onboarding reads the live voice catalog
+  return gender === 'male' ? '11labs-Nico' : '11labs-Grace';
 }
 
 // Default agent config — copied from agent_9a4ecdf921de328c9ba0009ff3 (Israel-Outbound)

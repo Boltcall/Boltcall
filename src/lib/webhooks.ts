@@ -154,7 +154,7 @@ export const createAgentAndKnowledgeBase = async (data: {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Agent creation failed' }));
-    throw new Error(err.error || err.details || `Agent creation failed (${response.status})`);
+    throw new Error(err.details || err.error || `Agent creation failed (${response.status})`);
   }
 
   const result = await response.json();
