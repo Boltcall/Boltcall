@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { updateMetaDescription } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import V2SetupChat from '../../components/v2/V2SetupChat';
-import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
+import GlowHorizonFM from '../../components/ui/glow-horizon';
 
 const V2SetupPage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -36,7 +36,7 @@ const V2SetupPage: React.FC = () => {
   }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
-    return <div className="min-h-screen bg-white" />;
+    return <div className="min-h-screen bg-[#050507]" />;
   }
 
   if (!isAuthenticated) {
@@ -44,7 +44,7 @@ const V2SetupPage: React.FC = () => {
   }
 
   return (
-    <div className="relative isolate h-screen h-dvh overflow-hidden bg-white">
+    <div className="dark relative isolate h-screen h-dvh overflow-hidden bg-[#050507] text-white">
       <style>
         {`
           @keyframes boltcallSetupWelcome {
@@ -86,11 +86,19 @@ const V2SetupPage: React.FC = () => {
           }
         `}
       </style>
-      <SetupGradientBackground />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.16) 0%, rgba(73,34,229,0.22) 26%, rgba(8,8,14,0.96) 62%, #050507 100%)',
+        }}
+      />
+      <GlowHorizonFM className="top-20 md:top-28" variant="top" />
       <main className="mx-auto flex h-full min-h-0 max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         {!showPrompting ? (
           <h1
-            className="text-center text-3xl font-black uppercase tracking-[0.1em] text-zinc-950 sm:text-5xl lg:text-6xl"
+            className="relative z-10 text-center text-3xl font-black uppercase tracking-[0.1em] text-white sm:text-5xl lg:text-6xl"
             style={{ animation: 'boltcallSetupWelcome 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
           >
             Welcome to Boltcall
@@ -98,7 +106,7 @@ const V2SetupPage: React.FC = () => {
         ) : (
           <section
             aria-label="Boltcall setup assistant"
-            className="w-full max-w-3xl"
+            className="relative z-10 w-full max-w-3xl"
             style={{ animation: 'boltcallSetupPromptIn 800ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
           >
             <V2SetupChat />
