@@ -20,6 +20,7 @@ import {
   Download,
 } from 'lucide-react';
 import Card from '../ui/Card';
+import OverviewMetricCard from '../dashboard/OverviewMetricCard';
 import type { RoiMetrics, RoiTrendPoint } from '../../lib/analyticsApi';
 import { exportToCsv } from '../../lib/exportUtils';
 
@@ -71,43 +72,55 @@ const RoiDashboard: React.FC<RoiDashboardProps> = ({
       label: 'Total Leads',
       value: metrics.totalLeads.toLocaleString(),
       icon: Users,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
+      accentColor: '#2563eb',
+      badge: 'Volume',
+      badgeTone: 'neutral' as const,
+      caption: 'Leads included in this ROI window',
     },
     {
       label: 'Cost per Lead',
       value: `$${metrics.costPerLead.toFixed(2)}`,
       icon: DollarSign,
-      color: 'text-amber-600',
-      bg: 'bg-amber-50',
+      accentColor: '#d97706',
+      badge: 'Efficiency',
+      badgeTone: 'neutral' as const,
+      caption: 'Average acquisition cost per lead',
     },
     {
       label: 'Est. Revenue',
       value: `$${metrics.estimatedRevenue.toLocaleString()}`,
       icon: TrendingUp,
-      color: 'text-green-600',
-      bg: 'bg-green-50',
+      accentColor: '#059669',
+      badge: 'Revenue',
+      badgeTone: 'positive' as const,
+      caption: 'Projected revenue captured with Boltcall',
     },
     {
       label: 'ROI',
       value: `${metrics.roiPercentage}%`,
       icon: Percent,
-      color: metrics.roiPercentage >= 0 ? 'text-green-600' : 'text-red-600',
-      bg: metrics.roiPercentage >= 0 ? 'bg-green-50' : 'bg-red-50',
+      accentColor: metrics.roiPercentage >= 0 ? '#059669' : '#dc2626',
+      badge: metrics.roiPercentage >= 0 ? 'Positive' : 'Negative',
+      badgeTone: metrics.roiPercentage >= 0 ? 'positive' as const : 'negative' as const,
+      caption: 'Return after subscription cost',
     },
     {
       label: 'Time Saved',
       value: `${metrics.timeSavedHours}h`,
       icon: Clock,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
+      accentColor: '#7c3aed',
+      badge: 'Ops',
+      badgeTone: 'neutral' as const,
+      caption: 'Staff hours saved each month',
     },
     {
       label: 'Money Saved',
       value: `$${metrics.moneySaved.toLocaleString()}`,
       icon: DollarSign,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
+      accentColor: '#10b981',
+      badge: 'Savings',
+      badgeTone: 'positive' as const,
+      caption: 'Labor cost avoided each month',
     },
   ];
 
@@ -199,11 +212,19 @@ const RoiDashboard: React.FC<RoiDashboardProps> = ({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`${card.bg} rounded-xl p-4 text-center`}
             >
-              <card.icon className={`w-5 h-5 ${card.color} mx-auto mb-2`} />
-              <p className="text-xl font-bold text-text-main">{card.value}</p>
-              <p className="text-[11px] text-text-muted mt-1">{card.label}</p>
+              <OverviewMetricCard
+                compact
+                label={card.label}
+                period="ROI dashboard"
+                value={card.value}
+                badge={card.badge}
+                badgeTone={card.badgeTone}
+                icon={card.icon}
+                accentColor={card.accentColor}
+                chartData={[]}
+                caption={card.caption}
+              />
             </motion.div>
           ))}
         </div>

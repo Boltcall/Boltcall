@@ -21,6 +21,7 @@ import {
 import { getRetellCallHistory, type RetellCall } from '../../lib/retell';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 
 const CallHistoryPage: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -200,28 +201,6 @@ const CallHistoryPage: React.FC = () => {
     }
   };
 
-  // Calculate quality stats
-  const qualityStats = (() => {
-    const analyzed = filteredCalls.filter(c => c.call_analysis);
-    const excellent = analyzed.filter(c => getCallQuality(c) === 'excellent').length;
-    const total = analyzed.length;
-    const percentage = total > 0 ? Math.round((excellent / total) * 100) : 0;
-    return { percentage, total, excellent };
-  })();
-
-  // Get quality score color
-  const getQualityScoreColor = (pct: number) => {
-    if (pct >= 70) return 'text-green-600';
-    if (pct >= 50) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getQualityScoreBg = (pct: number) => {
-    if (pct >= 70) return 'bg-green-100';
-    if (pct >= 50) return 'bg-yellow-100';
-    return 'bg-red-100';
-  };
-
   // Standard call_analysis keys (everything else is custom)
   const STANDARD_ANALYSIS_KEYS = ['call_summary', 'user_sentiment', 'call_successful'];
 
@@ -229,66 +208,30 @@ const CallHistoryPage: React.FC = () => {
     <div className="space-y-6">
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Phone className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Calls</p>
-              <p className="text-2xl font-bold text-gray-900">{filteredCalls.length}</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <OverviewMetricCard
+          label="Total Calls"
+          value={filteredCalls.length}
+          period="Call overview"
+          badge="Live"
+          badgeTone="neutral"
+          icon={Phone}
+          accentColor="#2563eb"
+          chartData={[]}
+          caption="All calls in the current filtered view"
+        />
 
-        <div className="bg-white rounded-lg shadow-sm border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Successful</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {filteredCalls.filter(call => call.call_status === 'ended').length}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <Clock className="w-5 h-5 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Avg Duration</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {formatDuration(
-                  filteredCalls.reduce((acc, call) => acc + (call.duration_ms || 0), 0) / 
-                  filteredCalls.filter(call => call.duration_ms).length
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border p-4">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${getQualityScoreBg(qualityStats.percentage)}`}>
-              <Sparkles className={`w-5 h-5 ${getQualityScoreColor(qualityStats.percentage)}`} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Call Quality</p>
-              <p className={`text-2xl font-bold ${getQualityScoreColor(qualityStats.percentage)}`}>
-                {qualityStats.total > 0 ? `${qualityStats.percentage}%` : 'N/A'}
-              </p>
-              <p className="text-xs text-gray-400">
-                {qualityStats.excellent}/{qualityStats.total} excellent
-              </p>
-            </div>
-          </div>
-        </div>
+        <OverviewMetricCard
+          label="Successful"
+          value={filteredCalls.filter(call => call.call_status === 'ended').length}
+          period="Call overview"
+          badge="Completed"
+          badgeTone="positive"
+          icon={CheckCircle}
+          chartData={[]}
+          accentColor="#059669"
+          caption="Calls that reached a completed state"
+        />
       </div>
 
       {/* Filters */}

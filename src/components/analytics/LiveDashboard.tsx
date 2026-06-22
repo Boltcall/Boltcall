@@ -13,6 +13,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import Card from '../ui/Card';
+import OverviewMetricCard from '../dashboard/OverviewMetricCard';
 import { supabase } from '../../lib/supabase';
 import type { LiveCounters, ActivityEvent } from '../../lib/analyticsApi';
 import { fetchLiveCounters, fetchActivityFeed } from '../../lib/analyticsApi';
@@ -43,6 +44,12 @@ function timeAgo(timestamp: string): string {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
+}
+
+function buildMiniSeries(value: number, pulse = false) {
+  if (value <= 0 && !pulse) return [];
+  const prior = Math.max(value - Math.max(1, Math.ceil(value * 0.15)), 0);
+  return [prior, value];
 }
 
 const LiveDashboard: React.FC = () => {
@@ -128,12 +135,54 @@ const LiveDashboard: React.FC = () => {
   }, []);
 
   const liveCards = [
-    { label: 'Active Calls', value: counters.activeCalls, icon: Phone, color: 'text-green-600', bg: 'bg-green-50', pulse: counters.activeCalls > 0 },
-    { label: 'Active Chats', value: counters.activeChats, icon: MessageSquare, color: 'text-cyan-600', bg: 'bg-cyan-50', pulse: counters.activeChats > 0 },
-    { label: 'Leads Today', value: counters.leadsToday, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50', pulse: false },
-    { label: 'Calls Today', value: counters.callsToday, icon: Phone, color: 'text-purple-600', bg: 'bg-purple-50', pulse: false },
-    { label: 'Bookings Today', value: counters.bookingsToday, icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50', pulse: false },
-    { label: 'SMS Today', value: counters.smsSentToday, icon: Mail, color: 'text-indigo-600', bg: 'bg-indigo-50', pulse: false },
+    {
+      label: 'Active Calls',
+      value: counters.activeCalls,
+      icon: Phone,
+      accentColor: '#059669',
+      pulse: counters.activeCalls > 0,
+      caption: counters.activeCalls > 0 ? 'Calls are happening right now' : 'No active calls in flight',
+    },
+    {
+      label: 'Active Chats',
+      value: counters.activeChats,
+      icon: MessageSquare,
+      accentColor: '#0891b2',
+      pulse: counters.activeChats > 0,
+      caption: counters.activeChats > 0 ? 'Visitors are chatting live' : 'No active chats right now',
+    },
+    {
+      label: 'Leads Today',
+      value: counters.leadsToday,
+      icon: Users,
+      accentColor: '#2563eb',
+      pulse: false,
+      caption: 'New leads captured today',
+    },
+    {
+      label: 'Calls Today',
+      value: counters.callsToday,
+      icon: Phone,
+      accentColor: '#7c3aed',
+      pulse: false,
+      caption: 'Total calls logged today',
+    },
+    {
+      label: 'Bookings Today',
+      value: counters.bookingsToday,
+      icon: Calendar,
+      accentColor: '#d97706',
+      pulse: false,
+      caption: 'Appointments booked today',
+    },
+    {
+      label: 'SMS Today',
+      value: counters.smsSentToday,
+      icon: Mail,
+      accentColor: '#4f46e5',
+      pulse: false,
+      caption: 'Messages sent from Boltcall',
+    },
   ];
 
   if (loading) {
@@ -167,19 +216,18 @@ const LiveDashboard: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04 }}
           >
-            <Card className={`p-4 text-center ${card.bg} border-0`}>
-              <div className="relative inline-flex">
-                <card.icon className={`w-5 h-5 ${card.color} mx-auto mb-1`} />
-                {card.pulse && (
-                  <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-                  </span>
-                )}
-              </div>
-              <p className="text-xl font-bold text-text-main">{card.value}</p>
-              <p className="text-[10px] text-text-muted">{card.label}</p>
-            </Card>
+            <OverviewMetricCard
+              compact
+              label={card.label}
+              period="Live overview"
+              value={card.value}
+              badge={card.pulse ? 'Active' : 'Live'}
+              badgeTone={card.pulse ? 'positive' : 'neutral'}
+              chartData={buildMiniSeries(card.value, card.pulse)}
+              icon={card.icon}
+              accentColor={card.accentColor}
+              caption={card.caption}
+            />
           </motion.div>
         ))}
       </div>
