@@ -1,0 +1,26 @@
+{
+  "name": "boltcall-worktree-guard",
+  "version": "0.1.0",
+  "description": "Protects Boltcall root main from direct edits by forcing worktree isolation in Codex and Claude.",
+  "author": {
+    "name": "Boltcall"
+  },
+  "homepage": "https://boltcall.org",
+  "repository": "https://github.com/Boltcall/Boltcall",
+  "license": "UNLICENSED",
+  "keywords": ["git", "worktree", "guardrails", "boltcall"],
+  "hooks": "./hooks/claude-codex-hooks.json",
+  "interface": {
+    "displayName": "Boltcall Worktree Guard",
+    "shortDescription": "Blocks direct edits on protected main checkouts",
+    "longDescription": "Auto-creates session worktrees on startup, blocks Write/Edit calls on protected root checkouts, and auto-commits changes inside linked worktrees.",
+    "developerName": "Boltcall",
+    "category": "Productivity",
+    "capabilities": ["Lifecycle hooks", "Safety"],
+    "websiteURL": "https://boltcall.org",
+    "defaultPrompt": [
+      "Protect this repo's main branch with worktree-only edits."
+    ],
+    "brandColor": "#111827"
+  }
+}

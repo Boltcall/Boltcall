@@ -1,0 +1,20 @@
+{
+  "name": "boltcall",
+  "interface": {
+    "displayName": "Boltcall"
+  },
+  "plugins": [
+    {
+      "name": "boltcall-worktree-guard",
+      "source": {
+        "source": "local",
+        "path": "./plugins/boltcall-worktree-guard"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

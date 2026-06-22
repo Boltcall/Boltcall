@@ -1,0 +1,9 @@
+{
+  "name": "boltcall-worktree-guard",
+  "version": "0.1.0",
+  "description": "Protects Boltcall root main from direct edits by forcing worktree isolation in Codex and Claude.",
+  "author": {
+    "name": "Boltcall"
+  },
+  "hooks": "./hooks/claude-codex-hooks.json"
+}
