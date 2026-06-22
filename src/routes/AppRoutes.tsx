@@ -321,6 +321,7 @@ const ChallengeCall = React.lazy(() => import('../pages/ChallengeCall'));
 const ChallengeWinner = React.lazy(() => import('../pages/ChallengeWinner'));
 const ButtonDemoPage = React.lazy(() => import('../pages/ButtonDemoPage'));
 const OriginButtonDemoPage = React.lazy(() => import('../pages/OriginButtonDemoPage'));
+const GlowHorizonDemoPage = React.lazy(() => import('../pages/GlowHorizonDemoPage'));
 const DemoFlowPage = React.lazy(() => import('../pages/DemoFlowPage'));
 const DrHazakLandingPage = React.lazy(() => import('../pages/DrHazakLandingPage'));
 const AgentArchitecturePage = React.lazy(() => import('../pages/AgentArchitecturePage'));
@@ -779,6 +780,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/receptionist-demo" element={<ReceptionistDemo />} />
         <Route path="/button-demo" element={<ButtonDemoPage />} />
         <Route path="/origin-button-demo" element={<OriginButtonDemoPage />} />
+        <Route path="/glow-horizon-demo" element={<GlowHorizonDemoPage />} />
         <Route path="/logo-demo" element={<LogoAnimationDemoPage />} />
         <Route path="/rocker-switch-demo" element={<RockerSwitchDemoPage />} />
         <Route path="/demo" element={<DemoFlowPage />} />
