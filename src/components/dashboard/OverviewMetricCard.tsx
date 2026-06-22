@@ -1,6 +1,5 @@
 import React from 'react';
 import ProgressMetricCard from '../ui/progress-metric-card';
-import { cn } from '../../lib/utils';
 
 type Tone = 'positive' | 'negative' | 'neutral';
 
@@ -25,8 +24,6 @@ const OverviewMetricCard: React.FC<OverviewMetricCardProps> = ({
   badge,
   badgeTone = 'neutral',
   chartData = [],
-  icon: Icon,
-  accentColor = '#2563eb',
   className,
   compact = false,
   caption,
@@ -35,13 +32,11 @@ const OverviewMetricCard: React.FC<OverviewMetricCardProps> = ({
     value: point,
     date: `Point ${index + 1}`,
   }));
-
-  const badgeClassName =
-    badgeTone === 'positive'
-      ? 'bg-emerald-50 text-green-600 ring-1 ring-emerald-200/80'
-      : badgeTone === 'negative'
-        ? 'bg-rose-50 text-red-600 ring-1 ring-rose-200/80'
-        : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200/80';
+  const metricAccent =
+    badgeTone === 'positive' ? 'emerald' : badgeTone === 'negative' ? 'rose' : 'blue';
+  const displayPercent = badge?.trim().endsWith('%') ? badge.trim() : undefined;
+  const displayDelta = caption ?? (displayPercent ? undefined : badge);
+  const displayPeriod = period?.trim() || 'Past 30 days';
 
   return (
     <ProgressMetricCard
@@ -49,43 +44,14 @@ const OverviewMetricCard: React.FC<OverviewMetricCardProps> = ({
       total={value}
       data={points}
       size={compact ? 'sm' : 'md'}
-      showControls={false}
-      showStats={false}
-      accent={
-        badgeTone === 'positive'
-          ? 'emerald'
-          : badgeTone === 'negative'
-            ? 'rose'
-            : 'blue'
-      }
-      delta={caption}
-      deltaLabel={caption ? '' : period}
+      showStats={!compact}
+      accent={metricAccent}
+      percent={displayPercent}
+      delta={displayDelta}
+      deltaLabel={displayDelta ? '' : displayPeriod}
+      period={displayPeriod}
+      periodOptions={[{ label: displayPeriod }]}
       className={className}
-      headerBadge={
-        <div className="flex items-center gap-2">
-          {Icon ? (
-            <span
-              className={cn(
-                'inline-flex shrink-0 items-center justify-center rounded-2xl',
-                compact ? 'size-9' : 'size-10',
-              )}
-              style={{ backgroundColor: `${accentColor}12`, color: accentColor }}
-            >
-              <Icon className={compact ? 'size-4' : 'size-5'} />
-            </span>
-          ) : null}
-          {badge ? (
-            <span
-              className={cn(
-                'shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
-                badgeClassName,
-              )}
-            >
-              {badge}
-            </span>
-          ) : null}
-        </div>
-      }
     />
   );
 };
