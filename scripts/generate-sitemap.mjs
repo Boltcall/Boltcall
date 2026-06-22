@@ -26,7 +26,6 @@ const ROUTES = [
   { path: "/integrations/hubspot",                                priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/gohighlevel",                            priority: "0.8", changefreq: "monthly" },
   { path: "/ai-course",                                           priority: "0.8", changefreq: "monthly" },
-  { path: "/glow-horizon-demo",                                   priority: "0.3", changefreq: "yearly"  },
   { path: "/privacy-policy",                                      priority: "0.5", changefreq: "yearly"  },
   { path: "/terms-of-service",                                    priority: "0.5", changefreq: "yearly"  },
 
