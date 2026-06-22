@@ -142,7 +142,7 @@ describe('Setup flow', () => {
     await user.click(screen.getByRole('button', { name: /continue/i }));
 
     await screen.findByLabelText(/Voice/i);
-    await user.selectOptions(screen.getByLabelText(/Voice/i), '11labs-Dorothy');
+    await user.selectOptions(screen.getByLabelText(/Voice/i), '11labs-Grace');
     await user.click(screen.getByRole('button', { name: /continue/i }));
 
     await user.click(await screen.findByRole('button', { name: /continue with google/i }));
@@ -154,6 +154,6 @@ describe('Setup flow', () => {
     expect(raw).toContain('"businessName":"Summit Solar"');
     expect(raw).toContain('"websiteUrl":"https://summitsolar.example"');
     expect(raw).toContain('"industry":"solar"');
-    expect(raw).toContain('"voiceId":"11labs-Dorothy"');
+    expect(raw).toContain('"voiceId":"11labs-Grace"');
   }, TEST_TIMEOUT_MS);
 });

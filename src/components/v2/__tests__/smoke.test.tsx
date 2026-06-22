@@ -417,9 +417,9 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
     const previousButton = screen.getByRole('button', { name: /previous/i });
     const continueButton = screen.getByRole('button', { name: /continue/i });
-    expect(previousButton).toHaveClass('border-border', 'bg-card', 'text-card-foreground');
-    expect(continueButton).toHaveClass('border-border', 'bg-card', 'text-card-foreground');
-    expect(continueButton.querySelector('[aria-hidden="true"]')).toHaveClass('bg-foreground');
+    expect(previousButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
+    expect(continueButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
+    expect(continueButton.querySelector('[aria-hidden="true"]')).toHaveClass('bg-black/10');
     expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
@@ -439,19 +439,19 @@ describe('V2SetupChat — smoke', () => {
     });
 
     expect(screen.getByLabelText(/choose voice/i)).toBeInTheDocument();
-    expect(screen.getByText(/Adrian/i)).toBeInTheDocument();
-    expect(screen.getByText(/Dorothy/i)).toBeInTheDocument();
-    expect(screen.getByText(/Marcus/i)).toBeInTheDocument();
+    expect(screen.getByText(/Grace/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nico/i)).toBeInTheDocument();
+    expect(screen.getByText(/Leland/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous/i })).toHaveClass(
       'border-border',
-      'bg-card',
-      'text-card-foreground',
+      'bg-main',
+      'text-mtext',
     );
     expect(screen.getByRole('button', { name: /finish/i })).toHaveClass(
       'border-border',
-      'bg-card',
-      'text-card-foreground',
+      'bg-main',
+      'text-mtext',
     );
   });
 
@@ -487,7 +487,7 @@ describe('V2SetupChat — smoke', () => {
       vi.advanceTimersByTime(360);
     });
 
-    fireEvent.click(screen.getByRole('radio', { name: /Dorothy/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Leland/i }));
     fireEvent.change(screen.getByLabelText(/more kb files - optional/i), {
       target: {
         files: [
@@ -511,7 +511,7 @@ describe('V2SetupChat — smoke', () => {
       businessName: 'Boltcall Plumbing',
       websiteUrl: 'https://boltcall.org',
       industry: 'other',
-      voiceId: '11labs-Dorothy',
+      voiceId: 'retell-Leland',
       goal: 'book-appointments',
       tone: 'friendly_concise',
       transferNumber: '',

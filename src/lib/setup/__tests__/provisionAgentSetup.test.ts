@@ -60,7 +60,7 @@ describe('provisionAgentSetup', () => {
       businessName: 'Summit Solar',
       websiteUrl: 'https://summitsolar.example',
       industry: 'solar',
-      voiceId: '11labs-Dorothy',
+      voiceId: '11labs-Grace',
       goal: 'book-appointments',
       tone: 'friendly_concise',
       transferNumber: '+15551234567',
@@ -87,7 +87,7 @@ describe('provisionAgentSetup', () => {
         locationId: 'loc-1',
         agentType: 'inbound',
         agentName: 'Summit Solar AI Receptionist',
-        voiceId: '11labs-Dorothy',
+        voiceId: '11labs-Grace',
         transferNumber: '+15551234567',
       }),
     );

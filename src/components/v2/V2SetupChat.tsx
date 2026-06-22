@@ -58,9 +58,9 @@ const OPENING_STEP_PROMPTS: Record<OpeningStep, string> = {
 };
 
 const VOICE_OPTIONS = [
-  { id: '11labs-Adrian', name: 'Adrian', description: 'Warm and confident' },
-  { id: '11labs-Dorothy', name: 'Dorothy', description: 'Polished and calm' },
-  { id: '11labs-Marcus', name: 'Marcus', description: 'Direct and energetic' },
+  { id: '11labs-Grace', name: 'Grace', description: 'Warm and confident' },
+  { id: '11labs-Nico', name: 'Nico', description: 'Direct and energetic' },
+  { id: 'retell-Leland', name: 'Leland', description: 'Polished and calm' },
 ] as const;
 
 type OpeningStep = 'owner' | 'business' | 'agent';

@@ -188,7 +188,7 @@ export const createRetellAgent = async (data: {
     body: JSON.stringify({
       action: 'create_agent',
       agent_name: `${data.businessName} AI Assistant`,
-      voice_id: data.voiceId || '11labs-Adrian',
+      voice_id: data.voiceId || '11labs-Grace',
       language: data.languages.includes('en') ? 'en-US' : data.languages[0] || 'en-US',
       knowledge_base_ids: [data.knowledgeBaseId],
     }),
@@ -251,7 +251,7 @@ export const createRetellAgentAndKnowledgeBase = async (data: CreateKnowledgeBas
       business_name: data.businessName,
       website_url: data.websiteUrl,
       country: data.country,
-      voice_id: data.voiceId || '11labs-Adrian',
+      voice_id: data.voiceId || '11labs-Grace',
       language: (Array.isArray(data.languages) ? data.languages : [data.languages]).includes('en') ? 'en-US' : (Array.isArray(data.languages) ? data.languages[0] : data.languages) || 'en-US',
       knowledge_base_texts: knowledgeBaseTexts,
       prompt_config: promptConfig,

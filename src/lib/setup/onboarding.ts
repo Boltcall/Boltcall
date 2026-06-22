@@ -9,9 +9,9 @@ export const INDUSTRY_OPTIONS = [
 ] as const;
 
 export const VOICE_OPTIONS = [
-  { value: '11labs-Adrian', label: 'Adrian', description: 'Warm and confident' },
-  { value: '11labs-Dorothy', label: 'Dorothy', description: 'Polished and calm' },
-  { value: '11labs-Marcus', label: 'Marcus', description: 'Direct and energetic' },
+  { value: '11labs-Grace', label: 'Grace', description: 'Warm and confident' },
+  { value: '11labs-Nico', label: 'Nico', description: 'Direct and energetic' },
+  { value: 'retell-Leland', label: 'Leland', description: 'Polished and calm' },
 ] as const;
 
 export const GOAL_OPTIONS = [
