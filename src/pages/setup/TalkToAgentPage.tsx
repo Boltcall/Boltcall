@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { authedFetch } from '../../lib/authedFetch';
 import { useAuth } from '../../contexts/AuthContext';
-import { VoicePoweredOrb } from '../../components/ui/voice-powered-orb';
+import SiriOrb from '../../components/ui/siri-orb';
 import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 
 type Phase = 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
@@ -19,7 +19,6 @@ const TalkToAgentPage: React.FC = () => {
   const [agentName, setAgentName] = useState('your agent');
   const [errorMessage, setErrorMessage] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
-  const [isLive, setIsLive] = useState(false);
 
   const clientRef = useRef<RetellWebClient | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -107,7 +106,6 @@ const TalkToAgentPage: React.FC = () => {
 
       client.on('call_started', () => {
         setPhase('live');
-        setIsLive(true);
         startedAtRef.current = Date.now();
         timerRef.current = setInterval(() => {
           setCallSeconds(Math.floor((Date.now() - startedAtRef.current) / 1000));
@@ -116,14 +114,12 @@ const TalkToAgentPage: React.FC = () => {
 
       client.on('call_ended', () => {
         cleanup();
-        setIsLive(false);
         setPhase('ended');
       });
 
       client.on('error', (err: unknown) => {
         console.error('Retell call error:', err);
         cleanup();
-        setIsLive(false);
         setPhase('error');
         setErrorMessage('Something went wrong during the call.');
       });
@@ -166,6 +162,27 @@ const TalkToAgentPage: React.FC = () => {
     error: errorMessage || 'Something went wrong.',
   };
 
+  const orbAnimationDuration =
+    phase === 'live' ? 7 : phase === 'connecting' ? 11 : phase === 'ended' ? 16 : 13;
+  const orbColors =
+    phase === 'ended'
+      ? {
+          c1: 'oklch(78% 0.04 250)',
+          c2: 'oklch(82% 0.03 220)',
+          c3: 'oklch(52% 0.06 260)',
+        }
+      : phase === 'error'
+        ? {
+            c1: 'oklch(74% 0.19 18)',
+            c2: 'oklch(79% 0.14 10)',
+            c3: 'oklch(58% 0.18 8)',
+          }
+        : {
+            c1: 'oklch(76% 0.16 320)',
+            c2: 'oklch(84% 0.12 215)',
+            c3: 'oklch(62% 0.2 275)',
+          };
+
   return (
     <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center justify-center overflow-hidden bg-white">
       <SetupGradientBackground />
@@ -201,9 +218,11 @@ const TalkToAgentPage: React.FC = () => {
 
         {/* Orb */}
         <div className="w-[300px] h-[300px]">
-          <VoicePoweredOrb
-            enableVoiceControl={isLive}
-            className="rounded-full overflow-hidden"
+          <SiriOrb
+            size="300px"
+            animationDuration={orbAnimationDuration}
+            colors={orbColors}
+            className="drop-shadow-[0_28px_90px_rgba(109,40,217,0.22)]"
           />
         </div>
 

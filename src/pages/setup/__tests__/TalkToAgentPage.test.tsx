@@ -40,8 +40,8 @@ vi.mock('../../../components/setup/SetupGradientBackground', () => ({
   SetupGradientBackground: () => <div data-testid="setup-gradient" />,
 }));
 
-vi.mock('../../../components/ui/voice-powered-orb', () => ({
-  VoicePoweredOrb: () => <div data-testid="voice-orb" />,
+vi.mock('../../../components/ui/siri-orb', () => ({
+  default: () => <div data-testid="voice-orb" />,
 }));
 
 function createAgentQuery() {
