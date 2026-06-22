@@ -424,6 +424,7 @@ const handler: Handler = async (event) => {
   const auth = await requireAuth(event);
   if (!auth.ok) return auth.response;
   const userId = auth.userId;
+  const authHeader = event.headers.authorization || event.headers.Authorization;
 
   const apiKey = process.env.RETELL_API_KEY;
   if (!apiKey) {
@@ -616,7 +617,10 @@ const handler: Handler = async (event) => {
             const kbBaseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
             const kbRes = await fetch(`${kbBaseUrl}/.netlify/functions/kb-search`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+                ...(authHeader ? { Authorization: authHeader } : {}),
+              },
               body: JSON.stringify({
                 action: 'add_batch',
                 userId: body.user_id,

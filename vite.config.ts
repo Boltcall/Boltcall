@@ -169,6 +169,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    // ponytail: skip entry crawling; local Vite/Netlify dev was dying before the app booted.
+    noDiscovery: true,
+  },
   base: '/',
   build: {
     outDir: 'dist',
