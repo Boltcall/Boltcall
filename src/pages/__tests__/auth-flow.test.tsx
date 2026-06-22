@@ -142,7 +142,7 @@ describe('Auth flow — Signup', () => {
     expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
   });
 
-  it('calls signup and shows OTP on valid submission', async () => {
+  it('calls signup and navigates straight to setup on valid submission', async () => {
     mockSignup.mockResolvedValue({ id: 'u1' });
     const { user } = renderAuth('signup');
 
@@ -160,6 +160,10 @@ describe('Auth flow — Signup', () => {
         password: 'securepass',
         company: '',
       });
+    });
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/setup', { replace: true });
     });
   });
 

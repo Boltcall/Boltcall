@@ -175,7 +175,7 @@ export default function AuthSwitch({
       if (onAuthenticated) {
         await onAuthenticated({ mode: "signup", email: data.email });
       } else {
-        navigate(redirectTo);
+        navigate(redirectTo, { replace: true });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account.");
