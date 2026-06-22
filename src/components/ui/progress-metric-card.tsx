@@ -55,25 +55,25 @@ const SIZES: Record<
   { minH: string; pad: string; footer: string; title: string; headline: string }
 > = {
   sm: {
-    minH: 'min-h-[260px]',
-    pad: 'px-6 pt-5',
-    footer: 'px-6 py-3',
-    title: 'text-[15px]',
-    headline: 'text-[46px]',
+    minH: 'min-h-[220px]',
+    pad: 'px-5 pt-4',
+    footer: 'px-5 py-3',
+    title: 'text-[14px]',
+    headline: 'text-[40px]',
   },
   md: {
-    minH: 'min-h-[380px]',
-    pad: 'px-8 pt-7',
-    footer: 'px-8 py-4',
-    title: 'text-[17px]',
-    headline: 'text-[72px]',
+    minH: 'min-h-[320px]',
+    pad: 'px-6 pt-6',
+    footer: 'px-6 py-4',
+    title: 'text-[16px]',
+    headline: 'text-[56px]',
   },
   lg: {
-    minH: 'min-h-[460px]',
-    pad: 'px-10 pt-9',
-    footer: 'px-10 py-5',
-    title: 'text-[19px]',
-    headline: 'text-[88px]',
+    minH: 'min-h-[400px]',
+    pad: 'px-8 pt-7',
+    footer: 'px-8 py-5',
+    title: 'text-[18px]',
+    headline: 'text-[72px]',
   },
 };
 

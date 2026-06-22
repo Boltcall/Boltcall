@@ -320,6 +320,7 @@ const Challenge = React.lazy(() => import('../pages/Challenge'));
 const ChallengeCall = React.lazy(() => import('../pages/ChallengeCall'));
 const ChallengeWinner = React.lazy(() => import('../pages/ChallengeWinner'));
 const ButtonDemoPage = React.lazy(() => import('../pages/ButtonDemoPage'));
+const MetricCardsDemoPage = React.lazy(() => import('../pages/MetricCardsDemoPage'));
 const OriginButtonDemoPage = React.lazy(() => import('../pages/OriginButtonDemoPage'));
 const GlowHorizonDemoPage = React.lazy(() => import('../pages/GlowHorizonDemoPage'));
 const DemoFlowPage = React.lazy(() => import('../pages/DemoFlowPage'));
@@ -779,6 +780,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/challenge/winner" element={<ChallengeWinner />} />
         <Route path="/receptionist-demo" element={<ReceptionistDemo />} />
         <Route path="/button-demo" element={<ButtonDemoPage />} />
+        <Route path="/metric-cards-demo" element={<MetricCardsDemoPage />} />
         <Route path="/origin-button-demo" element={<OriginButtonDemoPage />} />
         <Route path="/glow-horizon-demo" element={<GlowHorizonDemoPage />} />
         <Route path="/logo-demo" element={<LogoAnimationDemoPage />} />
