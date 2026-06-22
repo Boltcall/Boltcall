@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import GlowHorizonFM, { type GlowHorizonVariant } from '@/components/ui/glow-horizon';
+import GlowHorizonFM from '@/components/ui/glow-horizon';
 import { AnimatedTitleFM } from '@/components/ui/glow-horizon-utils/animated-title-fm';
 
-const variants: GlowHorizonVariant[] = ['top', 'bottom', 'left', 'right'];
-
 export default function GlowHorizonDemoPage() {
-  const [variant, setVariant] = useState<GlowHorizonVariant>('top');
-
   useEffect(() => {
     document.title = 'Glow Horizon Demo - Boltcall';
   }, []);
@@ -23,28 +19,10 @@ export default function GlowHorizonDemoPage() {
         }}
       />
 
-      <GlowHorizonFM variant={variant} />
+      <GlowHorizonFM className="top-20 md:top-28" variant="top" />
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-12">
-        <AnimatedTitleFM open />
-
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          {variants.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setVariant(item)}
-              aria-pressed={variant === item}
-              className={`rounded-full border px-4 py-2 text-sm font-medium capitalize transition ${
-                variant === item
-                  ? 'border-white bg-white text-black'
-                  : 'border-white/20 bg-white/5 text-white/80 hover:border-white/40 hover:bg-white/10'
-              }`}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
+        <AnimatedTitleFM open title="WELCOME TO BOLTCALL" />
       </div>
     </main>
   );
