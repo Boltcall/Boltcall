@@ -94,9 +94,9 @@ describe('KpiTile', () => {
     expect(container.querySelector('.recharts-responsive-container')).toBeInTheDocument();
   });
 
-  it('should not render sparkline when data has fewer than 2 points', () => {
+  it('should render sparkline when data has a single point because the card backfills a fallback baseline', () => {
     const { container } = render(<KpiTile {...defaultProps} sparkline={[5]} />);
-    expect(container.querySelector('.recharts-responsive-container')).not.toBeInTheDocument();
+    expect(container.querySelector('.recharts-responsive-container')).toBeInTheDocument();
   });
 
   it('should accept custom className', () => {
