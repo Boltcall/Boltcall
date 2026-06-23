@@ -19,11 +19,19 @@ const AuthRedirectRecovery = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const pendingRedirect = isLoading ? null : readPendingAuthRedirect();
+  const hasAuthHash =
+    typeof window !== 'undefined' && window.location.hash.length > 1;
+  const canRecoverHere =
+    RECOVERABLE_PATHS.has(location.pathname) || hasAuthHash;
+  const shouldBlockWhileRecovering =
+    !!pendingRedirect &&
+    isAuthenticated &&
+    canRecoverHere &&
+    !isMatchingRedirect(location.pathname, pendingRedirect);
 
   useEffect(() => {
     if (isLoading) return;
-
-    const pendingRedirect = readPendingAuthRedirect();
     if (!pendingRedirect) return;
 
     if (isMatchingRedirect(location.pathname, pendingRedirect)) {
@@ -31,20 +39,21 @@ const AuthRedirectRecovery = () => {
       return;
     }
 
-    if (!isAuthenticated) return;
-
-    const hasAuthHash =
-      typeof window !== 'undefined' && window.location.hash.length > 1;
-    const canRecoverHere =
-      RECOVERABLE_PATHS.has(location.pathname) || hasAuthHash;
-
-    if (!canRecoverHere) return;
+    if (!shouldBlockWhileRecovering) return;
 
     clearPendingAuthRedirect();
     navigate(pendingRedirect, { replace: true });
-  }, [isAuthenticated, isLoading, location.pathname, navigate]);
+  }, [isLoading, location.pathname, navigate, pendingRedirect, shouldBlockWhileRecovering]);
 
-  return null;
+  if (!shouldBlockWhileRecovering) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050507] px-4 text-center text-sm font-medium text-white/75">
+      Continuing setup...
+    </div>
+  );
 };
 
 export default AuthRedirectRecovery;

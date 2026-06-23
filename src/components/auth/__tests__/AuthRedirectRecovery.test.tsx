@@ -60,6 +60,21 @@ describe('AuthRedirectRecovery', () => {
     });
   });
 
+  it('shows a blocking recovery state while replaying a saved auth redirect', () => {
+    mocks.isAuthenticated = true;
+    mocks.readPendingAuthRedirect.mockReturnValue('/setup');
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="*" element={<AuthRedirectRecovery />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(document.body).toHaveTextContent(/continuing setup/i);
+  });
+
   it('clears the pending redirect once the user is already on the intended setup flow', async () => {
     mocks.isAuthenticated = true;
     mocks.readPendingAuthRedirect.mockReturnValue('/setup');
