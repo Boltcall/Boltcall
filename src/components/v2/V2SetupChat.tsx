@@ -69,7 +69,11 @@ function genId() {
   return 'm_' + Math.random().toString(36).slice(2, 10);
 }
 
-const V2SetupChat: React.FC = () => {
+const ASSISTANT_SPEAKING_MS = 1400;
+
+const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> = ({
+  onSpeakingChange,
+}) => {
   const navigate = useNavigate();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -97,6 +101,7 @@ const V2SetupChat: React.FC = () => {
 
   const openingTransitionTimer = useRef<number | null>(null);
   const finishTimer = useRef<number | null>(null);
+  const speakingTimer = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,6 +157,8 @@ const V2SetupChat: React.FC = () => {
       cancelled = true;
       if (openingTransitionTimer.current) window.clearTimeout(openingTransitionTimer.current);
       if (finishTimer.current) window.clearTimeout(finishTimer.current);
+      if (speakingTimer.current) window.clearTimeout(speakingTimer.current);
+      onSpeakingChange?.(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -164,6 +171,36 @@ const V2SetupChat: React.FC = () => {
       setWebsiteDraft((prev) => prev || extracted.websiteUrl || '');
     }
   }, [extracted.businessName, extracted.websiteUrl]);
+
+  useEffect(() => {
+    if (!onSpeakingChange) return;
+
+    if (isStreaming || isFinalizing) {
+      if (speakingTimer.current) window.clearTimeout(speakingTimer.current);
+      onSpeakingChange(true);
+      return;
+    }
+
+    const latestAssistantId = [...messages].reverse().find((m) => m.role === 'assistant')?.id;
+    if (!latestAssistantId || !hasHydrated) {
+      onSpeakingChange(false);
+      return;
+    }
+
+    onSpeakingChange(true);
+    if (speakingTimer.current) window.clearTimeout(speakingTimer.current);
+    speakingTimer.current = window.setTimeout(() => {
+      onSpeakingChange(false);
+      speakingTimer.current = null;
+    }, ASSISTANT_SPEAKING_MS);
+
+    return () => {
+      if (speakingTimer.current) {
+        window.clearTimeout(speakingTimer.current);
+        speakingTimer.current = null;
+      }
+    };
+  }, [hasHydrated, isFinalizing, isStreaming, messages, onSpeakingChange]);
 
   function seedOpening() {
     const id = genId();
