@@ -52,25 +52,28 @@ const NEUTRAL_PCT = 0.5;
 
 const SIZES: Record<
   CardSize,
-  { minH: string; pad: string; title: string; headline: string }
+  { minH: string; maxW: string; pad: string; title: string; headline: string }
 > = {
   sm: {
-    minH: 'min-h-[180px]',
+    minH: 'min-h-[168px]',
+    maxW: 'max-w-[280px]',
     pad: 'px-4 pt-4 pb-4',
-    title: 'text-[14px]',
-    headline: 'text-[34px]',
+    title: 'text-[13px]',
+    headline: 'text-[30px]',
   },
   md: {
-    minH: 'min-h-[240px]',
-    pad: 'px-5 pt-5 pb-5',
-    title: 'text-[15px]',
-    headline: 'text-[46px]',
+    minH: 'min-h-[212px]',
+    maxW: 'max-w-[340px]',
+    pad: 'px-4 pt-4 pb-4',
+    title: 'text-[14px]',
+    headline: 'text-[38px]',
   },
   lg: {
-    minH: 'min-h-[300px]',
-    pad: 'px-6 pt-6 pb-6',
-    title: 'text-[17px]',
-    headline: 'text-[58px]',
+    minH: 'min-h-[260px]',
+    maxW: 'max-w-[400px]',
+    pad: 'px-5 pt-5 pb-5',
+    title: 'text-[16px]',
+    headline: 'text-[48px]',
   },
 };
 
@@ -99,7 +102,7 @@ export default function ProgressMetricCard({
 }: ProgressMetricCardProps) {
   const gridId = `grid-${useId().replace(/:/g, '')}`;
   const sz = SIZES[size];
-  const shell = `relative flex ${sz.minH} w-full flex-col overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`;
+  const shell = `relative mx-auto flex ${sz.minH} w-full ${sz.maxW} flex-col overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`;
 
   const periods = periodOptions ?? DEFAULT_PERIODS;
   const [selectedLabel, setSelectedLabel] = useState(period);
@@ -124,6 +127,8 @@ export default function ProgressMetricCard({
   const primary = visibleSeries[0];
   const isMulti = visibleSeries.length > 1;
   const hasData = (primary?.data.length ?? 0) >= 2;
+  const hasDisplayTotal =
+    total !== undefined && total !== null && String(total).trim().length > 0;
 
   const stats = useMemo(() => {
     const values = primary?.data.map((point) => point.value) ?? [];
@@ -158,7 +163,8 @@ export default function ProgressMetricCard({
   const formatDate = dateFormatter ?? ((value: string) => value);
 
   const displayTotal = total ?? compactFormatter(stats.sum);
-  const displayPercent = percent ?? `${Math.abs(stats.pct).toFixed(1)}%`;
+  const displayPercent =
+    percent ?? (hasData ? `${Math.abs(stats.pct).toFixed(1)}%` : undefined);
 
   const chartSeries: ChartSeries[] = visibleSeries.map((entry, index) => ({
     name: entry.name,
@@ -193,7 +199,7 @@ export default function ProgressMetricCard({
     );
   }
 
-  if (!hasData) {
+  if (!hasData && !hasDisplayTotal) {
     return (
       <div className={shell}>
         <div className={`flex flex-1 flex-col ${sz.pad}`}>
@@ -246,10 +252,12 @@ export default function ProgressMetricCard({
         <div className="flex items-center justify-between gap-4">
           <h3 className={`${sz.title} font-semibold tracking-tight text-foreground`}>{title}</h3>
           <div className="flex items-center gap-3 text-[13px]">
-            <span className="flex items-center gap-1 font-medium" style={{ color: color.text }}>
-              <TrendIcon size={15} strokeWidth={2.5} />
-              {displayPercent}
-            </span>
+            {displayPercent ? (
+              <span className="flex items-center gap-1 font-medium" style={{ color: color.text }}>
+                <TrendIcon size={15} strokeWidth={2.5} />
+                {displayPercent}
+              </span>
+            ) : null}
             <PeriodSelect
               value={selectedLabel}
               options={periods}
@@ -257,6 +265,10 @@ export default function ProgressMetricCard({
               accentText={color.text}
             />
           </div>
+        </div>
+
+        <div className={`mt-2 ${sz.headline} font-medium leading-none tracking-tight text-foreground`}>
+          {displayTotal}
         </div>
 
         {isMulti && (
@@ -272,10 +284,6 @@ export default function ProgressMetricCard({
             ))}
           </div>
         )}
-
-        <div className={`mt-auto ${sz.headline} font-medium leading-none tracking-tight text-foreground`}>
-          {displayTotal}
-        </div>
       </div>
     </div>
   );

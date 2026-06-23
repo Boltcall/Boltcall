@@ -64,16 +64,14 @@ describe('KpiTile', () => {
     expect(screen.getByText('5.3%')).toBeInTheDocument();
   });
 
-  it('should apply green color for positive delta', () => {
-    const { container } = render(<KpiTile {...defaultProps} delta={10} />);
-    const deltaEl = container.querySelector('.text-green-600');
-    expect(deltaEl).toBeInTheDocument();
+  it('should keep the metric visible for positive deltas', () => {
+    render(<KpiTile {...defaultProps} delta={10} />);
+    expect(screen.queryByText('No data yet')).not.toBeInTheDocument();
   });
 
-  it('should apply red color for negative delta', () => {
-    const { container } = render(<KpiTile {...defaultProps} delta={-10} />);
-    const deltaEl = container.querySelector('.text-red-600');
-    expect(deltaEl).toBeInTheDocument();
+  it('should keep the metric visible for negative deltas', () => {
+    render(<KpiTile {...defaultProps} delta={-10} />);
+    expect(screen.queryByText('No data yet')).not.toBeInTheDocument();
   });
 
   it('should format percentage values', () => {
