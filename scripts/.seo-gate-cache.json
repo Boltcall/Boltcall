@@ -81,6 +81,9 @@
     "/funnel-optimizer",
     "/giveaway",
     "/help-center",
+    "/industries/contractor-answering-service",
+    "/industries/hvac-answering-service",
+    "/industries/plumbing-answering-service",
     "/integrations",
     "/integrations/gohighlevel",
     "/integrations/hubspot",
@@ -118,5 +121,5 @@
     "/tools/solar-sales-closer",
     "/tools/vet-clinic-revenue-calculator"
   ],
-  "updatedAt": "2026-06-12T10:59:19.973Z"
+  "updatedAt": "2026-06-23T15:31:40.362Z"
 }

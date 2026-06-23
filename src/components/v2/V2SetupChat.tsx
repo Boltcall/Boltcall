@@ -13,7 +13,6 @@ import { FUNCTIONS_BASE } from '../../lib/api';
 import { savePendingAgentSetup } from '../../lib/setup/onboarding';
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
-import { OriginButton } from '../ui/origin-button';
 
 interface ChatMessage {
   id: string;
@@ -70,6 +69,11 @@ function genId() {
 }
 
 const ASSISTANT_SPEAKING_MS = 1400;
+const SETUP_BUTTON_BASE =
+  'inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:cursor-not-allowed disabled:opacity-45';
+const SETUP_BUTTON_PRIMARY = `${SETUP_BUTTON_BASE} bg-white text-zinc-950 hover:bg-zinc-100`;
+const SETUP_BUTTON_SECONDARY =
+  `${SETUP_BUTTON_BASE} border border-white/14 bg-white/6 text-white hover:bg-white/10`;
 
 const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> = ({
   onSpeakingChange,
@@ -588,23 +592,23 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
               style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both' }}
             >
               {openingStep !== 'owner' && (
-                <OriginButton
+                <button
                   type="button"
                   onClick={previousOpeningStep}
                   disabled={isOpeningTransitioning || isStreaming || isFinalizing}
-                  className="h-11 px-5 text-sm"
+                  className={SETUP_BUTTON_SECONDARY}
                 >
                   Previous
-                </OriginButton>
+                </button>
               )}
-              <OriginButton
+              <button
                 type="button"
                 onClick={submitOpeningStep}
                 disabled={!canContinueOpening || isStreaming || isFinalizing}
-                className="h-11 px-5 text-sm"
+                className={SETUP_BUTTON_PRIMARY}
               >
                 {openingStep === 'agent' ? 'Finish' : 'Continue'}
-              </OriginButton>
+              </button>
             </div>
           </div>
         )}
@@ -622,13 +626,14 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                 className="w-full"
               />
             </div>
-            <OriginButton
+            <button
+              type="button"
               onClick={() => void sendMessage(answerDraft)}
               disabled={!answerDraft.trim() || isStreaming || isFinalizing}
-              className="h-11 px-5 text-sm"
+              className={SETUP_BUTTON_PRIMARY}
             >
               Continue
-            </OriginButton>
+            </button>
           </div>
         )}
       </div>
@@ -644,7 +649,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
           <button
             onClick={deployAgent}
             disabled={isFinalizing}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-45"
           >
             {isFinalizing ? 'Deploying...' : 'Deploy agent'}
           </button>

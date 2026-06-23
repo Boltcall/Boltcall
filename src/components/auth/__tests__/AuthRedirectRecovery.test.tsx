@@ -65,7 +65,7 @@ describe('AuthRedirectRecovery', () => {
     mocks.readPendingAuthRedirect.mockReturnValue('/setup');
 
     render(
-      <MemoryRouter initialEntries={['/setup/classic']}>
+      <MemoryRouter initialEntries={['/setup']}>
         <Routes>
           <Route path="*" element={<AuthRedirectRecovery />} />
         </Routes>
