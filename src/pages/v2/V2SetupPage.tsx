@@ -3,12 +3,11 @@ import { Navigate } from 'react-router-dom';
 import { updateMetaDescription } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
 import V2SetupChat from '../../components/v2/V2SetupChat';
-import { SiriWave } from '../../components/ui/siri-wave';
+import GlowHorizonFM from '../../components/ui/glow-horizon';
 
 const V2SetupPage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const [showPrompting, setShowPrompting] = useState(false);
-  const [assistantSpeaking, setAssistantSpeaking] = useState(false);
 
   useEffect(() => {
     document.title = 'Set Up Boltcall';
@@ -31,7 +30,6 @@ const V2SetupPage: React.FC = () => {
     if (isLoading || !isAuthenticated) return;
 
     setShowPrompting(false);
-    setAssistantSpeaking(false);
     const welcomeTimer = window.setTimeout(() => setShowPrompting(true), 2300);
 
     return () => window.clearTimeout(welcomeTimer);
@@ -96,14 +94,7 @@ const V2SetupPage: React.FC = () => {
             'radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.16) 0%, rgba(73,34,229,0.22) 26%, rgba(8,8,14,0.96) 62%, #050507 100%)',
         }}
       />
-      <SiriWave
-        aria-hidden
-        variant="wave"
-        speaking={assistantSpeaking}
-        size={520}
-        renderScale={0.7}
-        className="pointer-events-none absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-transparent opacity-75 mix-blend-screen [mask-image:radial-gradient(circle,black_0%,black_48%,transparent_76%)] sm:top-8"
-      />
+      <GlowHorizonFM className="top-20 md:top-28" variant="top" />
       <main className="mx-auto flex h-full min-h-0 max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         {!showPrompting ? (
           <h1
@@ -118,7 +109,7 @@ const V2SetupPage: React.FC = () => {
             className="relative z-10 w-full max-w-3xl"
             style={{ animation: 'boltcallSetupPromptIn 800ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
           >
-            <V2SetupChat onSpeakingChange={setAssistantSpeaking} />
+            <V2SetupChat />
           </section>
         )}
       </main>

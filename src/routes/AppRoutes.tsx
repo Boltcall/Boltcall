@@ -24,7 +24,6 @@ import Home from '../pages/Home';
 import GlassDemo from '../pages/GlassDemo';
 import BlogSchemaWrapper from '../components/BlogSchemaWrapper';
 import SetupLoading from '../pages/SetupLoading';
-import SetupClassic from '../pages/SetupClassic';
 const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'));
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
@@ -616,8 +615,7 @@ const NavigationWrapper: React.FC = () => {
         </Route>
 
 
-        {/* Classic setup is the old V1 form wizard, without the agent-led chat. */}
-        <Route path="/setup/classic" element={<SetupClassic />} />
+        <Route path="/setup/classic" element={<Navigate to="/setup" replace />} />
         <Route path="/setup/agent" element={<Navigate to="/setup" replace />} />
         <Route
           path="/setup/loading"

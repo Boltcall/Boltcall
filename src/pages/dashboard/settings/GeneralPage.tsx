@@ -254,9 +254,8 @@ const GeneralPage: React.FC = () => {
     'Denmark'
   ];
 
-  // Source of truth must mirror StepBusinessProfile so the wizard's saved
-  // value (e.g. 'plumber') round-trips correctly here. value = the lowercase
-  // slug stored in business_profiles.main_category, label = display string.
+  // Keep these slugs aligned with business_profiles.main_category so saved
+  // values (for example 'plumber') round-trip cleanly in settings.
   const industries: { value: string; label: string }[] = [
     { value: 'dentist', label: 'Dentist' },
     { value: 'medspa', label: 'Med Spa' },
