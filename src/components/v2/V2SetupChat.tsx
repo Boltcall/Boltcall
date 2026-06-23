@@ -400,9 +400,21 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
         : !!voiceDraft;
 
   return (
-    <div className="flex h-full min-h-0 w-full max-w-3xl flex-col justify-center bg-transparent">
+    <div className="v2-setup-chat flex h-full min-h-0 w-full max-w-3xl flex-col justify-center bg-transparent">
       <style>
         {`
+          .v2-setup-chat input:-webkit-autofill,
+          .v2-setup-chat input:-webkit-autofill:hover,
+          .v2-setup-chat input:-webkit-autofill:focus,
+          .v2-setup-chat input:-webkit-autofill:active {
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff;
+            -webkit-box-shadow: 0 0 0 1000px rgba(5, 5, 7, 0.96) inset !important;
+            box-shadow: 0 0 0 1000px rgba(5, 5, 7, 0.96) inset !important;
+            border-bottom-color: rgba(255, 255, 255, 0.92) !important;
+            transition: background-color 9999s ease-in-out 0s;
+          }
+
           @keyframes v2SetupFieldFadeIn {
             0% {
               opacity: 0;
