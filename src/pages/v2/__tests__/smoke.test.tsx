@@ -189,7 +189,13 @@ vi.mock('../../../components/v2/AskBoltcallAIV2', () => ({
 // 'disabled' → renders a sentinel that simulates the "Enable V2" gate screen.
 vi.mock('../../../components/v2/V2SetupChat', () => ({
   __esModule: true,
-  default: () => <div data-testid="v2-setup-chat-stub">V2 setup chat</div>,
+  default: ({ onSpeakingChange }: { onSpeakingChange?: (speaking: boolean) => void }) => {
+    React.useEffect(() => {
+      onSpeakingChange?.(true);
+      return () => onSpeakingChange?.(false);
+    }, [onSpeakingChange]);
+    return <div data-testid="v2-setup-chat-stub">V2 setup chat</div>;
+  },
 }));
 
 vi.mock('../../../components/v2/V2OptInGate', () => ({
@@ -340,12 +346,14 @@ describe('V2 pages — smoke tests', () => {
       expect(container.firstElementChild).toHaveClass('h-dvh', 'overflow-hidden');
       expect(document.body.style.overflow).toBe('hidden');
       expect(document.documentElement.style.overflow).toBe('hidden');
+      expect(container.querySelector('canvas')).toHaveAttribute('data-speaking', 'false');
       expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
 
       act(() => {
         vi.advanceTimersByTime(2300);
       });
 
+      expect(container.querySelector('canvas')).toHaveAttribute('data-speaking', 'true');
       expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
 
       vi.useRealTimers();
