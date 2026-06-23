@@ -234,7 +234,7 @@ const SetupLoading: React.FC = () => {
           position: fixed;
           inset: 0;
           z-index: 9999;
-          background: #ffffff;
+          background: #050507;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -270,11 +270,11 @@ const SetupLoading: React.FC = () => {
           font-size: 2rem;
           font-weight: 700;
           letter-spacing: 0.08em;
-          color: #111827;
+          color: #ffffff;
           text-transform: uppercase;
         }
         .setup-done-word {
-          color: #2563eb;
+          color: #c4b5fd;
         }
         .setup-char {
           display: inline-block;
@@ -296,13 +296,13 @@ const SetupLoading: React.FC = () => {
           font-family: system-ui, -apple-system, sans-serif;
           font-size: 0.95rem;
           font-weight: 500;
-          color: #9ca3af;
+          color: rgba(255, 255, 255, 0.6);
         }
         .setup-progress-pct {
           font-family: system-ui, -apple-system, sans-serif;
           font-size: 0.95rem;
           font-weight: 600;
-          color: #111827;
+          color: #ffffff;
           font-variant-numeric: tabular-nums;
         }
         .setup-segmented-bar {
@@ -314,12 +314,12 @@ const SetupLoading: React.FC = () => {
           flex: 1;
           height: 16px;
           border-radius: 5px;
-          background: #e5e7eb;
-          opacity: 0.5;
+          background: rgba(255, 255, 255, 0.12);
+          opacity: 1;
           transition: background 0.4s ease, opacity 0.4s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
         }
         .setup-seg.filled {
-          background: #2563eb;
+          background: #ffffff;
           opacity: 1;
         }
         .setup-seg.filled.pop {
@@ -328,7 +328,7 @@ const SetupLoading: React.FC = () => {
         .setup-loading-step {
           font-family: system-ui, -apple-system, sans-serif;
           font-size: 0.9rem;
-          color: #9ca3af;
+          color: rgba(255, 255, 255, 0.72);
           text-align: center;
           min-height: 1.2em;
           transition: opacity 0.3s ease;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -158,5 +159,21 @@ describe('TalkToAgentPage', () => {
       }),
     );
     expect(screen.getByText(/Your agent is almost ready/i)).toBeInTheDocument();
+  });
+
+  it('sends skip to the main dashboard so the setup completion popup can open', async () => {
+    const user = userEvent.setup();
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <TalkToAgentPage />
+        </MemoryRouter>,
+      );
+    });
+
+    await user.click(screen.getByRole('button', { name: /skip & enter dashboard/i }));
+
+    expect(mocks.navigate).toHaveBeenCalledWith('/dashboard?setupCompleted=true', { replace: true });
   });
 });

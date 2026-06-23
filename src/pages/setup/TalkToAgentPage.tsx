@@ -148,7 +148,7 @@ const TalkToAgentPage: React.FC = () => {
 
   const handleEnterDashboard = () => {
     cleanup();
-    navigate('/dashboard/getting-started?setupCompleted=true', { replace: true });
+    navigate('/dashboard?setupCompleted=true', { replace: true });
   };
 
   const formatTime = (s: number) =>
@@ -184,7 +184,7 @@ const TalkToAgentPage: React.FC = () => {
           };
 
   return (
-    <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center justify-center overflow-hidden bg-white">
+    <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center justify-center overflow-hidden bg-[#050507]">
       <SetupGradientBackground />
 
       <div className="relative z-10 flex flex-col items-center px-6 text-center">
@@ -199,17 +199,17 @@ const TalkToAgentPage: React.FC = () => {
             className="mb-8"
           >
             {phase === 'live' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 Meet {agentName}.
               </h1>
             )}
             {phase !== 'live' && phase !== 'ended' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 Your agent is almost ready
               </h1>
             )}
             {phase === 'ended' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 That's your agent.
               </h1>
             )}
@@ -233,7 +233,7 @@ const TalkToAgentPage: React.FC = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-6 flex items-center gap-2 text-sm font-medium text-slate-600"
+              className="mt-6 flex items-center gap-2 text-sm font-medium text-white/75"
             >
               <span className="inline-block w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
               <span>Live</span>
@@ -251,7 +251,7 @@ const TalkToAgentPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-6 text-sm text-slate-500 max-w-md"
+              className="mt-6 max-w-md text-sm text-white/68"
             >
               {captionByPhase[phase]}
             </motion.p>
@@ -311,7 +311,7 @@ const TalkToAgentPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-8 text-sm text-slate-400 hover:text-slate-600 underline-offset-4 hover:underline transition-colors"
+            className="mt-8 text-sm text-white/50 underline-offset-4 transition-colors hover:text-white/80 hover:underline"
           >
             Skip &amp; enter dashboard →
           </motion.button>
