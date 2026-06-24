@@ -99,8 +99,33 @@ vi.mock('../../../lib/supabase', () => ({
   },
 }));
 
+const mockAudioPlay = vi.fn(() => Promise.resolve());
+const mockAudioPause = vi.fn();
+const mockAudioLoad = vi.fn();
+const mockAudioInstances: Array<{ src: string; currentTime: number }> = [];
+
+class MockAudio {
+  src = '';
+  currentTime = 0;
+  onended: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+
+  constructor() {
+    mockAudioInstances.push(this);
+  }
+
+  play = mockAudioPlay;
+  pause = mockAudioPause;
+  load = mockAudioLoad;
+}
+
 // Default fetch fallback (in case any component bypasses authedFetch).
 beforeEach(() => {
+  vi.stubGlobal('Audio', MockAudio);
+  mockAudioInstances.length = 0;
+  mockAudioPlay.mockClear();
+  mockAudioPause.mockClear();
+  mockAudioLoad.mockClear();
   global.fetch = vi.fn().mockResolvedValue({
     ok: true,
     status: 200,
@@ -116,6 +141,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 // ── V2 component imports ──────────────────────────────────────────────────
@@ -441,7 +467,10 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByText(/Grace/i)).toBeInTheDocument();
     expect(screen.getByText(/Nico/i)).toBeInTheDocument();
     expect(screen.getByText(/Leland/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/more kb files - optional/i)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/agent call style/i)).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /friendly speed-to-lead/i })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /confident closer/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous/i })).toHaveClass(
       'border-white/14',
       'bg-white/6',
@@ -451,6 +480,42 @@ describe('V2SetupChat — smoke', () => {
       'bg-white',
       'text-zinc-950',
     );
+  });
+
+  it('plays the selected voice preview when a voice is clicked', async () => {
+    vi.useFakeTimers();
+    await act(async () => {
+      renderInRouter(<V2SetupChat />);
+    });
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    fireEvent.change(screen.getByLabelText(/owner name/i), {
+      target: { value: 'Noam Yakoby' },
+    });
+    fireEvent.change(screen.getByLabelText(/country/i), {
+      target: { value: 'Israel' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await act(async () => {
+      vi.advanceTimersByTime(360);
+    });
+
+    fireEvent.change(screen.getByLabelText(/business name/i), {
+      target: { value: 'Boltcall Plumbing' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await act(async () => {
+      vi.advanceTimersByTime(360);
+    });
+
+    fireEvent.click(screen.getByRole('radio', { name: /nico voice/i }));
+
+    expect(mockAudioInstances[0]?.src).toContain('11labs-pdBC2RxjF7wu7aBAu86E.mp3');
+    expect(mockAudioPlay).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('radio', { name: /nico voice/i })).toHaveAttribute('aria-checked', 'true');
   });
 
   it('keeps users on the business step when the website URL is invalid', async () => {
@@ -520,14 +585,7 @@ describe('V2SetupChat — smoke', () => {
     });
 
     fireEvent.click(screen.getByRole('radio', { name: /Leland/i }));
-    fireEvent.change(screen.getByLabelText(/more kb files - optional/i), {
-      target: {
-        files: [
-          new File(['hello'], 'faq.pdf', { type: 'application/pdf' }),
-          new File(['pricing'], 'pricing.txt', { type: 'text/plain' }),
-        ],
-      },
-    });
+    fireEvent.click(screen.getByRole('radio', { name: /confident closer/i }));
 
     fireEvent.click(screen.getByRole('button', { name: /finish/i }));
     expect(screen.getByLabelText(/choose voice/i).closest('.transition-all')).toHaveClass('opacity-0');
@@ -545,9 +603,8 @@ describe('V2SetupChat — smoke', () => {
       industry: 'other',
       voiceId: 'retell-Leland',
       goal: 'book-appointments',
-      tone: 'friendly_concise',
+      tone: 'confident_direct',
       transferNumber: '',
-      kbFileNames: ['faq.pdf', 'pricing.txt'],
     });
 
     await act(async () => {

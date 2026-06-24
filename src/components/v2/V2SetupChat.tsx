@@ -53,13 +53,46 @@ const SEED_GREETING =
 const OPENING_STEP_PROMPTS: Record<OpeningStep, string> = {
   owner: SEED_GREETING,
   business: 'Great. Now tell me about the business we are setting up.',
-  agent: 'Perfect. Now choose how your AI agent should sound and add any knowledge files you want it to know.',
+  agent: 'Perfect. Now choose how your AI agent should sound and how it should handle new leads.',
 };
 
 const VOICE_OPTIONS = [
-  { id: '11labs-Grace', name: 'Grace', description: 'Warm and confident' },
-  { id: '11labs-Nico', name: 'Nico', description: 'Direct and energetic' },
-  { id: 'retell-Leland', name: 'Leland', description: 'Polished and calm' },
+  {
+    id: '11labs-Grace',
+    name: 'Grace',
+    description: 'Warm and confident',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/grace.mp3',
+  },
+  {
+    id: '11labs-Nico',
+    name: 'Nico',
+    description: 'Direct and energetic',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/11labs-pdBC2RxjF7wu7aBAu86E.mp3',
+  },
+  {
+    id: 'retell-Leland',
+    name: 'Leland',
+    description: 'Polished and calm',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/minimax-Leland.mp3',
+  },
+] as const;
+
+const AGENT_STYLE_OPTIONS = [
+  {
+    id: 'friendly_concise',
+    title: 'Friendly speed-to-lead',
+    description: 'Greet fast, sound helpful, and move the lead toward booking.',
+  },
+  {
+    id: 'confident_direct',
+    title: 'Confident closer',
+    description: 'Ask focused questions and drive toward a clear next step.',
+  },
+  {
+    id: 'formal',
+    title: 'Calm professional',
+    description: 'Keep calls polished, patient, and reassuring.',
+  },
 ] as const;
 
 type OpeningStep = 'owner' | 'business' | 'agent';
@@ -109,7 +142,12 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['id']>(
     VOICE_OPTIONS[0].id,
   );
-  const [kbFileNames, setKbFileNames] = useState<string[]>([]);
+  const [agentStyleDraft, setAgentStyleDraft] =
+    useState<(typeof AGENT_STYLE_OPTIONS)[number]['id']>('friendly_concise');
+  const [playingVoiceId, setPlayingVoiceId] = useState<(typeof VOICE_OPTIONS)[number]['id'] | null>(
+    null,
+  );
+  const [voicePreviewError, setVoicePreviewError] = useState<string | null>(null);
   const [answerDraft, setAnswerDraft] = useState('');
   const [extracted, setExtracted] = useState<ExtractedDraft>({});
   const [stateVersion, setStateVersion] = useState<number>(0);
@@ -122,6 +160,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   const openingTransitionTimer = useRef<number | null>(null);
   const finishTimer = useRef<number | null>(null);
   const speakingTimer = useRef<number | null>(null);
+  const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -178,6 +217,10 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       if (openingTransitionTimer.current) window.clearTimeout(openingTransitionTimer.current);
       if (finishTimer.current) window.clearTimeout(finishTimer.current);
       if (speakingTimer.current) window.clearTimeout(speakingTimer.current);
+      if (voiceAudioRef.current) {
+        voiceAudioRef.current.pause();
+        voiceAudioRef.current.src = '';
+      }
       onSpeakingChange?.(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -349,6 +392,44 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
     }
   }
 
+  function stopVoicePreview() {
+    const audio = voiceAudioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+    setPlayingVoiceId(null);
+  }
+
+  async function selectAndPreviewVoice(voice: (typeof VOICE_OPTIONS)[number]) {
+    setVoiceDraft(voice.id);
+    setVoicePreviewError(null);
+
+    if (playingVoiceId === voice.id) {
+      stopVoicePreview();
+      return;
+    }
+
+    const audio = voiceAudioRef.current ?? new Audio();
+    voiceAudioRef.current = audio;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = voice.previewUrl;
+    audio.onended = () => setPlayingVoiceId(null);
+    audio.onerror = () => {
+      setPlayingVoiceId(null);
+      setVoicePreviewError('Voice preview could not play. You can still choose this voice.');
+    };
+
+    try {
+      setPlayingVoiceId(voice.id);
+      await audio.play();
+    } catch {
+      setPlayingVoiceId(null);
+      setVoicePreviewError('Voice preview could not play. You can still choose this voice.');
+    }
+  }
+
   function submitOpeningStep() {
     if (openingStep === 'owner') {
       if (!ownerNameDraft.trim() || !countryDraft.trim()) return;
@@ -390,9 +471,8 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       industry: 'other',
       voiceId: voice.id,
       goal: 'book-appointments',
-      tone: 'friendly_concise',
+      tone: agentStyleDraft,
       transferNumber: '',
-      kbFileNames,
       createdAt: new Date().toISOString(),
     });
     sessionStorage.removeItem(STORAGE_KEY);
@@ -582,52 +662,61 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                   style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
                 >
                   {VOICE_OPTIONS.map((voice) => (
-                    <label
+                    <button
                       key={voice.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={voiceDraft === voice.id}
+                      aria-label={`${voice.name} voice`}
+                      onClick={() => void selectAndPreviewVoice(voice)}
                       className={cn(
-                        'cursor-pointer rounded-2xl border px-4 py-4 text-left transition',
+                        'rounded-2xl border px-4 py-4 text-left transition',
                         voiceDraft === voice.id
                           ? 'border-white bg-white/20 shadow-[0_16px_50px_rgba(255,255,255,0.10)]'
                           : 'border-white/25 bg-white/10 hover:bg-white/15',
                       )}
                     >
-                      <input
-                        type="radio"
-                        name="v2-agent-voice"
-                        value={voice.id}
-                        checked={voiceDraft === voice.id}
-                        onChange={() => setVoiceDraft(voice.id)}
-                        className="sr-only"
-                        aria-label={`${voice.name} voice`}
-                      />
-                      <span className="block text-sm font-semibold text-white">{voice.name}</span>
+                      <span className="flex items-center justify-between gap-3 text-sm font-semibold text-white">
+                        {voice.name}
+                        <span className="rounded-full border border-white/15 bg-black/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/65">
+                          {playingVoiceId === voice.id ? 'Playing' : 'Play'}
+                        </span>
+                      </span>
                       <span className="mt-1 block text-xs text-white/65">{voice.description}</span>
-                    </label>
+                    </button>
                   ))}
                 </fieldset>
+                {voicePreviewError && (
+                  <p className="text-left text-xs text-amber-200/85">{voicePreviewError}</p>
+                )}
                 <div
                   className="opacity-0"
                   style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
                 >
-                  <label
-                    htmlFor="v2-kb-files"
-                    className="block border-b-2 border-white pb-3 text-left text-base font-medium text-white"
+                  <fieldset
+                    aria-label="Agent call style"
+                    className="grid gap-3 sm:grid-cols-3"
                   >
-                    More KB files - optional
-                  </label>
-                  <input
-                    id="v2-kb-files"
-                    aria-label="More KB files - optional"
-                    type="file"
-                    multiple
-                    className="mt-3 block w-full text-sm text-white/70 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-zinc-950"
-                    onChange={(e) =>
-                      setKbFileNames(Array.from(e.currentTarget.files ?? []).map((file) => file.name))
-                    }
-                  />
-                  {kbFileNames.length > 0 && (
-                    <p className="mt-2 text-left text-xs text-white/55">{kbFileNames.join(', ')}</p>
-                  )}
+                    {AGENT_STYLE_OPTIONS.map((style) => (
+                      <button
+                        key={style.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={agentStyleDraft === style.id}
+                        aria-label={style.title}
+                        onClick={() => setAgentStyleDraft(style.id)}
+                        className={cn(
+                          'rounded-2xl border px-4 py-4 text-left transition',
+                          agentStyleDraft === style.id
+                            ? 'border-white bg-white/20 shadow-[0_16px_50px_rgba(255,255,255,0.10)]'
+                            : 'border-white/25 bg-white/10 hover:bg-white/15',
+                        )}
+                      >
+                        <span className="block text-sm font-semibold text-white">{style.title}</span>
+                        <span className="mt-1 block text-xs text-white/65">{style.description}</span>
+                      </button>
+                    ))}
+                  </fieldset>
                 </div>
               </div>
             )}
