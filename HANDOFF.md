@@ -234,7 +234,7 @@ netlify sites:delete --site-id 0329b208-cea2-4205-8e34-13cf7c1da39b --force
 - All changes committed to `main`.
 - No outstanding worktrees (all merged + cleaned up).
 - `npm install` works clean on `main` — Retell SDK v5.33 + all deps reproduce.
-- `npx tsc --noEmit` passes clean.
+- `npm run typecheck` passes clean.
 - Last successful prod deploy: `https://6a2009970f469b2af0e78e11--boltcall.netlify.app` (Google Ads feature live).
 - An in-flight build for the dedup pre-SELECT fix may still be running (see section 1).
 

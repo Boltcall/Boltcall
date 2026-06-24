@@ -43,6 +43,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitSaasV2Event } from './_shared/emit-agency-event';
 import { callClaude } from './_shared/agency-agents/run-agent';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -259,15 +260,11 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ─── Workspace resolution ────────────────────────────────────────────────
-  const { data: workspace, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, created_at')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-
-  if (wsErr) {
-    console.warn(`[saas-v2-messages] workspace lookup failed err=${wsErr.message}`);
+  let workspace: { id: string; created_at?: string | null } | null;
+  try {
+    workspace = await findWorkspaceForUser(userId, 'id, created_at');
+  } catch (error: any) {
+    console.warn(`[saas-v2-messages] workspace lookup failed err=${error?.message || error}`);
     return serverError('Failed to resolve workspace');
   }
   if (!workspace) {

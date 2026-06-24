@@ -28,6 +28,7 @@ import { chatCompletion, generateEmbedding } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { notifyInfo } from './_shared/notify';
 import { redactSecrets } from './_shared/redact-secrets';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -567,13 +568,11 @@ const handler: Handler = async (event) => {
   const ctx = parsed.context || {};
 
   // ── 3. Resolve workspace_id (owner-only, server-derived) ────────────────
-  const { data: wsRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, name')
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (wsErr) {
-    console.warn(`[saas-v2-help-ask] workspace lookup failed user=${userId} err=${wsErr.message}`);
+  let wsRow: { id: string; name?: string | null } | null;
+  try {
+    wsRow = await findWorkspaceForUser(userId, 'id, name');
+  } catch (error: any) {
+    console.warn(`[saas-v2-help-ask] workspace lookup failed user=${userId} err=${error?.message || error}`);
     return serverError('Failed to resolve workspace');
   }
   if (!wsRow) {

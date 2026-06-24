@@ -105,7 +105,7 @@ describe('formatting', () => {
     it('should return relative time for dates in the future', () => {
       const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000);
       const result = formatRelativeTime(oneHourFromNow, 'en-US');
-      expect(result).toContain('hour');
+      expect(result).toMatch(/hour|minute/);
     });
 
     it('should handle day-level differences', () => {

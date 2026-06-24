@@ -39,6 +39,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion, type Tier } from './_shared/azure-ai';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 import { emitSaasV2Event } from './_shared/emit-agency-event';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 const MAX_QUESTION_CHARS = 1000;
 const MAX_PRIOR_TURNS = 8;
@@ -207,13 +208,12 @@ const handler: Handler = async (event) => {
     : [];
 
   // ── Resolve workspace_id (server-derived; body's workspace_id is ignored) ─
-  const { data: workspace, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, business_name')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const workspace = await findWorkspaceForUser<{ id: string; business_name?: string | null }>(
+    userId,
+    'id, business_name',
+  ).catch(() => null);
 
-  if (wsErr || !workspace?.id) {
+  if (!workspace?.id) {
     return {
       statusCode: 404,
       headers,

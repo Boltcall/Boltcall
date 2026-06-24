@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion, isAzureConfigured } from './_shared/azure-ai';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
@@ -291,14 +292,14 @@ const handler: Handler = async (event) => {
   }
   const userId = userRes.user.id;
 
-  const { data: workspace, error: wsErr } = await supa
-    .from('workspaces')
-    .select(RETURN_COLUMNS)
-    .eq('user_id', userId)
-    .maybeSingle();
+  const workspace = await findWorkspaceForUser<Record<string, any>>(userId, RETURN_COLUMNS).catch(
+    (error: any) => {
+      console.warn('[saas-v2-settings-suggest] workspace fetch failed:', error?.message || error);
+      return null;
+    },
+  );
 
-  if (wsErr || !workspace) {
-    console.warn('[saas-v2-settings-suggest] workspace fetch failed:', wsErr?.message);
+  if (!workspace) {
     return {
       statusCode: 404,
       headers: cors,

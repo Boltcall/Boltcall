@@ -39,6 +39,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { chatCompletion, isAzureConfigured } from './_shared/azure-ai';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -555,15 +556,12 @@ const handler: Handler = async (event) => {
   let workspaceId: string | null = null;
   let workspaceCreatedAt: string | null = null;
   try {
-    const { data: wsRow } = await supa
-      .from('workspaces')
-      .select('id, created_at')
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle();
-    workspaceId = (wsRow as { id?: string } | null)?.id ?? null;
-    workspaceCreatedAt =
-      (wsRow as { created_at?: string } | null)?.created_at ?? null;
+    const wsRow = await findWorkspaceForUser<{ id?: string; created_at?: string | null }>(
+      userId,
+      'id, created_at',
+    );
+    workspaceId = wsRow?.id ?? null;
+    workspaceCreatedAt = wsRow?.created_at ?? null;
   } catch (err) {
     console.warn(
       `[saas-v2-integration-suggest] workspace lookup failed user=${userId} err=${

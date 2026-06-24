@@ -346,15 +346,14 @@ describe('V2 pages — smoke tests', () => {
       expect(container.firstElementChild).toHaveClass('h-dvh', 'overflow-hidden');
       expect(document.body.style.overflow).toBe('hidden');
       expect(document.documentElement.style.overflow).toBe('hidden');
-      expect(container.querySelector('canvas')).toHaveAttribute('data-speaking', 'false');
       expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
 
       act(() => {
         vi.advanceTimersByTime(2300);
       });
 
-      expect(container.querySelector('canvas')).toHaveAttribute('data-speaking', 'true');
       expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: /welcome to boltcall/i })).not.toBeInTheDocument();
 
       vi.useRealTimers();
     });

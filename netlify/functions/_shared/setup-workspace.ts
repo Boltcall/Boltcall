@@ -57,6 +57,13 @@ async function findWorkspace<T>(supa: SupabaseLike, selectClause: string, userId
   return await selectWorkspaceByColumn<T>(supa, selectClause, 'owner_id', userId);
 }
 
+export async function findWorkspaceForUser<T>(
+  userId: string,
+  selectClause: string,
+): Promise<T | null> {
+  return await findWorkspace<T>(getServiceSupabase(), selectClause, userId);
+}
+
 async function insertWorkspaceByColumn<T>(
   supa: SupabaseLike,
   selectClause: string,

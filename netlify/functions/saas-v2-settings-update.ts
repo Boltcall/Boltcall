@@ -2,23 +2,11 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
-/**
- * saas-v2-settings-update — Wave 3 Page 5.
- *
- * POST /.netlify/functions/saas-v2-settings-update
- *   Headers: Authorization: Bearer <supabase-jwt>
- *   Body:    { patch: { column: value, ... } }
- *
- * Returns: { workspace }
- * Emits:   saas_v2_settings_updated with { changed_keys } (best-effort).
- *
- * Auth pattern: JWT → user → workspaces.user_id. Patch keys are validated
- * against an allowlist — id, created_at, user_id, v2_enabled CANNOT be
- * edited here (V2 opt-in flips happen in saas-v2-toggle).
- */
+// POST /.netlify/functions/saas-v2-settings-update
+// Body: { patch: { column: value, ... } }
 
-// Whitelist of editable columns. Everything else is silently rejected.
 const ALLOWED_KEYS = new Set([
   'name',
   'vertical',
@@ -88,61 +76,53 @@ function composeWorkspaceSettings(args: {
 }
 
 function sanitizeValue(key: string, value: unknown): unknown {
-  // Defensive coercion / shape checks for free-form columns.
   if (value === null) return null;
+
   switch (key) {
     case 'notification_routing': {
       if (typeof value !== 'object') return null;
-      const v = value as Record<string, unknown>;
-      const out: Record<string, string> = {};
-      for (const sev of ['critical', 'normal', 'digest']) {
-        const ch = v[sev];
-        if (typeof ch === 'string' && ['sms', 'email', 'push', 'none'].includes(ch)) {
-          out[sev] = ch;
+      const input = value as Record<string, unknown>;
+      const output: Record<string, string> = {};
+      for (const severity of ['critical', 'normal', 'digest']) {
+        const channel = input[severity];
+        if (typeof channel === 'string' && ['sms', 'email', 'push', 'none'].includes(channel)) {
+          output[severity] = channel;
         }
       }
-      return out;
+      return output;
     }
     case 'business_hours_start':
     case 'business_hours_end': {
       if (typeof value !== 'string') return null;
-      // expect HH:MM or HH:MM:SS
-      const m = value.match(/^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/);
-      return m ? value : null;
+      return /^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/.test(value) ? value : null;
     }
     case 'agent_paused_until': {
       if (typeof value !== 'string') return null;
-      const d = new Date(value);
-      return Number.isNaN(d.getTime()) ? null : d.toISOString();
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date.toISOString();
     }
     case 'data_retention_days': {
-      const n = Number(value);
-      if (!Number.isFinite(n)) return null;
-      return Math.max(1, Math.min(3650, Math.round(n)));
+      const days = Number(value);
+      if (!Number.isFinite(days)) return null;
+      return Math.max(1, Math.min(3650, Math.round(days)));
     }
     case 'default_language': {
       if (typeof value !== 'string') return null;
       return value.slice(0, 8);
     }
-    case 'default_timezone': {
-      if (typeof value !== 'string') return null;
-      return value.slice(0, 64);
-    }
+    case 'default_timezone':
     case 'vertical': {
       if (typeof value !== 'string') return null;
       return value.slice(0, 64);
     }
-    case 'name': {
+    case 'name':
+    case 'agent_voice': {
       if (typeof value !== 'string') return null;
       return value.slice(0, 120);
     }
     case 'logo_url': {
       if (typeof value !== 'string') return null;
       return value.slice(0, 2048);
-    }
-    case 'agent_voice': {
-      if (typeof value !== 'string') return null;
-      return value.slice(0, 120);
     }
     case 'agent_transfer_phone': {
       if (typeof value !== 'string') return null;
@@ -166,8 +146,8 @@ async function emitEvent(
       source: 'saas-v2-settings-update',
       created_at: new Date().toISOString(),
     });
-  } catch (err: any) {
-    console.warn('[saas-v2-settings-update] emitEvent failed:', err?.message || err);
+  } catch (error: any) {
+    console.warn('[saas-v2-settings-update] emitEvent failed:', error?.message || error);
   }
 }
 
@@ -181,30 +161,29 @@ const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 204, headers: cors, body: '' };
   }
-  // Write endpoint: fail-closed on disallowed origin (defense in depth on top of JWT).
-  if (
-    getRequestOrigin(event.headers as Record<string, string>) &&
-    !v2cors.allowed
-  ) {
+  if (getRequestOrigin(event.headers as Record<string, string>) && !v2cors.allowed) {
     return { statusCode: 403, headers: cors, body: JSON.stringify({ error: 'Origin not allowed' }) };
   }
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers: cors, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  // ─── Body parse ────────────────────────────────────────────────────────
   let body: any;
   try {
     body = JSON.parse(event.body || '{}');
   } catch {
     return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
+
   const patch = body?.patch;
   if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
-    return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'Missing or malformed patch object' }) };
+    return {
+      statusCode: 400,
+      headers: cors,
+      body: JSON.stringify({ error: 'Missing or malformed patch object' }),
+    };
   }
 
-  // ─── Auth ──────────────────────────────────────────────────────────────
   const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) {
@@ -214,8 +193,8 @@ const handler: Handler = async (event) => {
   let supa: ReturnType<typeof getServiceSupabase>;
   try {
     supa = getServiceSupabase();
-  } catch (err: any) {
-    console.warn('[saas-v2-settings-update] service supabase init failed:', err?.message);
+  } catch (error: any) {
+    console.warn('[saas-v2-settings-update] service supabase init failed:', error?.message);
     return { statusCode: 500, headers: cors, body: JSON.stringify({ error: 'Server misconfigured' }) };
   }
 
@@ -223,24 +202,25 @@ const handler: Handler = async (event) => {
   if (authErr || !userRes?.user) {
     return { statusCode: 401, headers: cors, body: JSON.stringify({ error: 'Invalid or expired token' }) };
   }
-  const userId = userRes.user.id;
 
-  // ─── Allowlist filter ──────────────────────────────────────────────────
+  const userId = userRes.user.id;
   const filtered: Record<string, unknown> = {};
   const changedKeys: string[] = [];
-  for (const [k, v] of Object.entries(patch)) {
-    if (!ALLOWED_KEYS.has(k)) {
-      console.warn(`[saas-v2-settings-update] rejected non-allowlisted key: ${k}`);
+
+  for (const [key, value] of Object.entries(patch)) {
+    if (!ALLOWED_KEYS.has(key)) {
+      console.warn(`[saas-v2-settings-update] rejected non-allowlisted key: ${key}`);
       continue;
     }
-    const clean = sanitizeValue(k, v);
-    if (clean === null && v !== null) {
-      // value failed validation
-      console.warn(`[saas-v2-settings-update] rejected invalid value for ${k}`);
+
+    const clean = sanitizeValue(key, value);
+    if (clean === null && value !== null) {
+      console.warn(`[saas-v2-settings-update] rejected invalid value for ${key}`);
       continue;
     }
-    filtered[k] = clean;
-    changedKeys.push(k);
+
+    filtered[key] = clean;
+    changedKeys.push(key);
   }
 
   if (changedKeys.length === 0) {
@@ -251,215 +231,154 @@ const handler: Handler = async (event) => {
     };
   }
 
-  {
-    const { data: workspace, error: wsErr } = await supa
-      .from('workspaces')
-      .select(RETURN_COLUMNS)
-      .eq('user_id', userId)
-      .limit(1)
-      .maybeSingle();
+  const workspace = await findWorkspaceForUser<Record<string, any>>(userId, RETURN_COLUMNS);
+  if (!workspace) {
+    return {
+      statusCode: 404,
+      headers: cors,
+      body: JSON.stringify({ error: 'No workspace found for this user' }),
+    };
+  }
 
-    if (wsErr) {
-      console.warn('[saas-v2-settings-update] workspace fetch failed:', wsErr.message);
+  const workspaceId = workspace.id as string;
+  const now = new Date().toISOString();
+  const [{ data: profile }, { data: location }] = await Promise.all([
+    supa
+      .from('business_profiles')
+      .select('id, business_name, main_category, opening_hours, languages, user_preferences')
+      .eq('workspace_id', workspaceId)
+      .limit(1)
+      .maybeSingle(),
+    supa
+      .from('locations')
+      .select('id, timezone, phone')
+      .eq('workspace_id', workspaceId)
+      .eq('is_primary', true)
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const workspacePatch: Record<string, unknown> = {};
+  const profilePatch: Record<string, unknown> = {};
+  const locationPatch: Record<string, unknown> = {};
+  const preferences = asRecord((profile as any)?.user_preferences);
+  const v2Settings = { ...asRecord(preferences.v2_settings) };
+
+  for (const key of changedKeys) {
+    const value = filtered[key];
+    if (key === 'name') {
+      workspacePatch.name = value;
+      continue;
+    }
+    if (key === 'vertical') profilePatch.main_category = value;
+    if (key === 'default_language') profilePatch.languages = value ? [value] : [];
+    if (key === 'default_timezone') locationPatch.timezone = value;
+    if (key === 'agent_transfer_phone') locationPatch.phone = value;
+    v2Settings[key] = value;
+  }
+
+  if (Object.keys(workspacePatch).length > 0) {
+    workspacePatch.updated_at = now;
+    const { error } = await supa.from('workspaces').update(workspacePatch).eq('id', workspaceId);
+    if (error) {
+      console.warn('[saas-v2-settings-update] workspace update failed:', error.message);
       return {
         statusCode: 500,
         headers: cors,
-        body: JSON.stringify({ error: 'Failed to load workspace', supabase_error: wsErr.message }),
+        body: JSON.stringify({ error: 'Failed to update workspace' }),
       };
     }
-    if (!workspace) {
-      return {
-        statusCode: 404,
-        headers: cors,
-        body: JSON.stringify({ error: 'No workspace found for this user' }),
-      };
-    }
+  }
 
-    const workspaceId = (workspace as any).id as string;
-    const now = new Date().toISOString();
-    const [{ data: profile }, { data: location }] = await Promise.all([
+  const profilePayload = {
+    ...profilePatch,
+    user_preferences: { ...preferences, v2_settings: v2Settings },
+    updated_at: now,
+  };
+
+  if ((profile as any)?.id) {
+    const { error } = await supa
+      .from('business_profiles')
+      .update(profilePayload)
+      .eq('id', (profile as any).id);
+    if (error) {
+      console.warn('[saas-v2-settings-update] profile update failed:', error.message);
+      return {
+        statusCode: 500,
+        headers: cors,
+        body: JSON.stringify({ error: 'Failed to update business profile settings' }),
+      };
+    }
+  } else {
+    const { error } = await supa.from('business_profiles').insert({
+      ...profilePayload,
+      user_id: userId,
+      workspace_id: workspaceId,
+      business_name: workspace.name || 'Workspace',
+    });
+    if (error) {
+      console.warn('[saas-v2-settings-update] profile insert failed:', error.message);
+      return {
+        statusCode: 500,
+        headers: cors,
+        body: JSON.stringify({ error: 'Failed to create business profile settings' }),
+      };
+    }
+  }
+
+  if (Object.keys(locationPatch).length > 0) {
+    if ((location as any)?.id) {
+      const { error } = await supa
+        .from('locations')
+        .update({ ...locationPatch, updated_at: now })
+        .eq('id', (location as any).id)
+        .eq('workspace_id', workspaceId);
+      if (error) console.warn('[saas-v2-settings-update] location update failed:', error.message);
+    } else if ((profile as any)?.id) {
+      const { error } = await supa.from('locations').insert({
+        ...locationPatch,
+        user_id: userId,
+        workspace_id: workspaceId,
+        business_profile_id: (profile as any).id,
+        name: 'Main Office',
+        slug: 'main-office',
+        is_primary: true,
+        is_active: true,
+      });
+      if (error) console.warn('[saas-v2-settings-update] location insert failed:', error.message);
+    }
+  }
+
+  const [{ data: updatedWorkspace }, { data: updatedProfile }, { data: updatedLocation }] =
+    await Promise.all([
+      supa.from('workspaces').select(RETURN_COLUMNS).eq('id', workspaceId).maybeSingle(),
       supa
         .from('business_profiles')
-        .select('id, business_name, main_category, opening_hours, languages, user_preferences')
+        .select('business_name, main_category, opening_hours, languages, user_preferences')
         .eq('workspace_id', workspaceId)
         .limit(1)
         .maybeSingle(),
       supa
         .from('locations')
-        .select('id, timezone, phone')
+        .select('timezone, phone')
         .eq('workspace_id', workspaceId)
         .eq('is_primary', true)
         .limit(1)
         .maybeSingle(),
     ]);
 
-    const workspacePatch: Record<string, unknown> = {};
-    const profilePatch: Record<string, unknown> = {};
-    const locationPatch: Record<string, unknown> = {};
-    const preferences = asRecord((profile as any)?.user_preferences);
-    const v2Settings = { ...asRecord(preferences.v2_settings) };
+  const workspaceForClient = composeWorkspaceSettings({
+    workspace: (updatedWorkspace as Record<string, any> | null) ?? workspace,
+    profile: (updatedProfile as Record<string, any> | null) ?? null,
+    location: (updatedLocation as Record<string, any> | null) ?? null,
+  });
 
-    for (const key of changedKeys) {
-      const value = filtered[key];
-      if (key === 'name') {
-        workspacePatch.name = value;
-        continue;
-      }
-      if (key === 'vertical') profilePatch.main_category = value;
-      if (key === 'default_language') profilePatch.languages = value ? [value] : [];
-      if (key === 'default_timezone') locationPatch.timezone = value;
-      if (key === 'agent_transfer_phone') locationPatch.phone = value;
-      v2Settings[key] = value;
-    }
-
-    if (Object.keys(workspacePatch).length > 0) {
-      workspacePatch.updated_at = now;
-      const { error } = await supa.from('workspaces').update(workspacePatch).eq('id', workspaceId);
-      if (error) {
-        console.warn('[saas-v2-settings-update] workspace update failed:', error.message);
-        return {
-          statusCode: 500,
-          headers: cors,
-          body: JSON.stringify({ error: 'Failed to update workspace' }),
-        };
-      }
-    }
-
-    const profilePayload = {
-      ...profilePatch,
-      user_preferences: { ...preferences, v2_settings: v2Settings },
-      updated_at: now,
-    };
-    if ((profile as any)?.id) {
-      const { error } = await supa
-        .from('business_profiles')
-        .update(profilePayload)
-        .eq('id', (profile as any).id);
-      if (error) {
-        console.warn('[saas-v2-settings-update] profile update failed:', error.message);
-        return {
-          statusCode: 500,
-          headers: cors,
-          body: JSON.stringify({ error: 'Failed to update business profile settings' }),
-        };
-      }
-    } else {
-      const { error } = await supa.from('business_profiles').insert({
-        ...profilePayload,
-        user_id: userId,
-        workspace_id: workspaceId,
-        business_name: (workspace as any).name || 'Workspace',
-      });
-      if (error) {
-        console.warn('[saas-v2-settings-update] profile insert failed:', error.message);
-        return {
-          statusCode: 500,
-          headers: cors,
-          body: JSON.stringify({ error: 'Failed to create business profile settings' }),
-        };
-      }
-    }
-
-    if (Object.keys(locationPatch).length > 0) {
-      if ((location as any)?.id) {
-        const { error } = await supa
-          .from('locations')
-          .update({ ...locationPatch, updated_at: now })
-          .eq('id', (location as any).id)
-          .eq('workspace_id', workspaceId);
-        if (error) console.warn('[saas-v2-settings-update] location update failed:', error.message);
-      } else if ((profile as any)?.id) {
-        const { error } = await supa.from('locations').insert({
-          ...locationPatch,
-          user_id: userId,
-          workspace_id: workspaceId,
-          business_profile_id: (profile as any).id,
-          name: 'Main Office',
-          slug: 'main-office',
-          is_primary: true,
-          is_active: true,
-        });
-        if (error) console.warn('[saas-v2-settings-update] location insert failed:', error.message);
-      }
-    }
-
-    const [{ data: updatedWorkspace }, { data: updatedProfile }, { data: updatedLocation }] =
-      await Promise.all([
-        supa.from('workspaces').select(RETURN_COLUMNS).eq('id', workspaceId).maybeSingle(),
-        supa
-          .from('business_profiles')
-          .select('business_name, main_category, opening_hours, languages, user_preferences')
-          .eq('workspace_id', workspaceId)
-          .limit(1)
-          .maybeSingle(),
-        supa
-          .from('locations')
-          .select('timezone, phone')
-          .eq('workspace_id', workspaceId)
-          .eq('is_primary', true)
-          .limit(1)
-          .maybeSingle(),
-      ]);
-
-    const workspaceForClient = composeWorkspaceSettings({
-      workspace: (updatedWorkspace as Record<string, any> | null) ?? (workspace as Record<string, any>),
-      profile: (updatedProfile as Record<string, any> | null) ?? null,
-      location: (updatedLocation as Record<string, any> | null) ?? null,
-    });
-
-    emitEvent(supa, workspaceId, changedKeys).catch(() => undefined);
-
-    return {
-      statusCode: 200,
-      headers: cors,
-      body: JSON.stringify({ workspace: workspaceForClient }),
-    };
-  }
-
-  // Always bump updated_at
-  filtered.updated_at = new Date().toISOString();
-
-  // ─── Update ────────────────────────────────────────────────────────────
-  const { data: updatedRows, error: upErr } = await supa
-    .from('workspaces')
-    .update(filtered)
-    .eq('user_id', userId)
-    .select(RETURN_COLUMNS);
-
-  const updateError = upErr;
-  if (updateError !== null) {
-    const updateErrorMessage = updateError!.message;
-    console.warn('[saas-v2-settings-update] update failed:', updateErrorMessage);
-    return {
-      statusCode: 500,
-      headers: cors,
-      body: JSON.stringify({
-        error: 'Failed to update workspace',
-        detail:
-          'update error — user owns no workspace OR column missing from workspaces table. Run the V2 settings migration.',
-        supabase_error: updateErrorMessage,
-      }),
-    };
-  }
-  const rows = updatedRows ?? [];
-  if (rows.length === 0) {
-    return {
-      statusCode: 404,
-      headers: cors,
-      body: JSON.stringify({
-        error: 'No workspace updated',
-        detail: 'user owns no workspace OR column missing — run the V2 settings migration',
-      }),
-    };
-  }
-
-  const workspace = rows[0];
-  emitEvent(supa, (workspace as any).id, changedKeys).catch(() => undefined);
+  emitEvent(supa, workspaceId, changedKeys).catch(() => undefined);
 
   return {
     statusCode: 200,
     headers: cors,
-    body: JSON.stringify({ workspace }),
+    body: JSON.stringify({ workspace: workspaceForClient }),
   };
 };
 

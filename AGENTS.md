@@ -68,8 +68,8 @@ grep -rn "\.eq('owner_id'" netlify/functions/saas-v2-*.ts src/components/v2/ src
 # Should return ZERO matches
 ```
 
-**2. `tsconfig.app.json` has `include: ["src"]` — `tsc --noEmit` does NOT validate `netlify/functions/`**
-`npx tsc --noEmit -p tsconfig.json` will report 0 errors even when netlify functions have broken `cors`/undefined/Cannot-find-name issues. Backend TS validation only happens at deploy time via Netlify's esbuild bundler. **DO NOT trust `tsc` for backend changes. Use `vitest` (real runtime) + `npm run build:fast` (esbuild bundle).**
+**2. Root `tsc --noEmit -p tsconfig.json` still does NOT validate `netlify/functions/`**
+`npx tsc --noEmit -p tsconfig.json` can still report 0 errors while backend functions are broken, because the root config is a solution file. The safe repo-wide check is now `npm run typecheck`, which runs `tsc -b --noEmit` across app + node + `tsconfig.functions.json`. **For backend changes, trust `npm run typecheck` + `vitest` + `npm run build:fast`, not plain root `tsc --noEmit`.**
 
 **3. `V2OptInGate` is applied by the parent `/v2` route, NOT by individual pages**
 Individual page components must NOT wrap themselves with `<V2OptInGate>` — that causes double-wrap nested loading flashes. The parent route at `src/routes/AppRoutes.tsx` wraps `<Outlet />` in `<V2OptInGate>`. EXCEPTION: `/v2/setup` is registered OUTSIDE the gate (new users must reach it pre-opt-in).
@@ -186,7 +186,7 @@ export const handler: Handler = async (event) => {
 ## How to verify changes (the right order)
 
 1. **vitest** — `npx vitest run` from main checkout. GROUND TRUTH for backend. Allow 1-3 pre-existing fails.
-2. **vite build** — `npm run build:fast` runs `tsc -b && vite build`. Catches frontend TS errors.
+2. **vite build** — `npm run build:fast` runs `npm run typecheck && vite build`. Catches frontend TS errors and now includes backend TS coverage.
 3. **Live curl** — `curl -sS -o /dev/null -w "%{http_code}\n" -X POST https://boltcall.org/.netlify/functions/<fn>` should return 401 (not 404) once deployed.
 4. **NOT `tsc --noEmit -p tsconfig.json`** — does not cover backend (see gotcha #2).
 
@@ -228,7 +228,7 @@ d17c0955 feat(v2): saas-v2-ask-ai endpoint (Ask Boltcall AI strategist)
 2. **Fix the 3 pre-existing test failures** — known + isolated; would bring suite to 797/797
 3. **Founder-JWT smoke test** — once user provides a real JWT, verify `agency-smoke-test-cleanup` actually works founder-gate end-to-end
 4. **PayPal Sandbox env vars** — `PAYPAL_MODE=sandbox` + sandbox Client ID/Secret so the existing PayPal code at least authenticates
-5. **Add a tsconfig that covers `netlify/functions/`** — so backend TS errors surface at `tsc --noEmit` (would have prevented v8 regex chain bugs)
+5. **Done: add repo-wide backend TS coverage** — `npm run typecheck` now includes `tsconfig.functions.json`, so backend TS errors surface before deploy
 6. **Wire `META_PAGE_ID` env var** (optional) — for ad campaigns that promote a Page
 7. **Resolve workspace_id properly on V2 endpoints** — refactor the 18 endpoints that `.eq('user_id', userId)` directly to first resolve workspace_id from workspaces, then query data tables with `.eq('workspace_id', workspaceId)`. Future-proofs against multi-workspace-per-user.
 
@@ -297,7 +297,7 @@ supabase/
 - Tailwind for all styling — no CSS modules
 - V1 dashboard pages live in `src/pages/dashboard/`, V2 in `src/pages/v2/`
 - Netlify functions handle server-side logic
-- **Backend functions NOT type-checked by `tsc --noEmit`** — see gotcha #2
+- **Backend functions are covered by `npm run typecheck`, not plain root `tsc --noEmit`** — see gotcha #2
 
 ## MANDATORY: Page Creation & Deploy Protocol
 
