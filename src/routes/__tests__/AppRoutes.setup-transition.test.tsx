@@ -101,6 +101,7 @@ describe('AppRoutes post-setup transitions', () => {
     render(<AppRoutes />);
 
     expect(await screen.findByText(/loading setup/i)).toBeInTheDocument();
+    expect(document.querySelector('.setup-transition-screen')).toBeInTheDocument();
   });
 
   it('shows a visible loading state while talk-to-agent route is still loading', async () => {
@@ -110,6 +111,7 @@ describe('AppRoutes post-setup transitions', () => {
     render(<AppRoutes />);
 
     expect(await screen.findByText(/loading setup/i)).toBeInTheDocument();
+    expect(document.querySelector('.setup-transition-screen')).toBeInTheDocument();
   });
 
   it('renders the agent-led setup page at the canonical /setup route', async () => {

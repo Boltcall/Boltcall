@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 const mocks = vi.hoisted(() => ({
@@ -78,5 +78,27 @@ describe('SetupLoading', () => {
       }),
     );
     expect(mocks.clearPendingAgentSetup).toHaveBeenCalledTimes(1);
+  });
+
+  it('only fades the foreground content before navigating away', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(
+        <MemoryRouter initialEntries={['/setup/loading']}>
+          <SetupLoading />
+        </MemoryRouter>,
+      );
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10600);
+      });
+
+      expect(container.querySelector('.setup-loading-page')).not.toHaveClass(
+        'fade-out',
+      );
+
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
