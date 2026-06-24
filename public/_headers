@@ -1,2 +1,2 @@
-# Atlas production code_commit smoke: 2026-06-24`n/setup/talk-to-agent
+/setup/talk-to-agent
   Permissions-Policy: camera=(), microphone=(self), geolocation=()
