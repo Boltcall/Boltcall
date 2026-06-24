@@ -417,9 +417,8 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
     const previousButton = screen.getByRole('button', { name: /previous/i });
     const continueButton = screen.getByRole('button', { name: /continue/i });
-    expect(previousButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
-    expect(continueButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
-    expect(continueButton.querySelector('[aria-hidden="true"]')).toHaveClass('bg-black/10');
+    expect(previousButton).toHaveClass('border-white/14', 'bg-white/6', 'text-white');
+    expect(continueButton).toHaveClass('bg-white', 'text-zinc-950');
     expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
@@ -444,15 +443,48 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByText(/Leland/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous/i })).toHaveClass(
-      'border-border',
-      'bg-main',
-      'text-mtext',
+      'border-white/14',
+      'bg-white/6',
+      'text-white',
     );
     expect(screen.getByRole('button', { name: /finish/i })).toHaveClass(
-      'border-border',
-      'bg-main',
-      'text-mtext',
+      'bg-white',
+      'text-zinc-950',
     );
+  });
+
+  it('keeps users on the business step when the website URL is invalid', async () => {
+    vi.useFakeTimers();
+    await act(async () => {
+      renderInRouter(<V2SetupChat />);
+    });
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+
+    fireEvent.change(screen.getByLabelText(/owner name/i), {
+      target: { value: 'Noam Yakoby' },
+    });
+    fireEvent.change(screen.getByLabelText(/country/i), {
+      target: { value: 'Israel' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+    await act(async () => {
+      vi.advanceTimersByTime(360);
+    });
+
+    fireEvent.change(screen.getByLabelText(/business name/i), {
+      target: { value: 'Boltcall Plumbing' },
+    });
+    fireEvent.change(screen.getByLabelText(/business website - optional/i), {
+      target: { value: 'not a website' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+
+    expect(screen.getByText(/enter a valid website url/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/choose voice/i)).not.toBeInTheDocument();
   });
 
   it('saves all opening setup fields and fades into the loading step on Finish', async () => {
@@ -480,7 +512,7 @@ describe('V2SetupChat — smoke', () => {
       target: { value: 'Boltcall Plumbing' },
     });
     fireEvent.change(screen.getByLabelText(/business website - optional/i), {
-      target: { value: 'https://boltcall.org' },
+      target: { value: 'boltcall.org' },
     });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     await act(async () => {

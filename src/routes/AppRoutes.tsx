@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useLenis } from '../hooks/useLenis';
 import ErrorBoundary from '../components/ErrorBoundary';
 import AuthRedirectRecovery from '../components/auth/AuthRedirectRecovery';
+import { readPendingAuthRedirect } from '../lib/authRedirect';
+import { useAuth } from '../contexts/AuthContext';
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
 // critical-path modulepreload list on marketing pages.
 const AuthProvider = React.lazy(() =>
@@ -344,9 +346,23 @@ const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
 // endpoint is where V2 actually goes live for the workspace.
 const V2SetupPage = React.lazy(() => import('../pages/v2/V2SetupPage'));
 
+const RECOVERABLE_AUTH_REDIRECT_PATHS = new Set(['/', '/login', '/signup', '/auth/callback']);
+
+function isMatchingAuthRedirect(currentPath: string, pendingRedirect: string) {
+  return currentPath === pendingRedirect || currentPath.startsWith(`${pendingRedirect}/`);
+}
+
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
+  const { isAuthenticated, isLoading } = useAuth();
+  const pendingAuthRedirect = readPendingAuthRedirect();
+  const hasAuthHash = typeof window !== 'undefined' && window.location.hash.length > 1;
+  const isRecoveringAuthRedirect =
+    !!pendingAuthRedirect &&
+    (RECOVERABLE_AUTH_REDIRECT_PATHS.has(location.pathname) || hasAuthHash) &&
+    !isMatchingAuthRedirect(location.pathname, pendingAuthRedirect) &&
+    (isLoading || isAuthenticated);
 
   // RTL support for Hebrew — only apply to dashboard, public pages stay English LTR
   useEffect(() => {
@@ -374,6 +390,10 @@ const NavigationWrapper: React.FC = () => {
 
   // Initialize Lenis smooth scrolling
   useLenis();
+
+  if (isRecoveringAuthRedirect) {
+    return <AuthRedirectRecovery />;
+  }
 
   return (
     <Suspense fallback={null}>

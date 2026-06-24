@@ -45,15 +45,7 @@ const AuthRedirectRecovery = () => {
     navigate(pendingRedirect, { replace: true });
   }, [isLoading, location.pathname, navigate, pendingRedirect, shouldBlockWhileRecovering]);
 
-  if (!shouldBlockWhileRecovering) {
-    return null;
-  }
-
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#050507] px-4 text-center text-sm font-medium text-white/75">
-      Continuing setup...
-    </div>
-  );
+  return null;
 };
 
 export default AuthRedirectRecovery;
