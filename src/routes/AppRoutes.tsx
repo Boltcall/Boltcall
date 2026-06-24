@@ -3,9 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { useTranslation } from 'react-i18next';
 import { useLenis } from '../hooks/useLenis';
 import ErrorBoundary from '../components/ErrorBoundary';
-const AuthRedirectRecovery = React.lazy(() =>
-  import('../components/auth/AuthRedirectRecovery')
-);
+import AuthRedirectRecovery from '../components/auth/AuthRedirectRecovery';
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
 // critical-path modulepreload list on marketing pages.
 const AuthProvider = React.lazy(() =>
@@ -24,6 +22,7 @@ import Home from '../pages/Home';
 import GlassDemo from '../pages/GlassDemo';
 import BlogSchemaWrapper from '../components/BlogSchemaWrapper';
 import SetupLoading from '../pages/SetupLoading';
+import { SetupGradientBackground } from '../components/setup/SetupGradientBackground';
 const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'));
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
@@ -124,25 +123,30 @@ const ApiKeysPage = React.lazy(() => import('../pages/dashboard/settings/ApiKeys
 const SetupTransitionFallback: React.FC<{ message?: string }> = ({
   message = 'Loading setup...',
 }) => (
-  <div className="flex min-h-screen items-center justify-center bg-white px-4 text-sm font-medium text-zinc-500">
-    {message}
+  <div className="setup-transition-screen relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4 text-center">
+    <SetupGradientBackground />
+    <div className="relative z-10 space-y-3">
+      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-white/80" />
+      <p className="text-sm font-medium text-white/72">{message}</p>
+    </div>
   </div>
 );
 
 const SetupTransitionErrorState: React.FC = () => (
-  <div className="flex min-h-screen items-center justify-center bg-white px-4">
-    <div className="max-w-md text-center">
-      <h1 className="text-2xl font-semibold text-zinc-950">
+  <div className="setup-transition-screen relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4">
+    <SetupGradientBackground />
+    <div className="relative z-10 max-w-md text-center">
+      <h1 className="text-2xl font-semibold text-white">
         Setup hit a snag
       </h1>
-      <p className="mt-3 text-sm leading-6 text-zinc-600">
+      <p className="mt-3 text-sm leading-6 text-white/68">
         Refresh the page and Boltcall will resume from your latest saved setup
         state.
       </p>
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="mt-6 inline-flex items-center justify-center rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+        className="mt-6 inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-medium text-zinc-950 transition-colors hover:bg-white/90"
       >
         Refresh page
       </button>

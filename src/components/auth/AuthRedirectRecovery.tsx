@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -19,18 +19,18 @@ const AuthRedirectRecovery = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const pendingRedirect = isLoading ? null : readPendingAuthRedirect();
+  const pendingRedirect = readPendingAuthRedirect();
   const hasAuthHash =
     typeof window !== 'undefined' && window.location.hash.length > 1;
   const canRecoverHere =
     RECOVERABLE_PATHS.has(location.pathname) || hasAuthHash;
   const shouldBlockWhileRecovering =
     !!pendingRedirect &&
-    isAuthenticated &&
     canRecoverHere &&
-    !isMatchingRedirect(location.pathname, pendingRedirect);
+    !isMatchingRedirect(location.pathname, pendingRedirect) &&
+    (isLoading || isAuthenticated);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isLoading) return;
     if (!pendingRedirect) return;
 
@@ -39,7 +39,7 @@ const AuthRedirectRecovery = () => {
       return;
     }
 
-    if (!shouldBlockWhileRecovering) return;
+    if (!isAuthenticated || !shouldBlockWhileRecovering) return;
 
     clearPendingAuthRedirect();
     navigate(pendingRedirect, { replace: true });

@@ -75,6 +75,22 @@ describe('AuthRedirectRecovery', () => {
     expect(document.body).toHaveTextContent(/continuing setup/i);
   });
 
+  it('blocks the recoverable page while auth is still resolving', () => {
+    mocks.isLoading = true;
+    mocks.readPendingAuthRedirect.mockReturnValue('/setup');
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="*" element={<AuthRedirectRecovery />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(document.body).toHaveTextContent(/continuing setup/i);
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
   it('clears the pending redirect once the user is already on the intended setup flow', async () => {
     mocks.isAuthenticated = true;
     mocks.readPendingAuthRedirect.mockReturnValue('/setup');

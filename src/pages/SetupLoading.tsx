@@ -239,10 +239,6 @@ const SetupLoading: React.FC = () => {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          transition: opacity 700ms ease-in-out;
-        }
-        .setup-loading-page.fade-out {
-          opacity: 0;
         }
         .setup-loading-content {
           width: 100%;
@@ -252,6 +248,11 @@ const SetupLoading: React.FC = () => {
           flex-direction: column;
           align-items: center;
           gap: 2.5rem;
+          transition: opacity 700ms ease-in-out, transform 700ms ease-in-out;
+        }
+        .setup-loading-content.fade-out {
+          opacity: 0;
+          transform: translateY(12px);
         }
         .setup-word-loader {
           position: relative;
@@ -346,9 +347,9 @@ const SetupLoading: React.FC = () => {
         }
       `}</style>
 
-      <div className={`setup-loading-page relative isolate overflow-hidden ${fadeOut ? 'fade-out' : ''}`}>
+      <div className="setup-loading-page relative isolate overflow-hidden">
         <SetupGradientBackground />
-        <div className="setup-loading-content">
+        <div className={`setup-loading-content ${fadeOut ? 'fade-out' : ''}`}>
           <div className="setup-word-loader" ref={wordLoaderRef} />
 
           <div className="setup-progress-wrapper">
