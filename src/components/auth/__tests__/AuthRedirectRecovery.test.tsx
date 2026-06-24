@@ -60,7 +60,7 @@ describe('AuthRedirectRecovery', () => {
     });
   });
 
-  it('shows a blocking recovery state while replaying a saved auth redirect', () => {
+  it('does not render a blocking recovery page while replaying a saved auth redirect', () => {
     mocks.isAuthenticated = true;
     mocks.readPendingAuthRedirect.mockReturnValue('/setup');
 
@@ -72,7 +72,7 @@ describe('AuthRedirectRecovery', () => {
       </MemoryRouter>,
     );
 
-    expect(document.body).toHaveTextContent(/continuing setup/i);
+    expect(document.body).not.toHaveTextContent(/continuing setup/i);
   });
 
   it('blocks the recoverable page while auth is still resolving', () => {
@@ -87,7 +87,7 @@ describe('AuthRedirectRecovery', () => {
       </MemoryRouter>,
     );
 
-    expect(document.body).toHaveTextContent(/continuing setup/i);
+    expect(document.body).not.toHaveTextContent(/continuing setup/i);
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 

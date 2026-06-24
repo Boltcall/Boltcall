@@ -75,6 +75,22 @@ const SETUP_BUTTON_PRIMARY = `${SETUP_BUTTON_BASE} bg-white text-zinc-950 hover:
 const SETUP_BUTTON_SECONDARY =
   `${SETUP_BUTTON_BASE} border border-white/14 bg-white/6 text-white hover:bg-white/10`;
 
+function normalizeOptionalWebsite(rawValue: string) {
+  const trimmed = rawValue.trim();
+  if (!trimmed) return { value: '', error: null };
+
+  const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return { value: '', error: 'Enter a website URL that starts with http:// or https://.' };
+    }
+    return { value: url.toString().replace(/\/$/, ''), error: null };
+  } catch {
+    return { value: '', error: 'Enter a valid website URL, like boltcall.org.' };
+  }
+}
+
 const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> = ({
   onSpeakingChange,
 }) => {
@@ -342,6 +358,13 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
 
     if (openingStep === 'business') {
       if (!businessNameDraft.trim()) return;
+      const normalizedWebsite = normalizeOptionalWebsite(websiteDraft);
+      if (normalizedWebsite.error) {
+        setError(normalizedWebsite.error);
+        return;
+      }
+      setWebsiteDraft(normalizedWebsite.value);
+      setError(null);
       advanceOpeningStep('agent');
       return;
     }
@@ -349,7 +372,13 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
     const ownerName = ownerNameDraft.trim();
     const country = countryDraft.trim();
     const companyName = businessNameDraft.trim();
-    const website = websiteDraft.trim();
+    const normalizedWebsite = normalizeOptionalWebsite(websiteDraft);
+    if (normalizedWebsite.error) {
+      setError(normalizedWebsite.error);
+      advanceOpeningStep('business');
+      return;
+    }
+    const website = normalizedWebsite.value;
     if (!ownerName || !country || !companyName) return;
     const voice = VOICE_OPTIONS.find((option) => option.id === voiceDraft) ?? VOICE_OPTIONS[0];
     setError(null);
@@ -533,9 +562,13 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                     label="Website - optional"
                     type="url"
                     value={websiteDraft}
-                    onChange={(e) => setWebsiteDraft(e.target.value)}
+                    onChange={(e) => {
+                      setWebsiteDraft(e.target.value);
+                      if (error) setError(null);
+                    }}
                     className="w-full"
                     autoComplete="url"
+                    aria-invalid={error ? true : undefined}
                   />
                 </div>
               </div>
