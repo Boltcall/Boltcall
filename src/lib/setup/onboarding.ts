@@ -21,6 +21,7 @@ export const GOAL_OPTIONS = [
 
 export const TONE_OPTIONS = [
   { value: 'friendly_concise', label: 'Friendly and concise' },
+  { value: 'confident_direct', label: 'Confident and direct' },
   { value: 'formal', label: 'Professional' },
 ] as const;
 
