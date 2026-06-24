@@ -37,6 +37,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -197,13 +198,11 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ── Resolve workspace ───────────────────────────────────────────────────
-  const { data: workspaceRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (wsErr) {
-    console.warn(`[saas-v2-qa-run] workspace lookup failed user=${userId}: ${wsErr.message}`);
+  let workspaceRow: { id: string } | null;
+  try {
+    workspaceRow = await findWorkspaceForUser(userId, 'id');
+  } catch (error: any) {
+    console.warn(`[saas-v2-qa-run] workspace lookup failed user=${userId}: ${error?.message || error}`);
     return {
       statusCode: 500,
       headers: cors,

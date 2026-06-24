@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
@@ -74,6 +75,18 @@ function normalizeTone(raw: unknown): ResponseTone {
   return (VALID_TONES as readonly string[]).includes(v) ? (v as ResponseTone) : 'professional';
 }
 
+function isMissingColumnError(error: unknown, column: string): boolean {
+  const message =
+    error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
+      ? error.message.toLowerCase()
+      : '';
+  return (
+    message.includes(`column "${column.toLowerCase()}" does not exist`) ||
+    message.includes(`could not find the '${column.toLowerCase()}' column`) ||
+    message.includes(`could not find the "${column.toLowerCase()}" column`)
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Auth                                                              */
 /* ------------------------------------------------------------------ */
@@ -102,25 +115,24 @@ async function resolveWorkspace(
   // Try to pull tone_preferences if the column exists; fall back to the
   // baseline columns if PostgREST 42703 (column missing).
   let workspace: WorkspaceRow | null = null;
-  const withTone = await supa
-    .from('workspaces')
-    .select('id, name, default_language, tone_preferences')
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (withTone.error) {
-    const fallback = await supa
-      .from('workspaces')
-      .select('id, name, default_language')
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (fallback.error || !fallback.data) {
+  try {
+    workspace = await findWorkspaceForUser<WorkspaceRow>(
+      userId,
+      'id, name, default_language, tone_preferences',
+    );
+  } catch (error) {
+    if (!isMissingColumnError(error, 'tone_preferences')) {
       return { ok: false, status: 404, error: 'No workspace found for user' };
     }
-    workspace = fallback.data as unknown as WorkspaceRow;
-  } else if (!withTone.data) {
+
+    workspace = await findWorkspaceForUser<WorkspaceRow>(
+      userId,
+      'id, name, default_language',
+    ).catch(() => null);
+  }
+
+  if (!workspace) {
     return { ok: false, status: 404, error: 'No workspace found for user' };
-  } else {
-    workspace = withTone.data as unknown as WorkspaceRow;
   }
 
   return { ok: true, userId, workspace };

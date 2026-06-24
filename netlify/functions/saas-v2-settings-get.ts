@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 /**
  * saas-v2-settings-get — Wave 3 Page 5.
  *
@@ -119,14 +120,11 @@ const handler: Handler = async (event) => {
   const userId = userRes.user.id;
 
   // ─── Workspace ─────────────────────────────────────────────────────────
-  const { data: workspace, error: wsErr } = await supa
-    .from('workspaces')
-    .select(RETURN_COLUMNS)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (wsErr) {
-    console.warn('[saas-v2-settings-get] workspace fetch failed:', wsErr.message);
+  let workspace: Record<string, any> | null;
+  try {
+    workspace = await findWorkspaceForUser(userId, RETURN_COLUMNS);
+  } catch (error: any) {
+    console.warn('[saas-v2-settings-get] workspace fetch failed:', error?.message || error);
     return {
       statusCode: 500,
       headers: cors,

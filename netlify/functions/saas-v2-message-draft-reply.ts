@@ -26,6 +26,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitSaasV2Event } from './_shared/emit-agency-event';
 import { callClaude } from './_shared/agency-agents/run-agent';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -154,20 +155,16 @@ const handler: Handler = async (event) => {
   const hint = (body.hint ?? '').trim().slice(0, 500);
 
   // ─── Workspace + tone preferences ────────────────────────────────────────
-  const { data: workspace, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, brand_voice')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
+  const workspace = await findWorkspaceForUser<{
+    id: string;
+    brand_voice?: { tone?: string; style?: string } | null;
+  }>(userId, 'id, brand_voice').catch(() => null);
 
-  if (wsErr) return serverError('Failed to resolve workspace');
   if (!workspace) return badRequest('No workspace owned by this user');
   const workspace_id = workspace.id as string;
 
   // brand_voice may not exist in this environment — default sensibly.
-  const wsBrand = (workspace as { brand_voice?: { tone?: string; style?: string } | null })
-    .brand_voice;
+  const wsBrand = workspace.brand_voice;
   const preferredTone: Tone =
     wsBrand?.tone && /professional|formal/i.test(wsBrand.tone)
       ? 'professional'

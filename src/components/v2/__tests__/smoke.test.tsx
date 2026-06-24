@@ -417,9 +417,8 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
     const previousButton = screen.getByRole('button', { name: /previous/i });
     const continueButton = screen.getByRole('button', { name: /continue/i });
-    expect(previousButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
-    expect(continueButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
-    expect(continueButton.querySelector('[aria-hidden="true"]')).toHaveClass('bg-black/10');
+    expect(previousButton).toHaveClass('border', 'border-white/14', 'bg-white/6', 'text-white');
+    expect(continueButton).toHaveClass('bg-white', 'text-zinc-950');
     expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
@@ -444,14 +443,14 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByText(/Leland/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous/i })).toHaveClass(
-      'border-border',
-      'bg-main',
-      'text-mtext',
+      'border',
+      'border-white/14',
+      'bg-white/6',
+      'text-white',
     );
     expect(screen.getByRole('button', { name: /finish/i })).toHaveClass(
-      'border-border',
-      'bg-main',
-      'text-mtext',
+      'bg-white',
+      'text-zinc-950',
     );
   });
 

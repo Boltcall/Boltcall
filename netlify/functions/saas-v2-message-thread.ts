@@ -22,6 +22,7 @@ import type { Handler } from '@netlify/functions';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitSaasV2Event } from './_shared/emit-agency-event';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -116,18 +117,19 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ─── Workspace ───────────────────────────────────────────────────────────
-  const { data: workspace, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-
-  if (wsErr) {
+  let workspace: { id: string } | null;
+  try {
+    workspace = await findWorkspaceForUser(userId, 'id');
+  } catch {
     return serverError('Failed to resolve workspace');
   }
+
   if (!workspace) {
     return badRequest('No workspace owned by this user');
+  }
+
+  if (!workspace.id) {
+    return serverError('Failed to resolve workspace');
   }
   const workspace_id = workspace.id as string;
 

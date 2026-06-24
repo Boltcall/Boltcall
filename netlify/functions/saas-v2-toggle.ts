@@ -26,6 +26,7 @@ import type { Handler } from '@netlify/functions';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -123,14 +124,24 @@ const handler: Handler = async (event) => {
   const enabled = parsed.enabled;
 
   // ─── 3. Owner-of-workspace check + update ────────────────────────────────
-  // Scope the UPDATE to (user_id = userId) so a non-owner with a stolen JWT
-  // can't toggle someone else's workspace. The .eq() is the security barrier;
-  // RLS is the second line. We use returning='representation' to confirm the
-  // update actually matched a row.
+  const workspace = await findWorkspaceForUser<{ id: string }>(userId, 'id').catch(() => null);
+  if (!workspace) {
+    return {
+      statusCode: 404,
+      headers: cors,
+      body: JSON.stringify({
+        error:
+          'No workspace owned by this user, or v2_enabled column missing. ' +
+          'Run the V2 migration before flipping the toggle.',
+      }),
+    };
+  }
+
+  // ponytail: update by resolved workspace id so this stays correct if user->workspace stops being 1:1.
   const { data: updatedRows, error: updateErr } = await supa
     .from('workspaces')
     .update({ v2_enabled: enabled, updated_at: new Date().toISOString() })
-    .eq('user_id', userId)
+    .eq('id', workspace.id)
     .select('id, v2_enabled');
 
   if (updateErr) {
