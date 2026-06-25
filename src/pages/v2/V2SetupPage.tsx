@@ -5,11 +5,65 @@ import { useAuth } from '../../contexts/AuthContext';
 import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 import V2SetupChat from '../../components/v2/V2SetupChat';
 
+const HEBREW_TO_LATIN: Record<string, string> = {
+  א: 'a',
+  ב: 'b',
+  ג: 'g',
+  ד: 'd',
+  ה: 'h',
+  ו: 'o',
+  ז: 'z',
+  ח: 'ch',
+  ט: 't',
+  י: 'i',
+  כ: 'k',
+  ך: 'k',
+  ל: 'l',
+  מ: 'm',
+  ם: 'm',
+  נ: 'n',
+  ן: 'n',
+  ס: 's',
+  ע: 'a',
+  פ: 'p',
+  ף: 'p',
+  צ: 'tz',
+  ץ: 'tz',
+  ק: 'k',
+  ר: 'r',
+  ש: 'sh',
+  ת: 't',
+};
+
+function formatWelcomeFirstName(name: string | null | undefined) {
+  const firstName = name
+    ?.trim()
+    .split(/[\s,]+/u)
+    .find(Boolean)
+    ?.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+
+  if (!firstName) return null;
+  if (/[A-Za-z]/.test(firstName)) return firstName;
+  if (!/[\u0590-\u05FF]/u.test(firstName)) return firstName;
+
+  // ponytail: Hebrew-only transliteration for this English welcome; add more scripts only if real signups need them.
+  const transliterated = Array.from(
+    firstName.normalize('NFKD').replace(/[\u0591-\u05C7]/gu, ''),
+  )
+    .map((character) => HEBREW_TO_LATIN[character] ?? '')
+    .join('');
+
+  if (!transliterated) return firstName;
+
+  return transliterated.charAt(0).toUpperCase() + transliterated.slice(1);
+}
+
 const V2SetupPage: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [showPrompting, setShowPrompting] = useState(false);
-  const welcomeHeading = user?.name?.trim()
-    ? `Welcome to Boltcall, ${user.name.trim()}`
+  const firstName = formatWelcomeFirstName(user?.name);
+  const welcomeHeading = firstName
+    ? `Welcome to Boltcall ${firstName}`
     : 'Welcome to Boltcall';
 
   useEffect(() => {
