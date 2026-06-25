@@ -511,10 +511,10 @@ const Header: React.FC = () => {
                     {/* Vertical Separator */}
                     <div className={`ltr:border-l rtl:border-r ${isOverBlueBackground ? 'border-gray-700' : 'border-gray-200'}`} />
 
-                    {/* Strike AI Announcement Section */}
+                    {/* Break Our AI Challenge Section */}
                     <div className="flex-1 min-w-[320px] px-3 py-4 flex">
                       <Link
-                        to="/strike-ai"
+                        to="/challenge"
                         onClick={() => { setIsResourcesOpen(false); setIsMenuOpen(false); }}
                         className="block w-full"
                       >
