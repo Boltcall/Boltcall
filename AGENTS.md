@@ -94,6 +94,7 @@ cd ../Boltcall-<short-name>
 git add -u && git commit
 cd ../Boltcall && git merge --no-ff <branch-name>
 ```
+After every commit in a worktree, immediately merge that branch into the local root `main` checkout and resolve any conflicts before continuing further work. Treat this as mandatory for every session unless the user explicitly says otherwise.
 
 **7. Netlify env vars exist; CLI is authenticated**
 Run `netlify env:list` to see all 42+. Currently set: `META_ACCESS_TOKEN`, `FOUNDER_UUID`, `AGENCY_AGENT_DAILY_USD_CAP=50`, `ALLOWED_ORIGINS`, `CRON_SECRET`, `SENTINEL_SHARED_SECRET`, `AGENCY_OS_SERVICE_TOKEN`, `INTERNAL_API_SECRET` + Supabase + Retell + Twilio.
@@ -201,6 +202,7 @@ Key references from memory:
 - **Netlify project:** `boltcall` (id `8ec31e2a-c9cf-42e7-9b3d-7b7c04ed2613`). Auto-deploy via Netlify GitHub App may be flaky — fallback is `npm run build:prerender && netlify deploy --prod --dir=dist --no-build`.
 - **Founder phone for QA tests:** `+972 54 574 4482`
 - **User defaults:** never push without explicit ask; commit freely
+- **Git default:** after every commit, merge the worktree branch into local root `main` immediately and handle conflicts before proceeding
 - **Boltcall positioning:** Speed-to-lead platform, NOT "AI receptionist". Lead with instant response.
 - **Canonical pricing:** Starter $549, Pro $897, Ultimate $4997, Enterprise $997 (monthly). `src/lib/stripe.ts` is stale; trust the memory entry.
 - **Email marketing:** Brevo (not Beehiiv/Instantly)
