@@ -6,8 +6,11 @@ import { SetupGradientBackground } from '../../components/setup/SetupGradientBac
 import V2SetupChat from '../../components/v2/V2SetupChat';
 
 const V2SetupPage: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [showPrompting, setShowPrompting] = useState(false);
+  const welcomeHeading = user?.name?.trim()
+    ? `Welcome to Boltcall, ${user.name.trim()}`
+    : 'Welcome to Boltcall';
 
   useEffect(() => {
     document.title = 'Set Up Boltcall';
@@ -93,7 +96,7 @@ const V2SetupPage: React.FC = () => {
             className="relative z-10 text-center text-3xl font-black uppercase tracking-[0.1em] text-white sm:text-5xl lg:text-6xl"
             style={{ animation: 'boltcallSetupWelcome 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
           >
-            Welcome to Boltcall
+            {welcomeHeading}
           </h1>
         ) : (
           <section
