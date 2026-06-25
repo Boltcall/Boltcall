@@ -338,7 +338,7 @@ describe('V2 pages — smoke tests', () => {
         </MemoryRouter>,
       );
 
-      expect(screen.getByRole('heading', { name: /welcome to boltcall/i })).toHaveClass(
+      expect(screen.getByRole('heading', { name: /welcome to boltcall, test user/i })).toHaveClass(
         'text-3xl',
         'sm:text-5xl',
         'lg:text-6xl',
