@@ -86,6 +86,7 @@ const ChallengeWinner: React.FC = () => {
       sessionStorage.removeItem('challenge_email');
       sessionStorage.removeItem('challenge_winner_word');
       sessionStorage.removeItem('challenge_claim_token');
+      sessionStorage.removeItem('challenge_token');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save your prize claim. Please try again.');
     } finally {

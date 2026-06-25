@@ -77,7 +77,8 @@ const ChallengeCall: React.FC = () => {
         throw new Error(err.error || 'Could not start the call');
       }
 
-      const { access_token } = await res.json();
+      const { access_token, challenge_token } = await res.json();
+      sessionStorage.setItem('challenge_token', challenge_token);
 
       const { RetellWebClient } = await import('retell-client-js-sdk');
       const client = new RetellWebClient();
@@ -124,7 +125,12 @@ const ChallengeCall: React.FC = () => {
       const res = await fetch('/.netlify/functions/challenge-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: word.trim(), name, email }),
+        body: JSON.stringify({
+          word: word.trim(),
+          name,
+          email,
+          challenge_token: sessionStorage.getItem('challenge_token') || '',
+        }),
       });
 
       const data = await res.json();
@@ -174,7 +180,7 @@ const ChallengeCall: React.FC = () => {
               {name ? `Good luck, ${name}!` : 'The Challenge'}
             </h1>
             <p className="text-gray-600">
-              You have 60 seconds. Start the call, talk to Aria, and try to get her to reveal the secret word.
+              You have 60 seconds. Start the call, talk to Aria, and try to get her to reveal the secret word. She will give one fair clue near the end.
             </p>
           </motion.div>
 
@@ -367,7 +373,7 @@ const ChallengeCall: React.FC = () => {
                       <Shield className="w-10 h-10 text-gray-500" />
                     </div>
                     <h2 className="text-2xl font-bold text-[#0B1220] mb-2">AI Held Strong</h2>
-                    <p className="text-gray-600 mb-2">That was not the secret word. The AI defense rate is over 95%.</p>
+                    <p className="text-gray-600 mb-2">That was not the secret word. Try a new angle next time.</p>
                     <p className="text-gray-500 text-sm mb-8">The word resets every Monday — come back with a new strategy.</p>
 
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-8 w-full text-left">

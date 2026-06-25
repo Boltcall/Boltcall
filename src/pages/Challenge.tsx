@@ -22,7 +22,7 @@ const Challenge: React.FC = () => {
   useEffect(() => {
     document.title = 'Break Our AI Challenge: Can You Trick Our AI Receptionist? (2026) | Boltcall';
     updateMetaDescription(
-      'Talk to our AI receptionist and try to extract the secret word in 60 seconds. Social engineering, persuasion, prompt hacking welcome. Win a free smart website worth $2,500.'
+      'Talk to our AI receptionist and try to extract the secret word in 60 seconds. Social engineering, persuasion, prompt hacking, and one fair clue welcome. Win a free smart website worth $2,500.'
     );
 
     const schema = {
@@ -52,7 +52,7 @@ const Challenge: React.FC = () => {
           name: 'How do I participate?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Enter your name and email, then start the voice challenge right in your browser. No phone needed. You have 60 seconds to extract the secret word.',
+            text: 'Enter your name and email, then start the voice challenge right in your browser. No phone needed. You have 60 seconds and one fair clue to extract the secret word.',
           },
         },
         {
@@ -131,7 +131,7 @@ const Challenge: React.FC = () => {
                   Break Our AI: Can You Trick Our Receptionist?
                 </h1>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                  Our AI receptionist is guarding a secret word. You have 60 seconds in a live voice conversation to extract it.
+                  Our AI receptionist is guarding a secret word. You have 60 seconds and one fair clue in a live voice conversation to extract it.
                   Social engineering, persuasion, prompt hacking — anything goes. Crack it and win a free $2,500 smart website.
                 </p>
               </motion.div>
@@ -346,7 +346,7 @@ const Challenge: React.FC = () => {
               {[
                 {
                   q: 'What is the Break Our AI Challenge?',
-                  a: 'A weekly contest where you have a live voice conversation with our AI receptionist and try to extract a secret word in 60 seconds. Use any technique you like. Crack it and win a free smart website worth $2,500.',
+                  a: 'A weekly contest where you have a live voice conversation with our AI receptionist and try to extract a secret word in 60 seconds. Use any technique you like. You get one fair clue near the end. Crack it and win a free smart website worth $2,500.',
                 },
                 {
                   q: 'How does the voice call work?',
