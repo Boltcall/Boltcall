@@ -5,6 +5,7 @@ const os = require('os');
 
 const PROTECTED_REPOS = [
   path.normalize('C:\\Users\\Asus\\Desktop\\Boltcall_website\\Boltcall'),
+  path.normalize('C:\\Users\\Asus\\Desktop\\AIOS'),
   path.normalize('C:\\Users\\Asus\\Desktop\\Marketing\\agentic-os')
 ];
 const SESSION_DIR = path.join(os.homedir(), '.claude', 'session-worktrees');
@@ -105,7 +106,7 @@ console.log('');
 console.log('Start an isolated worktree first:');
 if (isAios) {
   console.log('  cd C:\\Users\\Asus\\Desktop\\Marketing\\scripts');
-  console.log('  .\\new-aios-session.ps1 -Name <task> -Open');
+  console.log('  .\\new-aios-session.ps1 -Name <task>');
   console.log('');
   console.log('When done, merge to main with (does NOT deploy):');
   console.log('  .\\end-aios-session.ps1 -Name <task>');

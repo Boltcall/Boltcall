@@ -6,7 +6,8 @@ const { execSync } = require('child_process');
 
 const BOLTCALL_ROOT = path.normalize('C:\\Users\\Asus\\Desktop\\Boltcall_website\\Boltcall');
 const BOLTCALL_WORKTREES = path.normalize('C:\\Users\\Asus\\Desktop\\Boltcall_website\\worktrees');
-const AIOS_ROOT = path.normalize('C:\\Users\\Asus\\Desktop\\Marketing\\agentic-os');
+const AIOS_ROOT = path.normalize('C:\\Users\\Asus\\Desktop\\AIOS');
+const AIOS_LEGACY_ROOT = path.normalize('C:\\Users\\Asus\\Desktop\\Marketing\\agentic-os');
 const SESSION_DIR = path.join(os.homedir(), '.claude', 'session-worktrees');
 const LOCK_DIR = path.join(os.homedir(), '.claude', 'session-locks');
 
@@ -113,7 +114,7 @@ function ensureBoltcallWorktree() {
 
 const cwd = process.cwd();
 
-if (!isInside(cwd, BOLTCALL_ROOT) && !isInside(cwd, AIOS_ROOT)) {
+if (!isInside(cwd, BOLTCALL_ROOT) && !isInside(cwd, AIOS_ROOT) && !isInside(cwd, AIOS_LEGACY_ROOT)) {
   process.exit(0);
 }
 
@@ -146,6 +147,10 @@ if (isInside(cwd, BOLTCALL_ROOT)) {
 }
 
 console.log('AIOS root checkout is read-only for agent work.');
-console.log('Move into a dedicated AIOS session/worktree before any edit.');
+console.log('Create a dedicated AIOS session before any edit:');
+console.log('  cd C:\\Users\\Asus\\Desktop\\Marketing\\scripts');
+console.log('  .\\new-aios-session.ps1 -Name <task>');
+console.log('');
+console.log('That creates an isolated worktree under C:\\Users\\Asus\\Desktop\\aios-sessions\\<task>.');
 console.log('Use the root checkout only for explicit merge, review, or deploy steps.');
 console.log('');
