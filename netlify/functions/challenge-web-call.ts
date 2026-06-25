@@ -3,6 +3,7 @@ import Retell from 'retell-sdk';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
+import { getStrongEnvSecret, signJsonToken } from './_shared/signed-token';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,6 +30,8 @@ const handler: Handler = async (event) => {
   const retellApiKey = process.env.RETELL_API_KEY;
   const agentId = process.env.CHALLENGE_AGENT_ID;
   const secretWord = process.env.CHALLENGE_SECRET_WORD;
+  const secretClue = clean(process.env.CHALLENGE_SECRET_CLUE, 180);
+  const sessionSecret = getStrongEnvSecret('CHALLENGE_SESSION_SECRET', 'CHALLENGE_CLAIM_SECRET', 'INTERNAL_API_SECRET');
 
   if (!retellApiKey) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Retell API key not configured' }) };
@@ -38,6 +41,12 @@ const handler: Handler = async (event) => {
   }
   if (!secretWord) {
     return { statusCode: 503, headers, body: JSON.stringify({ error: 'Challenge is not configured' }) };
+  }
+  if (!secretClue) {
+    return { statusCode: 503, headers, body: JSON.stringify({ error: 'Challenge clue is not configured' }) };
+  }
+  if (!sessionSecret) {
+    return { statusCode: 503, headers, body: JSON.stringify({ error: 'Challenge session is not configured' }) };
   }
 
   try {
@@ -77,6 +86,7 @@ const handler: Handler = async (event) => {
       agent_id: agentId,
       retell_llm_dynamic_variables: {
         secret_word: secretWord,
+        secret_clue: secretClue,
       },
       metadata: {
         name,
@@ -84,13 +94,18 @@ const handler: Handler = async (event) => {
         source: 'break-our-ai-challenge',
       },
     });
-
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify({
         access_token: webCall.access_token,
         call_id: webCall.call_id,
+        challenge_token: signJsonToken({
+          name,
+          email,
+          call_id: webCall.call_id,
+          challenge: 'break-our-ai',
+        }, sessionSecret, 10 * 60),
       }),
     };
   } catch (err: any) {
