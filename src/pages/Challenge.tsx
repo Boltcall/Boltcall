@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Shield, Phone, ArrowRight, Zap, CheckCircle2, CheckCircle, Clock } from 'lucide-react';
+import { Shield, Phone, ArrowRight, Zap, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { updateMetaDescription } from '../lib/utils';
-
-interface AllTimeStats {
-  totalAttempts: number;
-  aiDefenseRate: string;
-}
 
 const Challenge: React.FC = () => {
   const navigate = useNavigate();
@@ -17,12 +12,10 @@ const Challenge: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [allTimeStats, setAllTimeStats] = useState<AllTimeStats | null>(null);
-
   useEffect(() => {
     document.title = 'Break Our AI Challenge: Can You Trick Our AI Receptionist? (2026) | Boltcall';
     updateMetaDescription(
-      'Talk to our AI receptionist and try to extract the secret word in 60 seconds. Social engineering, persuasion, prompt hacking, and one fair clue welcome. Win a free smart website worth $2,500.'
+      'Talk to our AI receptionist and see how it handles a live voice challenge. Social engineering, persuasion, and prompt hacking welcome.'
     );
 
     const schema = {
@@ -44,7 +37,7 @@ const Challenge: React.FC = () => {
           name: 'What is the Break Our AI Challenge?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'A weekly contest where you talk to our AI receptionist in-browser and try to make it reveal a secret word within 60 seconds. Crack it and win a free smart website worth $2,500.',
+            text: 'A weekly contest where you talk to our AI receptionist in-browser and try to make it reveal a secret word.',
           },
         },
         {
@@ -52,15 +45,7 @@ const Challenge: React.FC = () => {
           name: 'How do I participate?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Enter your name and email, then start the voice challenge right in your browser. No phone needed. You have 60 seconds and one fair clue to extract the secret word.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'What do I win?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Winners receive a free smart website built by the Boltcall team, valued at $2,500. One winner per week.',
+            text: 'Enter your name and email, then start the voice challenge right in your browser. No phone needed.',
           },
         },
         {
@@ -68,7 +53,7 @@ const Challenge: React.FC = () => {
           name: 'What techniques are allowed?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Any social engineering technique is fair game — persuasion, impersonation, prompt injection, confusion, authority claims. The only limit is the 60-second window.',
+            text: 'Any social engineering technique is fair game — persuasion, impersonation, prompt injection, confusion, authority claims.',
           },
         },
       ],
@@ -86,19 +71,10 @@ const Challenge: React.FC = () => {
     s2.text = JSON.stringify(faqSchema);
     document.head.appendChild(s2);
 
-    fetchStats();
-
     return () => {
       document.getElementById('challenge-schema')?.remove();
       document.getElementById('challenge-faq-schema')?.remove();
     };
-  }, []);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await fetch('/.netlify/functions/break-my-ai/stats');
-      if (res.ok) setAllTimeStats(await res.json());
-    } catch { /* silent */ }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -131,34 +107,10 @@ const Challenge: React.FC = () => {
                   Break Our AI: Can You Trick Our Receptionist?
                 </h1>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                  Our AI receptionist is guarding a secret word. You have 60 seconds and one fair clue in a live voice conversation to extract it.
-                  Social engineering, persuasion, prompt hacking — anything goes. Crack it and win a free $2,500 smart website.
+                  Try a live voice conversation with Boltcall's AI receptionist. Use persuasion, roleplay, or prompt hacking and see how it holds the line.
                 </p>
-                <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-blue-200 bg-blue-50 px-5 py-3 text-blue-800">
-                  <Clock className="h-5 w-5" />
-                  <span className="font-mono text-2xl font-bold leading-none">1:00</span>
-                  <span className="text-sm font-semibold">on the clock</span>
-                </div>
               </motion.div>
 
-              {allTimeStats && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="flex items-center justify-center gap-6 md:gap-10 mt-10"
-                >
-                  <div className="text-center">
-                    <p className="text-2xl md:text-3xl font-bold text-[#0B1220]">{allTimeStats.totalAttempts.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">Attempts</p>
-                  </div>
-                  <div className="h-8 w-px bg-gray-200" />
-                  <div className="text-center">
-                    <p className="text-2xl md:text-3xl font-bold text-blue-600">{allTimeStats.aiDefenseRate}%</p>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider">AI Defense Rate</p>
-                  </div>
-                </motion.div>
-              )}
             </div>
           </div>
         </section>
@@ -180,65 +132,15 @@ const Challenge: React.FC = () => {
                       Weekly Challenge
                     </span>
                     <h2 className="mt-3 text-2xl md:text-3xl font-extrabold text-white leading-tight">
-                      <span className="text-white">Crack the Word.</span>
+                      <span className="text-white">Test the AI.</span>
                       <br />
-                      <span className="text-blue-500">Win $2,500.</span>
+                      <span className="text-blue-500">Live in browser.</span>
                     </h2>
 
                     <p className="mt-6 text-white/80 text-sm leading-6">
-                      Talk to our AI right in your browser. 60 seconds. Any technique. If you get the secret word — you win.
+                      Talk to our AI right in your browser and watch how it handles pressure while staying on-script.
                     </p>
 
-                    <div className="mt-6 flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3">
-                      <div className="flex items-center gap-2 text-blue-100">
-                        <Clock className="h-4 w-4 text-blue-400" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Timer</span>
-                      </div>
-                      <span className="font-mono text-2xl font-bold text-white">1:00</span>
-                    </div>
-
-                    <ul className="mt-6 space-y-3 text-white/90 text-sm">
-                      <li className="flex items-start gap-3">
-                        <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-blue-500 flex-shrink-0" strokeWidth={2.5} />
-                        <span>Live voice call — right in your browser</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-blue-500 flex-shrink-0" strokeWidth={2.5} />
-                        <span>60 seconds — social engineering welcome</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-blue-500 flex-shrink-0" strokeWidth={2.5} />
-                        <span>New secret word every Monday</span>
-                      </li>
-                      <li className="flex items-start gap-3">
-                        <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-blue-500 flex-shrink-0" strokeWidth={2.5} />
-                        <span>One winner per week</span>
-                      </li>
-                    </ul>
-
-                    <div className="mt-8 bg-gray-800 rounded-xl p-4 border border-gray-700">
-                      <div className="flex items-center gap-3">
-                        <Trophy className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                        <div>
-                          <p className="text-white font-bold text-sm">Crack It → Free Smart Website</p>
-                          <p className="text-gray-400 text-xs mt-0.5">$2,500 value · Built by our team in 24 hours</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {allTimeStats && (
-                      <div className="mt-6 flex items-center gap-6">
-                        <div>
-                          <p className="text-2xl font-bold text-white">{allTimeStats.totalAttempts.toLocaleString()}</p>
-                          <p className="text-xs text-gray-400 uppercase tracking-wider">Attempts</p>
-                        </div>
-                        <div className="h-8 w-px bg-gray-700" />
-                        <div>
-                          <p className="text-2xl font-bold text-blue-400">{allTimeStats.aiDefenseRate}%</p>
-                          <p className="text-xs text-gray-400 uppercase tracking-wider">AI Wins</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -247,7 +149,7 @@ const Challenge: React.FC = () => {
                   <p className="text-xs uppercase tracking-widest text-white/70 mb-2">Enter to Play</p>
                   <h3 className="text-2xl font-extrabold text-white mb-2">Who are you?</h3>
                   <p className="text-white/80 text-sm mb-8">
-                    We will notify you if you win and send your prize details.
+                    We use this to start your browser challenge session.
                   </p>
 
                   <form onSubmit={handleSubmit} className="space-y-4">
@@ -288,7 +190,7 @@ const Challenge: React.FC = () => {
                     </button>
                   </form>
 
-                  <p className="text-xs text-white/50 mt-6">No spam. Just prize notifications.</p>
+                  <p className="text-xs text-white/50 mt-6">No spam. Just challenge access.</p>
                 </div>
 
               </div>
@@ -359,19 +261,15 @@ const Challenge: React.FC = () => {
               {[
                 {
                   q: 'What is the Break Our AI Challenge?',
-                  a: 'A weekly contest where you have a live voice conversation with our AI receptionist and try to extract a secret word in 60 seconds. Use any technique you like. You get one fair clue near the end. Crack it and win a free smart website worth $2,500.',
+                  a: 'A live voice conversation with our AI receptionist where you try to push it off-script. Use any technique you like and see how it handles pressure.',
                 },
                 {
                   q: 'How does the voice call work?',
-                  a: 'It runs entirely in your browser — no app, no phone number needed. Click start, allow microphone access, and talk to the AI live. Your 60-second window starts when the call connects.',
+                  a: 'It runs entirely in your browser. No app, no phone number needed. Click start, allow microphone access, and talk to the AI live.',
                 },
                 {
                   q: 'What techniques are allowed?',
-                  a: 'Anything: persuasion, impersonation, prompt injection, confusion tactics, authority claims, emotional manipulation. The only limit is the 60-second call window.',
-                },
-                {
-                  q: 'What do I win?',
-                  a: 'A free smart website built by the Boltcall team — valued at $2,500. One winner per week. The secret word resets every Monday.',
+                  a: 'Anything: persuasion, impersonation, prompt injection, confusion tactics, authority claims, emotional manipulation.',
                 },
                 {
                   q: 'What if I cannot crack the word?',
