@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Menu, X, ChevronDown, Phone, Zap, MessageSquare, Bell, Target, Globe, RotateCw, Gauge, Calculator, Sparkles, Scale, BookOpen, Book, Mail, ArrowRight, Filter } from 'lucide-react';
+import { Menu, X, ChevronDown, Phone, Zap, MessageSquare, Bell, Target, Globe, RotateCw, Gauge, Calculator, Sparkles, Scale, BookOpen, Book, Mail, ArrowRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -55,20 +55,9 @@ const Header: React.FC = () => {
     { labelKey: 'header.freeToolsItems.leadResponseSpeedTest', href: '/speed-test', icon: Zap },
     { labelKey: 'header.freeToolsItems.aiRevenueAudit', href: '/ai-revenue-audit', icon: Calculator },
     { labelKey: 'header.freeToolsItems.leadResponseScorecard', href: '/lead-response-scorecard', icon: Target },
-    { labelKey: 'header.freeToolsItems.conversionRateOptimizer', href: '/conversion-rate-optimizer', icon: Gauge },
-    { labelKey: 'header.freeToolsItems.funnelOptimizer', href: '/funnel-optimizer', icon: Filter },
     { labelKey: 'header.freeToolsItems.aiVisibilityCheck', href: '/ai-visibility-check', icon: Gauge },
     { labelKey: 'header.freeToolsItems.aiReadinessScorecard', href: '/ai-readiness-scorecard', icon: Target },
-    { labelKey: 'header.freeToolsItems.rankOnGoogleOffer', href: '/rank-on-google-offer', icon: Target },
-    { labelKey: 'header.freeToolsItems.voiceAgentSetup', href: '/voice-agent-setup', icon: Phone },
-    { labelKey: 'header.freeToolsItems.speedTestOffer', href: '/speed-test/offer', icon: Zap },
-    { labelKey: 'header.freeToolsItems.medSpaRebookingCalculator', href: '/tools/medspa-rebooking-calculator', icon: Calculator },
-    { labelKey: 'header.freeToolsItems.realEstateSpeedScorecard', href: '/tools/real-estate-speed-scorecard', icon: Target },
-    { labelKey: 'header.freeToolsItems.speedToLeadForSolar', href: '/solar', icon: Sparkles },
-    { labelKey: 'header.freeToolsItems.aiReceptionistBuyersGuide', href: '/lead-magnet/ai-receptionist-buyers-guide', icon: Book },
-    { labelKey: 'header.freeToolsItems.claudeCodeOvernightKit', href: '/lead-magnet/claude-code-overnight-kit', icon: Book },
     { labelKey: 'header.freeToolsItems.freeWebsiteOffer', href: '/free-website', icon: Globe },
-    { labelKey: 'header.freeToolsItems.giveaway', href: '/giveaway', icon: Sparkles },
   ];
 
 
