@@ -222,6 +222,12 @@ const ChallengeCall: React.FC = () => {
                       <Mic className="w-12 h-12 text-blue-600" />
                     </div>
 
+                    <div className="mb-6 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-5 py-3">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <span className="font-mono text-2xl font-bold text-[#0B1220]">1:00</span>
+                      <span className="text-sm font-semibold text-gray-600">starts on pickup</span>
+                    </div>
+
                     <h2 className="text-xl font-bold text-[#0B1220] mb-2">Ready when you are</h2>
                     <p className="text-gray-500 text-sm mb-8 max-w-sm">
                       Allow microphone access when prompted. The 60-second countdown starts as soon as Aria picks up.

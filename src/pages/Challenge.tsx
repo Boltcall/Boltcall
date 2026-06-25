@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Shield, Phone, ArrowRight, Zap, CheckCircle2, CheckCircle } from 'lucide-react';
+import { Trophy, Shield, Phone, ArrowRight, Zap, CheckCircle2, CheckCircle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -134,6 +134,11 @@ const Challenge: React.FC = () => {
                   Our AI receptionist is guarding a secret word. You have 60 seconds and one fair clue in a live voice conversation to extract it.
                   Social engineering, persuasion, prompt hacking — anything goes. Crack it and win a free $2,500 smart website.
                 </p>
+                <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-blue-200 bg-blue-50 px-5 py-3 text-blue-800">
+                  <Clock className="h-5 w-5" />
+                  <span className="font-mono text-2xl font-bold leading-none">1:00</span>
+                  <span className="text-sm font-semibold">on the clock</span>
+                </div>
               </motion.div>
 
               {allTimeStats && (
@@ -183,6 +188,14 @@ const Challenge: React.FC = () => {
                     <p className="mt-6 text-white/80 text-sm leading-6">
                       Talk to our AI right in your browser. 60 seconds. Any technique. If you get the secret word — you win.
                     </p>
+
+                    <div className="mt-6 flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3">
+                      <div className="flex items-center gap-2 text-blue-100">
+                        <Clock className="h-4 w-4 text-blue-400" />
+                        <span className="text-xs font-bold uppercase tracking-wider">Timer</span>
+                      </div>
+                      <span className="font-mono text-2xl font-bold text-white">1:00</span>
+                    </div>
 
                     <ul className="mt-6 space-y-3 text-white/90 text-sm">
                       <li className="flex items-start gap-3">
