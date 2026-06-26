@@ -6,6 +6,7 @@ import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CHALLENGE_LOCK_WINDOW_SECONDS = 10 * 365 * 24 * 60 * 60;
 
 function clean(value: unknown, maxLength: number): string {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
@@ -50,24 +51,42 @@ const handler: Handler = async (event) => {
 
     const supabase = getServiceSupabase();
     const ip = getClientIp(event.headers as Record<string, string>);
-    const rateLimit = await consumePublicRateLimit(supabase, {
-      bucket: 'challenge_web_call',
-      key: hashRateLimitKey([ip, email]),
-      maxAttempts: 3,
-      windowSeconds: 24 * 60 * 60,
+    const emailLock = await consumePublicRateLimit(supabase, {
+      bucket: 'challenge_email_lock',
+      key: hashRateLimitKey([email]),
+      maxAttempts: 1,
+      windowSeconds: CHALLENGE_LOCK_WINDOW_SECONDS,
+      deniedStatusCode: 409,
+      countBlockedAttempts: true,
+    });
+    const ipLock = await consumePublicRateLimit(supabase, {
+      bucket: 'challenge_ip_lock',
+      key: hashRateLimitKey([ip]),
+      maxAttempts: 1,
+      windowSeconds: CHALLENGE_LOCK_WINDOW_SECONDS,
+      deniedStatusCode: 409,
+      countBlockedAttempts: true,
     });
 
-    if (!rateLimit.allowed) {
+    if (!emailLock.allowed || !ipLock.allowed) {
+      const failedLock = !emailLock.allowed
+        ? {
+            code: 'challenge_email_already_used',
+            error: 'This email has already used its challenge attempt.',
+          }
+        : {
+            code: 'challenge_ip_already_used',
+            error: 'This IP has already used its challenge attempt.',
+          };
+      const lockStatus = emailLock.statusCode === 503 || ipLock.statusCode === 503 ? 503 : 409;
       return {
-        statusCode: rateLimit.statusCode,
-        headers: {
-          ...headers,
-          ...(rateLimit.retryAfterSeconds ? { 'Retry-After': String(rateLimit.retryAfterSeconds) } : {}),
-        },
+        statusCode: lockStatus,
+        headers,
         body: JSON.stringify({
-          error: rateLimit.statusCode === 429
-            ? 'Challenge call limit reached for today'
-            : 'Challenge rate limit unavailable',
+          error: lockStatus === 503
+            ? 'Challenge locking is unavailable right now.'
+            : failedLock.error,
+          code: lockStatus === 503 ? 'challenge_lock_unavailable' : failedLock.code,
         }),
       };
     }

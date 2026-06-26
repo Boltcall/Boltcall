@@ -17,6 +17,8 @@ interface ConsumePublicRateLimitOptions {
   key: string;
   maxAttempts: number;
   windowSeconds: number;
+  deniedStatusCode?: number;
+  countBlockedAttempts?: boolean;
 }
 
 export interface PublicRateLimitResult {
@@ -61,9 +63,29 @@ export async function consumePublicRateLimit(
   }
 
   if ((existing.attempts || 0) >= options.maxAttempts) {
+    if (options.countBlockedAttempts) {
+      const { error } = await supabase
+        .from('public_rate_limits')
+        .update({
+          attempts: (existing.attempts || 0) + 1,
+          updated_at: now.toISOString(),
+        })
+        .eq('id', existing.id);
+
+      if (error) {
+        console.error('[public-rate-limit] blocked increment failed:', error.message);
+        return { allowed: false, statusCode: 503 };
+      }
+    }
+
     const resetAt = new Date(new Date(existing.window_start).getTime() + options.windowSeconds * 1000);
     const retryAfterSeconds = Math.max(1, Math.ceil((resetAt.getTime() - now.getTime()) / 1000));
-    return { allowed: false, statusCode: 429, retryAfterSeconds };
+    const statusCode = options.deniedStatusCode || 429;
+    return {
+      allowed: false,
+      statusCode,
+      ...(statusCode === 429 ? { retryAfterSeconds } : {}),
+    };
   }
 
   const { error } = await supabase

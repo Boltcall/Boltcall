@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Clock, ArrowRight, RefreshCw, Shield, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Clock, ArrowRight, Shield, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-type CallStep = 'idle' | 'connecting' | 'active' | 'ended' | 'submitting' | 'wrong';
+type CallStep = 'idle' | 'connecting' | 'active' | 'ended' | 'submitting' | 'wrong' | 'locked';
 
 const CHALLENGE_DURATION = 60; // seconds
+const LOCKED_CHALLENGE_CODES = new Set([
+  'challenge_email_already_used',
+  'challenge_ip_already_used',
+]);
 
 const ChallengeCall: React.FC = () => {
   const navigate = useNavigate();
@@ -73,11 +77,18 @@ const ChallengeCall: React.FC = () => {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Could not start the call');
+        const err = await res.json().catch(() => ({}));
+        const message = err?.error || 'Could not start the call.';
+        if (LOCKED_CHALLENGE_CODES.has(err?.code)) {
+          setCallError(message);
+          setStep('locked');
+          return;
+        }
+        throw new Error(message);
       }
 
-      const { access_token } = await res.json();
+      const { access_token, challenge_token } = await res.json();
+      sessionStorage.setItem('challenge_token', challenge_token);
 
       const { RetellWebClient } = await import('retell-client-js-sdk');
       const client = new RetellWebClient();
@@ -98,7 +109,7 @@ const ChallengeCall: React.FC = () => {
         console.error('Retell error:', error);
         retellClientRef.current = null;
         if (timerRef.current) clearInterval(timerRef.current);
-        setCallError('Something went wrong with the call. Please try again.');
+        setCallError('The challenge call could not continue.');
         setStep('idle');
       });
 
@@ -106,7 +117,7 @@ const ChallengeCall: React.FC = () => {
     } catch (err: any) {
       console.error('Start call error:', err);
       retellClientRef.current = null;
-      setCallError(err.message || 'Could not start the call. Please try again.');
+      setCallError(err.message || 'Could not start the call.');
       setStep('idle');
     }
   };
@@ -124,12 +135,17 @@ const ChallengeCall: React.FC = () => {
       const res = await fetch('/.netlify/functions/challenge-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word: word.trim(), name, email }),
+        body: JSON.stringify({
+          word: word.trim(),
+          name,
+          email,
+          challenge_token: sessionStorage.getItem('challenge_token') || '',
+        }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Something went wrong. Please try again.');
+        throw new Error(data.error || 'Something went wrong while checking your answer.');
       }
 
       if (data.winner) {
@@ -143,7 +159,7 @@ const ChallengeCall: React.FC = () => {
         setStep('wrong');
       }
     } catch {
-      setSubmitError('Something went wrong. Please try again.');
+      setSubmitError('Something went wrong while checking your answer.');
       setStep('ended');
     }
   };
@@ -192,7 +208,7 @@ const ChallengeCall: React.FC = () => {
                   {step === 'idle' && 'Ready'}
                   {step === 'connecting' && 'Connecting...'}
                   {step === 'active' && 'LIVE — Call in progress'}
-                  {(step === 'ended' || step === 'submitting' || step === 'wrong') && 'Call ended'}
+                  {(step === 'ended' || step === 'submitting' || step === 'wrong' || step === 'locked') && 'Call ended'}
                 </span>
               </div>
               {step === 'active' && (
@@ -368,34 +384,45 @@ const ChallengeCall: React.FC = () => {
                     </div>
                     <h2 className="text-2xl font-bold text-[#0B1220] mb-2">AI Held Strong</h2>
                     <p className="text-gray-600 mb-2">That was not the secret word. The AI defense rate is over 95%.</p>
-                    <p className="text-gray-500 text-sm mb-8">The word resets every Monday — come back with a new strategy.</p>
+                    <p className="text-gray-500 text-sm mb-8">You only get one challenge attempt per email and IP.</p>
 
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-8 w-full text-left">
                       <p className="text-[#0B1220] font-semibold text-sm">Imagine this protecting your business calls.</p>
                       <p className="text-gray-500 text-sm mt-1">Same AI. Your business name. Set up in 5 minutes. Free to try.</p>
                     </div>
 
-                    <div className="flex flex-col gap-3 w-full">
-                      <button
-                        onClick={() => {
-                          setStep('idle');
-                          setWord('');
-                          setTimer(CHALLENGE_DURATION);
-                          setSubmitError('');
-                        }}
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        Try Again
-                      </button>
-                      <a
-                        href="/free-website"
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 text-gray-500 hover:text-gray-700 text-sm transition-colors"
-                      >
-                        Get the AI for my business instead
-                        <ArrowRight className="w-4 h-4" />
-                      </a>
+                    <a
+                      href="/free-website"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 text-gray-500 hover:text-gray-700 text-sm transition-colors"
+                    >
+                      Get the AI for my business instead
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </motion.div>
+                )}
+
+                {step === 'locked' && (
+                  <motion.div
+                    key="locked"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <div className="w-24 h-24 bg-gray-100 border-2 border-gray-200 rounded-full grid place-items-center mb-6">
+                      <Shield className="w-10 h-10 text-gray-500" />
                     </div>
+                    <h2 className="text-2xl font-bold text-[#0B1220] mb-2">Challenge Already Used</h2>
+                    <p className="text-gray-600 mb-2">{callError || 'This challenge attempt has already been used.'}</p>
+                    <p className="text-gray-500 text-sm mb-8">Each email and IP gets one shot.</p>
+
+                    <a
+                      href="/free-website"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 text-gray-500 hover:text-gray-700 text-sm transition-colors"
+                    >
+                      Get the AI for my business instead
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
                   </motion.div>
                 )}
 
