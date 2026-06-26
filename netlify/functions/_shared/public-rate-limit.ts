@@ -2,8 +2,13 @@ import { createHash } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export function getClientIp(headers: Record<string, string | undefined>): string {
-  const forwarded = headers['x-forwarded-for'] || headers['X-Forwarded-For'] || '';
-  return forwarded.split(',')[0]?.trim() || headers['client-ip'] || headers['Client-Ip'] || 'unknown';
+  const trustedIp =
+    headers['x-nf-client-connection-ip']
+    || headers['X-Nf-Client-Connection-Ip']
+    || headers['client-ip']
+    || headers['Client-Ip'];
+
+  return trustedIp?.trim() || 'unknown';
 }
 
 export function hashRateLimitKey(parts: Array<string | undefined | null>): string {
