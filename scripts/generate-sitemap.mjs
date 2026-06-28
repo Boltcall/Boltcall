@@ -79,8 +79,6 @@ const ROUTES = [
   { path: "/solar-speed-score",                                 priority: "0.8", changefreq: "monthly" },
   { path: "/funnel-optimizer",                                   priority: "0.7", changefreq: "monthly" },
   { path: "/rank-on-google-offer",                               priority: "0.7", changefreq: "monthly" },
-  { path: "/prototype/live-call",                                priority: "0.3", changefreq: "monthly" },
-
   // Industry Tools
   { path: "/tools/5-minute-response-playbook",                   priority: "0.8", changefreq: "monthly" },
   { path: "/tools/vet-clinic-revenue-calculator",                priority: "0.8", changefreq: "monthly" },
