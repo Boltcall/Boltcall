@@ -172,26 +172,80 @@ ${transcript}`;
   const response = await askLLM(systemPrompt, userPrompt);
   const jsonMatch = response.match(/\[[\s\S]*\]/);
   if (!jsonMatch) {
-    // Fallback: derive scenarios from analysis.testMessages
-    return [
-      { label: 'similar_1', messages: analysis.testMessages },
-      { label: 'similar_2', messages: analysis.testMessages.map(m => m + ' please') },
-      { label: 'similar_3', messages: ['Actually, ' + (analysis.testMessages[0] || 'I need help')] },
-      { label: 'exact',     messages: analysis.testMessages },
-    ];
+    return fallbackHealScenarios(analysis);
   }
-  return JSON.parse(jsonMatch[0]) as HealScenario[];
+  try {
+    return normalizeHealScenarios(JSON.parse(jsonMatch[0]), analysis);
+  } catch {
+    return fallbackHealScenarios(analysis);
+  }
+}
+
+function fallbackHealScenarios(analysis: FailureAnalysis): HealScenario[] {
+  const messages = analysis.testMessages.length > 0 ? analysis.testMessages : ['I need help'];
+  return [
+    { label: 'similar_1', messages },
+    { label: 'similar_2', messages: messages.map(m => `${m} please`) },
+    { label: 'similar_3', messages: messages.map(m => `Actually, ${m}`) },
+    { label: 'exact', messages },
+  ];
+}
+
+function normalizeHealScenarios(raw: unknown, analysis: FailureAnalysis): HealScenario[] {
+  if (!Array.isArray(raw)) return fallbackHealScenarios(analysis);
+  const required: HealScenario['label'][] = ['similar_1', 'similar_2', 'similar_3', 'exact'];
+  const byLabel = new Map<string, HealScenario>();
+
+  for (const item of raw) {
+    const scenario = item as Partial<HealScenario>;
+    if (
+      !scenario ||
+      !required.includes(scenario.label as HealScenario['label']) ||
+      !Array.isArray(scenario.messages) ||
+      scenario.messages.length === 0 ||
+      scenario.messages.some((m) => typeof m !== 'string' || m.trim().length === 0)
+    ) {
+      return fallbackHealScenarios(analysis);
+    }
+    const label = scenario.label as HealScenario['label'];
+    byLabel.set(label, {
+      label,
+      messages: scenario.messages.map((m) => m.trim()),
+    });
+  }
+
+  if (byLabel.size !== VERIFY_RUNS || required.some((label) => !byLabel.has(label))) {
+    return fallbackHealScenarios(analysis);
+  }
+
+  return required.map((label) => byLabel.get(label)!);
 }
 
 // ─── Step 3: Create/delete temp chat agent ────────────────────────────────────
 
-async function createTempChatAgent(voiceAgentId: string): Promise<{ chatAgentId: string; llmId: string; tempLlmId: string | null }> {
+async function createTempChatAgent(
+  voiceAgentId: string,
+  promptOverride?: string,
+): Promise<{ chatAgentId: string; llmId: string; tempLlmId: string | null }> {
   const voiceAgent = await retellFetch(`/get-agent/${voiceAgentId}`);
   const engineType = voiceAgent.response_engine?.type;
   let llmId = voiceAgent.response_engine?.llm_id;
   let tempLlmId: string | null = null;
 
-  if (!llmId && engineType === 'custom-llm') {
+  if (promptOverride !== undefined) {
+    const newLlm = await retellFetch('/create-retell-llm', {
+      method: 'POST',
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        general_prompt: promptOverride,
+      }),
+    });
+    if (!newLlm?.llm_id) {
+      throw new Error('Failed to create temporary Retell LLM for self-heal test');
+    }
+    llmId = newLlm.llm_id;
+    tempLlmId = newLlm.llm_id;
+  } else if (!llmId && engineType === 'custom-llm') {
     const supabase = getServiceSupabase();
     const { data: agentRow } = await supabase
       .from('agents')
@@ -433,23 +487,8 @@ async function setPromptTarget(
     .eq('user_id', userId);
 }
 
-async function applyPromptFix(
-  target: PromptTarget,
-  promptFix: string,
-  iteration: number,
-  supabase: any,
-  userId: string,
-  agentId: string,
-): Promise<{ oldPrompt: string; newPrompt: string }> {
-  const oldPrompt = target.originalPrompt;
-
-  const fixSection = `\n\n## AUTO-FIX v${iteration} (${new Date().toISOString().split('T')[0]})\n${promptFix}`;
-  const newPrompt = oldPrompt + fixSection;
-
-  await setPromptTarget(target, newPrompt, supabase, userId, agentId);
-  target.originalPrompt = newPrompt;
-
-  return { oldPrompt, newPrompt };
+function buildPromptWithFix(prompt: string, promptFix: string, iteration: number): string {
+  return `${prompt}\n\n## AUTO-FIX v${iteration} (${new Date().toISOString().split('T')[0]})\n${promptFix}`;
 }
 
 // ─── Main Handler ─────────────────────────────────────────────────────────────
@@ -532,7 +571,7 @@ const handler: Handler = async (event) => {
       let analysis = await analyzeFailure(transcript, originalPrompt, callAnalysis);
 
       // Reproduce the failure (3 quick runs)
-      const { chatAgentId: reproAgentId, tempLlmId: reproTempLlmId } = await createTempChatAgent(agentId);
+      const { chatAgentId: reproAgentId, tempLlmId: reproTempLlmId } = await createTempChatAgent(agentId, originalPrompt);
       let reproduced = 0;
       try {
         for (let i = 0; i < 3; i++) {
@@ -566,28 +605,27 @@ const handler: Handler = async (event) => {
       let currentPromptFix = analysis.promptFix;
       const priorFailedFixes: string[] = [];
       let failedScenarioLabels: string[] = [];
+      let verifiedPrompt: string | null = null;
 
       while (iteration < MAX_HEAL_ITERATIONS && !fixVerified) {
         iteration++;
 
         // Apply the fix
-        const { oldPrompt } = await applyPromptFix(promptTarget, currentPromptFix, iteration, supabase, userId, agentId);
+        const candidatePrompt = buildPromptWithFix(originalPrompt, currentPromptFix, iteration);
 
         // Test all 4 scenarios — ALL must pass
-        const { chatAgentId: verifyAgentId, tempLlmId: verifyTempLlmId } = await createTempChatAgent(agentId);
+        const { chatAgentId: verifyAgentId, tempLlmId: verifyTempLlmId } = await createTempChatAgent(agentId, candidatePrompt);
         passedAfterFix = 0;
         failedScenarioLabels = [];
 
         try {
           for (const scenario of healScenarios) {
             const result = await runChatTest(verifyAgentId, scenario.messages);
-            let passed: boolean;
+            const judge = await judgeHealScenario(result.conversation, scenario, analysis);
+            let passed = judge.passed;
             if (activeCriteria.length > 0) {
               const rubricScore = await scoreWithRubric(result.conversation, activeCriteria);
-              passed = rubricScore.overall >= 70;
-            } else {
-              const judge = await judgeHealScenario(result.conversation, scenario, analysis);
-              passed = judge.passed;
+              passed = passed && rubricScore.overall >= 70;
             }
             if (passed) {
               passedAfterFix++;
@@ -600,6 +638,7 @@ const handler: Handler = async (event) => {
         }
 
         fixVerified = passedAfterFix === VERIFY_RUNS;
+        if (fixVerified) verifiedPrompt = candidatePrompt;
 
         if (!fixVerified && iteration < MAX_HEAL_ITERATIONS) {
           // Re-analyze: inform LLM which scenarios still failed
@@ -607,18 +646,12 @@ const handler: Handler = async (event) => {
           analysis = await analyzeFailure(transcript, originalPrompt, callAnalysis, priorFailedFixes);
           currentPromptFix = analysis.promptFix;
 
-          // Revert the failed fix before applying the next one
-          await setPromptTarget(promptTarget, oldPrompt, supabase, userId, agentId);
-          promptTarget.originalPrompt = oldPrompt;
         }
       }
 
-      // If still not verified after all iterations, revert to original prompt
-      if (!fixVerified) {
-        try {
-          await setPromptTarget(promptTarget, originalPrompt, supabase, userId, agentId);
-          promptTarget.originalPrompt = originalPrompt;
-        } catch { /* ignore */ }
+      if (fixVerified && verifiedPrompt) {
+        await setPromptTarget(promptTarget, verifiedPrompt, supabase, userId, agentId);
+        promptTarget.originalPrompt = verifiedPrompt;
       }
 
       const elapsedMs = Date.now() - startTime;
