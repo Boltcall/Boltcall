@@ -329,6 +329,7 @@ const MetricCardsDemoPage = React.lazy(() => import('../pages/MetricCardsDemoPag
 const OriginButtonDemoPage = React.lazy(() => import('../pages/OriginButtonDemoPage'));
 const GlowHorizonDemoPage = React.lazy(() => import('../pages/GlowHorizonDemoPage'));
 const DemoFlowPage = React.lazy(() => import('../pages/DemoFlowPage'));
+const LiveCallPrototypePage = React.lazy(() => import('../pages/LiveCallPrototypePage'));
 const DrHazakLandingPage = React.lazy(() => import('../pages/DrHazakLandingPage'));
 const AgentArchitecturePage = React.lazy(() => import('../pages/AgentArchitecturePage'));
 const LogoAnimationDemoPage = React.lazy(() => import('../pages/LogoAnimationDemoPage'));
@@ -808,6 +809,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/logo-demo" element={<LogoAnimationDemoPage />} />
         <Route path="/rocker-switch-demo" element={<RockerSwitchDemoPage />} />
         <Route path="/demo" element={<DemoFlowPage />} />
+        <Route path="/prototype/live-call" element={<LiveCallPrototypePage />} />
         <Route path="/agent-architecture" element={<AgentArchitecturePage />} />
         <Route path="/funnel-optimizer" element={<FunnelOptimizer />} />
         <Route path="/funnel-optimiser" element={<FunnelOptimiser />} />
