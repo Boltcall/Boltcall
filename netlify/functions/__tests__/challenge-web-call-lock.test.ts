@@ -90,7 +90,7 @@ function makeEvent(body: Record<string, unknown>, ip: string) {
     headers: {
       origin: 'https://boltcall.org',
       'content-type': 'application/json',
-      'x-forwarded-for': ip,
+      'x-nf-client-connection-ip': ip,
     },
     body: JSON.stringify(body),
   } as any;

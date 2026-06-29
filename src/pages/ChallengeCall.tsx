@@ -208,7 +208,7 @@ const ChallengeCall: React.FC = () => {
                   {step === 'idle' && 'Ready'}
                   {step === 'connecting' && 'Connecting...'}
                   {step === 'active' && 'LIVE — Call in progress'}
-                  {(step === 'ended' || step === 'submitting' || step === 'wrong') && 'Call ended'}
+                  {(step === 'ended' || step === 'submitting' || step === 'wrong' || step === 'locked') && 'Call ended'}
                 </span>
               </div>
               {step === 'active' && (
@@ -389,7 +389,7 @@ const ChallengeCall: React.FC = () => {
                       <Shield className="w-10 h-10 text-gray-500" />
                     </div>
                     <h2 className="text-2xl font-bold text-[#0B1220] mb-2">AI Held Strong</h2>
-                    <p className="text-gray-600 mb-2">That was not the secret word. Try a new angle next time.</p>
+                    <p className="text-gray-600 mb-2">That was not the secret word. The AI defense rate is over 95%.</p>
                     <p className="text-gray-500 text-sm mb-8">You only get one challenge attempt per email and IP.</p>
 
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-8 w-full text-left">
