@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../lib/utils', () => ({
   updateMetaDescription: vi.fn(),
@@ -72,9 +72,14 @@ vi.mock('../../components/StickyScrollSection', () => ({
 }));
 
 import Home from '../Home';
+import { useSchemaInjector } from '../../hooks/useSchemaInjector';
 
 describe('Home marketing page', () => {
-  it('renders exactly one crawlable speed-to-lead H1 and internal SEO links', () => {
+  beforeEach(() => {
+    vi.mocked(useSchemaInjector).mockClear();
+  });
+
+  it('keeps the long speed-to-lead copy out of visible UI and in homepage schema', () => {
     render(
       <MemoryRouter>
         <Home />
@@ -85,11 +90,22 @@ describe('Home marketing page', () => {
     expect(h1s).toHaveLength(1);
     expect(h1s[0]).toHaveTextContent('Speed-to-Lead Software for Local Service Businesses');
 
-    expect(screen.getByRole('link', { name: /speed-to-lead guide/i })).toHaveAttribute('href', '/speed-to-lead');
-    expect(screen.getByRole('link', { name: /top ai receptionist agencies/i })).toHaveAttribute('href', '/blog/top-10-ai-receptionist-agencies');
-    expect(screen.getByRole('link', { name: /hvac ai lead response/i })).toHaveAttribute('href', '/blog/hvac-ai-lead-response');
-    expect(screen.getByRole('link', { name: /lead response scorecard/i })).toHaveAttribute('href', '/lead-response-scorecard');
-    expect(screen.getByRole('link', { name: /comparisons/i })).toHaveAttribute('href', '/comparisons');
+    expect(screen.queryByText(/Built to answer, qualify, and book local service leads before they go cold/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /speed-to-lead guide/i })).not.toBeInTheDocument();
+
+    const schemas = vi.mocked(useSchemaInjector).mock.calls[0][0];
+    expect(schemas[0]).toMatchObject({
+      '@type': 'WebPage',
+      name: 'Instant lead response',
+      significantLink: [
+        'https://boltcall.org/speed-to-lead',
+        'https://boltcall.org/blog/top-10-ai-receptionist-agencies',
+        'https://boltcall.org/blog/hvac-ai-lead-response',
+        'https://boltcall.org/lead-response-scorecard',
+        'https://boltcall.org/comparisons',
+      ],
+    });
+    expect(schemas[0].description).toContain('Boltcall is speed-to-lead software for local service businesses');
   });
 
   it('does not render the removed automation integrations promo strip', () => {
