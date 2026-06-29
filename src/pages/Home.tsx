@@ -235,7 +235,7 @@ const Home: React.FC = () => {
           <HomepageSeoIntro />
 
           {/* Boltcall Platform Preview — interactive dark bento card */}
-          <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[360px]">
+          <section className="relative z-[2] -mt-24 px-4 py-8 sm:-mt-[360px] sm:px-8 lg:px-16">
             <BentoCard />
           </section>
 
