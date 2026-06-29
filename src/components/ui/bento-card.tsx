@@ -226,11 +226,11 @@ const BentoCard = () => {
             </p>
           </div>
 
-          <div className="relative z-30 h-[360px] w-full overflow-hidden rounded-2xl sm:h-[540px] sm:rounded-[2rem]">
-            <div className="absolute left-16 top-16 h-full w-full rounded-3xl border border-white/[0.08] bg-gray-800/40 opacity-80" />
+          <div className="relative z-30 h-[360px] w-full overflow-hidden rounded-2xl sm:h-[500px] sm:rounded-[2rem]">
+            <div className="absolute inset-x-6 bottom-0 top-12 rounded-3xl border border-white/[0.08] bg-gray-800/40 opacity-80 sm:left-14" />
 
             <div
-              className="absolute left-24 top-8 flex h-full w-full flex-col overflow-hidden rounded-tl-3xl bg-white"
+              className="absolute inset-y-6 left-8 right-0 flex flex-col overflow-hidden rounded-tl-3xl bg-white sm:left-20"
               style={{ boxShadow: "0 0 0 6px rgba(255,255,255,0.07)" }}
             >
               <div className="relative flex items-center rounded-tl-3xl border-b border-slate-200 bg-white px-5 py-4">
@@ -247,10 +247,10 @@ const BentoCard = () => {
               </div>
 
               <div className="flex h-full bg-[#f3f3f7]">
-                <div className="flex w-[46%] flex-col items-center justify-center border-r border-[#d8dce7] bg-[#f8f8f8] px-6 py-8">
+                <div className="flex w-[43%] flex-col items-center justify-center border-r border-[#d8dce7] bg-[#f8f8f8] px-5 py-6">
                   <div className="flex flex-1 items-center justify-center">
                     <SiriOrb
-                      size="286px"
+                      size="240px"
                       animationDuration={18}
                       className="drop-shadow-[0_24px_64px_rgba(61,108,229,0.24)]"
                       colors={{
@@ -261,7 +261,7 @@ const BentoCard = () => {
                     />
                   </div>
 
-                  <div className="mx-auto mt-6 flex max-w-[360px] flex-wrap justify-center gap-2">
+                  <div className="mx-auto mt-5 flex max-w-[300px] flex-wrap justify-center gap-2">
                     {DEMO_INDUSTRIES.map((item) => {
                       const isActive = item.id === industry;
 
@@ -283,31 +283,31 @@ const BentoCard = () => {
                     })}
                   </div>
 
-                  <p className="mt-3 text-center text-[12px] text-[#51607b]">
+                  <p className="mt-3 text-center text-[11px] text-[#51607b]">
                     {activeIndustry.blurb}
                   </p>
                 </div>
 
-                <div className="flex flex-1 flex-col px-7 py-8 sm:px-9 sm:py-9">
-                  <div className="max-w-[420px]">
+                <div className="flex flex-1 flex-col px-6 py-6 sm:px-7 sm:py-7">
+                  <div className="max-w-[360px]">
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#d7dbeb] bg-white/80 px-3 py-1 text-[11px] font-semibold tracking-[0.1em] text-[#4369eb]">
                       <PhoneCall className="h-3.5 w-3.5" />
                       LIVE AGENT DEMO
                     </div>
-                    <h3 className="mt-4 max-w-[420px] text-[27px] font-medium leading-[1.02] tracking-[-0.055em] text-[#13233f] sm:text-[34px]">
+                    <h3 className="mt-4 max-w-[360px] text-[24px] font-medium leading-[1.04] tracking-[-0.05em] text-[#13233f] sm:text-[30px]">
                       Receive a live call from our agent and hear how Boltcall handles real customer conversations.
                     </h3>
                   </div>
 
-                  <form className="mt-8 flex flex-1 flex-col" onSubmit={handleSubmit}>
-                    <div className="space-y-5">
+                  <form className="mt-6 flex flex-1 flex-col" onSubmit={handleSubmit}>
+                    <div className="space-y-4">
                       <DemoField label="Industry">
                         <select
                           value={industry}
                           onChange={(event) =>
                             setIndustry(event.target.value as DemoIndustryId)
                           }
-                          className="w-full bg-transparent text-[20px] font-medium tracking-[-0.04em] text-[#13233f] outline-none sm:text-[22px]"
+                          className="w-full bg-transparent text-[18px] font-medium tracking-[-0.04em] text-[#13233f] outline-none sm:text-[20px]"
                         >
                           {DEMO_INDUSTRIES.map((item) => (
                             <option key={item.id} value={item.id}>
@@ -326,7 +326,7 @@ const BentoCard = () => {
                           autoComplete="name"
                           required
                           className="w-full"
-                          inputClassName="border-[#13233f] pb-1 pt-2 text-[20px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[22px]"
+                          inputClassName="border-[#13233f] pb-1 pt-2 text-[18px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[20px]"
                         />
                       </DemoField>
 
@@ -339,12 +339,12 @@ const BentoCard = () => {
                           autoComplete="tel"
                           required
                           className="w-full"
-                          inputClassName="border-[#13233f] pb-1 pt-2 text-[20px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[22px]"
+                          inputClassName="border-[#13233f] pb-1 pt-2 text-[18px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[20px]"
                         />
                       </DemoField>
                     </div>
 
-                    <div className="mt-auto pt-8">
+                    <div className="mt-auto pt-6">
                       <button
                         type="submit"
                         disabled={requestState === "loading"}
