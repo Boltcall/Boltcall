@@ -100,8 +100,120 @@ const BentoCard = () => {
 
   return (
     <div className="flex w-full items-center justify-center antialiased">
+      <div className="w-full sm:hidden">
+        <div className="overflow-hidden rounded-[28px] border border-[#d8dce7] bg-[#f3f3f7] px-5 py-6 shadow-[0_20px_60px_rgba(19,35,63,0.08)]">
+          <div className="flex justify-center">
+            <SiriOrb
+              size="190px"
+              animationDuration={18}
+              className="drop-shadow-[0_18px_44px_rgba(61,108,229,0.18)]"
+              colors={{
+                c1: "oklch(79% 0.12 343)",
+                c2: "oklch(81% 0.11 236)",
+                c3: "oklch(73% 0.15 274)",
+              }}
+            />
+          </div>
+
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            {DEMO_INDUSTRIES.map((item) => {
+              const isActive = item.id === industry;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setIndustry(item.id)}
+                  className={cn(
+                    "inline-flex h-9 items-center justify-center rounded-[8px] px-3 text-[12px] font-semibold tracking-[-0.02em] transition-colors",
+                    isActive
+                      ? "bg-[#4369eb] text-white shadow-[0_8px_18px_rgba(67,105,235,0.2)]"
+                      : "bg-white text-[#13233f] hover:bg-[#eef1f7]",
+                  )}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#d7dbeb] bg-white/80 px-3 py-1 text-[11px] font-semibold tracking-[0.1em] text-[#4369eb]">
+              <PhoneCall className="h-3.5 w-3.5" />
+              LIVE AGENT DEMO
+            </div>
+            <h3 className="mt-4 text-[28px] font-medium leading-[1.02] tracking-[-0.055em] text-[#13233f]">
+              Receive a live call from our agent and hear how Boltcall handles real customer conversations.
+            </h3>
+            <p className="mt-3 text-[13px] text-[#51607b]">{activeIndustry.blurb}</p>
+          </div>
+
+          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+            <DemoField label="Industry">
+              <select
+                value={industry}
+                onChange={(event) => setIndustry(event.target.value as DemoIndustryId)}
+                className="w-full bg-transparent text-[20px] font-medium tracking-[-0.04em] text-[#13233f] outline-none"
+              >
+                {DEMO_INDUSTRIES.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </DemoField>
+
+            <DemoField label="Name">
+              <Input
+                type="text"
+                label="Your name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                autoComplete="name"
+                required
+                className="w-full"
+                inputClassName="border-[#13233f] pb-1 pt-2 text-[20px] font-normal tracking-[-0.04em] text-[#13233f]"
+              />
+            </DemoField>
+
+            <DemoField label="Phone Number">
+              <Input
+                type="tel"
+                label="+15551234567"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                autoComplete="tel"
+                required
+                className="w-full"
+                inputClassName="border-[#13233f] pb-1 pt-2 text-[20px] font-normal tracking-[-0.04em] text-[#13233f]"
+              />
+            </DemoField>
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={requestState === "loading"}
+                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#091c46] px-5 text-[14px] font-semibold tracking-[-0.03em] text-white transition-colors hover:bg-[#112758] disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {requestState === "loading" ? "Calling..." : "Get a call"}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+
+              <p
+                className={cn(
+                  "mt-4 text-[12px] leading-5",
+                  requestState === "error" ? "text-[#b42318]" : "text-[#51607b]",
+                )}
+              >
+                {message || "One number. Multiple demo agents. We route the call by industry."}
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
+
       <div
-        className="relative m-0 w-full max-w-5xl transition-all duration-500 hover:-translate-y-1"
+        className="relative m-0 hidden w-full max-w-5xl transition-all duration-500 hover:-translate-y-1 sm:block"
         style={{ transitionTimingFunction: "cubic-bezier(0.175, 0.885, 0.32, 2.2)" }}
       >
         <div className="w-full overflow-hidden rounded-3xl border border-white/10 bg-gray-900 shadow-2xl">
