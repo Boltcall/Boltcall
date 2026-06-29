@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import Header from '../components/Header';
@@ -63,6 +64,13 @@ interface BusinessProfile {
   proofMetric: string;
 }
 
+const homepageLinkTargets = new Set([
+  '/blog/top-10-ai-receptionist-agencies',
+  '/blog/hvac-ai-lead-response',
+  '/blog/best-ai-receptionist-home-services',
+  '/blog/best-ai-receptionist-tools',
+]);
+
 const titleOverrides: Record<string, string> = {
   '/blog/the-new-reality-for-local-businesses': 'The New Reality for Local Businesses',
   '/blog/why-speed-matters': 'Why Speed Matters for Local Businesses',
@@ -86,7 +94,7 @@ const titleOverrides: Record<string, string> = {
   '/blog/understanding-live-answering-service-costs': 'Live Answering Service Costs Explained',
   '/blog/tips-for-professional-telephone-etiquette': 'Professional Telephone Etiquette Tips',
   '/blog/answering-service-scheduling': 'Answering Service Appointment Scheduling',
-  '/blog/top-10-ai-receptionist-agencies': 'Top AI Receptionist Agencies',
+  '/blog/top-10-ai-receptionist-agencies': 'Best AI Receptionist Agencies and AI Phone Receptionist Solutions',
   '/blog/create-gemini-gem-business-assistant': 'Create a Gemini Gem Business Assistant',
   '/blog/5-signs-you-need-ai-receptionist': '5 Signs You Need an AI Receptionist',
   '/blog/speed-to-lead-local-business': 'Speed to Lead for Local Businesses',
@@ -99,7 +107,7 @@ const titleOverrides: Record<string, string> = {
   '/blog/ai-phone-answering-dentists': 'AI Phone Answering for Dentists',
   '/blog/best-after-hours-answering-service': 'Best After-Hours Answering Service',
   '/blog/ai-chatbot-vs-live-chat-phone-comparison': 'AI Chatbot vs Live Chat vs Phone Answering',
-  '/blog/ai-receptionist-for-plumbers': 'AI Receptionist for Plumbers',
+  '/blog/ai-receptionist-for-plumbers': 'AI Receptionist for Plumbers: 2026 Speed-to-Lead Guide',
   '/blog/ai-receptionist-worth-it-roi': 'AI Receptionist ROI Guide',
   '/blog/missed-calls-statistics-local-business-2026': 'Missed Call Statistics for Local Businesses',
   '/blog/best-ai-receptionist-home-services': 'Best AI Receptionist for Home Services',
@@ -121,7 +129,7 @@ const titleOverrides: Record<string, string> = {
   '/blog/never-miss-a-call-after-business-hours': 'Never Miss a Call After Business Hours',
   '/blog/whatsapp-appointment-booking-plumbers': 'WhatsApp Appointment Booking for Plumbers',
   '/blog/ai-receptionist-for-dentists': 'AI Receptionist for Dentists',
-  '/blog/ai-receptionist-for-law-firms': 'AI Receptionist for Law Firms',
+  '/blog/ai-receptionist-for-law-firms': 'AI Receptionist for Law Firms: Speed-to-Lead Intake Guide',
   '/blog/speed-to-lead-for-law-firms': 'Speed to Lead for Law Firms',
 };
 
@@ -710,13 +718,55 @@ function buildFaqs(topic: string, profile: BusinessProfile): FaqItem[] {
   ];
 }
 
+function pageSpecificSections(path: string): BlogSection[] {
+  if (path === '/blog/top-10-ai-receptionist-agencies') {
+    return [
+      {
+        title: 'How To Pick The Best AI Receptionist',
+        paragraphs: [
+          'The best AI receptionist is not the product with the longest feature list. For a local service business, the best AI receptionist solution is the one that answers fast, sounds credible, qualifies the customer, and gets the next step booked before the buyer keeps searching.',
+          'If you are comparing the best AI phone receptionist options, look for speed-to-lead workflow first: live call answering, missed-call recovery, form follow-up, calendar booking, and clean handoff notes for the team.',
+        ],
+      },
+    ];
+  }
+
+  if (path === '/blog/ai-receptionist-for-plumbers') {
+    return [
+      {
+        title: '2026 Plumber Buying Criteria',
+        paragraphs: [
+          'In 2026, a plumber AI receptionist should be judged by emergency capture, missed-call recovery, location intake, urgency triage, and the ability to move a leak, clog, or water-heater lead toward dispatch or a booked estimate.',
+        ],
+      },
+    ];
+  }
+
+  if (path === '/blog/ai-receptionist-for-law-firms') {
+    return [
+      {
+        title: 'Law Firm Intake Must Stay Fast And Qualified',
+        paragraphs: [
+          'For law firms, speed-to-lead does not mean rushing sensitive intake. It means acknowledging the prospective client quickly, collecting the practice area and contact details, and routing the consultation request before the prospect contacts the next firm.',
+        ],
+      },
+    ];
+  }
+
+  return [];
+}
+
 function buildArticle(pathname: string): BlogArticle {
   const path = pathname.replace(/\/$/, '');
   const title = titleFromPath(path);
   const topic = topicFromTitle(title);
   const intent = detectIntent(path, title);
   const profile = profileFor(path, title);
-  const description = `${title}: a practical Boltcall guide for ${profile.audience} that want faster lead response, fewer missed opportunities, and more booked jobs.`;
+  const customDescriptions: Record<string, string> = {
+    '/blog/top-10-ai-receptionist-agencies':
+      'Compare the best AI receptionist agencies, AI receptionist solutions, and AI phone receptionist options for local service businesses that need faster lead response.',
+  };
+  const description = customDescriptions[path] || `${title}: a practical Boltcall guide for ${profile.audience} that want faster lead response, fewer missed opportunities, and more booked jobs.`;
   const intro = `For ${profile.audience}, this comes down to one moment: what happens immediately after ${profile.buyer} reaches out. That moment decides whether the lead becomes ${profile.bookedOutcome} or quietly moves to a competitor.`;
 
   return {
@@ -727,7 +777,7 @@ function buildArticle(pathname: string): BlogArticle {
     date: 'June 14, 2026',
     readTime: '9 min read',
     intent,
-    sections: buildSections(intent, topic, profile),
+    sections: [...buildSections(intent, topic, profile), ...pageSpecificSections(path)],
     faqs: buildFaqs(topic, profile),
     conclusion: [
       `${title} should make the business faster, calmer, and easier to buy from. The strongest systems do not add more work for the team; they protect every high-intent lead from delay.`,
@@ -900,6 +950,15 @@ export default function CanonicalBlogArticlePage() {
               <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
                 {article.intro}
               </p>
+              {homepageLinkTargets.has(article.path) && (
+                <p className="mt-5 text-lg leading-8 text-gray-700">
+                  For the broader platform view, see the{' '}
+                  <Link to="/" className="font-semibold text-blue-600 hover:underline">
+                    Boltcall speed-to-lead system
+                  </Link>{' '}
+                  for local service businesses.
+                </p>
+              )}
             </div>
 
             {article.sections.map((section, index) => (
