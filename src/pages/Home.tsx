@@ -1,4 +1,5 @@
 import React, { useEffect, lazy, Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import {
@@ -23,6 +24,66 @@ const FinalCTA = lazy(() => import('../components/FinalCTA'));
 const Footer = lazy(() => import('../components/Footer'));
 const StickyScrollSection = lazy(() => import('../components/StickyScrollSection').then(module => ({ default: module.StickyScrollSection })));
 
+function HomepageSeoIntro() {
+  return (
+    <section className="relative z-[2] bg-white px-4 sm:px-8 lg:px-16 py-12">
+      <div className="mx-auto max-w-4xl">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600 mb-3">Instant lead response</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-5">
+          Built to answer, qualify, and book local service leads before they go cold
+        </h2>
+        <div className="space-y-5 text-lg leading-8 text-gray-700">
+          <p>
+            Boltcall is speed-to-lead software for local service businesses that cannot afford to let phone calls, web forms,
+            missed calls, texts, or after-hours inquiries sit unanswered. When a homeowner, patient, client, or property owner
+            reaches out, they are usually comparing multiple providers at once. The business that responds first gets the best
+            chance to earn the appointment, quote, consultation, or emergency job.
+          </p>
+          <p>
+            Instead of sending another passive notification into a CRM, Boltcall responds in seconds, captures the customer
+            need, qualifies urgency, and moves the lead toward booking or a clean team handoff. That makes it useful for HVAC
+            companies, plumbers, dentists, law firms, med spas, roofers, solar teams, and other local service operators where
+            missed calls and slow follow-up turn paid demand into lost revenue.
+          </p>
+          <p>
+            Use Boltcall to protect the first minute of every lead: answer live calls, recover missed calls with follow-up,
+            handle after-hours capture, and keep the next step clear for the customer and the team.
+          </p>
+          <p>
+            The workflow is intentionally simple. A new inquiry comes in, Boltcall responds, asks the practical intake
+            questions, and gives the customer a path forward instead of making them wait for office hours. The team sees the
+            lead details in a cleaner format, so a dispatcher, front desk, owner, or intake coordinator can step in with
+            context instead of piecing together a voicemail, form note, and half-finished text thread.
+          </p>
+          <p>
+            That speed-to-lead layer is most valuable when demand is already expensive to create. If you are buying Google
+            Ads, ranking in maps, running referral campaigns, or earning repeat calls from past customers, every delayed
+            response wastes work you already paid for. Boltcall helps turn that demand into a real conversation while the
+            buyer is still ready to act.
+          </p>
+        </div>
+        <nav aria-label="Homepage SEO links" className="mt-7 flex flex-wrap gap-3 text-sm font-semibold">
+          <Link to="/speed-to-lead" className="rounded-lg border border-blue-200 px-4 py-2 text-blue-700 hover:bg-blue-50">
+            Speed-to-lead guide
+          </Link>
+          <Link to="/blog/top-10-ai-receptionist-agencies" className="rounded-lg border border-blue-200 px-4 py-2 text-blue-700 hover:bg-blue-50">
+            Top AI receptionist agencies
+          </Link>
+          <Link to="/blog/hvac-ai-lead-response" className="rounded-lg border border-blue-200 px-4 py-2 text-blue-700 hover:bg-blue-50">
+            HVAC AI lead response
+          </Link>
+          <Link to="/lead-response-scorecard" className="rounded-lg border border-blue-200 px-4 py-2 text-blue-700 hover:bg-blue-50">
+            Lead response scorecard
+          </Link>
+          <Link to="/comparisons" className="rounded-lg border border-blue-200 px-4 py-2 text-blue-700 hover:bg-blue-50">
+            Comparisons
+          </Link>
+        </nav>
+      </div>
+    </section>
+  );
+}
+
 const Home: React.FC = () => {
   // Add smooth-scroll class to body for homepage
   useEffect(() => {
@@ -33,8 +94,8 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.title = 'AI Receptionist: 24/7 Booking & Lead Capture | Boltcall';
-    updateMetaDescription('Never miss a call or lead. AI receptionist answers 24/7, books appointments instantly, captures leads automatically. Start free today.');
+    document.title = 'Speed-to-Lead Software for Local Service Businesses | Boltcall';
+    updateMetaDescription('Boltcall is speed-to-lead software for local service businesses: instant lead response, missed-call recovery, AI qualification, booking, and after-hours capture.');
 
     const speakableSchema = {
       "@context": "https://schema.org",
@@ -63,7 +124,7 @@ const Home: React.FC = () => {
           "name": "What is Boltcall?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall is a fully automated AI receptionist and speed-to-lead platform for local service businesses. Boltcall uses AI — not human receptionists — to answer every call 24/7, book appointments instantly, capture leads, and send follow-up text messages automatically."
+            "text": "Boltcall is speed-to-lead software for local service businesses. It uses AI to answer calls, recover missed calls, qualify leads, book appointments, and follow up automatically before buyers move to a competitor."
           }
         },
         {
@@ -109,7 +170,7 @@ const Home: React.FC = () => {
         "@type": "ImageObject",
         "url": "https://boltcall.org/logo.png"
       },
-      "description": "AI-powered speed-to-lead and receptionist platform for local service businesses. Answers every call 24/7, books appointments instantly, and captures leads automatically.",
+      "description": "Speed-to-lead software for local service businesses. Boltcall answers calls, recovers missed calls, books appointments, and captures after-hours leads automatically.",
       "sameAs": [
         "https://www.linkedin.com/company/boltcall"
       ],
@@ -129,7 +190,7 @@ const Home: React.FC = () => {
       "operatingSystem": "Web",
       "url": "https://boltcall.org",
       "inLanguage": "en-US",
-      "description": "AI receptionist that answers calls 24/7, books appointments, captures leads, and sends follow-up texts for local service businesses.",
+      "description": "Speed-to-lead software that answers calls, recovers missed calls, qualifies leads, books appointments, and sends follow-up texts for local service businesses.",
       "image": ORG_LOGO_URL,
       "offers": {
         "@type": "Offer",
@@ -171,6 +232,7 @@ const Home: React.FC = () => {
         <Header />
         <main className="pb-0">
           <Hero />
+          <HomepageSeoIntro />
 
           {/* Boltcall Platform Preview — interactive dark bento card */}
           <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[360px]">
