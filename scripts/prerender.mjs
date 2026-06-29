@@ -46,6 +46,7 @@ const ROUTES = [
   '/giveaway',
   '/challenge',
   '/demo',
+  '/prototype/live-call',
   '/drhazak',
   '/agent-architecture',
   // Lead magnets
