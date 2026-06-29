@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button-shadcn"
-import { Input } from "@/components/ui/input-shadcn"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { CheckIcon, ArrowRightIcon, Loader2, ChevronDown } from "lucide-react"
@@ -234,11 +234,13 @@ export function GiveawayMultiStepForm({
                     <Input
                       id={field.field}
                       type={field.type || "text"}
+                      label={field.placeholder || field.label}
                       placeholder={field.placeholder}
                       value={formData[field.field] || ""}
                       onChange={(e) => handleInputChange(field.field, e.target.value)}
                       autoFocus={fieldIndex === 0}
-                      className="h-10 text-sm transition-all duration-500 border-white/30 bg-white/10 backdrop-blur !text-white placeholder-white/60 focus:border-white/50 focus:ring-white/30 caret-white"
+                      className="w-full"
+                      inputClassName="h-10 border-white/30 bg-white/10 text-sm text-white caret-white"
                       style={{ color: '#ffffff', opacity: 1 }}
                     />
                   </div>

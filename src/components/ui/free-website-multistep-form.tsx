@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button-shadcn"
-import { Input } from "@/components/ui/input-shadcn"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { CheckIcon, ArrowRightIcon, Loader2 } from "lucide-react"
@@ -215,11 +215,13 @@ export function FreeWebsiteMultiStepForm({
                     <Input
                       id={field.field}
                       type={field.type || "text"}
+                      label={field.placeholder || field.label}
                       placeholder={field.placeholder}
                       value={formData[field.field] || ""}
                       onChange={(e) => handleInputChange(field.field, e.target.value)}
                       autoFocus={fieldIndex === 0}
-                      className="h-12 text-base transition-all duration-500 border-white/30 bg-white/10 backdrop-blur text-white placeholder-white/60 focus:border-white/50 focus:ring-white/30 focus:bg-white/10"
+                      className="w-full"
+                      inputClassName="h-12 border-white/30 bg-white/10 text-base text-white focus:bg-white/10"
                       style={{ color: '#ffffff', backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
                     />
                   </div>
