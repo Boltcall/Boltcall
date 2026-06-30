@@ -3,6 +3,7 @@ import Retell from 'retell-sdk';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireAuth, getUserAgentIds, userOwnsAgent } from './_shared/require-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { listRetellVoiceAgents } from './_shared/retell-call-list';
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -451,7 +452,7 @@ const handler: Handler = async (event) => {
         return { statusCode: 200, headers, body: JSON.stringify(agent) };
       }
       // List — return only agents owned by this user, not the org-wide list
-      const allAgents = await client.agent.list();
+      const allAgents = await listRetellVoiceAgents<any>(apiKey);
       const ownedSet = new Set(ownedAgentIds);
       const filtered = (allAgents || []).filter((a: any) => ownedSet.has(a.agent_id));
       return { statusCode: 200, headers, body: JSON.stringify(filtered) };
@@ -1026,7 +1027,7 @@ const handler: Handler = async (event) => {
           try {
             const sb = getSupabaseAdmin();
             if (sb) {
-              const allAgents = await client.agent.list();
+              const allAgents = await listRetellVoiceAgents<any>(apiKey);
               const matchingAgent = (allAgents || []).find(
                 (a: any) => a.response_engine?.llm_id === llm_id,
               );

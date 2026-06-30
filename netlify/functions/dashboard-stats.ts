@@ -1,7 +1,11 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
 import { getSupabase } from './_shared/token-utils';
-import { buildRetellStartTimestampFilter, normalizeRetellCallList } from './_shared/retell-call-list';
+import {
+  buildRetellStartTimestampFilter,
+  listRetellVoiceAgents,
+  normalizeRetellCallList,
+} from './_shared/retell-call-list';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
@@ -34,7 +38,7 @@ async function getRetellStats(apiKey: string) {
         },
         limit: 500,
       } as unknown as Parameters<typeof client.call.list>[0]),
-      client.agent.list(),
+      listRetellVoiceAgents(apiKey),
     ]);
 
     const recentCallsList = normalizeRetellCallList<any>(recentCalls);

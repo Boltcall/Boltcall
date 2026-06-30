@@ -46,3 +46,39 @@ export function normalizeRetellCallList<T = unknown>(response: unknown): T[] {
   }
   return [];
 }
+
+export async function listRetellVoiceAgents<T = unknown>(
+  apiKey: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<T[]> {
+  const agents: T[] = [];
+  let pagination_key: string | undefined;
+
+  do {
+    const body: Record<string, unknown> = {
+      limit: 100,
+      filter_criteria: { channel: 'voice' },
+    };
+    if (pagination_key) body.pagination_key = pagination_key;
+
+    const response = await fetchImpl('https://api.retellai.com/v2/list-agents', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const detail = payload?.error_message || payload?.message || `HTTP ${response.status}`;
+      throw new Error(`Retell list agents failed: ${detail}`);
+    }
+
+    const items = Array.isArray(payload?.items) ? payload.items : Array.isArray(payload) ? payload : [];
+    agents.push(...items);
+    pagination_key = payload?.has_more ? payload?.pagination_key : undefined;
+  } while (pagination_key);
+
+  return agents;
+}
