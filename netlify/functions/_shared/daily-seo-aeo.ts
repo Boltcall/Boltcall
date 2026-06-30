@@ -1,0 +1,468 @@
+import { createSign } from 'crypto';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DEFAULT_SUPABASE_URL = 'https://hbwogktdajorojljkjwg.supabase.co';
+const DEFAULT_SITE_URL = 'sc-domain:boltcall.org';
+const DEFAULT_GA4_PROPERTY_ID = '527238136';
+const DEFAULT_CLARITY_PROJECT_ID = 'x4e3hjsgc7';
+const DEFAULT_WORKSPACE_ID = '001dd963-d375-474c-9073-21c887771243';
+const ATP_BASE_URL = 'https://answerthepublic.com';
+const ATP_REPORT_ATTEMPTS = 4;
+
+export const DEFAULT_ATP_TASKS = [
+  { id: 'task-1', prompt: 'how fast should local service businesses respond to leads', result: '' },
+  { id: 'task-2', prompt: 'why local service businesses lose leads after hours', result: '' },
+  { id: 'task-3', prompt: 'how to book more inbound leads automatically', result: '' },
+];
+
+type Warning = string;
+
+interface RunnerOptions {
+  supabase: SupabaseClient;
+  date?: string;
+}
+
+interface AtpRun {
+  tasks: Array<{ id: string; prompt: string; result: string; clusters?: string[] }>;
+  raw: Record<string, unknown>;
+  warnings: Warning[];
+}
+
+type AtpTaskResult = AtpRun['tasks'][number];
+
+async function readServerSecret(supabase: SupabaseClient | undefined, envName: string, key: string) {
+  const envValue = process.env[envName];
+  if (envValue) return envValue;
+  if (!supabase) return '';
+  const { data, error } = await supabase
+    .from('daily_seo_secrets')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle();
+  if (error) throw new Error(`${envName} lookup failed: ${error.message}`);
+  return typeof data?.value === 'string' ? data.value : '';
+}
+
+function yesterdayKey() {
+  return new Date(Date.now() - DAY_MS).toISOString().slice(0, 10);
+}
+
+async function readServiceAccount(supabase?: SupabaseClient) {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (raw) return JSON.parse(raw);
+  if (process.env.GOOGLE_CLIENT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
+    return {
+      client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    };
+  }
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('daily_seo_secrets')
+      .select('value')
+      .eq('key', 'google_service_account_json')
+      .maybeSingle();
+    if (error) throw new Error(`Google service account secret lookup failed: ${error.message}`);
+    if (typeof data?.value === 'string' && data.value) return JSON.parse(data.value);
+  }
+
+  const candidates = [
+    process.env.GSC_SERVICE_ACCOUNT,
+    resolve(process.cwd(), '../gsc-service-account.json'),
+    'C:/Users/Asus/Desktop/Boltcall_website/gsc-service-account.json',
+  ].filter(Boolean) as string[];
+  const path = candidates.find((candidate) => existsSync(candidate));
+  if (!path) throw new Error(`Google service account JSON not found. Tried: ${candidates.join(', ')}`);
+  return JSON.parse(readFileSync(path, 'utf8'));
+}
+
+async function googleAccessToken(scopes: string[], supabase?: SupabaseClient) {
+  const sa = await readServiceAccount(supabase);
+  const now = Math.floor(Date.now() / 1000);
+  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({
+    iss: sa.client_email,
+    scope: scopes.join(' '),
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  })).toString('base64url');
+
+  const signer = createSign('RSA-SHA256');
+  signer.update(`${header}.${payload}`);
+  const assertion = `${header}.${payload}.${signer.sign(sa.private_key, 'base64url')}`;
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion,
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.access_token) throw new Error(`Google auth failed: ${JSON.stringify(data)}`);
+  return data.access_token as string;
+}
+
+async function gscQuery(token: string, body: Record<string, unknown>) {
+  const site = process.env.GSC_SITE_URL || DEFAULT_SITE_URL;
+  const response = await fetch(
+    `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site)}/searchAnalytics/query`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+  );
+  const data = await response.json();
+  if (!response.ok) throw new Error(`GSC query failed: ${JSON.stringify(data)}`);
+  return data;
+}
+
+async function ga4RunReport(token: string, body: Record<string, unknown>) {
+  const propertyId = process.env.GA4_PROPERTY_ID || DEFAULT_GA4_PROPERTY_ID;
+  const response = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(`GA4 report failed: ${JSON.stringify(data)}`);
+  return data;
+}
+
+async function fetchClarity(warnings: Warning[], supabase?: SupabaseClient) {
+  const token = await readServerSecret(supabase, 'CLARITY_API_TOKEN', 'clarity_api_token');
+  if (!token) {
+    warnings.push('Clarity skipped: CLARITY_API_TOKEN missing');
+    return [];
+  }
+
+  const url = new URL('https://www.clarity.ms/export-data/api/v1/project-live-insights');
+  url.searchParams.set('projectId', process.env.CLARITY_PROJECT_ID || DEFAULT_CLARITY_PROJECT_ID);
+  url.searchParams.set('numOfDays', '1');
+  url.searchParams.set('dimension1', 'URL');
+
+  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+  const text = await response.text();
+  let data: unknown = text;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    warnings.push(`Clarity warning: ${text.slice(0, 140)}`);
+    return [];
+  }
+  if (!response.ok) {
+    warnings.push(`Clarity warning: ${JSON.stringify(data).slice(0, 220)}`);
+    return [];
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+function walkQuestions(value: unknown, out: string[] = []) {
+  if (out.length >= 30 || value == null) return out;
+  if (typeof value === 'string') {
+    const clean = value.replace(/\s+/g, ' ').trim();
+    if (
+      clean.length >= 12 &&
+      clean.length <= 180 &&
+      (clean.includes('?') || /^(how|why|what|when|where|which|who|can|should|is|are|will)\b/i.test(clean)) &&
+      !out.includes(clean)
+    ) out.push(clean);
+    return out;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) walkQuestions(item, out);
+    return out;
+  }
+  if (typeof value === 'object') {
+    for (const item of Object.values(value as Record<string, unknown>)) walkQuestions(item, out);
+  }
+  return out;
+}
+
+function clustersFromReport(report: unknown) {
+  const questions = walkQuestions(report).slice(0, 9);
+  const clusters = [0, 1, 2].map((index) => questions.slice(index * 3, index * 3 + 3)).filter((items) => items.length);
+  return clusters.map((items, index) => [`Cluster ${index + 1}:`, ...items.map((item) => `- ${item}`)].join('\n'));
+}
+
+function compactRaw(value: unknown) {
+  const text = JSON.stringify(value);
+  if (!text) return null;
+  if (text.length <= 5000) return value;
+  return { excerpt: text.slice(0, 5000) };
+}
+
+class AtpClient {
+  private workspaceSlug = process.env.ATP_WORKSPACE_SLUG || '';
+
+  constructor(private token: string) {}
+
+  private async request(path: string, init: RequestInit = {}) {
+    const response = await fetch(`${ATP_BASE_URL}${path}`, {
+      ...init,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`,
+        'X-API-Key': this.token,
+        ...(init.headers || {}),
+      },
+    });
+    const text = await response.text();
+    let data: unknown = text;
+    try {
+      data = JSON.parse(text);
+    } catch {}
+    if (!response.ok) throw new Error(`ATP ${path} failed ${response.status}: ${JSON.stringify(data).slice(0, 220)}`);
+    return data;
+  }
+
+  async workspace() {
+    if (this.workspaceSlug) return this.workspaceSlug;
+    const me = await this.request('/api/v1/users/me');
+    const anyMe = me as any;
+    this.workspaceSlug =
+      anyMe?.data?.current_workspace?.slug ||
+      anyMe?.data?.user?.current_workspace?.slug ||
+      anyMe?.current_workspace?.slug ||
+      '';
+    if (!this.workspaceSlug) throw new Error('ATP workspace slug not found; set ATP_WORKSPACE_SLUG');
+    return this.workspaceSlug;
+  }
+
+  async search(prompt: string) {
+    const slug = await this.workspace();
+    const body = {
+      search: {
+        keyword: prompt,
+        language: process.env.ATP_LANGUAGE || 'en',
+        region: process.env.ATP_REGION || 'us',
+      },
+    };
+    const created = await this.request(`/api/v1/${slug}/searches`, { method: 'POST', body: JSON.stringify(body) });
+    const anyCreated = created as any;
+    const reportId =
+      anyCreated?.data?.parent_search_id ||
+      anyCreated?.data?.id ||
+      anyCreated?.parent_search_id ||
+      anyCreated?.id;
+    if (!reportId) throw new Error('ATP search response did not include report id');
+
+    let report: unknown = null;
+    let lastError: unknown = null;
+    for (let attempt = 1; attempt <= ATP_REPORT_ATTEMPTS; attempt += 1) {
+      try {
+        report = await this.request(`/api/v1/${slug}/reports/${encodeURIComponent(String(reportId))}`);
+        break;
+      } catch (error) {
+        lastError = error;
+        if (attempt === ATP_REPORT_ATTEMPTS) throw error;
+        await new Promise((resolveDelay) => setTimeout(resolveDelay, attempt * 1500));
+      }
+    }
+    if (!report && lastError) throw lastError;
+    const clusters = clustersFromReport(report);
+    return { reportId, clusters, raw: compactRaw({ created, report }) };
+  }
+}
+
+async function runAtp(warnings: Warning[], supabase?: SupabaseClient): Promise<AtpRun> {
+  const token = await readServerSecret(supabase, 'ATP_API_TOKEN', 'atp_api_token');
+  if (!token) {
+    warnings.push('ATP skipped: ATP_API_TOKEN missing');
+    return { tasks: DEFAULT_ATP_TASKS.map((task) => ({ ...task })), raw: {}, warnings };
+  }
+
+  const client = new AtpClient(token);
+  const tasks: AtpTaskResult[] = [];
+  const raw: Record<string, unknown> = {};
+  for (const task of DEFAULT_ATP_TASKS) {
+    try {
+      const result = await client.search(task.prompt);
+      const text = result.clusters.length ? result.clusters.join('\n\n') : 'No question clusters found in ATP response.';
+      tasks.push({ ...task, result: text, clusters: result.clusters });
+      raw[task.id] = result.raw;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      warnings.push(`ATP ${task.id} warning: ${message}`);
+      tasks.push({ ...task, result: '' });
+    }
+  }
+  return { tasks, raw, warnings };
+}
+
+function parseGscRows(rows: any[] = []) {
+  return rows.map((row) => ({
+    key: row.keys?.[0] || '(unknown)',
+    clicks: Number(row.clicks || 0),
+    impressions: Number(row.impressions || 0),
+  }));
+}
+
+function parseGa4Rows(rows: any[] = []) {
+  return rows.map((row) => ({
+    key: row.dimensionValues?.[0]?.value || '(unknown)',
+    sessions: Number(row.metricValues?.[0]?.value || 0),
+    engagedSessions: Number(row.metricValues?.[1]?.value || 0),
+    keyEvents: Number(row.metricValues?.[2]?.value || 0),
+  }));
+}
+
+function topRows(rows: Array<Record<string, any>>, metric: string, count = 3) {
+  return [...rows].sort((a, b) => Number(b[metric] || 0) - Number(a[metric] || 0)).slice(0, count);
+}
+
+function lines(rows: Array<Record<string, any>>, metric: string, suffix: string) {
+  return rows.length ? rows.map((row) => `- ${row.key}: ${row[metric]}${suffix}`) : ['- No data.'];
+}
+
+function makeScorecard(date: string, gscRows: any[], ga4Rows: any[], clarityRows: unknown[], atp: AtpRun, warnings: Warning[]) {
+  const gscTop = topRows(gscRows, 'clicks');
+  const ga4Top = topRows(ga4Rows, 'sessions');
+  return [
+    '# Daily SEO + AEO scorecard',
+    '',
+    `Date: ${date}`,
+    '',
+    '## GSC',
+    'Top pages by clicks',
+    ...lines(gscTop, 'clicks', ' clicks'),
+    '',
+    '## GA4',
+    'Top landing pages by sessions',
+    ...lines(ga4Top, 'sessions', ' sessions'),
+    '',
+    '## Clarity',
+    `- Rows returned: ${clarityRows.length}`,
+    '',
+    '## AnswerThePublic',
+    ...atp.tasks.map((task, index) => `- Prompt ${index + 1}: ${task.prompt}\n${task.result || 'No result saved.'}`),
+    '',
+    '## Decision',
+    '- Page to improve: highest-intent page from GSC/GA4 movers.',
+    '- Content angle to ship: strongest ATP speed-to-lead question cluster.',
+    '- Experiment to watch tomorrow: CTA visibility and conversion movement.',
+    '',
+    ...(warnings.length ? ['## Warnings', ...warnings.map((warning) => `- ${warning}`), ''] : []),
+  ].join('\n');
+}
+
+export async function runDailySeoAeo({ supabase, date = yesterdayKey() }: RunnerOptions) {
+  const workspaceId = process.env.DAILY_SEO_WORKSPACE_ID || DEFAULT_WORKSPACE_ID;
+  if (!workspaceId) throw new Error('DAILY_SEO_WORKSPACE_ID is required');
+
+  const googleToken = await googleAccessToken([
+    'https://www.googleapis.com/auth/webmasters.readonly',
+    'https://www.googleapis.com/auth/analytics.readonly',
+  ], supabase);
+  const warnings: Warning[] = [];
+
+  const [gsc, ga4, clarity, atp] = await Promise.all([
+    gscQuery(googleToken, { startDate: date, endDate: date, dimensions: ['page'], rowLimit: 25 }),
+    ga4RunReport(googleToken, {
+      dateRanges: [{ startDate: date, endDate: date }],
+      dimensions: [{ name: 'landingPagePlusQueryString' }],
+      metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
+      limit: 25,
+      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+    }),
+    fetchClarity(warnings, supabase),
+    runAtp(warnings, supabase),
+  ]);
+
+  const gscRows = parseGscRows((gsc as any).rows || []);
+  const ga4Rows = parseGa4Rows((ga4 as any).rows || []);
+  const now = new Date().toISOString();
+  const scorecard = makeScorecard(date, gscRows, ga4Rows, clarity, atp, warnings);
+  const { data: workspaceRow, error: workspaceError } = await supabase
+    .from('workspaces')
+    .select('user_id')
+    .eq('id', workspaceId)
+    .maybeSingle();
+  if (workspaceError) throw new Error(`Workspace lookup failed: ${workspaceError.message}`);
+
+  const { data: atpRow, error: atpError } = await supabase
+    .from('daily_seo_atp_entries')
+    .upsert({
+      workspace_id: workspaceId,
+      user_id: (workspaceRow as { user_id?: string } | null)?.user_id || null,
+      entry_date: date,
+      tasks: atp.tasks,
+      raw_atp: atp.raw,
+      last_saved_at: now,
+      submitted_at: now,
+      updated_at: now,
+    }, { onConflict: 'workspace_id,entry_date' })
+    .select('id')
+    .single();
+  if (atpError) throw new Error(`ATP save failed: ${atpError.message}`);
+
+  const sources = { gsc: gscRows, ga4: ga4Rows, clarity, atp: atp.raw };
+  const selectedAction = {
+    page: gscRows[0]?.key || ga4Rows[0]?.key || '/',
+    content_angle: atp.tasks.find((task) => task.result)?.prompt || DEFAULT_ATP_TASKS[0].prompt,
+    experiment: 'Watch CTA visibility and conversion movement tomorrow',
+  };
+
+  const { data: runRow, error: runError } = await supabase
+    .from('daily_seo_runs')
+    .upsert({
+      workspace_id: workspaceId,
+      run_date: date,
+      status: warnings.length ? 'completed_with_warnings' : 'completed',
+      scorecard,
+      warnings,
+      sources,
+      selected_action: selectedAction,
+      updated_at: now,
+    }, { onConflict: 'workspace_id,run_date' })
+    .select('id')
+    .single();
+  if (runError) throw new Error(`Daily SEO run save failed: ${runError.message}`);
+
+  return {
+    status: warnings.length ? 'completed_with_warnings' : 'completed',
+    run_date: date,
+    warnings,
+    atp_entry_id: atpRow?.id,
+    daily_seo_run_id: runRow?.id,
+    scorecard,
+  };
+}
+
+export async function fetchDailySeoReview(supabase: SupabaseClient, date = new Date().toISOString().slice(0, 10)) {
+  const workspaceId = process.env.DAILY_SEO_WORKSPACE_ID || DEFAULT_WORKSPACE_ID;
+  if (!workspaceId) throw new Error('DAILY_SEO_WORKSPACE_ID is required');
+
+  const [{ data: run }, { data: atp }] = await Promise.all([
+    supabase
+      .from('daily_seo_runs')
+      .select('run_date,status,scorecard,warnings,selected_action,updated_at')
+      .eq('workspace_id', workspaceId)
+      .eq('run_date', date)
+      .maybeSingle(),
+    supabase
+      .from('daily_seo_atp_entries')
+      .select('entry_date,tasks,last_saved_at,submitted_at')
+      .eq('workspace_id', workspaceId)
+      .eq('entry_date', date)
+      .maybeSingle(),
+  ]);
+
+  return {
+    date,
+    run: run || null,
+    atp: atp || { entry_date: date, tasks: DEFAULT_ATP_TASKS, last_saved_at: null, submitted_at: null },
+  };
+}
+
+export const __dailySeoAeoTest = {
+  clustersFromReport,
+  walkQuestions,
+};

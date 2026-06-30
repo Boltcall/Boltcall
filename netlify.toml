@@ -147,6 +147,9 @@
 [functions."daily-lead-summary"]
   schedule = "0 7 * * *"
 
+[functions."daily-seo-aeo-runner"]
+  schedule = "30 6 * * *"
+
 # ─── Agency OS scheduled functions (Phase F — Layer 2 backbone) ─────────────
 # Backbone for the n8n workflows. n8n is the orchestration ergonomic; these
 # are the load-bearing backups so the OS degrades gracefully if n8n is down.

@@ -8,6 +8,7 @@
     "assert:vite-env": "node scripts/assert-vite-env.mjs",
     "generate-sitemap": "node scripts/generate-sitemap.mjs",
     "gsc-submit": "node scripts/gsc-submit.mjs",
+    "seo:daily-run": "node scripts/seo-daily-run.mjs",
     "seo-gate": "node scripts/seo-precommit-check.mjs",
     "typecheck": "tsc -b --noEmit",
     "typecheck:functions": "tsc -b --noEmit tsconfig.functions.json",
