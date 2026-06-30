@@ -255,6 +255,9 @@ const HelpCenter: React.FC = () => {
           >
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Boltcall Help Center: Setup Guides, Troubleshooting &amp; Support</h1>
             <p className="text-xl text-gray-600 mb-8">Find answers, guides, and solutions to get the most out of Boltcall</p>
+            <p className="mx-auto mb-6 max-w-2xl text-sm leading-relaxed text-gray-600">
+              Need the billing model first? Read the <Link to="/credits" className="text-blue-700 underline hover:text-blue-800">Boltcall credits explainer</Link> for the shared pool across phone, SMS, and website chat.
+            </p>
             
             {/* Search Input */}
             <form onSubmit={handleSearch} className="max-w-2xl mx-auto">

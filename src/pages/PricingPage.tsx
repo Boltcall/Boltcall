@@ -209,6 +209,9 @@ const PricingPage: React.FC = () => {
             <p className="mt-2 text-sm leading-relaxed text-gray-700">
               Start with a focused mini-implementation: the <Link to="/after-hours-lead-rescue" className="text-indigo-600 hover:text-indigo-700 underline">After-Hours Lead Rescue setup</Link>, the <Link to="/automatic-reviews-agent" className="text-indigo-600 hover:text-indigo-700 underline">Automatic Reviews Agent setup</Link>, or the <Link to="/reminders-agent" className="text-indigo-600 hover:text-indigo-700 underline">Reminders Agent setup</Link>. Each one includes a test message before Boltcall imports the first 100 contacts.
             </p>
+            <p className="mt-3 text-sm leading-relaxed text-gray-700">
+              Want the pricing logic first? Read the <Link to="/credits" className="text-indigo-600 hover:text-indigo-700 underline">shared credits explainer</Link> to see how one monthly pool gets used across phone, SMS, and website chat.
+            </p>
           </div>
         </section>
 
