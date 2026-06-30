@@ -3,7 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useUsageStore } from '../stores/usageStore';
 import type { ResourceType, PlanTier } from '../lib/plan-limits';
-import { isApproachingLimit, getUsagePercentage } from '../lib/plan-limits';
+import {
+  getUsagePercentage,
+  isApproachingLimit,
+  isPooledUsageResource,
+} from '../lib/plan-limits';
 import { toast as sonnerToast } from 'sonner';
 
 /**
@@ -62,6 +66,7 @@ export function useUsageTracking() {
     ];
 
     for (const resource of resources) {
+      if (isPooledUsageResource(resource)) continue;
       if (warningShownFor.has(resource)) continue;
 
       const current = usage[resource];

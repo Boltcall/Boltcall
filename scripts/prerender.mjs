@@ -29,6 +29,7 @@ const ROUTES = [
   '/pricing',
   '/personal-injury',
   '/contact',
+  '/credits',
   '/book-a-call',
   '/partners',
   '/help-center',
