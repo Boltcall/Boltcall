@@ -68,6 +68,7 @@
     "/comparisons/receptionist-vs-boltcall",
     "/contact",
     "/conversion-rate-optimizer",
+    "/credits",
     "/documentation",
     "/features/ai-follow-up-system",
     "/features/ai-receptionist",
@@ -121,5 +122,5 @@
     "/tools/solar-sales-closer",
     "/tools/vet-clinic-revenue-calculator"
   ],
-  "updatedAt": "2026-06-23T15:31:40.362Z"
+  "updatedAt": "2026-06-30T08:32:51.293Z"
 }
