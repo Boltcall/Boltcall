@@ -30,6 +30,10 @@ describe('BentoCard', () => {
     ).toHaveLength(1);
     expect(screen.queryByText(/Dashboard Preview/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/interactive V1-inspired screens/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Consult intake and fast callback\./i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/One number\. Multiple demo agents\. We route the call by industry\./i),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Get a call/i })).toBeInTheDocument();
   });
 });
