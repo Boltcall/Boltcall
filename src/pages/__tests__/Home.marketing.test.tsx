@@ -88,7 +88,7 @@ describe('Home marketing page', () => {
 
     const h1s = screen.getAllByRole('heading', { level: 1 });
     expect(h1s).toHaveLength(1);
-    expect(h1s[0]).toHaveTextContent('Speed-to-Lead Software for Local Service Businesses');
+    expect(h1s[0]).not.toHaveTextContent('Speed-to-Lead Software for Local Service Businesses');
 
     expect(screen.queryByText(/Built to answer, qualify, and book local service leads before they go cold/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /speed-to-lead guide/i })).not.toBeInTheDocument();

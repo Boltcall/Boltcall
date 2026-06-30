@@ -32,6 +32,18 @@ export interface PlanConfig {
 // -1 = unlimited
 const UNLIMITED = -1;
 
+export const POOLED_USAGE_RESOURCES = [
+  'ai_voice_minutes',
+  'ai_chat_messages',
+  'sms_sent',
+] as const satisfies ResourceType[];
+
+export const STRUCTURAL_LIMIT_RESOURCES = [
+  'phone_numbers',
+  'team_members',
+  'kb_storage_mb',
+] as const satisfies ResourceType[];
+
 export const PLAN_LIMITS: Record<PlanTier, PlanConfig> = {
   free: {
     name: 'Free',
@@ -193,6 +205,14 @@ export function getAllResources(): Array<{ key: ResourceType } & ResourceLimit> 
     key,
     ...getResourceConfig(key),
   }));
+}
+
+export function isPooledUsageResource(resource: ResourceType): boolean {
+  return (POOLED_USAGE_RESOURCES as readonly ResourceType[]).includes(resource);
+}
+
+export function isStructuralLimitResource(resource: ResourceType): boolean {
+  return (STRUCTURAL_LIMIT_RESOURCES as readonly ResourceType[]).includes(resource);
 }
 
 /**

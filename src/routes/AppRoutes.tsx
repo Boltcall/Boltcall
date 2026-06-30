@@ -179,6 +179,7 @@ const DPA = React.lazy(() => import('../pages/DPA'));
 const Contact = React.lazy(() => import('../pages/Contact'));
 const BookCall = React.lazy(() => import('../pages/BookCall'));
 const About = React.lazy(() => import('../pages/About'));
+const CreditsPage = React.lazy(() => import('../pages/CreditsPage'));
 const Newsletter = React.lazy(() => import('../pages/Newsletter'));
 const PricingPage = React.lazy(() => import('../pages/PricingPage'));
 const PersonalInjury = React.lazy(() => import('../pages/PersonalInjury'));
@@ -663,6 +664,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/book-a-call" element={<BookCall />} />
         <Route path="/about" element={<About />} />
+        <Route path="/credits" element={<CreditsPage />} />
         <Route path="/partners" element={<Partners />} />
 
         {/* Speed Test Funnel */}

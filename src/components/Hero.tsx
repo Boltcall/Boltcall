@@ -142,17 +142,9 @@ const Hero: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`relative z-10 pt-32 md:pt-44 lg:pt-52 pb-12 ${isRtl ? 'text-right md:max-w-4xl md:ml-auto' : 'text-center'}`}>
 
-            <motion.h1
-              className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-text-main leading-tight mb-5 ${isRtl ? 'text-right' : 'text-center'}`}
-              style={{ fontFamily: "'Sora', sans-serif" }}
-              animate={{ opacity: 1, y: 0 }}
-              initial={{ opacity: 0, y: 24 }}
-              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.10 }}
-            >
-              <span className="speakable-intro">Speed-to-Lead Software for Local Service Businesses</span>
-            </motion.h1>
+            <span className="speakable-intro sr-only">Speed-to-Lead Software for Local Service Businesses</span>
 
-            <motion.div
+            <motion.h1
               className={`text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter text-text-main flex leading-tight mb-6 ${isRtl ? 'items-end justify-end' : 'items-center justify-center'}`}
               style={{ fontFamily: "'Sora', sans-serif" }}
               animate={{ opacity: 1, y: 0 }}
@@ -173,7 +165,7 @@ const Hero: React.FC = () => {
                   />
                 </motion.span>
               </LayoutGroup>
-            </motion.div>
+            </motion.h1>
 
             <motion.p
               className={`text-base md:text-xl text-text-muted mb-8 max-w-2xl px-2 md:px-0 leading-relaxed ${isRtl ? 'mr-0 md:mr-auto md:ml-0' : 'mx-auto'}`}

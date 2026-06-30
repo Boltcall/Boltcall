@@ -34,8 +34,21 @@ import {
 import { useUsageTracking } from '../../../hooks/useUsageTracking';
 import UsageBar from '../../../components/dashboard/UsageBar';
 import UsageLimitModal from '../../../components/dashboard/UsageLimitModal';
-import { PLAN_LIMITS, getNextPlan, formatLimit, type ResourceType, type PlanTier } from '../../../lib/plan-limits';
-import { TOKEN_REWARDS } from '../../../lib/tokens';
+import {
+  PLAN_LIMITS,
+  STRUCTURAL_LIMIT_RESOURCES,
+  formatLimit,
+  getNextPlan,
+  isStructuralLimitResource,
+  type ResourceType,
+  type PlanTier,
+} from '../../../lib/plan-limits';
+import {
+  TOKEN_REWARDS,
+  tokensToMessages,
+  tokensToMinutes,
+  tokensToSms,
+} from '../../../lib/tokens';
 import { useTokens } from '../../../contexts/TokenContext';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -131,8 +144,9 @@ const UsagePage: React.FC = () => {
   };
 
   const resourceUsages = getAllResourceUsages();
-  const atLimitResources = resourceUsages.filter((r) => r.isAtLimit);
-  const approachingResources = resourceUsages.filter((r) => r.isApproaching && !r.isAtLimit);
+  const structuralUsages = resourceUsages.filter((r) => isStructuralLimitResource(r.resource));
+  const atLimitResources = structuralUsages.filter((r) => r.isAtLimit);
+  const approachingResources = structuralUsages.filter((r) => r.isApproaching && !r.isAtLimit);
   const planConfig = PLAN_LIMITS[planTier];
   const nextPlan = getNextPlan(planTier);
   const nextPlanConfig = nextPlan ? PLAN_LIMITS[nextPlan] : null;
@@ -156,6 +170,8 @@ const UsagePage: React.FC = () => {
   const tokenUsagePercent = monthlyAllocation > 0
     ? Math.min((tokensUsed / monthlyAllocation) * 100, 100)
     : 0;
+  const remainingCredits = Math.max(totalAvailable, 0);
+  const monthlyCredits = Math.max(monthlyAllocation, 0);
 
   if (isLoading) {
     return <PageSkeleton />;
@@ -179,7 +195,7 @@ const UsagePage: React.FC = () => {
               <p className="text-sm font-semibold text-red-800">
                 {atLimitResources.length === 1
                   ? `${PLAN_LIMITS[planTier].limits[atLimitResources[0].resource].label} limit reached`
-                  : `${atLimitResources.length} resource limits reached`}
+                  : `${atLimitResources.length} workspace limits reached`}
               </p>
               <p className="text-xs text-red-600 mt-0.5">
                 {atLimitResources
@@ -284,7 +300,7 @@ const UsagePage: React.FC = () => {
           )}
         </motion.div>
 
-        {/* Token Balance */}
+        {/* Shared Credits */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -296,9 +312,9 @@ const UsagePage: React.FC = () => {
               <BarChart3 className="w-4 h-4 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Token Balance</p>
+              <p className="text-xs text-gray-500">Shared Credits</p>
               <p className="text-sm font-semibold text-gray-900">
-                {totalAvailable.toLocaleString()} available
+                {remainingCredits.toLocaleString()} available
               </p>
             </div>
           </div>
@@ -306,7 +322,7 @@ const UsagePage: React.FC = () => {
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">Used this period</span>
               <span className="font-medium text-gray-700">
-                {tokensUsed.toLocaleString()} / {monthlyAllocation.toLocaleString()}
+                {tokensUsed.toLocaleString()} / {monthlyCredits.toLocaleString()}
               </span>
             </div>
             <div className="w-full bg-gray-100 rounded-full h-1.5">
@@ -318,13 +334,16 @@ const UsagePage: React.FC = () => {
               />
             </div>
             {bonusBalance > 0 && (
-              <p className="text-xs text-blue-600">+{bonusBalance.toLocaleString()} bonus tokens</p>
+              <p className="text-xs text-blue-600">+{bonusBalance.toLocaleString()} bonus credits</p>
             )}
+            <p className="text-xs text-gray-500 pt-1">
+              Phone, SMS, website chat, and other metered actions all use this same pool.
+            </p>
           </div>
         </motion.div>
       </div>
 
-      {/* Per-Resource Usage Bars */}
+      {/* Shared Pool Usage */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -337,8 +356,8 @@ const UsagePage: React.FC = () => {
               <BarChart3 className="w-4 h-4 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">Resource Usage</h2>
-              <p className="text-xs text-gray-500">Current billing period</p>
+              <h2 className="text-sm font-semibold text-gray-900">One Shared Pool</h2>
+              <p className="text-xs text-gray-500">Phone, SMS, website chat, and the rest pull from the same credits.</p>
             </div>
           </div>
           <button
@@ -351,18 +370,35 @@ const UsagePage: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-          {resourceUsages.map((ru) => (
-            <UsageBar
-              key={ru.resource}
-              resource={ru.resource}
-              current={ru.current}
-              limit={ru.limit}
-              percentage={ru.percentage}
-              showIcon
-              size="md"
-            />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Voice Minutes Left</p>
+            <p className="mt-2 text-2xl font-bold text-gray-900">{tokensToMinutes(remainingCredits).toLocaleString()}</p>
+            <p className="mt-1 text-xs text-gray-500">
+              {tokensToMinutes(monthlyCredits).toLocaleString()} if you spent the full pool on phone.
+            </p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">SMS Left</p>
+            <p className="mt-2 text-2xl font-bold text-gray-900">{tokensToSms(remainingCredits).toLocaleString()}</p>
+            <p className="mt-1 text-xs text-gray-500">
+              {tokensToSms(monthlyCredits).toLocaleString()} if you spent the full pool on SMS.
+            </p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Chat Messages Left</p>
+            <p className="mt-2 text-2xl font-bold text-gray-900">{tokensToMessages(remainingCredits).toLocaleString()}</p>
+            <p className="mt-1 text-xs text-gray-500">
+              {tokensToMessages(monthlyCredits).toLocaleString()} if you spent the full pool on chat.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+          <p className="text-sm font-medium text-blue-900">No separate phone / SMS / website bucket</p>
+          <p className="mt-1 text-xs text-blue-700">
+            If you use the whole pool on phone, there&apos;s nothing left for SMS or website chat until the next billing reset.
+          </p>
         </div>
 
         {/* Plan comparison row */}
@@ -374,9 +410,7 @@ const UsagePage: React.FC = () => {
                   Need more capacity?
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {nextPlanConfig.name} plan includes up to{' '}
-                  {formatLimit(nextPlanConfig.limits.ai_voice_minutes.limit, 'min')} voice minutes,{' '}
-                  {formatLimit(nextPlanConfig.limits.ai_chat_messages.limit, '')} chat messages, and more.
+                  {nextPlanConfig.name} gives you {nextPlanConfig.monthlyTokens.toLocaleString()} shared monthly credits.
                 </p>
               </div>
               <Link
@@ -388,6 +422,38 @@ const UsagePage: React.FC = () => {
             </div>
           </div>
         )}
+      </motion.div>
+
+      {/* Structural Limits */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.18 }}
+        className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6"
+      >
+        <div className="flex items-center gap-2.5 mb-5">
+          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 text-gray-600" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-900">Workspace Limits</h2>
+            <p className="text-xs text-gray-500">Separate caps that still apply outside the shared credit pool.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+          {structuralUsages.map((ru) => (
+            <UsageBar
+              key={ru.resource}
+              resource={ru.resource}
+              current={ru.current}
+              limit={ru.limit}
+              percentage={ru.percentage}
+              showIcon
+              size="md"
+            />
+          ))}
+        </div>
       </motion.div>
 
       {/* Usage Trend Chart (Last 30 Days) */}
@@ -499,13 +565,13 @@ const UsagePage: React.FC = () => {
         transition={{ duration: 0.4, delay: 0.25 }}
         className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6"
       >
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Plan Limits Comparison</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">Plan Credits Comparison</h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Resource
+                  Included
                 </th>
                 {(['starter', 'pro', 'ultimate', 'enterprise'] as PlanTier[]).map((tier) => (
                   <th
@@ -525,15 +591,21 @@ const UsagePage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
+              <tr className="border-b border-gray-50">
+                <td className="py-3 px-3 text-sm text-gray-700 font-medium">Shared monthly credits</td>
+                {(['starter', 'pro', 'ultimate', 'enterprise'] as PlanTier[]).map((tier) => (
+                  <td
+                    key={tier}
+                    className={`text-center py-3 px-3 text-sm font-medium ${
+                      tier === planTier ? 'text-blue-700 bg-blue-50/50' : 'text-gray-600'
+                    }`}
+                  >
+                    {PLAN_LIMITS[tier].monthlyTokens.toLocaleString()}
+                  </td>
+                ))}
+              </tr>
               {(
-                [
-                  'ai_voice_minutes',
-                  'ai_chat_messages',
-                  'sms_sent',
-                  'phone_numbers',
-                  'team_members',
-                  'kb_storage_mb',
-                ] as ResourceType[]
+                STRUCTURAL_LIMIT_RESOURCES as readonly ResourceType[]
               ).map((resource) => {
                 const config = PLAN_LIMITS.starter.limits[resource];
                 const Icon = ICON_MAP[config.icon] || Phone;
@@ -579,7 +651,7 @@ const UsagePage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Bonus Tokens Section */}
+      {/* Bonus Credits Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -591,8 +663,8 @@ const UsagePage: React.FC = () => {
             <Gift className="w-4 h-4 text-amber-600" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">Bonus Token Rewards</h3>
-            <p className="text-xs text-gray-500">Complete actions to earn bonus tokens</p>
+            <h3 className="text-sm font-semibold text-gray-900">Bonus Credits</h3>
+            <p className="text-xs text-gray-500">Complete actions to earn bonus credits</p>
           </div>
         </div>
         <div className="border-t border-gray-100 pt-4 space-y-2.5">
@@ -620,7 +692,7 @@ const UsagePage: React.FC = () => {
                 <span
                   className={`text-sm font-semibold ${isClaimed ? 'text-green-600' : 'text-amber-600'}`}
                 >
-                  {isClaimed ? 'Claimed' : `+${reward.tokens} tokens`}
+                  {isClaimed ? 'Claimed' : `+${reward.tokens} credits`}
                 </span>
               </div>
             );
@@ -651,7 +723,7 @@ const UsagePage: React.FC = () => {
             <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
             <p className="text-sm text-gray-500">No usage history yet</p>
             <p className="text-xs text-gray-400 mt-1">
-              Token transactions will appear here as you use features
+              Credit transactions will appear here as you use features
             </p>
           </div>
         ) : (
@@ -669,7 +741,7 @@ const UsagePage: React.FC = () => {
                     Description
                   </th>
                   <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tokens
+                    Credits
                   </th>
                 </tr>
               </thead>

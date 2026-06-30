@@ -15,6 +15,7 @@ const ROUTES = [
   { path: "/pricing",                                             priority: "0.9", changefreq: "monthly" },
   { path: "/about",                                               priority: "0.8", changefreq: "monthly" },
   { path: "/contact",                                             priority: "0.7", changefreq: "monthly" },
+  { path: "/credits",                                             priority: "0.7", changefreq: "monthly" },
   { path: "/help-center",                                         priority: "0.7", changefreq: "monthly" },
   { path: "/partners",                                            priority: "0.7", changefreq: "monthly" },
   { path: "/book-a-call",                                         priority: "0.7", changefreq: "monthly" },
