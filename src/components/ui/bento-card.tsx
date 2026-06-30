@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
-import { ArrowRight, PhoneCall } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -137,23 +137,19 @@ const BentoCard = () => {
             })}
           </div>
 
-          <div className="mt-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#d7dbeb] bg-white/80 px-3 py-1 text-[11px] font-semibold tracking-[0.1em] text-[#4369eb]">
-              <PhoneCall className="h-3.5 w-3.5" />
-              LIVE AGENT DEMO
-            </div>
-            <h3 className="mt-4 text-[28px] font-medium leading-[1.02] tracking-[-0.055em] text-[#13233f]">
+          <div className="mt-5">
+            <h3 className="text-[24px] font-medium leading-[1.04] tracking-[-0.05em] text-[#13233f]">
               Receive a live call from our agent and hear how Boltcall handles real customer conversations.
             </h3>
-            <p className="mt-3 text-[13px] text-[#51607b]">{activeIndustry.blurb}</p>
+            <p className="mt-2 text-[12px] text-[#51607b]">{activeIndustry.blurb}</p>
           </div>
 
-          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <DemoField label="Industry">
               <select
                 value={industry}
                 onChange={(event) => setIndustry(event.target.value as DemoIndustryId)}
-                className="w-full bg-transparent text-[20px] font-medium tracking-[-0.04em] text-[#13233f] outline-none"
+                className="w-full bg-transparent text-[18px] font-medium tracking-[-0.04em] text-[#13233f] outline-none"
               >
                 {DEMO_INDUSTRIES.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -172,7 +168,7 @@ const BentoCard = () => {
                 autoComplete="name"
                 required
                 className="w-full"
-                inputClassName="border-[#13233f] pb-1 pt-2 text-[20px] font-normal tracking-[-0.04em] text-[#13233f]"
+                inputClassName="border-[#13233f] pb-1 pt-2 text-[18px] font-normal tracking-[-0.04em] text-[#13233f]"
               />
             </DemoField>
 
@@ -185,26 +181,21 @@ const BentoCard = () => {
                 autoComplete="tel"
                 required
                 className="w-full"
-                inputClassName="border-[#13233f] pb-1 pt-2 text-[20px] font-normal tracking-[-0.04em] text-[#13233f]"
+                inputClassName="border-[#13233f] pb-1 pt-2 text-[18px] font-normal tracking-[-0.04em] text-[#13233f]"
               />
             </DemoField>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="submit"
                 disabled={requestState === "loading"}
-                className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#091c46] px-5 text-[14px] font-semibold tracking-[-0.03em] text-white transition-colors hover:bg-[#112758] disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-[#091c46] px-4 text-[13px] font-semibold tracking-[-0.03em] text-white transition-colors hover:bg-[#112758] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {requestState === "loading" ? "Calling..." : "Get a call"}
                 <ArrowRight className="h-4 w-4" />
               </button>
 
-              <p
-                className={cn(
-                  "mt-4 text-[12px] leading-5",
-                  requestState === "error" ? "text-[#b42318]" : "text-[#51607b]",
-                )}
-              >
+              <p className={cn("mt-3 text-[11px] leading-5", requestState === "error" ? "text-[#b42318]" : "text-[#51607b]")}>
                 {message || "One number. Multiple demo agents. We route the call by industry."}
               </p>
             </div>
@@ -288,26 +279,22 @@ const BentoCard = () => {
                   </p>
                 </div>
 
-                <div className="flex flex-1 flex-col px-6 py-6 sm:px-7 sm:py-7">
-                  <div className="max-w-[360px]">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-[#d7dbeb] bg-white/80 px-3 py-1 text-[11px] font-semibold tracking-[0.1em] text-[#4369eb]">
-                      <PhoneCall className="h-3.5 w-3.5" />
-                      LIVE AGENT DEMO
-                    </div>
-                    <h3 className="mt-4 max-w-[360px] text-[24px] font-medium leading-[1.04] tracking-[-0.05em] text-[#13233f] sm:text-[30px]">
+                <div className="flex flex-1 flex-col px-5 py-5 sm:px-6 sm:py-6">
+                  <div className="max-w-[340px]">
+                    <h3 className="max-w-[340px] text-[21px] font-medium leading-[1.08] tracking-[-0.045em] text-[#13233f] sm:text-[26px]">
                       Receive a live call from our agent and hear how Boltcall handles real customer conversations.
                     </h3>
                   </div>
 
-                  <form className="mt-6 flex flex-1 flex-col" onSubmit={handleSubmit}>
-                    <div className="space-y-4">
+                  <form className="mt-5 flex flex-1 flex-col" onSubmit={handleSubmit}>
+                    <div className="space-y-3">
                       <DemoField label="Industry">
                         <select
                           value={industry}
                           onChange={(event) =>
                             setIndustry(event.target.value as DemoIndustryId)
                           }
-                          className="w-full bg-transparent text-[18px] font-medium tracking-[-0.04em] text-[#13233f] outline-none sm:text-[20px]"
+                          className="w-full bg-transparent text-[16px] font-medium tracking-[-0.04em] text-[#13233f] outline-none sm:text-[18px]"
                         >
                           {DEMO_INDUSTRIES.map((item) => (
                             <option key={item.id} value={item.id}>
@@ -326,7 +313,7 @@ const BentoCard = () => {
                           autoComplete="name"
                           required
                           className="w-full"
-                          inputClassName="border-[#13233f] pb-1 pt-2 text-[18px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[20px]"
+                          inputClassName="border-[#13233f] pb-1 pt-2 text-[16px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[18px]"
                         />
                       </DemoField>
 
@@ -339,28 +326,23 @@ const BentoCard = () => {
                           autoComplete="tel"
                           required
                           className="w-full"
-                          inputClassName="border-[#13233f] pb-1 pt-2 text-[18px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[20px]"
+                          inputClassName="border-[#13233f] pb-1 pt-2 text-[16px] font-normal tracking-[-0.04em] text-[#13233f] sm:text-[18px]"
                         />
                       </DemoField>
                     </div>
 
-                    <div className="mt-auto pt-6">
+                    <div className="mt-auto pt-4">
                       <button
                         type="submit"
                         disabled={requestState === "loading"}
-                        className="inline-flex h-11 items-center gap-2 rounded-[10px] bg-[#091c46] px-5 text-[14px] font-semibold tracking-[-0.03em] text-white transition-colors hover:bg-[#112758] disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-[#091c46] px-4 text-[13px] font-semibold tracking-[-0.03em] text-white transition-colors hover:bg-[#112758] disabled:cursor-not-allowed disabled:opacity-70"
                       >
                         {requestState === "loading" ? "Calling..." : "Get a call"}
                         <ArrowRight className="h-4 w-4" />
                       </button>
 
                       <p
-                        className={cn(
-                          "mt-4 max-w-[400px] text-[12px] leading-5",
-                          requestState === "error"
-                            ? "text-[#b42318]"
-                            : "text-[#51607b]",
-                        )}
+                        className={cn("mt-3 max-w-[360px] text-[11px] leading-5", requestState === "error" ? "text-[#b42318]" : "text-[#51607b]")}
                       >
                         {message || "One number. Multiple demo agents. We route the call by industry."}
                       </p>

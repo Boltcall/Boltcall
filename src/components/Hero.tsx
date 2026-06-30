@@ -142,18 +142,18 @@ const Hero: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`relative z-10 pt-32 md:pt-44 lg:pt-52 pb-12 ${isRtl ? 'text-right md:max-w-4xl md:ml-auto' : 'text-center'}`}>
 
-            <span className="speakable-intro sr-only">Speed-to-Lead Software for Local Service Businesses</span>
-
             <motion.h1
-              className={`text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter text-text-main flex leading-tight mb-6 ${isRtl ? 'items-end justify-end' : 'items-center justify-center'}`}
+              className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-text-main flex flex-col leading-tight space-y-1 md:space-y-2 mb-6 ${isRtl ? 'items-end justify-end' : 'items-center justify-center'}`}
               style={{ fontFamily: "'Sora', sans-serif" }}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 24 }}
-              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.18 }}
+              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.10 }}
             >
               <LayoutGroup>
                 <motion.span layout className={`flex items-center whitespace-pre ${isRtl ? 'flex-row-reverse' : ''}`}>
-                  <span>{t('hero.neverMiss')} </span>
+                  <span className="speakable-intro">{t('hero.neverMiss')}</span>
+                </motion.span>
+                <motion.span layout className={`flex items-center whitespace-pre ${isRtl ? 'flex-row-reverse' : ''}`}>
                   {t('hero.a') && <span>{t('hero.a')}</span>}
                   <TextRotate
                     texts={rotatingWords}

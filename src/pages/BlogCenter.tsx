@@ -884,6 +884,9 @@ const BlogCenter: React.FC = () => {
             <Link to="/pricing" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm">
               See Full Pricing Details <ArrowRight className="w-4 h-4" />
             </Link>
+            <p className="mt-3 text-sm text-gray-600">
+              Need the usage model too? Read the <Link to="/credits" className="text-blue-600 underline hover:text-blue-700">Boltcall credits explainer</Link>.
+            </p>
           </div>
         </div>
       </section>
