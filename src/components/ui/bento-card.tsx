@@ -18,16 +18,15 @@ type RequestState = "idle" | "loading" | "success" | "error";
 type DemoIndustry = {
   id: DemoIndustryId;
   label: string;
-  blurb: string;
 };
 
 const DEMO_INDUSTRIES: DemoIndustry[] = [
-  { id: "law-firm", label: "Law Firm", blurb: "Consult intake and fast callback." },
-  { id: "roofers", label: "Roofers", blurb: "Storm leads and estimate booking." },
-  { id: "hvac", label: "HVAC", blurb: "Emergency service and dispatch triage." },
-  { id: "plumbers", label: "Plumbers", blurb: "After-hours overflow and booking." },
-  { id: "dental", label: "Dental", blurb: "New patient intake and scheduling." },
-  { id: "med-spa", label: "Med Spa", blurb: "Consult follow-up and availability." },
+  { id: "law-firm", label: "Law Firm" },
+  { id: "roofers", label: "Roofers" },
+  { id: "hvac", label: "HVAC" },
+  { id: "plumbers", label: "Plumbers" },
+  { id: "dental", label: "Dental" },
+  { id: "med-spa", label: "Med Spa" },
 ];
 
 function DemoField({
@@ -95,11 +94,11 @@ const BentoCard = () => {
       <div className="overflow-hidden rounded-[32px] border border-white/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,247,252,0.94))] shadow-[0_28px_90px_rgba(10,24,54,0.18)]">
         <div className="grid gap-0 lg:grid-cols-[minmax(250px,320px)_1fr]">
           <div className="border-b border-[#d8dce7] bg-[#f6f8fc] px-6 py-8 sm:px-8 lg:border-b-0 lg:border-r">
-            <div className="mx-auto flex max-w-[280px] flex-col items-center text-center">
+            <div className="mx-auto flex max-w-[240px] flex-col items-center text-center sm:max-w-[280px]">
               <SiriOrb
-                size="220px"
+                size="min(220px, 56vw)"
                 animationDuration={18}
-                className="drop-shadow-[0_22px_52px_rgba(61,108,229,0.22)]"
+                className="drop-shadow-[0_14px_32px_rgba(61,108,229,0.18)] sm:drop-shadow-[0_22px_52px_rgba(61,108,229,0.22)]"
                 colors={{
                   c1: "oklch(79% 0.12 343)",
                   c2: "oklch(81% 0.11 236)",
@@ -107,11 +106,11 @@ const BentoCard = () => {
                 }}
               />
 
-              <p className="mt-5 text-sm leading-6 text-[#51607b]">
+              <p className="mt-4 text-[13px] leading-5 text-[#51607b] sm:mt-5 sm:text-sm sm:leading-6">
                 Pick an industry and Boltcall will route the demo to the right voice flow.
               </p>
 
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <div className="mt-4 flex flex-wrap justify-center gap-1.5 sm:mt-5 sm:gap-2">
                 {DEMO_INDUSTRIES.map((item) => {
                   const isActive = item.id === industry;
 
@@ -121,7 +120,7 @@ const BentoCard = () => {
                       type="button"
                       onClick={() => setIndustry(item.id)}
                       className={cn(
-                        "inline-flex h-9 items-center justify-center rounded-full px-3 text-[12px] font-semibold tracking-[-0.02em] transition-colors",
+                        "inline-flex h-8 items-center justify-center rounded-full px-2.5 text-[11px] font-semibold tracking-[-0.02em] transition-colors sm:h-9 sm:px-3 sm:text-[12px]",
                         isActive
                           ? "bg-[#4369eb] text-white shadow-[0_8px_18px_rgba(67,105,235,0.2)]"
                           : "bg-white text-[#13233f] hover:bg-[#eef1f7]",
@@ -143,9 +142,6 @@ const BentoCard = () => {
               <h3 className="mt-3 text-[28px] font-medium leading-[1.05] tracking-[-0.055em] text-[#13233f] sm:text-[38px]">
                 Receive a live call from our agent and hear how Boltcall handles real customer conversations.
               </h3>
-              <p className="mt-3 max-w-[460px] text-sm leading-6 text-[#51607b] sm:text-[15px]">
-                {activeIndustry.blurb} Enter your details and Boltcall will call you with the matching demo flow.
-              </p>
             </div>
 
             <form className="mt-8 grid gap-5 sm:grid-cols-2" onSubmit={handleSubmit}>
@@ -201,14 +197,16 @@ const BentoCard = () => {
                   <ArrowRight className="h-4 w-4" />
                 </button>
 
-                <p
-                  className={cn(
-                    "mt-3 max-w-[420px] text-sm leading-6",
-                    requestState === "error" ? "text-[#b42318]" : "text-[#51607b]",
-                  )}
-                >
-                  {message || "One number. Multiple demo agents. We route the call by industry."}
-                </p>
+                {message ? (
+                  <p
+                    className={cn(
+                      "mt-3 max-w-[420px] text-sm leading-6",
+                      requestState === "error" ? "text-[#b42318]" : "text-[#51607b]",
+                    )}
+                  >
+                    {message}
+                  </p>
+                ) : null}
               </div>
             </form>
           </div>
