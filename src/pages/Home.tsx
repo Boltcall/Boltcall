@@ -1,4 +1,5 @@
 import React, { useEffect, lazy, Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import {
@@ -209,6 +210,15 @@ const Home: React.FC = () => {
         <Header />
         <main className="pb-0">
           <Hero />
+
+          <section className="relative z-[3] px-4 pt-2 text-center">
+            <p className="text-sm text-white/78">
+              One shared pool across phone, SMS, and website chat.{' '}
+              <Link to="/credits" className="font-semibold text-white underline underline-offset-4 hover:text-white/90">
+                See how Boltcall credits work
+              </Link>
+            </p>
+          </section>
 
           {/* Boltcall Platform Preview — interactive dark bento card */}
           <section className="relative z-[2] -mt-24 px-4 py-8 sm:-mt-[360px] sm:px-8 lg:px-16">
