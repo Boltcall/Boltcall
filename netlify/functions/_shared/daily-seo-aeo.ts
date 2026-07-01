@@ -33,6 +33,12 @@ interface AtpRun {
 
 type AtpTaskResult = AtpRun['tasks'][number];
 
+interface SourceWindow {
+  label: string;
+  startDate: string;
+  endDate: string;
+}
+
 async function readServerSecret(supabase: SupabaseClient | undefined, envName: string, key: string) {
   const envValue = process.env[envName];
   if (envValue) return envValue;
@@ -48,6 +54,21 @@ async function readServerSecret(supabase: SupabaseClient | undefined, envName: s
 
 function yesterdayKey() {
   return new Date(Date.now() - DAY_MS).toISOString().slice(0, 10);
+}
+
+function shiftDate(date: string, days: number) {
+  const [year, month, day] = date.split('-').map(Number);
+  const current = new Date(Date.UTC(year, month - 1, day));
+  current.setUTCDate(current.getUTCDate() + days);
+  return current.toISOString().slice(0, 10);
+}
+
+function fallbackWindow(date: string): SourceWindow {
+  return {
+    label: `fallback ${shiftDate(date, -28)} to ${shiftDate(date, -3)}`,
+    startDate: shiftDate(date, -28),
+    endDate: shiftDate(date, -3),
+  };
 }
 
 async function readServiceAccount(supabase?: SupabaseClient) {
@@ -333,7 +354,45 @@ function findGa4Opportunity(rows: Array<Record<string, any>>) {
     })[0];
 }
 
-function makeScorecard(date: string, gscRows: any[], ga4Rows: any[], clarityRows: unknown[], atp: AtpRun, warnings: Warning[]) {
+async function gscSnapshot(token: string, date: string, warnings: Warning[]) {
+  const daily: SourceWindow = { label: date, startDate: date, endDate: date };
+  let data = await gscQuery(token, { startDate: date, endDate: date, dimensions: ['page'], rowLimit: 25 });
+  if (((data as any).rows || []).length) return { data, window: daily };
+
+  const fallback = fallbackWindow(date);
+  data = await gscQuery(token, { startDate: fallback.startDate, endDate: fallback.endDate, dimensions: ['page'], rowLimit: 25 });
+  if (((data as any).rows || []).length) warnings.push(`GSC returned no rows for ${date}; used ${fallback.label}.`);
+  return { data, window: ((data as any).rows || []).length ? fallback : daily };
+}
+
+async function ga4Snapshot(token: string, date: string, warnings: Warning[]) {
+  const daily: SourceWindow = { label: date, startDate: date, endDate: date };
+  const request = (window: SourceWindow) => ga4RunReport(token, {
+    dateRanges: [{ startDate: window.startDate, endDate: window.endDate }],
+    dimensions: [{ name: 'landingPagePlusQueryString' }],
+    metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
+    limit: 25,
+    orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+  });
+
+  let data = await request(daily);
+  if (((data as any).rows || []).length) return { data, window: daily };
+
+  const fallback = fallbackWindow(date);
+  data = await request(fallback);
+  if (((data as any).rows || []).length) warnings.push(`GA4 returned no rows for ${date}; used ${fallback.label}.`);
+  return { data, window: ((data as any).rows || []).length ? fallback : daily };
+}
+
+function makeScorecard(
+  date: string,
+  windows: { gsc: SourceWindow; ga4: SourceWindow },
+  gscRows: any[],
+  ga4Rows: any[],
+  clarityRows: unknown[],
+  atp: AtpRun,
+  warnings: Warning[],
+) {
   const gscTop = topRows(gscRows, 'clicks');
   const ga4Top = topRows(ga4Rows, 'sessions');
   const opportunity = findGa4Opportunity(ga4Rows);
@@ -345,11 +404,11 @@ function makeScorecard(date: string, gscRows: any[], ga4Rows: any[], clarityRows
     'Tool jobs: GSC and GA4 show what moved. Clarity explains why users got stuck. AnswerThePublic shows what to write or answer next.',
     '',
     '## GSC',
-    'SEO demand snapshot: top pages by clicks',
+    `SEO demand snapshot (${windows.gsc.label}): top pages by clicks`,
     ...lines(gscTop, 'clicks', ' clicks'),
     '',
     '## GA4',
-    'Landing-page movement: top pages by sessions',
+    `Landing-page movement (${windows.ga4.label}): top pages by sessions`,
     ...lines(ga4Top, 'sessions', ' sessions'),
     '',
     'Biggest GA4 landing-page opportunity',
@@ -388,24 +447,19 @@ export async function runDailySeoAeo({ supabase, date = yesterdayKey() }: Runner
   ], supabase);
   const warnings: Warning[] = [];
 
-  const [gsc, ga4, clarity, atp] = await Promise.all([
-    gscQuery(googleToken, { startDate: date, endDate: date, dimensions: ['page'], rowLimit: 25 }),
-    ga4RunReport(googleToken, {
-      dateRanges: [{ startDate: date, endDate: date }],
-      dimensions: [{ name: 'landingPagePlusQueryString' }],
-      metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
-      limit: 25,
-      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
-    }),
+  const [gscResult, ga4Result, clarity, atp] = await Promise.all([
+    gscSnapshot(googleToken, date, warnings),
+    ga4Snapshot(googleToken, date, warnings),
     fetchClarity(warnings, supabase),
     runAtp(warnings, supabase),
   ]);
 
-  const gscRows = parseGscRows((gsc as any).rows || []);
-  const ga4Rows = parseGa4Rows((ga4 as any).rows || []);
+  const gscRows = parseGscRows((gscResult.data as any).rows || []);
+  const ga4Rows = parseGa4Rows((ga4Result.data as any).rows || []);
   const opportunity = findGa4Opportunity(ga4Rows);
   const now = new Date().toISOString();
-  const scorecard = makeScorecard(date, gscRows, ga4Rows, clarity, atp, warnings);
+  const windows = { gsc: gscResult.window, ga4: ga4Result.window };
+  const scorecard = makeScorecard(date, windows, gscRows, ga4Rows, clarity, atp, warnings);
   const { data: workspaceRow, error: workspaceError } = await supabase
     .from('workspaces')
     .select('user_id')
@@ -429,7 +483,7 @@ export async function runDailySeoAeo({ supabase, date = yesterdayKey() }: Runner
     .single();
   if (atpError) throw new Error(`ATP save failed: ${atpError.message}`);
 
-  const sources = { gsc: gscRows, ga4: ga4Rows, clarity, atp: atp.raw };
+  const sources = { windows, gsc: gscRows, ga4: ga4Rows, clarity, atp: atp.raw };
   const selectedAction = {
     page: opportunity?.key || gscRows[0]?.key || ga4Rows[0]?.key || '/',
     content_angle: atp.tasks.find((task) => task.result)?.prompt || DEFAULT_ATP_TASKS[0].prompt,
@@ -490,5 +544,7 @@ export async function fetchDailySeoReview(supabase: SupabaseClient, date = new D
 
 export const __dailySeoAeoTest = {
   clustersFromReport,
+  fallbackWindow,
+  shiftDate,
   walkQuestions,
 };
