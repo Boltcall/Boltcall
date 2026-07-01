@@ -92,3 +92,16 @@ describe('daily SEO source windows', () => {
     });
   });
 });
+
+describe('optional source fallback', () => {
+  it('turns optional source failures into warnings instead of throwing', async () => {
+    const warnings: string[] = [];
+
+    const result = await __dailySeoAeoTest.optionalSource(warnings, 'Clarity', [], async () => {
+      throw new Error('Exceeded daily limit');
+    });
+
+    expect(result).toEqual([]);
+    expect(warnings).toEqual(['Clarity warning: Exceeded daily limit']);
+  });
+});
