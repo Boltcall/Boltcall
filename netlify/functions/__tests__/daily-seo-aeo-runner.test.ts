@@ -105,3 +105,14 @@ describe('optional source fallback', () => {
     expect(warnings).toEqual(['Clarity warning: Exceeded daily limit']);
   });
 });
+
+describe('ATP workspace guidance', () => {
+  it('tells us to set the workspace slug when /users/me is unauthorized', () => {
+    const error = __dailySeoAeoTest.normalizeAtpWorkspaceError(
+      new Error('ATP /api/v1/users/me failed 401: {"error":{"message":"Unauthorized","code":401}}'),
+    );
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain('Set ATP_WORKSPACE_SLUG');
+  });
+});

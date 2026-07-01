@@ -60,6 +60,19 @@ async function readFirstServerSecret(supabase: SupabaseClient | undefined, envNa
   return readServerSecret(supabase, envNames[0], key);
 }
 
+async function readServerSetting(supabase: SupabaseClient | undefined, envName: string, key: string) {
+  const envValue = process.env[envName];
+  if (envValue) return envValue;
+  if (!supabase) return '';
+  const { data, error } = await supabase
+    .from('daily_seo_secrets')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle();
+  if (error) throw new Error(`${envName} lookup failed: ${error.message}`);
+  return typeof data?.value === 'string' ? data.value : '';
+}
+
 function yesterdayKey() {
   return new Date(Date.now() - DAY_MS).toISOString().slice(0, 10);
 }
@@ -227,10 +240,19 @@ function compactRaw(value: unknown) {
   return { excerpt: text.slice(0, 5000) };
 }
 
-class AtpClient {
-  private workspaceSlug = process.env.ATP_WORKSPACE_SLUG || '';
+function normalizeAtpWorkspaceError(error: unknown) {
+  if (error instanceof Error && error.message.includes('/api/v1/users/me failed 401')) {
+    return new Error('ATP token cannot access /api/v1/users/me. Set ATP_WORKSPACE_SLUG (or daily_seo_secrets.atp_workspace_slug) so the runner can skip profile lookup.');
+  }
+  return error;
+}
 
-  constructor(private token: string) {}
+class AtpClient {
+  private workspaceSlug = '';
+
+  constructor(private token: string, workspaceSlug = '') {
+    this.workspaceSlug = workspaceSlug;
+  }
 
   private async request(path: string, init: RequestInit = {}) {
     const response = await fetch(`${ATP_BASE_URL}${path}`, {
@@ -254,7 +276,12 @@ class AtpClient {
 
   async workspace() {
     if (this.workspaceSlug) return this.workspaceSlug;
-    const me = await this.request('/api/v1/users/me');
+    let me: unknown;
+    try {
+      me = await this.request('/api/v1/users/me');
+    } catch (error) {
+      throw normalizeAtpWorkspaceError(error);
+    }
     const anyMe = me as any;
     this.workspaceSlug =
       anyMe?.data?.current_workspace?.slug ||
@@ -308,7 +335,8 @@ async function runAtp(warnings: Warning[], supabase?: SupabaseClient): Promise<A
     return { tasks: DEFAULT_ATP_TASKS.map((task) => ({ ...task })), raw: {}, warnings };
   }
 
-  const client = new AtpClient(token);
+  const workspaceSlug = await readServerSetting(supabase, 'ATP_WORKSPACE_SLUG', 'atp_workspace_slug');
+  const client = new AtpClient(token, workspaceSlug);
   const tasks: AtpTaskResult[] = [];
   const raw: Record<string, unknown> = {};
   for (const task of DEFAULT_ATP_TASKS) {
@@ -563,6 +591,7 @@ export async function fetchDailySeoReview(supabase: SupabaseClient, date = new D
 export const __dailySeoAeoTest = {
   clustersFromReport,
   fallbackWindow,
+  normalizeAtpWorkspaceError,
   optionalSource,
   shiftDate,
   walkQuestions,
