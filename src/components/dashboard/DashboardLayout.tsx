@@ -82,8 +82,8 @@ const DashboardLayout: React.FC = () => {
   const milestoneAlerts = useAgentMilestoneAlerts();
   const allAlerts = [...milestoneAlerts, ...alerts];
   
-  // Mock user plan - in real app, this would come from user context/API
-  const userPlan: 'free' | 'pro' | 'elite' = 'free';
+  // Features are currently enabled for every dashboard user.
+  const userPlan = 'elite' as 'free' | 'pro' | 'elite';
   
   
 
@@ -117,19 +117,6 @@ const DashboardLayout: React.FC = () => {
       addLogEntry('Dashboard Access', 'User accessed dashboard', user.id);
     }
   }, [user?.id]);
-
-  // Show feedback popup randomly — 25% chance, no more than once per 7 days
-  useEffect(() => {
-    const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
-    const lastShown = Number(localStorage.getItem('feedbackPopupLastShown') || 0);
-    const cooldownPassed = Date.now() - lastShown > SEVEN_DAYS;
-    if (!cooldownPassed || Math.random() > 0.25) return;
-    const timer = setTimeout(() => {
-      setShowFeedback(true);
-      localStorage.setItem('feedbackPopupLastShown', String(Date.now()));
-    }, 45_000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Load real service statuses from Supabase
   useEffect(() => {

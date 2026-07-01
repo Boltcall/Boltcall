@@ -174,6 +174,6 @@ describe('TalkToAgentPage', () => {
 
     await user.click(screen.getByRole('button', { name: /skip & enter dashboard/i }));
 
-    expect(mocks.navigate).toHaveBeenCalledWith('/dashboard?setupCompleted=true', { replace: true });
+    expect(mocks.navigate).toHaveBeenCalledWith('/dashboard/?setupCompleted=true', { replace: true });
   });
 });
