@@ -442,7 +442,7 @@ const SEOAnalyzer: React.FC = () => {
                 {[
                   { option: 'Boltcall SEO Audit', cost: 'Free', depth: 'Comprehensive', ai: 'Yes (AI-powered)', speed: 'Instant', highlight: true },
                   { option: 'Manual SEO consultant', cost: '$500–$2,000', depth: 'Varies', ai: 'No', speed: '1–2 weeks', highlight: false },
-                  { option: 'Generic SEO tool (Semrush, Ahrefs)', cost: '$99–$499/mo', depth: 'Technical only', ai: 'No', speed: 'Self-service', highlight: false },
+                  { option: 'Generic paid SEO tool', cost: '$99–$499/mo', depth: 'Technical only', ai: 'No', speed: 'Self-service', highlight: false },
                   { option: 'Google Search Console', cost: 'Free', depth: 'Limited', ai: 'No', speed: 'Real-time', highlight: false },
                   { option: 'Local SEO agency', cost: '$1,000–$5,000/mo', depth: 'Full', ai: 'Sometimes', speed: 'Monthly report', highlight: false },
                 ].map((row) => (

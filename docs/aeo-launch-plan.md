@@ -3,6 +3,8 @@
 Updated: 2026-05-31
 Launch date: Monday, 2026-06-01
 
+For the ongoing daily and weekly operating routine, use `docs/seo-aeo-operating-playbook.md`. This file remains the historical launch checklist and external-submission tracker.
+
 ## Goal
 
 Make Boltcall discoverable and citable when buyers ask AI/search systems questions like:
