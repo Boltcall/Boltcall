@@ -240,13 +240,6 @@ function compactRaw(value: unknown) {
   return { excerpt: text.slice(0, 5000) };
 }
 
-function normalizeAtpWorkspaceError(error: unknown) {
-  if (error instanceof Error && error.message.includes('/api/v1/users/me failed 401')) {
-    return new Error('ATP token cannot access /api/v1/users/me. Set ATP_WORKSPACE_SLUG (or daily_seo_secrets.atp_workspace_slug) so the runner can skip profile lookup.');
-  }
-  return error;
-}
-
 class AtpClient {
   private workspaceSlug = '';
 
@@ -277,15 +270,13 @@ class AtpClient {
   async workspace() {
     if (this.workspaceSlug) return this.workspaceSlug;
     let me: unknown;
-    try {
-      me = await this.request('/api/v1/users/me');
-    } catch (error) {
-      throw normalizeAtpWorkspaceError(error);
-    }
+    me = await this.request('/api/public/v1/me');
     const anyMe = me as any;
     this.workspaceSlug =
       anyMe?.data?.current_workspace?.slug ||
+      anyMe?.data?.workspace?.slug ||
       anyMe?.data?.user?.current_workspace?.slug ||
+      anyMe?.workspace?.slug ||
       anyMe?.current_workspace?.slug ||
       '';
     if (!this.workspaceSlug) throw new Error('ATP workspace slug not found; set ATP_WORKSPACE_SLUG');
@@ -293,7 +284,7 @@ class AtpClient {
   }
 
   async search(prompt: string) {
-    const slug = await this.workspace();
+    await this.workspace();
     const body = {
       search: {
         keyword: prompt,
@@ -301,11 +292,13 @@ class AtpClient {
         region: process.env.ATP_REGION || 'us',
       },
     };
-    const created = await this.request(`/api/v1/${slug}/searches`, { method: 'POST', body: JSON.stringify(body) });
+    const created = await this.request('/api/public/v1/searches', { method: 'POST', body: JSON.stringify(body) });
     const anyCreated = created as any;
     const reportId =
+      anyCreated?.data?.report_id ||
       anyCreated?.data?.parent_search_id ||
       anyCreated?.data?.id ||
+      anyCreated?.report_id ||
       anyCreated?.parent_search_id ||
       anyCreated?.id;
     if (!reportId) throw new Error('ATP search response did not include report id');
@@ -314,7 +307,7 @@ class AtpClient {
     let lastError: unknown = null;
     for (let attempt = 1; attempt <= ATP_REPORT_ATTEMPTS; attempt += 1) {
       try {
-        report = await this.request(`/api/v1/${slug}/reports/${encodeURIComponent(String(reportId))}`);
+        report = await this.request(`/api/public/v1/reports/${encodeURIComponent(String(reportId))}`);
         break;
       } catch (error) {
         lastError = error;
@@ -591,7 +584,6 @@ export async function fetchDailySeoReview(supabase: SupabaseClient, date = new D
 export const __dailySeoAeoTest = {
   clustersFromReport,
   fallbackWindow,
-  normalizeAtpWorkspaceError,
   optionalSource,
   shiftDate,
   walkQuestions,
