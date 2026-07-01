@@ -82,3 +82,13 @@ describe('AnswerThePublic extraction fallback', () => {
     expect(clusters[0]).toContain('how fast should plumbers respond to leads?');
   });
 });
+
+describe('daily SEO source windows', () => {
+  it('uses the last complete 28-day window when daily analytics are empty', () => {
+    expect(__dailySeoAeoTest.fallbackWindow('2026-07-01')).toEqual({
+      label: 'fallback 2026-06-03 to 2026-06-28',
+      startDate: '2026-06-03',
+      endDate: '2026-06-28',
+    });
+  });
+});
