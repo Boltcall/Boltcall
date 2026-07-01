@@ -23,6 +23,19 @@ interface ReviewResponse {
     last_saved_at: string | null;
     submitted_at: string | null;
   };
+  weekly: null | {
+    run_week_start: string;
+    run_week_end: string;
+    status: string;
+    summary: string;
+    warnings: string[];
+    priority_queue: {
+      page_fixes?: string[];
+      content_candidates?: string[];
+      citation_gaps?: string[];
+    };
+    updated_at: string;
+  };
 }
 
 const DAILY_TOOL_MAP = [
@@ -82,7 +95,7 @@ const AIVisibilityCheck: React.FC = () => {
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-28 sm:px-6 lg:px-8">
         <section className="grid gap-4 border-b border-slate-200 pb-6 lg:grid-cols-[1fr_auto]">
           <div>
-            <h1 className="text-3xl font-semibold tracking-normal">Daily SEO + AEO review</h1>
+            <h1 className="text-3xl font-semibold tracking-normal">SEO + AEO review</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
               Daily automation status, AnswerThePublic output, and the weekly review map for GSC, GA4, Clarity, and ATP.
             </p>
@@ -126,6 +139,28 @@ const AIVisibilityCheck: React.FC = () => {
             <div className="text-sm font-medium">Selected action</div>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {review?.run?.selected_action?.page || 'No page selected yet.'}
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-sm font-medium">Weekly run</div>
+            <p className="mt-2 text-2xl font-semibold">{review?.weekly?.status || 'Not run'}</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {review?.weekly ? `${review.weekly.run_week_start} to ${review.weekly.run_week_end}` : 'No weekly queue saved yet.'}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-sm font-medium">Top weekly page fix</div>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {review?.weekly?.priority_queue?.page_fixes?.[0] || 'No weekly page fix ranked yet.'}
+            </p>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="text-sm font-medium">Top weekly content angle</div>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {review?.weekly?.priority_queue?.content_candidates?.[0] || 'No weekly content angle ranked yet.'}
             </p>
           </div>
         </section>
@@ -192,6 +227,45 @@ const AIVisibilityCheck: React.FC = () => {
             <h2 className="text-lg font-semibold">Scorecard</h2>
             <pre className="mt-4 max-h-[680px] overflow-auto whitespace-pre-wrap rounded-md bg-slate-950 p-4 text-sm leading-6 text-slate-100">
               {review?.run?.scorecard || buildDailySeoHandoff(tasks)}
+            </pre>
+          </article>
+        </section>
+
+        <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <article className="rounded-lg border border-slate-200 bg-white p-4">
+            <h2 className="text-lg font-semibold">Weekly ranked queue</h2>
+            <div className="mt-4 space-y-4 text-sm leading-6 text-slate-600">
+              <div>
+                <p className="font-medium text-slate-950">Page fixes</p>
+                <div className="mt-2 space-y-2">
+                  {(review?.weekly?.priority_queue?.page_fixes?.length ? review.weekly.priority_queue.page_fixes : ['No weekly page fixes saved.']).map((item) => (
+                    <p key={item} className="rounded-md border border-slate-200 bg-slate-50 p-3">{item}</p>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="font-medium text-slate-950">Content candidates</p>
+                <div className="mt-2 space-y-2">
+                  {(review?.weekly?.priority_queue?.content_candidates?.length ? review.weekly.priority_queue.content_candidates : ['No weekly content candidates saved.']).map((item) => (
+                    <p key={item} className="rounded-md border border-slate-200 bg-slate-50 p-3">{item}</p>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="font-medium text-slate-950">Citation gaps</p>
+                <div className="mt-2 space-y-2">
+                  {(review?.weekly?.priority_queue?.citation_gaps?.length ? review.weekly.priority_queue.citation_gaps : ['No weekly citation gaps saved.']).map((item) => (
+                    <p key={item} className="rounded-md border border-slate-200 bg-slate-50 p-3">{item}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article className="rounded-lg border border-slate-200 bg-white p-4">
+            <h2 className="text-lg font-semibold">Weekly summary</h2>
+            <pre className="mt-4 max-h-[680px] overflow-auto whitespace-pre-wrap rounded-md bg-slate-950 p-4 text-sm leading-6 text-slate-100">
+              {review?.weekly?.summary || 'No weekly run saved yet.'}
             </pre>
           </article>
         </section>

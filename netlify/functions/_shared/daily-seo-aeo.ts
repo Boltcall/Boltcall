@@ -33,6 +33,15 @@ interface AtpRun {
 
 type AtpTaskResult = AtpRun['tasks'][number];
 
+interface WeeklySeoRun {
+  status: string;
+  run_week_start: string;
+  run_week_end: string;
+  warnings: Warning[];
+  weekly_seo_run_id?: string;
+  summary: string;
+}
+
 interface SourceWindow {
   label: string;
   startDate: string;
@@ -89,6 +98,14 @@ function fallbackWindow(date: string): SourceWindow {
     label: `fallback ${shiftDate(date, -28)} to ${shiftDate(date, -3)}`,
     startDate: shiftDate(date, -28),
     endDate: shiftDate(date, -3),
+  };
+}
+
+function weeklyWindow(date: string): SourceWindow {
+  return {
+    label: `${shiftDate(date, -6)} to ${date}`,
+    startDate: shiftDate(date, -6),
+    endDate: date,
   };
 }
 
@@ -177,7 +194,7 @@ async function ga4RunReport(token: string, body: Record<string, unknown>) {
   return data;
 }
 
-async function fetchClarity(warnings: Warning[], supabase?: SupabaseClient) {
+async function fetchClarity(warnings: Warning[], supabase?: SupabaseClient, days = 1) {
   const token = await readServerSecret(supabase, 'CLARITY_API_TOKEN', 'clarity_api_token');
   if (!token) {
     warnings.push('Clarity skipped: CLARITY_API_TOKEN missing');
@@ -186,7 +203,7 @@ async function fetchClarity(warnings: Warning[], supabase?: SupabaseClient) {
 
   const url = new URL('https://www.clarity.ms/export-data/api/v1/project-live-insights');
   url.searchParams.set('projectId', process.env.CLARITY_PROJECT_ID || DEFAULT_CLARITY_PROJECT_ID);
-  url.searchParams.set('numOfDays', '1');
+  url.searchParams.set('numOfDays', String(days));
   url.searchParams.set('dimension1', 'URL');
 
   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
@@ -423,6 +440,123 @@ async function ga4Snapshot(token: string, date: string, warnings: Warning[]) {
   return { data, window: ((data as any).rows || []).length ? fallback : daily };
 }
 
+async function gscRange(token: string, window: SourceWindow) {
+  const data = await gscQuery(token, {
+    startDate: window.startDate,
+    endDate: window.endDate,
+    dimensions: ['page'],
+    rowLimit: 50,
+  });
+  return { data, window };
+}
+
+async function ga4LandingPagesRange(token: string, window: SourceWindow) {
+  const data = await ga4RunReport(token, {
+    dateRanges: [{ startDate: window.startDate, endDate: window.endDate }],
+    dimensions: [{ name: 'landingPagePlusQueryString' }],
+    metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
+    limit: 50,
+    orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+  });
+  return { data, window };
+}
+
+async function ga4AcquisitionRange(token: string, window: SourceWindow) {
+  const data = await ga4RunReport(token, {
+    dateRanges: [{ startDate: window.startDate, endDate: window.endDate }],
+    dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+    metrics: [{ name: 'sessions' }, { name: 'engagedSessions' }, { name: 'keyEvents' }],
+    limit: 20,
+    orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+  });
+  return { data, window };
+}
+
+async function ga4EventsRange(token: string, window: SourceWindow) {
+  const data = await ga4RunReport(token, {
+    dateRanges: [{ startDate: window.startDate, endDate: window.endDate }],
+    dimensions: [{ name: 'eventName' }],
+    metrics: [{ name: 'eventCount' }, { name: 'keyEvents' }],
+    limit: 20,
+    orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
+  });
+  return { data, window };
+}
+
+function parseNamedMetricRows(rows: any[] = [], metrics: string[]) {
+  return rows.map((row) => {
+    const record: Record<string, number | string> = {
+      key: row.dimensionValues?.[0]?.value || '(unknown)',
+    };
+    metrics.forEach((metric, index) => {
+      record[metric] = Number(row.metricValues?.[index]?.value || 0);
+    });
+    return record;
+  });
+}
+
+function normalizePageKey(key: string) {
+  if (!key) return '/';
+  try {
+    if (/^https?:\/\//i.test(key)) return new URL(key).pathname || '/';
+  } catch {}
+  return key.startsWith('/') ? key : `/${key.replace(/^\//, '')}`;
+}
+
+function rankWeeklyPageFixes(gscRows: Array<Record<string, any>>, ga4Rows: Array<Record<string, any>>, clarityRows: any[] = []) {
+  const byPage = new Map<string, Record<string, number | string>>();
+
+  for (const row of gscRows) {
+    const key = normalizePageKey(String(row.key || '/'));
+    const current = byPage.get(key) || { key, clicks: 0, impressions: 0, sessions: 0, engagedSessions: 0, keyEvents: 0, clarityHits: 0 };
+    current.clicks = Number(current.clicks || 0) + Number(row.clicks || 0);
+    current.impressions = Number(current.impressions || 0) + Number(row.impressions || 0);
+    byPage.set(key, current);
+  }
+
+  for (const row of ga4Rows) {
+    const key = normalizePageKey(String(row.key || '/'));
+    const current = byPage.get(key) || { key, clicks: 0, impressions: 0, sessions: 0, engagedSessions: 0, keyEvents: 0, clarityHits: 0 };
+    current.sessions = Number(current.sessions || 0) + Number(row.sessions || 0);
+    current.engagedSessions = Number(current.engagedSessions || 0) + Number(row.engagedSessions || 0);
+    current.keyEvents = Number(current.keyEvents || 0) + Number(row.keyEvents || 0);
+    byPage.set(key, current);
+  }
+
+  for (const row of clarityRows) {
+    const rawKey = String((row as any)?.URL || (row as any)?.url || (row as any)?.Page || '');
+    if (!rawKey) continue;
+    const key = normalizePageKey(rawKey);
+    const current = byPage.get(key) || { key, clicks: 0, impressions: 0, sessions: 0, engagedSessions: 0, keyEvents: 0, clarityHits: 0 };
+    current.clarityHits = Number(current.clarityHits || 0) + 1;
+    byPage.set(key, current);
+  }
+
+  return [...byPage.values()]
+    .filter((row) => Number(row.impressions || 0) > 0 || Number(row.sessions || 0) > 0)
+    .sort((a, b) => {
+      const aScore = Number(a.impressions || 0) + Number(a.sessions || 0) * 10 + Number(a.clarityHits || 0) * 15 - Number(a.keyEvents || 0) * 20;
+      const bScore = Number(b.impressions || 0) + Number(b.sessions || 0) * 10 + Number(b.clarityHits || 0) * 15 - Number(b.keyEvents || 0) * 20;
+      return bScore - aScore;
+    })
+    .slice(0, 5)
+    .map((row) => `${row.key}: ${row.impressions} impressions, ${row.sessions} sessions, ${row.keyEvents} key events, ${row.clarityHits} Clarity flags`);
+}
+
+function rankWeeklyContentCandidates(atp: AtpRun) {
+  return atp.tasks
+    .flatMap((task) => (task.clusters || []).map((cluster) => `${task.prompt}: ${cluster.split('\n').slice(1, 3).join(' ')}`))
+    .slice(0, 5);
+}
+
+function rankWeeklyCitationGaps(pageFixes: string[], gscRows: Array<Record<string, any>>) {
+  const topPage = pageFixes[0]?.split(':')[0] || normalizePageKey(String(gscRows[0]?.key || '/'));
+  return [
+    `${topPage}: add direct-answer proof, source-backed stats, and FAQ/schema support.`,
+    `${topPage}: strengthen comparison language and internal links for AI-surface retrieval.`,
+  ];
+}
+
 function makeScorecard(
   date: string,
   windows: { gsc: SourceWindow; ga4: SourceWindow },
@@ -474,6 +608,126 @@ function makeScorecard(
     '',
     ...(warnings.length ? ['## Warnings', ...warnings.map((warning) => `- ${warning}`), ''] : []),
   ].join('\n');
+}
+
+function makeWeeklySummary(
+  window: SourceWindow,
+  gscRows: Array<Record<string, any>>,
+  ga4Rows: Array<Record<string, any>>,
+  acquisitionRows: Array<Record<string, any>>,
+  eventRows: Array<Record<string, any>>,
+  clarityRows: unknown[],
+  atp: AtpRun,
+  queue: { page_fixes: string[]; content_candidates: string[]; citation_gaps: string[] },
+  warnings: Warning[],
+) {
+  return [
+    '# Weekly SEO + AEO queue',
+    '',
+    `Window: ${window.label}`,
+    '',
+    '## GSC',
+    ...lines(topRows(gscRows, 'clicks', 5), 'clicks', ' clicks'),
+    '',
+    '## GA4 landing pages',
+    ...lines(topRows(ga4Rows, 'sessions', 5), 'sessions', ' sessions'),
+    '',
+    '## GA4 acquisition',
+    ...lines(topRows(acquisitionRows, 'sessions', 5), 'sessions', ' sessions'),
+    '',
+    '## GA4 events',
+    ...lines(topRows(eventRows, 'eventCount', 5), 'eventCount', ' events'),
+    '',
+    '## Clarity',
+    `- Rows returned: ${clarityRows.length}`,
+    '- Use funnels, segments, and recordings on the top queue items first.',
+    '',
+    '## AnswerThePublic',
+    ...atp.tasks.map((task, index) => `- Prompt ${index + 1}: ${task.prompt}\n${task.result || 'No result saved.'}`),
+    '',
+    '## Ranked next-week queue',
+    '- Page fixes first:',
+    ...(queue.page_fixes.length ? queue.page_fixes.map((item) => `  ${item}`) : ['  No page fixes ranked.']),
+    '- Content candidates second:',
+    ...(queue.content_candidates.length ? queue.content_candidates.map((item) => `  ${item}`) : ['  No content candidates ranked.']),
+    '- Citation gaps third:',
+    ...(queue.citation_gaps.length ? queue.citation_gaps.map((item) => `  ${item}`) : ['  No citation gaps ranked.']),
+    '',
+    ...(warnings.length ? ['## Warnings', ...warnings.map((warning) => `- ${warning}`), ''] : []),
+  ].join('\n');
+}
+
+export async function runWeeklySeoAeo({ supabase, date = yesterdayKey() }: RunnerOptions): Promise<WeeklySeoRun> {
+  const workspaceId = process.env.DAILY_SEO_WORKSPACE_ID || DEFAULT_WORKSPACE_ID;
+  if (!workspaceId) throw new Error('DAILY_SEO_WORKSPACE_ID is required');
+
+  const googleToken = await googleAccessToken([
+    'https://www.googleapis.com/auth/webmasters.readonly',
+    'https://www.googleapis.com/auth/analytics.readonly',
+  ], supabase);
+  const warnings: Warning[] = [];
+  const window = weeklyWindow(date);
+
+  const [gscResult, ga4LandingResult, ga4AcquisitionResult, ga4EventResult, clarity, atp] = await Promise.all([
+    gscRange(googleToken, window),
+    ga4LandingPagesRange(googleToken, window),
+    ga4AcquisitionRange(googleToken, window),
+    ga4EventsRange(googleToken, window),
+    optionalSource(warnings, 'Clarity', [] as unknown[], () => fetchClarity(warnings, supabase, 7)),
+    optionalSource(warnings, 'ATP', { tasks: DEFAULT_ATP_TASKS.map((task) => ({ ...task })), raw: {}, warnings } as AtpRun, () => runAtp(warnings, supabase)),
+  ]);
+
+  const gscRows = parseGscRows((gscResult.data as any).rows || []);
+  const ga4Rows = parseGa4Rows((ga4LandingResult.data as any).rows || []);
+  const acquisitionRows = parseNamedMetricRows((ga4AcquisitionResult.data as any).rows || [], ['sessions', 'engagedSessions', 'keyEvents']);
+  const eventRows = parseNamedMetricRows((ga4EventResult.data as any).rows || [], ['eventCount', 'keyEvents']);
+
+  if (!gscRows.length) warnings.push(`Weekly GSC returned no rows for ${window.label}.`);
+  if (!ga4Rows.length) warnings.push(`Weekly GA4 landing pages returned no rows for ${window.label}.`);
+
+  const queue = {
+    page_fixes: rankWeeklyPageFixes(gscRows, ga4Rows, clarity as any[]),
+    content_candidates: rankWeeklyContentCandidates(atp),
+    citation_gaps: [] as string[],
+  };
+  queue.citation_gaps = rankWeeklyCitationGaps(queue.page_fixes, gscRows);
+
+  const summary = makeWeeklySummary(window, gscRows, ga4Rows, acquisitionRows, eventRows, clarity, atp, queue, warnings);
+  const now = new Date().toISOString();
+
+  const { data: runRow, error: runError } = await supabase
+    .from('weekly_seo_runs')
+    .upsert({
+      workspace_id: workspaceId,
+      run_week_start: window.startDate,
+      run_week_end: window.endDate,
+      status: warnings.length ? 'completed_with_warnings' : 'completed',
+      summary,
+      warnings,
+      sources: {
+        window,
+        gsc: gscRows,
+        ga4_landing_pages: ga4Rows,
+        ga4_acquisition: acquisitionRows,
+        ga4_events: eventRows,
+        clarity,
+        atp: atp.raw,
+      },
+      priority_queue: queue,
+      updated_at: now,
+    }, { onConflict: 'workspace_id,run_week_start' })
+    .select('id')
+    .single();
+  if (runError) throw new Error(`Weekly SEO run save failed: ${runError.message}`);
+
+  return {
+    status: warnings.length ? 'completed_with_warnings' : 'completed',
+    run_week_start: window.startDate,
+    run_week_end: window.endDate,
+    warnings,
+    weekly_seo_run_id: runRow?.id,
+    summary,
+  };
 }
 
 export async function runDailySeoAeo({ supabase, date = yesterdayKey() }: RunnerOptions) {
@@ -559,7 +813,7 @@ export async function fetchDailySeoReview(supabase: SupabaseClient, date = new D
   const workspaceId = process.env.DAILY_SEO_WORKSPACE_ID || DEFAULT_WORKSPACE_ID;
   if (!workspaceId) throw new Error('DAILY_SEO_WORKSPACE_ID is required');
 
-  const [{ data: run }, { data: atp }] = await Promise.all([
+  const [{ data: run }, { data: atp }, { data: weeklyRows }] = await Promise.all([
     supabase
       .from('daily_seo_runs')
       .select('run_date,status,scorecard,warnings,selected_action,updated_at')
@@ -572,12 +826,20 @@ export async function fetchDailySeoReview(supabase: SupabaseClient, date = new D
       .eq('workspace_id', workspaceId)
       .eq('entry_date', date)
       .maybeSingle(),
+    supabase
+      .from('weekly_seo_runs')
+      .select('run_week_start,run_week_end,status,summary,warnings,priority_queue,updated_at')
+      .eq('workspace_id', workspaceId)
+      .lte('run_week_end', date)
+      .order('run_week_end', { ascending: false })
+      .limit(1),
   ]);
 
   return {
     date,
     run: run || null,
     atp: atp || { entry_date: date, tasks: DEFAULT_ATP_TASKS, last_saved_at: null, submitted_at: null },
+    weekly: weeklyRows?.[0] || null,
   };
 }
 
@@ -586,5 +848,6 @@ export const __dailySeoAeoTest = {
   fallbackWindow,
   optionalSource,
   shiftDate,
+  weeklyWindow,
   walkQuestions,
 };
