@@ -26,15 +26,15 @@ interface ReviewResponse {
 }
 
 const DAILY_TOOL_MAP = [
-  { tool: 'GSC + GA4', job: 'What moved', detail: 'Demand, engagement, key events, winners, losers, and landing-page opportunity.' },
-  { tool: 'Clarity', job: 'Why users got stuck', detail: 'Rage clicks, dead clicks, scroll depth, CTA misses, quick backs, heatmaps, and 2-3 recordings only when needed.' },
-  { tool: 'AnswerThePublic', job: 'What to write or answer next', detail: 'Tracked keywords, question clusters, FAQ angles, ad hooks, and draft outlines rewritten into Boltcall voice.' },
+  { tool: 'GSC + GA4', job: 'What moved', detail: 'Demand, engagement, key events, winners, losers, landing-page opportunity, and money-page movement.' },
+  { tool: 'Clarity', job: 'Why users got stuck', detail: 'Dashboard insights, heatmaps, CTA misses, rage clicks, scroll depth, and 2-3 recordings only when needed.' },
+  { tool: 'AnswerThePublic', job: 'What to write or answer next', detail: 'Tracked keywords, questions or ideas, AI Models wording, FAQ angles, ad hooks, and draft outlines rewritten into Boltcall voice.' },
 ];
 
 const WEEKLY_QUEUE = [
-  'Rank page fixes first from GSC, GA4, and repeated Clarity friction.',
-  'Rank content candidates second only after buyer-intent and demand checks.',
-  'Rank citation and AI-surface source gaps third from the ATP AI Models review.',
+  'Rank page fixes first from GSC, GA4 explorations, and repeated Clarity friction.',
+  'Rank content candidates second from ATP questions, comparisons, prepositions, and AI Models after buyer-intent checks.',
+  'Rank citation and AI-surface source gaps third, then clean up GA4 events and Clarity segments monthly.',
 ];
 
 const AIVisibilityCheck: React.FC = () => {
