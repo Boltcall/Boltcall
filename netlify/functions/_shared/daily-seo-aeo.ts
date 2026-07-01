@@ -322,30 +322,55 @@ function lines(rows: Array<Record<string, any>>, metric: string, suffix: string)
   return rows.length ? rows.map((row) => `- ${row.key}: ${row[metric]}${suffix}`) : ['- No data.'];
 }
 
+function findGa4Opportunity(rows: Array<Record<string, any>>) {
+  return [...rows]
+    .filter((row) => Number(row.sessions || 0) > 0)
+    .sort((a, b) => {
+      const aRate = Number(a.keyEvents || 0) / Math.max(Number(a.sessions || 0), 1);
+      const bRate = Number(b.keyEvents || 0) / Math.max(Number(b.sessions || 0), 1);
+      if (aRate !== bRate) return aRate - bRate;
+      return Number(b.sessions || 0) - Number(a.sessions || 0);
+    })[0];
+}
+
 function makeScorecard(date: string, gscRows: any[], ga4Rows: any[], clarityRows: unknown[], atp: AtpRun, warnings: Warning[]) {
   const gscTop = topRows(gscRows, 'clicks');
   const ga4Top = topRows(ga4Rows, 'sessions');
+  const opportunity = findGa4Opportunity(ga4Rows);
   return [
     '# Daily SEO + AEO scorecard',
     '',
     `Date: ${date}`,
     '',
+    'Tool jobs: GSC and GA4 show what moved. Clarity explains why users got stuck. AnswerThePublic shows what to write or answer next.',
+    '',
     '## GSC',
-    'Top pages by clicks',
+    'SEO demand snapshot: top pages by clicks',
     ...lines(gscTop, 'clicks', ' clicks'),
     '',
     '## GA4',
-    'Top landing pages by sessions',
+    'Landing-page movement: top pages by sessions',
     ...lines(ga4Top, 'sessions', ' sessions'),
+    '',
+    'Biggest GA4 landing-page opportunity',
+    opportunity
+      ? `- ${opportunity.key}: ${opportunity.sessions} sessions, ${opportunity.engagedSessions} engaged sessions, ${opportunity.keyEvents} key events`
+      : '- No landing-page opportunity found.',
     '',
     '## Clarity',
     `- Rows returned: ${clarityRows.length}`,
+    '- Use dashboard insights, heatmaps, and 2-3 recordings only when GA4 drops or Clarity flags friction.',
     '',
     '## AnswerThePublic',
     ...atp.tasks.map((task, index) => `- Prompt ${index + 1}: ${task.prompt}\n${task.result || 'No result saved.'}`),
     '',
+    '## Daily action list',
+    '- Page fix: improve the highest-traffic page with weak key events or repeated Clarity friction.',
+    '- Content angle: use the strongest ATP question cluster after buyer-intent and demand checks.',
+    '- Experiment: watch CTA visibility and conversion movement tomorrow.',
+    '',
     '## Decision',
-    '- Page to improve: highest-intent page from GSC/GA4 movers.',
+    `- Page to improve: ${opportunity?.key || 'highest-intent page from GSC/GA4 movers'}.`,
     '- Content angle to ship: strongest ATP speed-to-lead question cluster.',
     '- Experiment to watch tomorrow: CTA visibility and conversion movement.',
     '',
@@ -378,6 +403,7 @@ export async function runDailySeoAeo({ supabase, date = yesterdayKey() }: Runner
 
   const gscRows = parseGscRows((gsc as any).rows || []);
   const ga4Rows = parseGa4Rows((ga4 as any).rows || []);
+  const opportunity = findGa4Opportunity(ga4Rows);
   const now = new Date().toISOString();
   const scorecard = makeScorecard(date, gscRows, ga4Rows, clarity, atp, warnings);
   const { data: workspaceRow, error: workspaceError } = await supabase
@@ -405,7 +431,7 @@ export async function runDailySeoAeo({ supabase, date = yesterdayKey() }: Runner
 
   const sources = { gsc: gscRows, ga4: ga4Rows, clarity, atp: atp.raw };
   const selectedAction = {
-    page: gscRows[0]?.key || ga4Rows[0]?.key || '/',
+    page: opportunity?.key || gscRows[0]?.key || ga4Rows[0]?.key || '/',
     content_angle: atp.tasks.find((task) => task.result)?.prompt || DEFAULT_ATP_TASKS[0].prompt,
     experiment: 'Watch CTA visibility and conversion movement tomorrow',
   };

@@ -25,6 +25,18 @@ interface ReviewResponse {
   };
 }
 
+const DAILY_TOOL_MAP = [
+  { tool: 'GSC + GA4', job: 'What moved', detail: 'Demand, engagement, key events, winners, losers, and landing-page opportunity.' },
+  { tool: 'Clarity', job: 'Why users got stuck', detail: 'Rage clicks, dead clicks, scroll depth, CTA misses, quick backs, heatmaps, and 2-3 recordings only when needed.' },
+  { tool: 'AnswerThePublic', job: 'What to write or answer next', detail: 'Tracked keywords, question clusters, FAQ angles, ad hooks, and draft outlines rewritten into Boltcall voice.' },
+];
+
+const WEEKLY_QUEUE = [
+  'Rank page fixes first from GSC, GA4, and repeated Clarity friction.',
+  'Rank content candidates second only after buyer-intent and demand checks.',
+  'Rank citation and AI-surface source gaps third from the ATP AI Models review.',
+];
+
 const AIVisibilityCheck: React.FC = () => {
   const [date, setDate] = useState(getTodayKey());
   const [review, setReview] = useState<ReviewResponse | null>(null);
@@ -72,7 +84,7 @@ const AIVisibilityCheck: React.FC = () => {
           <div>
             <h1 className="text-3xl font-semibold tracking-normal">Daily SEO + AEO review</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Automatic run status, AnswerThePublic output, and the fallback editor for failed ATP runs.
+              Daily automation status, AnswerThePublic output, and the weekly review map for GSC, GA4, Clarity, and ATP.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -116,6 +128,32 @@ const AIVisibilityCheck: React.FC = () => {
               {review?.run?.selected_action?.page || 'No page selected yet.'}
             </p>
           </div>
+        </section>
+
+        <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_0.75fr]">
+          <article className="rounded-lg border border-slate-200 bg-white p-4">
+            <h2 className="text-lg font-semibold">Daily routine map</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {DAILY_TOOL_MAP.map((item) => (
+                <div key={item.tool} className="rounded-md border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm font-semibold text-slate-950">{item.tool}</p>
+                  <p className="mt-1 text-sm font-medium text-slate-700">{item.job}</p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">{item.detail}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-lg border border-slate-200 bg-white p-4">
+            <h2 className="text-lg font-semibold">Weekly review output</h2>
+            <div className="mt-4 space-y-3">
+              {WEEKLY_QUEUE.map((item) => (
+                <p key={item} className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+                  {item}
+                </p>
+              ))}
+            </div>
+          </article>
         </section>
 
         <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
