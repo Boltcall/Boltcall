@@ -52,6 +52,14 @@ async function readServerSecret(supabase: SupabaseClient | undefined, envName: s
   return typeof data?.value === 'string' ? data.value : '';
 }
 
+async function readFirstServerSecret(supabase: SupabaseClient | undefined, envNames: string[], key: string) {
+  for (const envName of envNames) {
+    const value = await readServerSecret(undefined, envName, key);
+    if (value) return value;
+  }
+  return readServerSecret(supabase, envNames[0], key);
+}
+
 function yesterdayKey() {
   return new Date(Date.now() - DAY_MS).toISOString().slice(0, 10);
 }
@@ -294,9 +302,9 @@ class AtpClient {
 }
 
 async function runAtp(warnings: Warning[], supabase?: SupabaseClient): Promise<AtpRun> {
-  const token = await readServerSecret(supabase, 'ATP_API_TOKEN', 'atp_api_token');
+  const token = await readFirstServerSecret(supabase, ['ATP_API_TOKEN', 'ATP_API_KEY'], 'atp_api_token');
   if (!token) {
-    warnings.push('ATP skipped: ATP_API_TOKEN missing');
+    warnings.push('ATP skipped: ATP_API_TOKEN or ATP_API_KEY missing');
     return { tasks: DEFAULT_ATP_TASKS.map((task) => ({ ...task })), raw: {}, warnings };
   }
 
