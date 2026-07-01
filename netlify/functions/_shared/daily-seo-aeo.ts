@@ -362,6 +362,16 @@ function findGa4Opportunity(rows: Array<Record<string, any>>) {
     })[0];
 }
 
+async function optionalSource<T>(warnings: Warning[], label: string, fallback: T, run: () => Promise<T>) {
+  try {
+    return await run();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    warnings.push(`${label} warning: ${message}`);
+    return fallback;
+  }
+}
+
 async function gscSnapshot(token: string, date: string, warnings: Warning[]) {
   const daily: SourceWindow = { label: date, startDate: date, endDate: date };
   let data = await gscQuery(token, { startDate: date, endDate: date, dimensions: ['page'], rowLimit: 25 });
@@ -458,8 +468,8 @@ export async function runDailySeoAeo({ supabase, date = yesterdayKey() }: Runner
   const [gscResult, ga4Result, clarity, atp] = await Promise.all([
     gscSnapshot(googleToken, date, warnings),
     ga4Snapshot(googleToken, date, warnings),
-    fetchClarity(warnings, supabase),
-    runAtp(warnings, supabase),
+    optionalSource(warnings, 'Clarity', [] as unknown[], () => fetchClarity(warnings, supabase)),
+    optionalSource(warnings, 'ATP', { tasks: DEFAULT_ATP_TASKS.map((task) => ({ ...task })), raw: {}, warnings } as AtpRun, () => runAtp(warnings, supabase)),
   ]);
 
   const gscRows = parseGscRows((gscResult.data as any).rows || []);
@@ -553,6 +563,7 @@ export async function fetchDailySeoReview(supabase: SupabaseClient, date = new D
 export const __dailySeoAeoTest = {
   clustersFromReport,
   fallbackWindow,
+  optionalSource,
   shiftDate,
   walkQuestions,
 };
