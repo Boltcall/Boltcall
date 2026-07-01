@@ -223,7 +223,7 @@ describe('V2OptInGate — smoke', () => {
     __resetV2OptInGateCache();
   });
 
-  it('renders children when v2_enabled = true', async () => {
+  it('renders children for signed-in users', async () => {
     mockSupabaseMaybeSingle.mockResolvedValue({ data: { v2_enabled: true }, error: null });
     await act(async () => {
       renderInRouter(
@@ -235,7 +235,7 @@ describe('V2OptInGate — smoke', () => {
     expect(screen.getByTestId('v2-child')).toBeInTheDocument();
   });
 
-  it('renders the opt-in prompt when v2_enabled = false', async () => {
+  it('does not block signed-in users when v2_enabled = false', async () => {
     mockSupabaseMaybeSingle.mockResolvedValue({ data: { v2_enabled: false }, error: null });
     await act(async () => {
       renderInRouter(
@@ -244,12 +244,8 @@ describe('V2OptInGate — smoke', () => {
         </V2OptInGate>
       );
     });
-    // Children are NOT rendered.
-    expect(screen.queryByTestId('v2-child')).not.toBeInTheDocument();
-    // The opt-in CTA IS rendered.
-    expect(
-      screen.getByRole('button', { name: /enable v2/i })
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('v2-child')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /enable v2/i })).not.toBeInTheDocument();
   });
 });
 
