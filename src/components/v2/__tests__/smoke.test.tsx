@@ -434,9 +434,11 @@ describe('V2SetupChat — smoke', () => {
     });
 
     expect(screen.getByLabelText(/choose voice/i)).toBeInTheDocument();
+    expect(screen.getByText('Voice')).toBeInTheDocument();
     expect(screen.getByText(/Grace/i)).toBeInTheDocument();
     expect(screen.getByText(/Nico/i)).toBeInTheDocument();
     expect(screen.getByText(/Leland/i)).toBeInTheDocument();
+    expect(screen.getByText('Call style')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous/i })).toHaveClass(
       'border',
       'border-white/14',

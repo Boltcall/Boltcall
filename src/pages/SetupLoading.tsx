@@ -315,15 +315,20 @@ const SetupLoading: React.FC = () => {
           flex: 1;
           height: 16px;
           border-radius: 5px;
-          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.32);
+          background: rgba(255, 255, 255, 0.24);
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
           opacity: 1;
-          transition: background 0.4s ease, opacity 0.4s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+          transition: background-color 0.4s ease, border-color 0.4s ease, opacity 0.4s ease, transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
         }
         .setup-seg.filled {
-          background: #ffffff;
+          border-color: #ffffff;
+          background: #ffffff !important;
+          box-shadow: 0 0 18px rgba(255, 255, 255, 0.24);
           opacity: 1;
         }
         .setup-seg.filled.pop {
+          background: #ffffff !important;
           transform: scaleY(1.35) translateY(-1px);
         }
         .setup-loading-step {

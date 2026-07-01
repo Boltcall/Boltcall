@@ -101,4 +101,18 @@ describe('SetupLoading', () => {
       vi.useRealTimers();
     }
   });
+
+  it('keeps loading bar segments white after they fill', () => {
+    const { container } = render(
+      <MemoryRouter initialEntries={['/setup/loading']}>
+        <SetupLoading />
+      </MemoryRouter>,
+    );
+
+    const styles = Array.from(container.querySelectorAll('style'))
+      .map((style) => style.textContent || '')
+      .join('\n');
+    expect(styles).toContain('.setup-seg.filled');
+    expect(styles).toContain('background: #ffffff !important');
+  });
 });

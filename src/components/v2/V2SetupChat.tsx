@@ -661,6 +661,9 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                   className="grid gap-3 opacity-0 sm:grid-cols-3"
                   style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
                 >
+                  <legend className="col-span-full text-sm font-semibold text-white/80">
+                    Voice
+                  </legend>
                   {VOICE_OPTIONS.map((voice) => (
                     <button
                       key={voice.id}
@@ -697,6 +700,9 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                     aria-label="Agent call style"
                     className="grid gap-3 sm:grid-cols-3"
                   >
+                    <legend className="col-span-full text-sm font-semibold text-white/80">
+                      Call style
+                    </legend>
                     {AGENT_STYLE_OPTIONS.map((style) => (
                       <button
                         key={style.id}
