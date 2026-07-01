@@ -149,6 +149,8 @@
 
 [functions."daily-seo-aeo-runner"]
   schedule = "30 6 * * *"
+[functions."weekly-seo-aeo-runner"]
+  schedule = "45 6 * * 1"
 
 # ─── Agency OS scheduled functions (Phase F — Layer 2 backbone) ─────────────
 # Backbone for the n8n workflows. n8n is the orchestration ergonomic; these

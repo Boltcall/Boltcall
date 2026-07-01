@@ -160,6 +160,6 @@ Time budget: 45 to 90 minutes. Use this to reset measurement quality and avoid d
 ## Automation Status
 
 - The daily runner is automatic and should save the daily scorecard.
-- The `/ai-visibility-check` page is the founder review surface and ATP fallback editor.
-- Weekly SEO + AEO review remains human-run unless a separate automation is added later.
+- The weekly runner is automatic and should save the ranked next-week queue.
+- The `/ai-visibility-check` page is the founder review surface for both daily and weekly runs, plus ATP fallback editing.
 - `Clarity` quota limits and ATP auth failures are non-blocking by design. The routine should degrade to warnings and continue.
