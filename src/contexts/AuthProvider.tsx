@@ -100,9 +100,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await supabaseLogout();
-      dispatch({ type: 'LOGOUT' });
     } catch (error) {
       console.error('Logout error:', error);
+      // Server sign-out failed (network/5xx) — clear the local session anyway
+      // so autoRefreshToken can't resurrect it after the user chose to log out.
+      const { supabase } = await import('../lib/supabase');
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    } finally {
+      dispatch({ type: 'LOGOUT' });
     }
   };
 
