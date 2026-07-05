@@ -59,15 +59,34 @@ const SpeedTestOffer: React.FC = () => {
     },
   ];
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      const res = await fetch('/.netlify/functions/speed-test-offer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubmitError(data?.error || 'Something went wrong. Try again.');
+        return;
+      }
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError('Network error. Check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -233,6 +252,9 @@ const SpeedTestOffer: React.FC = () => {
                       </div>
                     </div>
 
+                    {submitError && (
+                      <p className="text-sm text-red-600" role="alert">{submitError}</p>
+                    )}
                     <Button
                       type="submit"
                       variant="primary"
