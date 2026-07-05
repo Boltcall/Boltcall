@@ -29,38 +29,37 @@ Counts: **8 P0 · 20 P1 · 9 P2**.
 
 Fix before anyone else signs up. Combined cost: one focused work day + half day for the RLS sweep.
 
-- [ ] **Cross-tenant IDOR on custom roles and permissions**
+- [x] **Cross-tenant IDOR on custom roles and permissions** (723fe5fe4)
   `netlify/functions/team-manage-roles.ts:96, 100, 125–126`
-  Add `.eq('workspace_id', user.id)` to every `.eq('id', roleId)` and `.eq('role_id', roleId)` in the file, or gate on a pre-check `select workspace_id from roles where id = roleId`. UPDATE, DELETE, and the `role_permissions` rewrite currently trust the caller-supplied id with no tenancy check. `invite-member.ts` is the reference pattern.
+  Fixed: pre-fetch role, verify `workspace_id === user.id` before UPDATE/DELETE/`role_permissions` rewrite; 5 new tests in `__tests__/team-manage-roles-security.test.ts` covering cross-tenant blocks + system-role guard, all pass.
 
-- [ ] **Stripe plan prices stale in `src/lib/stripe.ts`**
-  `src/lib/stripe.ts:60–63` · consumers: PricingPage, Home, features/*, comparisons/*, AiReceptionistRoi, cost-guides (~40 files touch these prices)
-  Replace `PLAN_INFO` with canonical monthly prices: Starter `549`, Pro `897`, Ultimate `4997`, Enterprise `997`. Recompute yearly per business rule. Sweep all marketing pages for hardcoded `$99 / $179 / $249` literals and route them through `PLAN_INFO`.
+- [x] **Stripe plan prices stale in `src/lib/stripe.ts`** (849fb8de2 + b11ad1e51)
+  `src/lib/stripe.ts:60–63`
+  Fixed: PLAN_INFO now Starter $549, Pro $897, Ultimate $4997, Enterprise $997 (yearly = monthly × 9 for tiered plans, × 12 for Enterprise). Bulk-swept 62 marketing pages across 5 scripted passes + hand-fixes for competitor-compare files (Emitrr/SmithAi/LeadMagnetThankYou). Preserved competitor prices (GoodCall $249, Emitrr $49, Smith.ai $95, Lindy $49.99). Deleted dead `IsAiReceptionistWorthIt.tsx.broken`.
 
-- [ ] **Supabase RLS disabled on 14 tables in the prod project**
+- [x] **Supabase RLS disabled on 14 tables in the prod project** (ea94c0799)
   Supabase project `hbwogktdajorojljkjwg`
-  Tables: `whatsapp_messages`, `whatsapp_threads`, `gmaps_leads`, `gmaps_seed`, `aios_prospects`, `aios_agent_spend`, `aios_brain_documents`, `aios_brain_links`, `aios_context_queue`, `aios_linkedin_studio`, `aios_packages`, `aios_routines_overlay`, `aios_state_blobs`, `aios_board_tasks`
-  Enable RLS + explicit policies on every table, or move the AIOS/marketing set to a separate Supabase project. Current setup shares one anon key surface between SaaS and internal ops. Also review the `security_definer_view` on `approved_vertical_guardrails`.
+  Fixed: enabled RLS on 15 tables (advisor also flagged `outbound_leads`) via `supabase/migrations/20260705193000_enable_rls_p0_internal_ops_tables.sql`. No policies added — service_role bypasses RLS; no user path reads these. `approved_vertical_guardrails` view switched to `security_invoker=true`. Advisor `rls_disabled_in_public` count: 15 → 0.
 
-- [ ] **Speed-test `/offer` form is a fake submit**
-  `src/pages/speed-test/*` (partial audit finding, verify before fix)
-  Wire the submit to a real endpoint (`website_leads` table or a dedicated netlify function) with Brevo/Telegram notification. Confirm Contact and Book-a-Call CTAs work while touching this area.
+- [x] **Speed-test `/offer` form is a fake submit** (f9a8f0381)
+  `src/pages/speed-test/SpeedTestOffer.tsx` + new `netlify/functions/speed-test-offer.ts` + migration `20260705193500_website_leads_add_phone_source.sql`
+  Fixed: real POST to a new rate-limited endpoint that validates name/email/phone, inserts into `public.website_leads` (added `phone` + `source` columns), fires Telegram alert via `notifyInfo`. Errors surface inline instead of falsely showing Thank You.
 
-- [ ] **`retell-agents.ts` silently succeeds when the agents insert fails**
+- [x] **`retell-agents.ts` silently succeeds when the agents insert fails** (d9dcb0d34)
   `netlify/functions/retell-agents.ts:779–784`
-  Return non-200 when the Supabase `agents` insert errors, AND delete the just-created Retell agent+LLM. Current log-and-continue breaks client idempotency (`provisionAgentSetup.ts:31–36`) and lets a retry mint duplicate billable agents while TalkToAgent hangs on "still being prepared."
+  Fixed: on Supabase agents insert error, delete the Retell agent, delete the LLM if we minted one this invocation (new `createdLlmId` tracker), return 500 with `code=supabase_agent_insert_failed`. Retries no longer double-provision billable Retell resources.
 
-- [ ] **Ownership spoofable in `retell-agents.ts` create_full**
+- [x] **Ownership spoofable in `retell-agents.ts` create_full** (already fixed upstream; verified d9dcb0d34)
   `netlify/functions/retell-agents.ts:751–775`
-  Use JWT-derived `userId` for every insert; ignore `body.user_id`. When `business_profile_id` and `kb_folder_id` are omitted there is currently zero server-side validation that the caller owns the row being planted.
+  Already resolved: line 473 stamps `body.user_id = userId` from JWT after a strict 403 mismatch check (line 466). `validateOwnedSetupReferences` at line 180 already scopes `business_profile_id` and `kb_folder_id` to the caller before create_full continues.
 
-- [ ] **Setup guard bypass via `?setupCompleted=true`**
+- [x] **Setup guard bypass via `?setupCompleted=true`** (bacd8ed07)
   `src/components/ProtectedRoute.tsx:41–46`
-  Verify the profile row exists before caching `boltcall_setup_complete`. A deep-link to `/dashboard/?setupCompleted=true` (or the "Skip" button on a failed TalkToAgent) permanently strands the user in an empty dashboard because `provisionAgentSetup` is skipped forever after.
+  Fixed: removed the shortcut that cached `boltcall_setup_complete` without a DB check. Now always queries `business_profiles`; the URL flag no longer strands users in an empty dashboard.
 
-- [ ] **Supabase Auth leaked-password protection is off**
+- [ ] **Supabase Auth leaked-password protection is off** *(NEEDS NOAM)*
   Supabase Auth settings (advisor: `auth_leaked_password_protection`)
-  Toggle it on in the Supabase dashboard. Signup currently accepts breached passwords. One-click fix, zero code.
+  This setting lives in the Supabase dashboard (Auth → Passwords → HIBP toggle); the Management API isn't exposed to this session. One-click fix.
 
 ---
 
