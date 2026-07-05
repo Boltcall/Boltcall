@@ -33,6 +33,7 @@ const AeoMarkdownArticlePage = React.lazy(() => import('../pages/AeoMarkdownArti
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
+const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 
 // ── Lazy loads — V2 shell (opt-in, parallel surface to V1) ───────────────
 // V2 is the AI-native redesign that all 12 Day-8 V2 pages compose into.
@@ -661,6 +662,7 @@ const NavigationWrapper: React.FC = () => {
         />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/book-a-call" element={<BookCall />} />
         <Route path="/about" element={<About />} />
