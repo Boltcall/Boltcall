@@ -7,6 +7,10 @@ import {
 } from '../../lib/authRedirect';
 
 const RECOVERABLE_PATHS = new Set(['/', '/login', '/signup', '/auth/callback']);
+// Routes that own the recovery hash themselves. They must NOT be recovered
+// away from even when a stale pendingAuthRedirect and an auth hash coexist,
+// or the recovery token gets consumed before the page can process it.
+const RECOVERY_EXCLUDED_PATHS = new Set(['/reset-password']);
 
 function isMatchingRedirect(currentPath: string, pendingRedirect: string) {
   return (
@@ -23,7 +27,8 @@ const AuthRedirectRecovery = () => {
   const hasAuthHash =
     typeof window !== 'undefined' && window.location.hash.length > 1;
   const canRecoverHere =
-    RECOVERABLE_PATHS.has(location.pathname) || hasAuthHash;
+    !RECOVERY_EXCLUDED_PATHS.has(location.pathname) &&
+    (RECOVERABLE_PATHS.has(location.pathname) || hasAuthHash);
   const shouldBlockWhileRecovering =
     !!pendingRedirect &&
     canRecoverHere &&

@@ -60,12 +60,23 @@ export const login = async (credentials: LoginCredentials): Promise<User> => {
   return await transformSupabaseUser(data.user);
 };
 
+/** Thrown when Supabase reports a signup for an email that already has an active identity. */
+export class AccountExistsError extends Error {
+  constructor() { super('account_exists'); this.name = 'AccountExistsError'; }
+}
+
+/** Thrown when Supabase signup succeeds but requires email confirmation before session. */
+export class EmailConfirmationRequiredError extends Error {
+  constructor() { super('email_confirmation_required'); this.name = 'EmailConfirmationRequiredError'; }
+}
+
 export const signup = async (credentials: SignupCredentials): Promise<User> => {
   try {
     const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
       options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           name: credentials.name,
           company: credentials.company,
@@ -83,25 +94,26 @@ export const signup = async (credentials: SignupCredentials): Promise<User> => {
       throw new Error('Signup failed - no user returned');
     }
 
+    // Supabase returns a shadow "user" with identities: [] when the email is
+    // already taken. Detect that and surface an ACCOUNT_EXISTS branch so the
+    // UI can route to "sign in instead" rather than "invalid credentials".
+    if (Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      throw new AccountExistsError();
+    }
+
+    // No session on a valid new user = email-confirmation is enabled and the
+    // confirm link was sent. Do NOT fall through to signInWithPassword — the
+    // password will fail until the user clicks the emailed link.
     if (!data.session) {
-      const { data: loginData, error: loginError } =
-        await supabase.auth.signInWithPassword({
-          email: credentials.email,
-          password: credentials.password,
-        });
-
-      if (loginError) {
-        throw new Error(loginError.message);
-      }
-
-      if (!loginData.user) {
-        throw new Error('Signup failed - no session established');
-      }
+      throw new EmailConfirmationRequiredError();
     }
 
     const transformedUser = await transformSupabaseUser(data.user);
     return transformedUser;
   } catch (error) {
+    if (error instanceof AccountExistsError || error instanceof EmailConfirmationRequiredError) {
+      throw error;
+    }
     console.error('Signup function error:', error);
     throw error;
   }
