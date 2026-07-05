@@ -1,10 +1,28 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import dayjs from 'dayjs';
-import { mockData } from '../data/mock';
 import { fetchDashboardStats, fetchDailyMetrics, fetchBusinessHealth, fetchCallbackStats, fetchChatStats, fetchLeads } from '../lib/dashboardApi';
 import type { DashboardStats } from '../lib/dashboardApi';
 import type { Lead, Kpis, TimeSeriesPoint, ChannelPerf, Faq, Transcript, Alert, FunnelStep, Channel, Intent } from '../types/dashboard';
+
+// Empty-state seeds — new users see blank widgets that fill in when
+// fetchLiveData resolves, not fabricated demo numbers.
+const emptyKpis: Kpis = {
+  leads: 0,
+  qualifiedPct: 0,
+  bookings: 0,
+  speedToFirstReplyMedianSec: 0,
+  showRatePct: 0,
+  estRevenue: 0,
+  deltas: {
+    leads: 0,
+    qualifiedPct: 0,
+    bookings: 0,
+    speedToFirstReplyMedianSec: 0,
+    showRatePct: 0,
+    estRevenue: 0,
+  },
+};
 
 interface DashboardFilters {
   dateRange: {
@@ -79,17 +97,17 @@ const defaultFilters: DashboardFilters = {
 export const useDashboardStore = create<DashboardState>()(
   persist(
     (set, get) => ({
-      // Initial state — mock data as fallback until live data loads
+      // Initial state — empty widgets. Live data fills them in.
       filters: defaultFilters,
       selectedClient: 'default-client',
-      kpis: mockData.kpis,
-      timeSeries: mockData.timeSeries,
-      channelPerf: mockData.channelPerf,
-      leads: mockData.leads,
-      faqs: mockData.faqs,
-      transcripts: mockData.transcripts,
-      alerts: mockData.alerts,
-      funnelSteps: mockData.funnelSteps,
+      kpis: emptyKpis,
+      timeSeries: [],
+      channelPerf: [],
+      leads: [],
+      faqs: [],
+      transcripts: [],
+      alerts: [],
+      funnelSteps: [],
 
       // Live data
       liveStats: null,
