@@ -1,5 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
+import { getServiceSupabase } from './_shared/token-utils';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -38,6 +40,27 @@ const handler: Handler = async (event) => {
       statusCode: 500,
       headers,
       body: JSON.stringify({ error: 'Server configuration error' }),
+    };
+  }
+
+  // Rate-limit by IP+token so a leaked embed token can't be brute-forced or
+  // used as an amplifier against the database. Public endpoint = wide open
+  // to the internet, so cap tight.
+  const ip = getClientIp(event.headers as Record<string, string | undefined>);
+  const rateLimit = await consumePublicRateLimit(getServiceSupabase(), {
+    bucket: 'embed_config_ip',
+    key: hashRateLimitKey([ip, token]),
+    maxAttempts: 30,
+    windowSeconds: 60,
+  });
+  if (!rateLimit.allowed) {
+    return {
+      statusCode: rateLimit.statusCode,
+      headers: {
+        ...headers,
+        ...(rateLimit.retryAfterSeconds ? { 'Retry-After': String(rateLimit.retryAfterSeconds) } : {}),
+      },
+      body: JSON.stringify({ error: 'Too many requests' }),
     };
   }
 
