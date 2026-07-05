@@ -37,6 +37,11 @@ const handler: Handler = async (event) => {
     };
   }
 
+  // Fail-closed in production: TWILIO_AUTH_TOKEN MUST be set to verify signatures.
+  if (!process.env.TWILIO_AUTH_TOKEN && (process.env.CONTEXT === 'production' || process.env.NODE_ENV === 'production')) {
+    console.error('[twilio-inbound-sms] TWILIO_AUTH_TOKEN unset in production; refusing');
+    return { statusCode: 500, headers: { 'Content-Type': 'text/xml' }, body: '<Response/>' };
+  }
   const sigResult = verifyTwilioSignature(event);
   if (sigResult === 'invalid' || (sigResult === 'missing' && process.env.TWILIO_AUTH_TOKEN)) {
     console.warn(`[twilio-inbound-sms] Rejecting ${sigResult} Twilio signature`);

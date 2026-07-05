@@ -511,6 +511,11 @@ const handler: Handler = async (event) => {
 
         const webhookBaseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
+        // Track any LLM we mint this invocation so we can roll it back if the
+        // downstream agent.create throws (otherwise it's an orphaned billable
+        // resource on Retell's side).
+        let createAgentLlmId: string | null = null;
+
         // If no response engine provided, create a Retell LLM first
         if (!responseEngine) {
           const generalTools = buildGeneralTools({
@@ -524,19 +529,32 @@ const handler: Handler = async (event) => {
             ...(body.knowledge_base_ids ? { knowledge_base_ids: body.knowledge_base_ids } : {}),
             general_tools: generalTools,
           } as any);
+          createAgentLlmId = llm.llm_id;
           responseEngine = {
             type: 'retell-llm' as const,
             llm_id: llm.llm_id,
           };
         }
 
-        const agent = await client.agent.create({
-          agent_name: body.agent_name,
-          voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
-          response_engine: responseEngine,
-          webhook_url: `${webhookBaseUrl}/.netlify/functions/retell-webhook`,
-          ...getDefaultAgentConfig(body.language),
-        } as any);
+        let agent;
+        try {
+          agent = await client.agent.create({
+            agent_name: body.agent_name,
+            voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
+            response_engine: responseEngine,
+            webhook_url: `${webhookBaseUrl}/.netlify/functions/retell-webhook`,
+            ...getDefaultAgentConfig(body.language),
+          } as any);
+        } catch (agentCreateErr) {
+          if (createAgentLlmId) {
+            try {
+              await client.llm.delete(createAgentLlmId);
+            } catch (rollbackErr) {
+              console.error('[retell-agents] LLM rollback failed after agent.create error:', rollbackErr);
+            }
+          }
+          throw agentCreateErr;
+        }
 
         return {
           statusCode: 200,
@@ -689,14 +707,28 @@ const handler: Handler = async (event) => {
         // "{business} AI Receptionist" default only when unset.
         const webhookUrl = `${(process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org')}/.netlify/functions/retell-webhook`;
         const resolvedAgentName = body.agent_name || `${body.business_name} AI Receptionist`;
-        const agent = await client.agent.create({
-          agent_name: resolvedAgentName,
-          voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
-          language: body.language || 'en-US',
-          response_engine: responseEngine,
-          webhook_url: webhookUrl,
-          ...getDefaultAgentConfig(body.language),
-        } as any);
+        let agent;
+        try {
+          agent = await client.agent.create({
+            agent_name: resolvedAgentName,
+            voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
+            language: body.language || 'en-US',
+            response_engine: responseEngine,
+            webhook_url: webhookUrl,
+            ...getDefaultAgentConfig(body.language),
+          } as any);
+        } catch (agentCreateErr) {
+          // Roll back the LLM we minted in Step 3 so it does not orphan a
+          // billable Retell resource; then let the outer catch return 5xx.
+          if (createdLlmId) {
+            try {
+              await client.llm.delete(createdLlmId);
+            } catch (rollbackErr) {
+              console.error('[retell-agents] LLM rollback failed after agent.create error:', rollbackErr);
+            }
+          }
+          throw agentCreateErr;
+        }
 
         // Step 5: Register agent in Cekura + create test scenarios (don't run yet)
         let cekuraSetup: { success: boolean; cekura_agent_id?: number; evaluators_created?: number; error?: string } = { success: false };
