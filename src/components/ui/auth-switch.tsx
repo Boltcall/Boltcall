@@ -171,7 +171,7 @@ export default function AuthSwitch({
         setError('Too many attempts. Please wait a minute and try again.');
       } else if (/email not confirmed|not confirmed/i.test(lowered)) {
         setError('Please confirm your email address first — check your inbox.');
-      } else if (/invalid login credentials|invalid email or password/i.test(lowered)) {
+      } else if (/invalid login credentials|invalid email or password|invalid credentials/i.test(lowered)) {
         setError('Invalid email or password.');
       } else {
         setError(msg || 'Sign in failed. Please try again.');

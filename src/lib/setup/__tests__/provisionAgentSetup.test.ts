@@ -2,13 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   createUserWorkspaceAndProfile: vi.fn(),
+  createBusinessProfile: vi.fn(),
+  getUserWorkspaces: vi.fn(),
+  getUserBusinessProfiles: vi.fn(),
   createAgentAndKnowledgeBase: vi.fn(),
   createLocation: vi.fn(),
   getSession: vi.fn(),
+  supabaseFromChain: vi.fn(),
 }));
 
 vi.mock('../../database', () => ({
   createUserWorkspaceAndProfile: mocks.createUserWorkspaceAndProfile,
+  createBusinessProfile: mocks.createBusinessProfile,
+  getUserWorkspaces: mocks.getUserWorkspaces,
+  getUserBusinessProfiles: mocks.getUserBusinessProfiles,
 }));
 
 vi.mock('../../webhooks', () => ({
@@ -30,6 +37,14 @@ vi.mock('../../supabase', () => ({
     auth: {
       getSession: mocks.getSession,
     },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          then: (cb: (r: { data: unknown[]; error: null }) => unknown) =>
+            Promise.resolve(cb({ data: [], error: null })),
+        }),
+      }),
+    }),
   },
 }));
 
@@ -44,6 +59,11 @@ describe('provisionAgentSetup', () => {
       workspace: { id: 'ws-1' },
       businessProfile: { id: 'bp-1' },
     });
+    // Default: no pre-existing workspace/profile → mint fresh via
+    // createUserWorkspaceAndProfile (preserves the original assertion below).
+    mocks.getUserWorkspaces.mockResolvedValue([]);
+    mocks.getUserBusinessProfiles.mockResolvedValue([]);
+    mocks.createBusinessProfile.mockResolvedValue({ id: 'bp-1' });
     mocks.createLocation.mockResolvedValue({ id: 'loc-1' });
     mocks.createAgentAndKnowledgeBase
       .mockResolvedValueOnce({ kb_folder_id: 'kb-1', agent_id: 'agent-inbound' })
