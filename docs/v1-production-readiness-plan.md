@@ -1,6 +1,6 @@
 # Boltcall V1 — Production Readiness Plan
 
-> **Status**: active plan of record for getting V1 to 100% production.
+> **Status**: Phase 1 — 36/37 closed. Superseded by `docs/v1-production-readiness-plan-phase2.md` (covers the areas this audit never reached: dashboard pages, settings/billing, 91 Netlify functions).
 > **Prepared**: 2026-07-05 by Noam (via deep static audit).
 > **Coverage**: ~60% (session limits killed 4 parallel audit agents mid-run).
 > **Rendered view**: <https://claude.ai/code/artifact/eec03576-0f09-461b-b071-9d069ee7dac0>
@@ -179,11 +179,11 @@ Things a static audit can't answer. Each ships with the smallest test that resol
 - [ ] **Is Supabase "Confirm email" on or off in production?**
   Supabase dashboard → Authentication → Providers → Email. If on, signup needs `emailRedirectTo` before launch; if off, fallback `signInWithPassword` in auth.ts is fine.
 
-- [ ] **Is `workspaces.user_id` a unique constraint?**
-  `SELECT indexdef FROM pg_indexes WHERE tablename = 'workspaces';`. Decides whether the double-workspace P1 duplicates or throws.
+- [x] **Is `workspaces.user_id` a unique constraint?** (verified 2026-07-05 via MCP)
+  NO — only a regular index. Double-workspace race duplicates silently. Follow-up in Phase 2 live-verification: add partial unique index after dupe check.
 
-- [ ] **Is `workspaces.slug` NOT NULL?**
-  `\d workspaces` in psql. If yes, `ensureWorkspaceForUser` throws and the chat-resume path is dead.
+- [x] **Is `workspaces.slug` NOT NULL?** (verified 2026-07-05 via MCP)
+  YES — NOT NULL + unique index `workspaces_slug_key`. `ensureWorkspaceForUser` must always set slug.
 
 - [ ] **Are Google/Microsoft/Facebook OAuth redirect URIs configured for production?**
   Click each OAuth button in incognito. Microsoft and Facebook especially unverified.
