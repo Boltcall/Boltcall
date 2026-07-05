@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // motion removed — cards are now minimal rows
 import { Link } from 'react-router-dom';
 import {
-  Phone, MessageSquare, Zap, Users,
+  Phone, MessageSquare, Zap,
   Loader2, AlertCircle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -59,16 +59,6 @@ const CORE_FEATURES: FeatureCard[] = [
     bgColor: 'bg-purple-50',
     configLink: '/dashboard/website-bubble',
     needsEmbed: true,
-  },
-  {
-    key: 'lead_reactivation',
-    name: 'Lead Reactivation',
-    description: 'AI calls your old leads and re-books the ones still interested',
-    icon: Users,
-    color: 'text-rose-600',
-    bgColor: 'bg-rose-50',
-    configLink: '/dashboard/lead-reactivation',
-    needsEmbed: false,
   },
 ];
 
