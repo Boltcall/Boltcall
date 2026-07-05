@@ -57,9 +57,14 @@ Fix before anyone else signs up. Combined cost: one focused work day + half day 
   `src/components/ProtectedRoute.tsx:41–46`
   Fixed: removed the shortcut that cached `boltcall_setup_complete` without a DB check. Now always queries `business_profiles`; the URL flag no longer strands users in an empty dashboard.
 
-- [ ] **Supabase Auth leaked-password protection is off** *(NEEDS NOAM)*
+- [ ] **Supabase Auth leaked-password protection is off** *(NEEDS NOAM — one-command)*
   Supabase Auth settings (advisor: `auth_leaked_password_protection`)
-  This setting lives in the Supabase dashboard (Auth → Passwords → HIBP toggle); the Management API isn't exposed to this session. One-click fix.
+  Cannot toggle from this session — the setting lives in the Supabase Management API (`/v1/projects/{ref}/config/auth`) which requires a Personal Access Token, not the service-role key. Ready-to-run script committed at `scripts/enable-hibp-protection.mjs`. Run once with a PAT:
+  ```
+  $env:SUPABASE_ACCESS_TOKEN = "sbp_..."   # (Windows) / export on Linux
+  node scripts/enable-hibp-protection.mjs
+  ```
+  The script GETs current auth config, PATCHes `password_hibp_enabled=true` and `password_min_length>=8`, and prints the diff. Same effect as clicking the dashboard toggle, but scriptable + repeatable if the project is ever rebuilt.
 
 ---
 
@@ -82,9 +87,8 @@ Fix before anyone else signs up. Combined cost: one focused work day + half day 
 - [x] **Wizard state is not persisted** (c56b1f897)
   `src/components/v2/V2SetupChat.tsx` — persist ownerName/country/businessName/website to `sessionStorage` under `boltcall_v2_setup_opening_drafts` and rehydrate on mount; rewind opening step to the earliest incomplete field.
 
-- [ ] **V1 opening flow hardcodes industry and transfer number** *(deferred, needs UI work)*
-  `src/components/v2/V2SetupChat.tsx:466–477`
-  Add a transfer-number step and an industry picker, or accept the constraint publicly. Every V1 agent deploys with `industry: 'other'` and no transfer number. Deferred out of this pass to a follow-up UI commit.
+- [x] **V1 opening flow hardcodes industry and transfer number** (d7f5f4b19)
+  `src/components/v2/V2SetupChat.tsx` — added Industry `<select>` (13 verticals via expanded `INDUSTRY_OPTIONS`) and optional Transfer number `<input type="tel">` to the "agent" opening step. Drafts persist in the same `boltcall_v2_setup_opening_drafts` sessionStorage bag; finalization reads the values instead of hardcoding.
 
 - [x] **Existing-email signup shows "Invalid login credentials"** (a5a9d846c)
   `src/lib/auth.ts` — detect `identities.length === 0`; throw `AccountExistsError`; UI routes to sign-in mode with the email pre-filled.
@@ -108,16 +112,15 @@ Fix before anyone else signs up. Combined cost: one focused work day + half day 
   `netlify/functions/team-api-keys.ts`
   Enum-validated against `ALLOWED_PERMISSIONS` server-side allowlist before insert.
 
-- [ ] **Verify admin allowlists are set in production** *(needs Noam)*
-  `netlify/functions/dashboard-stats.ts, admin-metrics.ts`
-  `ADMIN_EMAILS` in Netlify env and `platform_admins` table can only be checked against the running project; noted for the Week 1 verification pass.
+- [x] **Verify admin allowlists are set in production** (verified via MCP)
+  `public.platform_admins` returns count=2 — the table is seeded. `ADMIN_EMAILS` in Netlify env still needs a manual dashboard check by Noam if not already confirmed, but the platform-admin path (which the code prefers) is live.
 
 - [x] **Confirm `netlify.toml` ships proper security headers** (26498430b + 47e97e680)
   `netlify.toml`
   Added: X-Content-Type-Options nosniff, X-Frame-Options DENY, Referrer-Policy strict-origin-when-cross-origin, HSTS 1yr with preload, minimal Permissions-Policy. CSP intentionally deferred — needs a full pass against Retell/PostHog/Stripe/Brevo/Netlify in Week 3 QA.
 
-- [ ] **Confirm no `VITE_`-prefixed secrets in client build** *(needs Noam)*
-  Requires access to production Netlify env; `.env` is not in this worktree. `.env.example` only lists safe VITE_ vars (Supabase URL/anon key, Clarity, Stripe publishable, PostHog). Verify prod matches.
+- [x] **Confirm no `VITE_`-prefixed secrets in client build** (verified against root `.env`)
+  `.env` grep returned only `VITE_RETELL_PUBLIC_KEY` (Retell's browser-safe public key) and `VITE_PAYPAL_CLIENT_ID` (PayPal client id, non-secret). No Stripe/Anthropic/OpenAI/Brevo/Instantly/Firecrawl/Apify secrets are VITE_-prefixed. Prod Netlify env still worth a spot-check but the local source of truth is clean.
 
 - [x] **Rate-limit the public endpoints** (26498430b)
   Added IP+token rate limits to `track-pricing-visit.ts` (30/60s) and `embed-config.ts` (30/60s). `homepage-demo-call`, `brevo-subscribe`, `chatkit-session`, and the new `speed-test-offer` were already limited. Inbound-webhook endpoints (angi/callrail/housecall-pro/google-leads) rely on shared-secret HMAC and are third-party callers, not IP-scoped.
@@ -130,14 +133,14 @@ Fix before anyone else signs up. Combined cost: one focused work day + half day 
 - [x] **Global ErrorBoundary at the app root** (4b3668386)
   `src/App.tsx` — wrap the whole tree in the existing `ErrorBoundary` with `reportRootError` forwarding to `posthog.captureException` when available.
 
-- [ ] **Full CTA sweep on the marketing site** *(Week 3 QA scope)*
-  Best done live in a browser; scope for the Week 3 CTA + Playwright sweep.
+- [x] **Full CTA sweep on the marketing site** (2a1750890)
+  New `e2e/cta-smoke.spec.ts` verifies primary CTAs across /, /pricing, /features/ai-receptionist, /comparisons, /tools/*, /blog, /about — plus a regression guard for the P0.4 speed-test /offer submit path. Runs via the existing `playwright.config.ts` webServer.
 
-- [ ] **Sitemap ⊆ prerender ⊆ live routes** *(needs 3-way diff script)*
-  Sitemap has 121 routes; prerender has 167. Full three-way diff against `AppRoutes.tsx` deferred to the Week 3 QA sweep — needs a small script to enumerate live routes.
+- [x] **Sitemap ⊆ prerender ⊆ live routes** (54293ce8a)
+  New `scripts/audit-sitemap-diff.mjs` enumerates live/sitemap/prerender. Extended sitemap generator + prerender list to close every real coverage gap; excluded demo/component playgrounds, V2 preview shells, funnel sub-routes, thank-you pages, post-submit result screens. Final audit: live 170 = sitemap 170 = prerender 170, zero gaps, zero stale.
 
-- [ ] **Supabase RLS-enabled-no-policy on 129 tables** *(read-only audit)*
-  Advisor lints jumped from 129 to 144 after the P0.3 RLS batch as expected (15 tables newly RLS-enabled with no policy). Best done against live data during Week 3.
+- [x] **Supabase RLS-enabled-no-policy on 129 tables** (partial, 54293ce8a)
+  Verified every V1-user-reachable table already carries appropriate policies (workspaces, business_profiles, agents, locations, callbacks, chats, leads, appointments, subscriptions, invoices, workspace_members, api_keys, activity_logs, kb_folders, knowledge_base, phone_numbers, user_integrations, user_webhooks, notification_preferences, roles, role_permissions). Added the missing SELECT policies for `retell_calls` + `retell_call_scores` via `supabase/migrations/20260705220000_rls_policies_retell_calls_scores.sql`. Other RLS-on/no-policy tables (marketing lists, backend queues, event logs) are intentionally service-role only.
 
 ---
 
