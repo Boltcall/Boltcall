@@ -264,7 +264,7 @@ const BlogNeverMissCallAfterHours: React.FC = () => {
               <div className="space-y-6">
                 <div className="border border-gray-200 rounded-xl p-6">
                   <h3 className="font-bold text-gray-900 mb-3">How much does an after-hours answering service cost?</h3>
-                  <p className="text-gray-700 leading-relaxed">Traditional live answering services typically cost $200–$500/month for basic after-hours coverage. AI-based solutions like Boltcall start significantly lower — around $99–$179/month — and include capabilities that live services don't offer, like instant SMS follow-up, appointment booking, and lead qualification. For most small businesses, AI is both cheaper and more effective.</p>
+                  <p className="text-gray-700 leading-relaxed">Traditional live answering services typically cost $200–$500/month for basic after-hours coverage. AI-based solutions like Boltcall start significantly lower — around $549-4997/month — and include capabilities that live services don't offer, like instant SMS follow-up, appointment booking, and lead qualification. For most small businesses, AI is both cheaper and more effective.</p>
                 </div>
                 <div className="border border-gray-200 rounded-xl p-6">
                   <h3 className="font-bold text-gray-900 mb-3">Is an after-hours answering service better than voicemail?</h3>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -205,7 +205,7 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                           <tr>
                             <td className="border border-gray-300 px-4 py-3 font-medium text-gray-900">Monthly Cost</td>
                             <td className="border border-gray-300 px-4 py-3 text-center text-red-600">$800-2,500</td>
-                            <td className="border border-gray-300 px-4 py-3 text-center text-green-600">$389-799</td>
+                            <td className="border border-gray-300 px-4 py-3 text-center text-green-600">$549ג€“$4997</td>
                           </tr>
                           <tr className="bg-gray-50">
                             <td className="border border-gray-300 px-4 py-3 font-medium text-gray-900">Setup Time</td>
@@ -532,7 +532,7 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                         <ul className="space-y-2 text-gray-700 text-sm">
                           <li>• Captures the 78% of emergency service calls that occur outside business hours</li>
                           <li>• AI-powered services answer in 1–2 rings with unlimited concurrent call capacity</li>
-                          <li>• Costs 60–80% less than traditional human answering services ($99–249/mo vs. $800–2,500/mo)</li>
+                          <li>• Costs 60–80% less than traditional human answering services ($549-4997/mo vs. $800–2,500/mo)</li>
                           <li>• Immediate emergency escalation routes urgent calls to on-call staff within seconds</li>
                           <li>• 24/7 appointment booking captures leads from evening browsers who won't call back tomorrow</li>
                           <li>• Setup in under 24 hours vs. 2–4 weeks for traditional answering service onboarding</li>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -126,7 +126,7 @@ const CleaningServiceBookingCalculator: React.FC = () => {
             "name": "What is the ROI of an AI receptionist for cleaning services?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Most cleaning businesses see 500-2,000% ROI. At $179/month, Boltcall typically recovers $2,000-$8,000 in revenue that would otherwise be lost to missed calls, cancellations, and client churn. The system pays for itself within the first week."
+              "text": "Most cleaning businesses see 500-2,000% ROI. At $897/month, Boltcall typically recovers $2,000-$8,000 in revenue that would otherwise be lost to missed calls, cancellations, and client churn. The system pays for itself within the first week."
             }
           }
         ]
@@ -561,7 +561,7 @@ const CleaningServiceBookingCalculator: React.FC = () => {
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.annualRecovery)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400">Net gain after Boltcall ($179/mo)</span>
+                      <span className="text-sm text-slate-400">Net gain after Boltcall ($897/mo)</span>
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.netGain)}</span>
                     </div>
                     <div className="border-t border-emerald-500/20 pt-2.5 mt-2.5">
@@ -759,7 +759,7 @@ const CleaningServiceBookingCalculator: React.FC = () => {
                 },
                 {
                   q: 'What is the ROI of an AI receptionist for cleaning services?',
-                  a: 'Most cleaning businesses see 500-2,000% ROI. At $179/month, Boltcall typically recovers $2,000-$8,000 in revenue that would otherwise be lost to missed calls, cancellations, and client churn. The system pays for itself within the first week for most cleaning companies.',
+                  a: 'Most cleaning businesses see 500-2,000% ROI. At $897/month, Boltcall typically recovers $2,000-$8,000 in revenue that would otherwise be lost to missed calls, cancellations, and client churn. The system pays for itself within the first week for most cleaning companies.',
                 },
               ].map((faq) => (
                 <motion.div key={faq.q} variants={fadeUp}

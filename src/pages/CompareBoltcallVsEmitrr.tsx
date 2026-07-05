@@ -62,7 +62,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
           "name": "Is Emitrr cheaper than Boltcall?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, Emitrr starts at $49/month compared to Boltcall's $389/month. However, Emitrr focuses on SMS communication and basic VoIP, while Boltcall includes AI voice answering, chatbot, speed-to-lead automation, and a free website — making Boltcall's per-feature value significantly higher for businesses wanting full AI automation."
+            "text": "Yes, Emitrr starts at $49/month compared to Boltcall's $549/month. However, Emitrr focuses on SMS communication and basic VoIP, while Boltcall includes AI voice answering, chatbot, speed-to-lead automation, and a free website — making Boltcall's per-feature value significantly higher for businesses wanting full AI automation."
           }
         },
         {
@@ -114,7 +114,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
   }, []);
 
   const comparisonData = [
-    { feature: 'Starting Price', boltcall: '$389/mo', emitrr: '$49/mo (basic)', boltcallWin: false },
+    { feature: 'Starting Price', boltcall: '$549/mo', emitrr: '$49/mo (basic)', boltcallWin: false },
     { feature: 'AI Phone Receptionist', boltcall: 'Yes, natural voice 24/7', emitrr: 'No AI voice agent', boltcallWin: true },
     { feature: 'AI Chatbot', boltcall: 'Yes, included', emitrr: 'No', boltcallWin: true },
     { feature: 'VoIP Phone System', boltcall: 'Via Retell AI', emitrr: 'Yes, built-in', boltcallWin: false },
@@ -182,7 +182,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
               className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-10"
             >
               <p className="text-lg font-medium text-gray-900">
-                <strong>Quick Answer:</strong> Boltcall offers a complete AI receptionist suite with phone answering, chatbot, speed-to-lead, and website builder starting at $389/month. Emitrr focuses on SMS communication and VoIP starting at $49/month but lacks AI voice answering capabilities. Choose Boltcall for full AI automation. Choose Emitrr for affordable basic SMS and calling.
+                <strong>Quick Answer:</strong> Boltcall offers a complete AI receptionist suite with phone answering, chatbot, speed-to-lead, and website builder starting at $549/month. Emitrr focuses on SMS communication and VoIP starting at $49/month but lacks AI voice answering capabilities. Choose Boltcall for full AI automation. Choose Emitrr for affordable basic SMS and calling.
               </p>
             </motion.div>
 
@@ -285,7 +285,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                 Pricing: Emitrr is Cheaper — But Here's the Context
               </h2>
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                Let's be upfront: Emitrr costs significantly less than Boltcall. Emitrr's basic plans start around $49/month for SMS and VoIP features. Boltcall's core plan starts at $389/month and includes the full AI receptionist suite with a managed website.
+                Let's be upfront: Emitrr costs significantly less than Boltcall. Emitrr's basic plans start around $49/month for SMS and VoIP features. Boltcall's core plan starts at $549/month and includes the full AI receptionist suite with a managed website.
               </p>
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
                 That price gap makes sense when you consider what each platform delivers. Emitrr gives you a communication toolset — texting, calling, reminders. You still need staff to answer calls, respond to texts, and manage leads. Boltcall replaces much of that labor with AI automation. Your AI receptionist handles calls around the clock, the chatbot engages website visitors, and speed-to-lead fires instantly when a new inquiry comes in.
@@ -294,7 +294,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                 <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
                   <h3 className="font-bold text-blue-900 text-xl mb-3">Boltcall Pricing</h3>
                   <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$389/mo Core:</strong> AI receptionist, chatbot, speed-to-lead, free website</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$549/mo Core:</strong> AI receptionist, chatbot, speed-to-lead, free website</span></li>
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$489/mo SEO:</strong> Everything in Core + local SEO optimization</span></li>
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$799/mo Full AI:</strong> Complete AI automation suite with priority support</span></li>
                   </ul>
@@ -304,14 +304,14 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                   <h3 className="font-bold text-gray-900 text-xl mb-3">Emitrr Pricing</h3>
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>~$49/mo Starter:</strong> Basic SMS, VoIP calling</span></li>
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>~$99/mo Professional:</strong> More SMS volume, automations</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>~$549/mo Professional:</strong> More SMS volume, automations</span></li>
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>~$149/mo Advanced:</strong> Full feature set, integrations</span></li>
                   </ul>
                   <p className="text-sm text-gray-600 mt-4">Pricing may vary — Emitrr uses quote-based pricing for some features</p>
                 </div>
               </div>
               <p className="text-gray-700 text-lg leading-relaxed">
-                The real calculation isn't "which tool costs less" — it's "which tool saves more." If you're paying a receptionist $3,000–$4,000/month (or losing leads because nobody answers after hours), Boltcall's $389/month is a fraction of that cost. If you already have reliable staff and just need affordable texting capabilities, Emitrr's lower price point makes practical sense.
+                The real calculation isn't "which tool costs less" — it's "which tool saves more." If you're paying a receptionist $3,000–$4,000/month (or losing leads because nobody answers after hours), Boltcall's $549/month is a fraction of that cost. If you already have reliable staff and just need affordable texting capabilities, Emitrr's lower price point makes practical sense.
               </p>
             </motion.section>
 
@@ -381,7 +381,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="h-6 w-6 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 text-lg"><strong>You want to reduce front desk costs.</strong> Instead of hiring a receptionist at $3,000-$4,000/month, Boltcall handles the same calls for $389/month.</span>
+                    <span className="text-gray-700 text-lg"><strong>You want to reduce front desk costs.</strong> Instead of hiring a receptionist at $3,000-$4,000/month, Boltcall handles the same calls for $549/month.</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="h-6 w-6 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
@@ -415,7 +415,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                 <ul className="space-y-4">
                   <li className="flex items-start">
                     <CheckCircle className="h-6 w-6 text-gray-500 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700 text-lg"><strong>Budget is your primary concern.</strong> At $49/month, Emitrr is accessible for businesses that can't invest $389/month yet. It's a solid starting point.</span>
+                    <span className="text-gray-700 text-lg"><strong>Budget is your primary concern.</strong> At $49/month, Emitrr is accessible for businesses that can't invest $549/month yet. It's a solid starting point.</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="h-6 w-6 text-gray-500 mr-3 mt-0.5 flex-shrink-0" />
@@ -474,7 +474,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                 <div className="border-b border-gray-200 pb-6">
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">Is Emitrr cheaper than Boltcall?</h3>
                   <p className="text-gray-700 text-lg leading-relaxed">
-                    Yes, Emitrr starts at approximately $49/month compared to Boltcall's $389/month. However, the two platforms serve different purposes. Emitrr provides SMS communication and VoIP tools, while Boltcall delivers a full AI receptionist, chatbot, speed-to-lead automation, and a free website. The value comparison depends on whether you need communication tools (Emitrr) or AI-powered automation that replaces staff labor (Boltcall). For businesses losing revenue from missed calls, Boltcall typically pays for itself within the first month.
+                    Yes, Emitrr starts at approximately $49/month compared to Boltcall's $549/month. However, the two platforms serve different purposes. Emitrr provides SMS communication and VoIP tools, while Boltcall delivers a full AI receptionist, chatbot, speed-to-lead automation, and a free website. The value comparison depends on whether you need communication tools (Emitrr) or AI-powered automation that replaces staff labor (Boltcall). For businesses losing revenue from missed calls, Boltcall typically pays for itself within the first month.
                   </p>
                 </div>
 

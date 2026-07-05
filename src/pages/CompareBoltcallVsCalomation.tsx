@@ -11,7 +11,7 @@ import ReadingProgress from '../components/ReadingProgress';
 import Breadcrumbs from '../components/Breadcrumbs';
 
 const comparisonData = [
-  { feature: 'Pricing', boltcall: '$389–$799/mo (transparent)', calomation: 'Quote-based (not public)', boltcallHas: true, calomationHas: true },
+  { feature: 'Pricing', boltcall: '$549–$799/mo (transparent)', calomation: 'Quote-based (not public)', boltcallHas: true, calomationHas: true },
   { feature: 'AI Phone Receptionist', boltcall: 'Yes, 24/7', calomation: 'Yes', boltcallHas: true, calomationHas: true },
   { feature: 'AI Chatbot', boltcall: 'Yes, included', calomation: 'Yes', boltcallHas: true, calomationHas: true },
   { feature: 'Speed-to-Lead', boltcall: 'Yes, automated <60s', calomation: 'Unknown', boltcallHas: true, calomationHas: false },
@@ -28,7 +28,7 @@ const comparisonData = [
 const faqs = [
   {
     question: 'How much does Calomation cost?',
-    answer: 'Calomation does not publish pricing on their website. You need to request a quote or book a demo to learn what their AI receptionist platform costs. This makes it difficult to compare value upfront. Boltcall, by contrast, lists all pricing publicly — starting at $389/month for the core plan, $489/month with SEO, and $799/month for the full AI automation suite.',
+    answer: 'Calomation does not publish pricing on their website. You need to request a quote or book a demo to learn what their AI receptionist platform costs. This makes it difficult to compare value upfront. Boltcall, by contrast, lists all pricing publicly — starting at $549/month for the core plan, $489/month with SEO, and $799/month for the full AI automation suite.',
   },
   {
     question: 'Is Boltcall better than Calomation?',
@@ -190,7 +190,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
           className="bg-blue-50 border-l-4 border-blue-600 rounded-r-xl p-6 mb-12 mt-4"
         >
           <p className="text-gray-800 text-lg leading-relaxed font-medium">
-            <strong>Quick answer:</strong> Boltcall and Calomation are both AI receptionist platforms for local businesses. Boltcall offers transparent pricing starting at $389/month with a free website, 24-hour setup guarantee, and full AI automation suite. Calomation uses quote-based pricing with no public rates. Both offer AI phone answering, but Boltcall includes more features at a known price point.
+            <strong>Quick answer:</strong> Boltcall and Calomation are both AI receptionist platforms for local businesses. Boltcall offers transparent pricing starting at $549/month with a free website, 24-hour setup guarantee, and full AI automation suite. Calomation uses quote-based pricing with no public rates. Both offer AI phone answering, but Boltcall includes more features at a known price point.
           </p>
         </motion.div>
 
@@ -248,7 +248,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
             <div className="bg-white rounded-xl border-2 border-blue-200 p-6 shadow-sm">
               <h3 className="text-xl font-bold text-blue-600 mb-3">Boltcall Pricing</h3>
               <ul className="space-y-2 text-gray-700">
-                <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>Core Plan:</strong> $389/month — AI receptionist, chatbot, speed-to-lead, free website</span></li>
+                <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>Core Plan:</strong> $549/month — AI receptionist, chatbot, speed-to-lead, free website</span></li>
                 <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>SEO Plan:</strong> $489/month — everything in Core plus local SEO optimization</span></li>
                 <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>Full AI Plan:</strong> $799/month — complete AI automation suite with all features</span></li>
               </ul>
@@ -421,7 +421,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
             <strong>Boltcall wins on speed.</strong> The 24-hour delivery guarantee is unmatched. Most competitors — Calomation included — do not commit to a setup timeline. Boltcall does, and backs it with a penalty if they miss.
           </p>
           <p className="text-gray-700 text-lg leading-relaxed mb-4">
-            <strong>Boltcall wins on value.</strong> A free website, speed-to-lead automation, Google review requests, AI chatbot, and AI phone receptionist — all included starting at $389/month. With Calomation, you do not know what the bundle costs until you ask.
+            <strong>Boltcall wins on value.</strong> A free website, speed-to-lead automation, Google review requests, AI chatbot, and AI phone receptionist — all included starting at $549/month. With Calomation, you do not know what the bundle costs until you ask.
           </p>
           <p className="text-gray-700 text-lg leading-relaxed">
             For most local businesses, Boltcall is the smarter bet. You get more features, at a known price, delivered faster. If you value transparency and speed over a consultative sales process, the choice is clear.

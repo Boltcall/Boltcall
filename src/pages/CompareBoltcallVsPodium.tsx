@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -294,7 +294,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
                   <ul className="space-y-3 text-slate-700">
                     <li className="flex justify-between"><span>Agency core (managed)</span><span className="font-bold">$499/mo</span></li>
                     <li className="flex justify-between"><span>Setup fee</span><span className="font-bold">$2,500 (waived on 12-mo)</span></li>
-                    <li className="flex justify-between"><span>SaaS DIY tier</span><span className="font-bold">From $179/mo</span></li>
+                    <li className="flex justify-between"><span>SaaS DIY tier</span><span className="font-bold">From $897/mo</span></li>
                     <li className="border-t border-blue-200 pt-3 text-sm text-slate-600">
                       <CheckCircle className="h-4 w-4 text-emerald-500 inline mr-1" /> Month-to-month available. 30-day cost-recovery guarantee on agency.
                     </li>

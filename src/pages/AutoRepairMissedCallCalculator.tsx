@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -101,7 +101,7 @@ const AutoRepairMissedCallCalculator: React.FC = () => {
           name: 'What is the ROI of AI phone answering for auto repair shops?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Most auto repair shops see a 500-2,000%+ ROI from AI phone answering. At $179/month, the system pays for itself by recovering just one or two missed customer calls per month, while the average shop recovers dozens.',
+            text: 'Most auto repair shops see a 500-2,000%+ ROI from AI phone answering. At $897/month, the system pays for itself by recovering just one or two missed customer calls per month, while the average shop recovers dozens.',
           },
         },
       ],
@@ -496,7 +496,7 @@ const AutoRepairMissedCallCalculator: React.FC = () => {
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.annualRecovery)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400">Net gain after Boltcall ($179/mo)</span>
+                      <span className="text-sm text-slate-400">Net gain after Boltcall ($897/mo)</span>
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.netGain)}</span>
                     </div>
                     <div className="border-t border-emerald-500/20 pt-2.5 mt-2.5">
@@ -694,7 +694,7 @@ const AutoRepairMissedCallCalculator: React.FC = () => {
                 },
                 {
                   q: 'What ROI can an auto repair shop expect from AI phone answering?',
-                  a: 'Most auto repair shops see a 500-2,000%+ ROI from AI phone answering. At $179/month, the system pays for itself by recovering just one or two missed customer calls per month. The average shop recovers dozens of calls monthly, making this one of the highest-ROI investments available to independent repair shops.',
+                  a: 'Most auto repair shops see a 500-2,000%+ ROI from AI phone answering. At $897/month, the system pays for itself by recovering just one or two missed customer calls per month. The average shop recovers dozens of calls monthly, making this one of the highest-ROI investments available to independent repair shops.',
                 },
               ].map((faq) => (
                 <motion.div key={faq.q} variants={fadeUp}

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -79,7 +79,7 @@ const FAQAIReceptionistPlumber: React.FC = () => {
             "name": "How much does an AI receptionist cost for a plumbing company?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "AI receptionists for plumbing companies cost $99-$249 per month with no per-call or per-minute fees. Traditional answering services charge $1-2 per call, which adds up to $800-1,500 per month for a busy plumbing company. The AI provides 24/7 coverage at a flat rate regardless of call volume."
+              "text": "AI receptionists for plumbing companies cost $549ג€“$4997 per month with no per-call or per-minute fees. Traditional answering services charge $1-2 per call, which adds up to $800-1,500 per month for a busy plumbing company. The AI provides 24/7 coverage at a flat rate regardless of call volume."
             }
           },
           {
@@ -190,7 +190,7 @@ const FAQAIReceptionistPlumber: React.FC = () => {
     {
       question: 'How much does an AI receptionist cost for a plumbing company?',
       answer:
-        'AI receptionists for plumbing companies cost $99-$249 per month with no per-call or per-minute fees. Traditional answering services charge $1-2 per call, which adds up to $800-1,500 per month for a busy plumbing company. The AI provides 24/7 coverage at a flat monthly rate regardless of how many calls you receive.',
+        'AI receptionists for plumbing companies cost $549ג€“$4997 per month with no per-call or per-minute fees. Traditional answering services charge $1-2 per call, which adds up to $800-1,500 per month for a busy plumbing company. The AI provides 24/7 coverage at a flat monthly rate regardless of how many calls you receive.',
     },
     {
       question: 'How long does it take to set up an AI receptionist for a plumbing business?',
@@ -250,7 +250,7 @@ const FAQAIReceptionistPlumber: React.FC = () => {
     {
       question: 'How does an AI receptionist compare to a traditional answering service for plumbers?',
       answer:
-        'Traditional answering services cost $1-2 per call with human operators who read from scripts, frequently misspell names, and cannot book appointments in your system. An AI receptionist costs a flat $99-249 per month, handles unlimited calls, books directly into your calendar, triages emergencies with consistent accuracy, and sends confirmation texts automatically.',
+        'Traditional answering services cost $1-2 per call with human operators who read from scripts, frequently misspell names, and cannot book appointments in your system. An AI receptionist costs a flat $549-4997 per month, handles unlimited calls, books directly into your calendar, triages emergencies with consistent accuracy, and sends confirmation texts automatically.',
     },
     {
       question: 'What ROI can a plumbing company expect from an AI receptionist?',
@@ -617,7 +617,7 @@ const FAQAIReceptionistPlumber: React.FC = () => {
                   ['Dispatch appointment no-show rate', '15–20%', '7–10%'],
                   ['Google reviews per month', '1–2', '5–9'],
                   ['Setup time for 24/7 coverage', '2–4 weeks (hire)', '30 minutes'],
-                  ['Monthly cost vs. answering service', '$300 – $800/mo', '$79 – $179'],
+                  ['Monthly cost vs. answering service', '$300 – $800/mo', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>

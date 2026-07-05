@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -281,7 +281,7 @@ const AiAgentSmallBusiness247CallAnswering: React.FC = () => {
                   <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200">Missed Calls/Month</th>
                   <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200">Avg. Job Value</th>
                   <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200">Monthly Revenue Recovered</th>
-                  <th className="px-4 py-3 font-semibold text-indigo-700 border-b border-gray-200 bg-indigo-50">Est. ROI at $179/mo</th>
+                  <th className="px-4 py-3 font-semibold text-indigo-700 border-b border-gray-200 bg-indigo-50">Est. ROI at $897/mo</th>
                 </tr>
               </thead>
               <tbody>

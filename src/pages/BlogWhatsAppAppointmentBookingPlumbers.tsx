@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -70,7 +70,7 @@ const BlogWhatsAppAppointmentBookingPlumbers: React.FC = () => {
           name: 'How much does WhatsApp booking automation cost for a plumbing business?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'WhatsApp booking automation for plumbers typically costs $99–$249 per month depending on the platform and features. A single emergency job booked automatically while the plumber sleeps covers the entire monthly cost. Most plumbers recoup the investment within the first week.',
+            text: 'WhatsApp booking automation for plumbers typically costs $549-4997 per month depending on the platform and features. A single emergency job booked automatically while the plumber sleeps covers the entire monthly cost. Most plumbers recoup the investment within the first week.',
           },
         },
         {
@@ -510,7 +510,7 @@ const BlogWhatsAppAppointmentBookingPlumbers: React.FC = () => {
               </h2>
               <div className="space-y-4 text-gray-700 leading-relaxed">
                 <p>
-                  The ROI calculation for WhatsApp booking automation is straightforward for plumbers. The cost is typically $99–$249/month. The return is measured in three buckets:
+                  The ROI calculation for WhatsApp booking automation is straightforward for plumbers. The cost is typically $549-4997/month. The return is measured in three buckets:
                 </p>
               </div>
               <div className="grid md:grid-cols-3 gap-6 my-8">
@@ -565,7 +565,7 @@ const BlogWhatsAppAppointmentBookingPlumbers: React.FC = () => {
                   },
                   {
                     q: 'How much does WhatsApp booking automation cost for a plumbing business?',
-                    a: 'WhatsApp booking automation for plumbers typically costs $99–$249 per month depending on the platform and features. A single emergency job booked automatically while the plumber sleeps covers the entire monthly cost. Most plumbers recoup the investment within the first week.',
+                    a: 'WhatsApp booking automation for plumbers typically costs $549-4997 per month depending on the platform and features. A single emergency job booked automatically while the plumber sleeps covers the entire monthly cost. Most plumbers recoup the investment within the first week.',
                   },
                   {
                     q: "What happens if a customer sends a message but the AI can't understand it?",

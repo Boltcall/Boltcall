@@ -108,13 +108,13 @@ const LeadMagnetThankYouPage: React.FC = () => {
             <p className="text-[#e0e0e0]/50 text-sm mb-1">Starting at</p>
             <div className="flex items-baseline justify-center gap-1 mb-2">
               <span className="text-4xl md:text-5xl font-bold text-white">
-                $99
+                $549
               </span>
               <span className="text-[#e0e0e0]/50 text-sm">/mo</span>
             </div>
             <p className="text-[#e0e0e0]/60 text-sm mb-6">
               Most businesses pick the{' '}
-              <span className="text-brand-blue font-semibold">$179 Pro plan</span>.
+              <span className="text-brand-blue font-semibold">$897 Pro plan</span>.
               <br />
               One captured customer pays for a full year.
             </p>

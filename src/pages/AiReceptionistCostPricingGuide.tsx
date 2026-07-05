@@ -298,7 +298,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                       <tbody>
                         <tr className="bg-blue-50">
                           <td className="border border-gray-300 px-4 py-3 font-semibold text-blue-600">Boltcall</td>
-                          <td className="border border-gray-300 px-4 py-3">$389/month</td>
+                          <td className="border border-gray-300 px-4 py-3">$549/month</td>
                           <td className="border border-gray-300 px-4 py-3">Unlimited</td>
                           <td className="border border-gray-300 px-4 py-3">AI + Website + 24hr setup</td>
                         </tr>
@@ -449,7 +449,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span>Base monthly fee:</span>
-                          <span className="font-semibold">$389</span>
+                          <span className="font-semibold">$549</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Per-minute charges:</span>
@@ -466,7 +466,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                         <hr />
                         <div className="flex justify-between font-bold text-lg">
                           <span>Monthly total (unlimited):</span>
-                          <span className="text-green-600">$389</span>
+                          <span className="text-green-600">$549</span>
                         </div>
                       </div>
                     </div>
@@ -518,7 +518,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                       <div>
                         <h4 className="font-semibold text-gray-900 mb-3">After AI Receptionist:</h4>
                         <ul className="space-y-2 text-sm">
-                          <li>• Monthly Boltcall cost: $389</li>
+                          <li>• Monthly Boltcall cost: $549</li>
                           <li>• Calls answered: 98%</li>
                           <li>• Additional customers: 8/month</li>
                           <li>• Additional revenue: $2,400</li>
@@ -529,7 +529,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                     
                     <div className="mt-6 p-4 bg-blue-100 rounded-lg">
                       <p className="text-blue-800 font-semibold">
-                        ROI Calculation: ($2,011 net gain ÷ $389 cost) × 100 = 517% monthly ROI
+                        ROI Calculation: ($2,011 net gain ÷ $549 cost) × 100 = 517% monthly ROI
                       </p>
                       <p className="text-blue-700 text-sm mt-1">
                         Most businesses see their AI receptionist pay for itself within the first week.
@@ -665,7 +665,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">Real-World Use Cases</h2>
           <div className="space-y-6">
             {[
-              { title: "Cost vs. In-House Receptionist", story: "A dental practice replaced a part-time front desk position ($28,000/year salary + benefits) with an AI receptionist at $179/month ($2,148/year). The AI answered 3x as many calls and was available 24/7 — resulting in $800+ in captured after-hours revenue every month." },
+              { title: "Cost vs. In-House Receptionist", story: "A dental practice replaced a part-time front desk position ($28,000/year salary + benefits) with an AI receptionist at $897/month ($2,148/year). The AI answered 3x as many calls and was available 24/7 — resulting in $800+ in captured after-hours revenue every month." },
               { title: "Competing Against Larger Firms", story: "A two-person law firm used AI call answering to match the responsiveness of 5-lawyer competitors. By answering every call instantly and qualifying leads automatically, their intake conversion rate rose from 15% to 38% over 6 months." },
             ].map((item) => (
               <div key={item.title} className="bg-gray-50 rounded-2xl p-6 border border-gray-100">

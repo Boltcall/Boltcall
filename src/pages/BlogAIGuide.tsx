@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 
 import { updateMetaDescription } from '../lib/utils';
 
@@ -465,7 +465,7 @@ const BlogAIGuide: React.FC = () => {
 
               <li>• Handles unlimited simultaneous calls with zero hold times</li>
 
-              <li>• Costs 90%+ less than hiring a full-time receptionist ($99–249/mo vs. $2,800+/mo)</li>
+              <li>• Costs 90%+ less than hiring a full-time receptionist ($549-4997/mo vs. $2,800+/mo)</li>
 
               <li>• Books appointments and follows up with leads automatically</li>
 

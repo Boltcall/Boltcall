@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Scale,
@@ -1293,7 +1293,7 @@ const LawyerIntakeCalculator: React.FC = () => {
             </motion.div>
 
             <motion.p custom={4} variants={fadeUp} className="text-slate-500 text-sm mt-5">
-              Starting at $99/month &bull; No contracts &bull; Set up in 24 hours
+              Starting at $549/month &bull; No contracts &bull; Set up in 24 hours
             </motion.p>
           </motion.div>
         </section>

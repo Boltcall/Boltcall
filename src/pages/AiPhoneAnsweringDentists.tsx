@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -269,7 +269,7 @@ const AiPhoneAnsweringDentists: React.FC = () => {
                   ['Insurance verification questions', 'Answers common questions from script', 'Staff must interrupt patient time'],
                   ['Post-visit review request', 'Automated text 2 hours after appointment', 'Rarely done — too time-consuming'],
                   ['Weekend call volume', 'All calls answered', 'No coverage'],
-                  ['Cost per month', '$79–$179 flat', '$3,200+ salary + benefits'],
+                  ['Cost per month', '$549-897 flat', '$3,200+ salary + benefits'],
                 ].map(([scenario, ai, human]) => (
                   <tr key={scenario} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-700 font-medium">{scenario}</td>

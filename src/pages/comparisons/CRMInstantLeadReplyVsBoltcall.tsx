@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, CheckCircle, XCircle, Zap, Clock as ClockIcon } from 'lucide-react';
@@ -314,7 +314,7 @@ const CRMInstantLeadReplyVsBoltcall: React.FC = () => {
                 </tr>
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Cost</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$99-299/month</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$549-4997/month</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">$50-500/month (CRM base) + automation add-ons</td>
                 </tr>
                 <tr className="bg-gray-50">
@@ -619,7 +619,7 @@ const CRMInstantLeadReplyVsBoltcall: React.FC = () => {
               <tbody>
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Base Platform</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$99-299/month (includes instant reply)</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$549-4997/month (includes instant reply)</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">$50-500/month (CRM only)</td>
                 </tr>
                 <tr className="bg-gray-50">
@@ -644,7 +644,7 @@ const CRMInstantLeadReplyVsBoltcall: React.FC = () => {
                 </tr>
                 <tr className="bg-gray-50">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900 font-bold">Total Monthly Cost</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700 font-bold">$99-299/month</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700 font-bold">$549-4997/month</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700 font-bold">$230-1,100/month</td>
                 </tr>
               </tbody>
