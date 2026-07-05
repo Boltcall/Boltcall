@@ -651,6 +651,9 @@ const handler: Handler = async (event) => {
 
         // Step 3: Determine response engine
         let responseEngine;
+        // Track the LLM created in this handler so we can roll it back if a
+        // later step (Supabase agent insert) fails and we bail out.
+        let createdLlmId: string | null = null;
         const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
         if (body.llm_id) {
@@ -676,6 +679,7 @@ const handler: Handler = async (event) => {
             llmConfig.begin_message = beginMessage;
           }
           const llm = await client.llm.create(llmConfig);
+          createdLlmId = llm.llm_id;
           responseEngine = { type: 'retell-llm' as const, llm_id: llm.llm_id };
         }
 
@@ -777,11 +781,35 @@ const handler: Handler = async (event) => {
               .single();
 
             if (agentErr) {
-              console.error('[retell-agents] Supabase agent insert failed:', agentErr);
-            } else {
-              supabaseAgentId = agentRow.id;
-              console.log(`[retell-agents] Saved agent to Supabase: ${supabaseAgentId}`);
+              // Hard-fail: the Supabase agent row is the client's source of
+              // truth. If we can't save it, roll back the Retell agent (and
+              // any LLM we minted for it) so a retry does not double-provision
+              // billable resources, and surface a 5xx so the client stops
+              // polling for a phantom "agent".
+              console.error('[retell-agents] Supabase agent insert failed — rolling back Retell resources:', agentErr);
+              try {
+                await client.agent.delete(agent.agent_id);
+              } catch (rollbackErr) {
+                console.error('[retell-agents] Retell agent rollback failed:', rollbackErr);
+              }
+              if (createdLlmId) {
+                try {
+                  await client.llm.delete(createdLlmId);
+                } catch (rollbackErr) {
+                  console.error('[retell-agents] Retell LLM rollback failed:', rollbackErr);
+                }
+              }
+              return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({
+                  error: 'Could not save the agent record. Please try again.',
+                  code: 'supabase_agent_insert_failed',
+                }),
+              };
             }
+            supabaseAgentId = agentRow.id;
+            console.log(`[retell-agents] Saved agent to Supabase: ${supabaseAgentId}`);
 
             // 6b: Create "Business Profile" KB folder (or reuse if kb_folder_id passed)
             if (!kbFolderId && body.business_profile_id) {
