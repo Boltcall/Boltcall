@@ -683,10 +683,14 @@ const handler: Handler = async (event) => {
           responseEngine = { type: 'retell-llm' as const, llm_id: llm.llm_id };
         }
 
-        // Step 4: Create agent with the response engine + default config
+        // Step 4: Create agent with the response engine + default config.
+        // Prefer body.agent_name so callers can distinguish inbound vs
+        // speed-to-lead agents in the Retell dashboard; fall back to the
+        // "{business} AI Receptionist" default only when unset.
         const webhookUrl = `${(process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org')}/.netlify/functions/retell-webhook`;
+        const resolvedAgentName = body.agent_name || `${body.business_name} AI Receptionist`;
         const agent = await client.agent.create({
-          agent_name: `${body.business_name} AI Receptionist`,
+          agent_name: resolvedAgentName,
           voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
           language: body.language || 'en-US',
           response_engine: responseEngine,

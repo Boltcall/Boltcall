@@ -346,7 +346,14 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
 
       const data = await readResponseJson<TurnResponse>(res);
       if (!res.ok || data.error) {
-        setError(data.error || `Setup error (${res.status}). Try again.`);
+        // 401 in the middle of the wizard = session expired. Show a
+        // friendly re-auth prompt instead of the raw "Missing bearer
+        // token" string that the API returns.
+        if (res.status === 401) {
+          setError('Your session expired. Please sign in again and continue.');
+        } else {
+          setError(data.error || `Setup error (${res.status}). Try again.`);
+        }
         setIsStreaming(false);
         return;
       }
