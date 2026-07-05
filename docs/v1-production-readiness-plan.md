@@ -67,128 +67,105 @@ Fix before anyone else signs up. Combined cost: one focused work day + half day 
 
 ### Auth & onboarding
 
-- [ ] **Signup missing `emailRedirectTo`**
-  `src/lib/auth.ts:63–99`
-  Pass `options.emailRedirectTo: origin + '/auth/callback'` and show a "check your email" state instead of falling through to `signInWithPassword`. If Supabase "Confirm email" is on, the confirm link currently lands on the Site URL, not the callback.
+- [x] **Signup missing `emailRedirectTo`** (a5a9d846c)
+  `src/lib/auth.ts:63–99` — pass `options.emailRedirectTo: origin + '/auth/callback'`; drop the `signInWithPassword` fallback; throw `EmailConfirmationRequiredError` when no session so the UI can show a "check your email" state.
 
-- [ ] **Double-workspace race in provisioning**
-  `src/lib/setup/provisionAgentSetup.ts:17–29` + `netlify/functions/_shared/setup-workspace.ts:94–110`
-  Reuse the "My Workspace" row that `ensureWorkspaceForUser` creates on `/setup` entry. Provisioning currently sees workspace-but-no-profile and calls `createUserWorkspaceAndProfile`, which duplicates or throws depending on `workspaces.user_id` uniqueness.
+- [x] **Double-workspace race in provisioning** (c56b1f897)
+  `src/lib/setup/provisionAgentSetup.ts` — split the workspace-exists-but-no-profile case out of `createUserWorkspaceAndProfile`; call `createBusinessProfile` directly against the existing workspace instead of re-minting.
 
-- [ ] **`localStorage.currentLocationId` leaks across accounts**
-  `src/lib/setup/provisionAgentSetup.ts:38–40`
-  Scope key by `userId`, or clear on `LOGOUT` in `AuthProvider`. Second account in same browser silently skips creating its primary location.
+- [x] **`localStorage.currentLocationId` leaks across accounts** (c56b1f897)
+  `src/lib/setup/provisionAgentSetup.ts` + `src/contexts/AuthProvider.tsx` — namespace the cache key by userId (`currentLocationId:<uid>`); wipe legacy + scoped keys on logout so nothing leaks across sessions.
 
-- [ ] **SetupLoading has no retry button on failure**
-  `src/pages/SetupLoading.tsx:205–228`
-  Add a Retry button that re-invokes `provisionAgentSetup`. Path is idempotent and `pendingSetup` is retained; today the only recovery is refresh.
+- [x] **SetupLoading has no retry button on failure** (c56b1f897)
+  `src/pages/SetupLoading.tsx` — factor provisioning into `runProvisioning()`; add a "Try again" button when `provisioningError` is set.
 
-- [ ] **Wizard state is not persisted**
-  `src/components/v2/V2SetupChat.tsx:136–151, 466–477`
-  Persist the three opening steps to `sessionStorage`, and pass `ownerName` through to the `business_profiles` insert (field exists, currently dropped). Refresh / back / session expiry mid-wizard restarts at step 1.
+- [x] **Wizard state is not persisted** (c56b1f897)
+  `src/components/v2/V2SetupChat.tsx` — persist ownerName/country/businessName/website to `sessionStorage` under `boltcall_v2_setup_opening_drafts` and rehydrate on mount; rewind opening step to the earliest incomplete field.
 
-- [ ] **V1 opening flow hardcodes industry and transfer number**
+- [ ] **V1 opening flow hardcodes industry and transfer number** *(deferred, needs UI work)*
   `src/components/v2/V2SetupChat.tsx:466–477`
-  Add a transfer-number step and an industry picker, or accept the constraint publicly. Every V1 agent deploys with `industry: 'other'` and no transfer number.
+  Add a transfer-number step and an industry picker, or accept the constraint publicly. Every V1 agent deploys with `industry: 'other'` and no transfer number. Deferred out of this pass to a follow-up UI commit.
 
-- [ ] **Existing-email signup shows "Invalid login credentials"**
-  `src/lib/auth.ts:86–99`
-  Detect `identities.length === 0` on signup response; route to "account exists, sign in instead."
+- [x] **Existing-email signup shows "Invalid login credentials"** (a5a9d846c)
+  `src/lib/auth.ts` — detect `identities.length === 0`; throw `AccountExistsError`; UI routes to sign-in mode with the email pre-filled.
 
-- [ ] **Login error copy collapses every failure to one string**
-  `src/components/ui/auth-switch.tsx:162–164`
-  Branch on error message and status. Network errors, Supabase 500s, and rate-limits all show as "Invalid email or password."
+- [x] **Login error copy collapses every failure to one string** (a5a9d846c + cab81258d)
+  `src/components/ui/auth-switch.tsx` — branch on network / rate-limit / not-confirmed / invalid-credentials.
 
-- [ ] **Signup always routes authed users to `/setup`**
-  `src/pages/Signup.tsx:15–19`
-  Check `boltcall_setup_complete` (or profile query); send completed users to `/dashboard`.
+- [x] **Signup always routes authed users to `/setup`** (a5a9d846c)
+  `src/pages/Signup.tsx` — check `boltcall_setup_complete` and route completed users to `/dashboard`.
 
-- [ ] **AuthRedirectRecovery hijacks `/reset-password`**
-  `src/components/auth/AuthRedirectRecovery.tsx:23–46`
-  Exclude `/reset-password` from `hasAuthHash` path. Stale `pendingAuthRedirect` + recovery hash currently pulls user to `/setup`, consuming the recovery token.
+- [x] **AuthRedirectRecovery hijacks `/reset-password`** (a5a9d846c)
+  `src/components/auth/AuthRedirectRecovery.tsx` — explicit `RECOVERY_EXCLUDED_PATHS` set so `/reset-password` can never be pulled away by a stale `pendingAuthRedirect` + recovery hash combo.
 
 ### Backend & integrations
 
-- [ ] **`team-invite.ts` inserts members with no `workspace_id`**
-  `netlify/functions/team-invite.ts:65–71`
-  Delete this function and point callers at `invite-member.ts` (correctly authorized version). If it stays, add `workspace_id` and gate on `isOwnerOrAdmin`.
+- [x] **`team-invite.ts` inserts members with no `workspace_id`** (26498430b)
+  `netlify/functions/team-invite.ts`
+  Deleted — grep found no callers in `src/`; `invite-member.ts` is the live authorized path.
 
-- [ ] **`team-api-keys.ts` accepts arbitrary `permissions[]`**
-  `netlify/functions/team-api-keys.ts:50–60`
-  Enum-validate the permissions array against a server-side allowlist.
+- [x] **`team-api-keys.ts` accepts arbitrary `permissions[]`** (26498430b)
+  `netlify/functions/team-api-keys.ts`
+  Enum-validated against `ALLOWED_PERMISSIONS` server-side allowlist before insert.
 
-- [ ] **Verify admin allowlists are set in production**
+- [ ] **Verify admin allowlists are set in production** *(needs Noam)*
   `netlify/functions/dashboard-stats.ts, admin-metrics.ts`
-  Confirm `ADMIN_EMAILS` is populated in Netlify env and `platform_admins` table is seeded.
+  `ADMIN_EMAILS` in Netlify env and `platform_admins` table can only be checked against the running project; noted for the Week 1 verification pass.
 
-- [ ] **Confirm `netlify.toml` ships proper security headers**
+- [x] **Confirm `netlify.toml` ships proper security headers** (26498430b + 47e97e680)
   `netlify.toml`
-  Verify CSP, X-Frame-Options, Referrer-Policy, Strict-Transport-Security, Permissions-Policy.
+  Added: X-Content-Type-Options nosniff, X-Frame-Options DENY, Referrer-Policy strict-origin-when-cross-origin, HSTS 1yr with preload, minimal Permissions-Policy. CSP intentionally deferred — needs a full pass against Retell/PostHog/Stripe/Brevo/Netlify in Week 3 QA.
 
-- [ ] **Confirm no `VITE_`-prefixed secrets in client build**
-  `.env`, `.env.example`, netlify env dashboard
-  Grep built `dist/` for Stripe/Retell/Anthropic/OpenAI/Brevo secrets. Only Supabase anon key + PostHog project key should ship.
+- [ ] **Confirm no `VITE_`-prefixed secrets in client build** *(needs Noam)*
+  Requires access to production Netlify env; `.env` is not in this worktree. `.env.example` only lists safe VITE_ vars (Supabase URL/anon key, Clarity, Stripe publishable, PostHog). Verify prod matches.
 
-- [ ] **Rate-limit the public endpoints**
-  `track-pricing-visit.ts`, `embed-config.ts`, `brevo-subscribe.ts`, `chatkit-session.ts`, `homepage-demo-call.ts`, `angi-lead-webhook.ts`, `callrail-lead-webhook.ts`, `housecall-pro-lead-webhook.ts`
-  IP-scoped 10 req/min. Netlify Edge Functions rate-limit primitive, or Supabase-backed counter.
+- [x] **Rate-limit the public endpoints** (26498430b)
+  Added IP+token rate limits to `track-pricing-visit.ts` (30/60s) and `embed-config.ts` (30/60s). `homepage-demo-call`, `brevo-subscribe`, `chatkit-session`, and the new `speed-test-offer` were already limited. Inbound-webhook endpoints (angi/callrail/housecall-pro/google-leads) rely on shared-secret HMAC and are third-party callers, not IP-scoped.
 
 ### Frontend surface
 
-- [ ] **Confirm dashboardStore does not seed mock data**
-  `src/stores/dashboardStore.ts` (audit agent flagged mock-seeded KPIs on default landing)
-  If any Zustand initial state comes from `src/server/mockApi.ts`, replace with empty-state loader.
+- [x] **Confirm dashboardStore does not seed mock data** (4b3668386)
+  `src/stores/dashboardStore.ts` — dropped `mockData` import; seeded store with typed empty values (`kpis=0/0/0/0/0/0`, arrays empty). Live data now fills in on `fetchLiveData`.
 
-- [ ] **Global ErrorBoundary at the app root**
-  `src/routes/AppRoutes.tsx` (or one level above)
-  Confirm one exists and reports to PostHog.
+- [x] **Global ErrorBoundary at the app root** (4b3668386)
+  `src/App.tsx` — wrap the whole tree in the existing `ErrorBoundary` with `reportRootError` forwarding to `posthog.captureException` when available.
 
-- [ ] **Full CTA sweep on the marketing site**
-  `Home.tsx`, `PricingPage.tsx`, `features/*`, `comparisons/*`, `tools/*`
-  Click every primary CTA. Given the speed-test-offer finding, assume other CTAs are broken until proven otherwise.
+- [ ] **Full CTA sweep on the marketing site** *(Week 3 QA scope)*
+  Best done live in a browser; scope for the Week 3 CTA + Playwright sweep.
 
-- [ ] **Sitemap ⊆ prerender ⊆ live routes**
-  `scripts/generate-sitemap.mjs`, `scripts/prerender.mjs`, `src/routes/AppRoutes.tsx`
-  Diff the three lists. 141 sitemap entries against a very large AppRoutes.tsx; gap is currently unmeasured.
+- [ ] **Sitemap ⊆ prerender ⊆ live routes** *(needs 3-way diff script)*
+  Sitemap has 121 routes; prerender has 167. Full three-way diff against `AppRoutes.tsx` deferred to the Week 3 QA sweep — needs a small script to enumerate live routes.
 
-- [ ] **Supabase RLS-enabled-no-policy on 129 tables**
-  Supabase advisors (informational level)
-  Audit which are user-reachable in V1 (subscriptions, invoices, business_profiles, workspaces, agents, locations, callbacks, retell_calls). Any V1 table with RLS on and no policy is effectively locked.
+- [ ] **Supabase RLS-enabled-no-policy on 129 tables** *(read-only audit)*
+  Advisor lints jumped from 129 to 144 after the P0.3 RLS batch as expected (15 tables newly RLS-enabled with no policy). Best done against live data during Week 3.
 
 ---
 
 ## P2 — polish
 
-- [ ] **ProtectedRoute treats DB error as "completed" and drops attempted URL on logout redirect**
-  `src/components/ProtectedRoute.tsx:58–73, 117–118`
-  One retry before defaulting open; append `?redirect=<path>` to login redirect.
+- [x] **ProtectedRoute treats DB error as "completed" and drops attempted URL on logout redirect** (0a411cf98)
+  `src/components/ProtectedRoute.tsx` — retry the `business_profiles` query once on DB error; preserve the attempted URL as `?redirect=<encoded>` on the login redirect.
 
-- [ ] **Session expiry mid-wizard shows raw "Missing bearer token"**
-  `src/components/v2/V2SetupChat.tsx:296–334`
-  Map 401 to friendly re-auth prompt.
+- [x] **Session expiry mid-wizard shows raw "Missing bearer token"** (0a411cf98)
+  `src/components/v2/V2SetupChat.tsx` — map 401 to "Your session expired. Please sign in again and continue."
 
-- [ ] **Password-reset session-fail shows raw error string**
-  `src/pages/ResetPassword.tsx`
-  Custom copy: "This link expired. Request a new one."
+- [x] **Password-reset session-fail shows raw error string** (0a411cf98)
+  `src/pages/ResetPassword.tsx` — branch on session/jwt/token/expired → friendly "This reset link expired" copy; weak-password gets its own hint.
 
-- [ ] **Retell agent_name hardcoded across both agent types**
-  `netlify/functions/retell-agents.ts:684–686`
-  Use `body.agent_name`. Retell dashboard shows two identical names per user today.
+- [x] **Retell agent_name hardcoded across both agent types** (0a411cf98)
+  `netlify/functions/retell-agents.ts` — use `body.agent_name` when provided; fall back to `{business} AI Receptionist` when unset.
 
-- [ ] **Two overlapping internal-secret env names**
-  `netlify/functions/_shared/user-auth.ts:33–44`
-  Consolidate on one of `INTERNAL_WEBHOOK_SECRET` or `INTERNAL_API_SECRET`.
+- [x] **Two overlapping internal-secret env names** (0a411cf98)
+  `netlify/functions/_shared/user-auth.ts` — prefer `INTERNAL_API_SECRET`, keep `INTERNAL_WEBHOOK_SECRET` as legacy fallback with a comment marking it for removal after Week 4 secret rotation.
 
-- [ ] **`kb-search.ts` redundant per-branch userId re-destructure**
-  `netlify/functions/kb-search.ts` (twelve action branches)
-  Delete per-branch destructures. Line 119 already mutated `body.userId`; the noise is one refactor away from re-introducing spoofability.
+- [x] **`kb-search.ts` redundant per-branch userId re-destructure** (0a411cf98, partial)
+  `netlify/functions/kb-search.ts` — annotate the `body.userId = authedUserId` override with the reason it must not be removed while any per-branch destructure still reads `body.userId`. Full destructure cleanup deferred.
 
-- [ ] **Second-order IDOR risk in `saas-v2-setup-finalize`**
-  `netlify/functions/saas-v2-setup-finalize.ts:401–419`
-  Confirm `retell-agents.ts` does not trust `body.user_id` after JWT verify. Rolls up with the retell-agents P0.
+- [x] **Second-order IDOR risk in `saas-v2-setup-finalize`** (already resolved upstream; verified d9dcb0d34)
+  `netlify/functions/saas-v2-setup-finalize.ts:401–419` — `retell-agents.ts` stamps `body.user_id` from JWT (line 473) and `validateOwnedSetupReferences` scopes `business_profile_id` + `kb_folder_id` to the caller.
 
-- [ ] **`track-pricing-visit.ts` no rate limit**
-  Rolls up with P1 rate-limit sweep.
+- [x] **`track-pricing-visit.ts` no rate limit** (26498430b)
+  Rolled up with the P1 rate-limit sweep — IP-scoped 30 req/60s via `public_rate_limits`.
 
 ---
 
