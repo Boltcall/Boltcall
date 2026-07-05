@@ -54,11 +54,16 @@ export async function getUserInvoices(limit = 10) {
 }
 
 /**
- * Plan display info
+ * Plan display info — canonical pricing.
+ *
+ * Business rule (confirmed 2026-05-09):
+ *   Starter/Pro/Ultimate yearly = monthly × 9 (3 months free equivalent)
+ *   Enterprise yearly = monthly × 12 (no yearly discount)
+ * PricingPage.tsx and PlanBillingPage.tsx must show these same numbers.
  */
 export const PLAN_INFO: Record<PlanLevel, { name: string; monthlyPrice: number; yearlyPrice: number; tokens: number }> = {
-  starter: { name: 'Starter', monthlyPrice: 99, yearlyPrice: 948, tokens: 1000 },
-  pro: { name: 'Pro', monthlyPrice: 179, yearlyPrice: 1716, tokens: 3000 },
-  ultimate: { name: 'Ultimate', monthlyPrice: 249, yearlyPrice: 2388, tokens: 10000 },
+  starter: { name: 'Starter', monthlyPrice: 549, yearlyPrice: 4941, tokens: 1000 },
+  pro: { name: 'Pro', monthlyPrice: 897, yearlyPrice: 8073, tokens: 3000 },
+  ultimate: { name: 'Ultimate', monthlyPrice: 4997, yearlyPrice: 44973, tokens: 10000 },
   enterprise: { name: 'Enterprise', monthlyPrice: 997, yearlyPrice: 11964, tokens: 50000 },
 };
