@@ -46,6 +46,33 @@ interface TurnResponse {
 }
 
 const STORAGE_KEY = 'boltcall_v2_setup_conversation_id';
+const OPENING_DRAFTS_KEY = 'boltcall_v2_setup_opening_drafts';
+
+type OpeningDrafts = {
+  ownerName?: string;
+  country?: string;
+  businessName?: string;
+  website?: string;
+};
+
+function readOpeningDrafts(): OpeningDrafts {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = sessionStorage.getItem(OPENING_DRAFTS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed ? (parsed as OpeningDrafts) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeOpeningDrafts(drafts: OpeningDrafts): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(OPENING_DRAFTS_KEY, JSON.stringify(drafts));
+  } catch { /* quota / disabled — skip */ }
+}
 
 const SEED_GREETING =
   "I'll get your instant lead response system ready through a quick setup. First, tell me who owns this setup.";
@@ -133,12 +160,21 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   const [conversationId, setConversationId] = useState<string | null>(
     typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null,
   );
-  const [openingStep, setOpeningStep] = useState<OpeningStep>('owner');
+  // Rehydrate the three opening fields from sessionStorage so a mid-wizard
+  // refresh, back-nav, or session expiry does not restart the user at step 1.
+  const restoredDrafts = readOpeningDrafts();
+  const [openingStep, setOpeningStep] = useState<OpeningStep>(() => {
+    // Rewind to the earliest incomplete opening step so the user picks up
+    // where they left off after a refresh.
+    if (restoredDrafts.businessName) return 'agent';
+    if (restoredDrafts.ownerName && restoredDrafts.country) return 'business';
+    return 'owner';
+  });
   const [isOpeningTransitioning, setIsOpeningTransitioning] = useState(false);
-  const [ownerNameDraft, setOwnerNameDraft] = useState('');
-  const [countryDraft, setCountryDraft] = useState('');
-  const [businessNameDraft, setBusinessNameDraft] = useState('');
-  const [websiteDraft, setWebsiteDraft] = useState('');
+  const [ownerNameDraft, setOwnerNameDraft] = useState(restoredDrafts.ownerName || '');
+  const [countryDraft, setCountryDraft] = useState(restoredDrafts.country || '');
+  const [businessNameDraft, setBusinessNameDraft] = useState(restoredDrafts.businessName || '');
+  const [websiteDraft, setWebsiteDraft] = useState(restoredDrafts.website || '');
   const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['id']>(
     VOICE_OPTIONS[0].id,
   );
@@ -161,6 +197,16 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   const finishTimer = useRef<number | null>(null);
   const speakingTimer = useRef<number | null>(null);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Persist opening drafts every keystroke so a refresh doesn't wipe them.
+  useEffect(() => {
+    writeOpeningDrafts({
+      ownerName: ownerNameDraft || undefined,
+      country: countryDraft || undefined,
+      businessName: businessNameDraft || undefined,
+      website: websiteDraft || undefined,
+    });
+  }, [ownerNameDraft, countryDraft, businessNameDraft, websiteDraft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -476,6 +522,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       createdAt: new Date().toISOString(),
     });
     sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(OPENING_DRAFTS_KEY);
     setIsOpeningTransitioning(true);
     if (finishTimer.current) window.clearTimeout(finishTimer.current);
     finishTimer.current = window.setTimeout(() => {
