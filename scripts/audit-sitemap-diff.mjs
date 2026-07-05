@@ -27,8 +27,21 @@ const ROOT = resolve(HERE, '..');
 const EXCLUDE_PREFIXES = [
   '/dashboard', '/admin', '/auth', '/setup',
   '/payment', '/checkout', '/reset-password', '/login', '/signup',
-  '/glass-demo',
+  // Demo / component playgrounds — not indexable.
+  '/glass-demo', '/button-demo', '/logo-demo', '/metric-cards-demo',
+  '/rocker-switch-demo', '/origin-button-demo', '/glow-horizon-demo',
+  '/receptionist-demo', '/prototype', '/strike-ai', '/drhazak',
+  // Preview shells for the V2 wizard.
+  '/v2', '/voice-agent-setup',
+  // Funnel steps behind a lead form — not indexable. Landing pages
+  // (/speed-test itself, /challenge itself) are indexable; only their
+  // deeper post-form sub-routes are excluded.
+  '/challenge/call', '/challenge/winner',
+  // Post-submit results screens.
+  '/lead-response-scorecard/results', '/ai-revenue-calculator/results',
 ];
+
+const EXCLUDE_SUFFIXES = ['/thank-you'];
 
 function normalize(p) {
   if (!p) return null;
@@ -39,6 +52,14 @@ function normalize(p) {
   return trimmed.replace(/\/$/, '') || '/';
 }
 
+function isExcluded(norm) {
+  if (EXCLUDE_PREFIXES.some((p) => norm === p || norm.startsWith(p + '/'))) return true;
+  if (EXCLUDE_SUFFIXES.some((s) => norm.endsWith(s))) return true;
+  // Exclude deeper /speed-test/* sub-routes but let /speed-test through.
+  if (norm.startsWith('/speed-test/')) return true;
+  return false;
+}
+
 function extractAppRoutes() {
   const src = readFileSync(resolve(ROOT, 'src/routes/AppRoutes.tsx'), 'utf8');
   const rx = /<Route\s+path\s*=\s*"([^"]+)"/g;
@@ -47,7 +68,7 @@ function extractAppRoutes() {
   while ((m = rx.exec(src)) !== null) {
     const norm = normalize(m[1]);
     if (!norm) continue;
-    if (EXCLUDE_PREFIXES.some((p) => norm === p || norm.startsWith(p + '/'))) continue;
+    if (isExcluded(norm)) continue;
     out.add(norm);
   }
   return out;
@@ -73,7 +94,7 @@ function extractPrerender() {
   while ((m = rx.exec(src)) !== null) {
     const norm = normalize(m[1]);
     if (!norm) continue;
-    if (EXCLUDE_PREFIXES.some((p) => norm === p || norm.startsWith(p + '/'))) continue;
+    if (isExcluded(norm)) continue;
     out.add(norm);
   }
   return out;
