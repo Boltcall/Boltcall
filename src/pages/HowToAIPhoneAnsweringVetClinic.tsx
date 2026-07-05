@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -134,7 +134,7 @@ const HowToAIPhoneAnsweringVetClinic: React.FC = () => {
             "name": "How much does AI phone answering cost for a vet clinic?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "AI phone answering for veterinary clinics typically costs between $99 and $249 per month depending on features and call volume. Most clinics find it pays for itself within the first month — recovering just 1-2 missed new client appointments covers the entire monthly cost, since the average new veterinary client is worth $1,500-2,500 in lifetime value."
+              "text": "AI phone answering for veterinary clinics typically costs between $549 and $4997 per month depending on features and call volume. Most clinics find it pays for itself within the first month — recovering just 1-2 missed new client appointments covers the entire monthly cost, since the average new veterinary client is worth $1,500-2,500 in lifetime value."
             }
           },
           {
@@ -292,7 +292,7 @@ const HowToAIPhoneAnsweringVetClinic: React.FC = () => {
     {
       question: 'How much does AI phone answering cost for a vet clinic?',
       answer:
-        'AI phone answering for veterinary clinics typically costs between $99 and $249 per month depending on features and call volume. Most clinics find it pays for itself within the first month — recovering just 1-2 missed new client appointments covers the entire monthly cost, since the average new veterinary client is worth $1,500-2,500 in lifetime value.',
+        'AI phone answering for veterinary clinics typically costs between $549 and $4997 per month depending on features and call volume. Most clinics find it pays for itself within the first month — recovering just 1-2 missed new client appointments covers the entire monthly cost, since the average new veterinary client is worth $1,500-2,500 in lifetime value.',
     },
     {
       question: 'Can AI handle emergency calls from pet owners?',
@@ -711,7 +711,7 @@ const HowToAIPhoneAnsweringVetClinic: React.FC = () => {
                   ['Staff time on routine call handling', '2–3 hours/day', 'Under 45 min/day'],
                   ['Monthly revenue from missed calls recovered', '$0', '$3,000 – $8,500+'],
                   ['Monthly Google review growth', '1–2 reviews/mo', '5–9 reviews/mo'],
-                  ['Monthly cost vs. front desk hire', '$3,200 – $4,200/mo', '$79 – $179/mo'],
+                  ['Monthly cost vs. front desk hire', '$3,200 – $4,200/mo', '$79 – $897/mo'],
                 ].map(([metric, before, after]) => (
                   <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>

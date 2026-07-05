@@ -2,15 +2,51 @@ import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 
 // Mock Supabase — createClient is called lazily inside handler, so the mock works
 const mockSingle = vi.fn();
-const mockEq = vi.fn(() => ({ single: mockSingle }));
+// The public_rate_limits path uses .eq('bucket', b).eq('key', k).maybeSingle()
+// followed by an insert or update. Support chained eq(), maybeSingle(), and
+// no-op insert/update so rate-limiting doesn't throw in the test.
+const mockMaybeSingle = vi.fn(async () => ({ data: null, error: null }));
+const rateLimitInsert = vi.fn(async () => ({ data: null, error: null }));
+const rateLimitUpdate = vi.fn(() => ({ eq: () => Promise.resolve({ data: null, error: null }) }));
+
+function makeEqChain(): any {
+  // Two-level: .eq(...).eq(...).maybeSingle() OR .eq(...).single()
+  const chain: any = {};
+  chain.eq = () => chain;
+  chain.maybeSingle = mockMaybeSingle;
+  chain.single = mockSingle;
+  return chain;
+}
+const mockEq = vi.fn(() => makeEqChain());
 const mockSelect = vi.fn(() => ({ eq: mockEq }));
-const mockFrom = vi.fn(() => ({ select: mockSelect }));
+const rateLimitUpsert = vi.fn(async () => ({ data: null, error: null }));
+const mockFrom = vi.fn((table: string) => {
+  if (table === 'public_rate_limits') {
+    return {
+      select: () => ({ eq: () => makeEqChain() }),
+      insert: rateLimitInsert,
+      update: rateLimitUpdate,
+      upsert: rateLimitUpsert,
+    };
+  }
+  return { select: mockSelect };
+});
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: () => ({
     from: mockFrom,
   }),
 }));
+
+// public-rate-limit uses getServiceSupabase which returns the same createClient
+vi.mock('../_shared/token-utils', async () => {
+  const actual = await vi.importActual<any>('../_shared/token-utils');
+  return {
+    ...actual,
+    getServiceSupabase: () => ({ from: mockFrom }),
+    getSupabase: () => ({ from: mockFrom }),
+  };
+});
 
 function makeEvent(overrides: any = {}) {
   return {

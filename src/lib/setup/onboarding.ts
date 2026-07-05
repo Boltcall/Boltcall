@@ -2,10 +2,18 @@ export const PENDING_SETUP_STORAGE_KEY = 'boltcall_pending_agent_setup';
 
 export const INDUSTRY_OPTIONS = [
   { value: 'other', label: 'Other' },
+  { value: 'plumbing', label: 'Plumbing' },
+  { value: 'hvac', label: 'HVAC' },
   { value: 'roofing', label: 'Roofing' },
-  { value: 'law-firms', label: 'Law Firms' },
-  { value: 'med-spa', label: 'Med Spa' },
+  { value: 'dental', label: 'Dental' },
+  { value: 'med_spa', label: 'Med Spa' },
+  { value: 'law_firm', label: 'Law firm' },
   { value: 'solar', label: 'Solar' },
+  { value: 'vet', label: 'Veterinary' },
+  { value: 'real_estate', label: 'Real estate' },
+  { value: 'auto_repair', label: 'Auto repair' },
+  { value: 'cleaning', label: 'Cleaning services' },
+  { value: 'landscaping', label: 'Landscaping' },
 ] as const;
 
 export const VOICE_OPTIONS = [

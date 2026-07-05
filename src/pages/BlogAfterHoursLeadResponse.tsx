@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -533,7 +533,7 @@ const BlogAfterHoursLeadResponse: React.FC = () => {
                   leads come in or not.
                 </p>
 
-                <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Option 3: AI-Powered Instant Response ($99-299/month)</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Option 3: AI-Powered Instant Response ($549-4997/month)</h3>
                 <p>
                   AI receptionist systems answer every call in under 5 seconds, 24/7. They don't just take
                   messages. They answer questions about your services, qualify the lead, check your calendar
@@ -553,7 +553,7 @@ const BlogAfterHoursLeadResponse: React.FC = () => {
                     </thead>
                     <tbody>
                       {[
-                        ['Monthly cost', '$200-800', '$2,000-5,000', '$99-299'],
+                        ['Monthly cost', '$200-800', '$2,000-5,000', '$549-4997'],
                         ['Response time', '15-45 seconds', 'Varies (miss rate 20-40%)', 'Under 5 seconds'],
                         ['Can book appointments', 'No', 'Yes', 'Yes'],
                         ['Can answer service questions', 'No (script only)', 'Yes', 'Yes'],
@@ -662,7 +662,7 @@ const BlogAfterHoursLeadResponse: React.FC = () => {
                   <p>
                     Even a handful of recovered leads per month can pay for the system many times over.
                     If your average job is $400 and you capture just 3 extra jobs per month from
-                    after-hours leads, that's $1,200/month in revenue from a $99-299/month investment.
+                    after-hours leads, that's $1,200/month in revenue from a $549-4997/month investment.
                   </p>
                 </div>
 

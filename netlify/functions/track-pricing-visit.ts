@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getSupabase, getServiceSupabase } from './_shared/token-utils';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
@@ -44,9 +45,24 @@ const handler: Handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing fingerprint' }) };
   }
 
-  const ip = (event.headers['x-forwarded-for'] || '').split(',')[0].trim()
-    || event.headers['client-ip']
-    || '';
+  const ip = getClientIp(event.headers as Record<string, string | undefined>);
+
+  const rateLimit = await consumePublicRateLimit(getServiceSupabase(), {
+    bucket: 'track_pricing_visit_ip',
+    key: hashRateLimitKey([ip]),
+    maxAttempts: 30,
+    windowSeconds: 60,
+  });
+  if (!rateLimit.allowed) {
+    return {
+      statusCode: rateLimit.statusCode,
+      headers: {
+        ...headers,
+        ...(rateLimit.retryAfterSeconds ? { 'Retry-After': String(rateLimit.retryAfterSeconds) } : {}),
+      },
+      body: JSON.stringify({ error: 'Too many requests' }),
+    };
+  }
 
   const company = await lookupCompany(ip);
   const supabase = getSupabase();

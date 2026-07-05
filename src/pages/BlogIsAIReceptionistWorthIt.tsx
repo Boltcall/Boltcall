@@ -131,7 +131,7 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
           className="prose prose-lg max-w-none mb-12"
         >
           <p className="text-xl text-gray-700 leading-relaxed font-medium">
-            Every business owner faces the same question: Should I invest in an AI receptionist? With costs ranging from $99 to $500+ per month, it's a decision that requires careful analysis. This guide breaks down the real costs, benefits, and ROI to help you determine if an AI receptionist is worth it for your business.
+            Every business owner faces the same question: Should I invest in an AI receptionist? With costs ranging from $549 to $4997 per month, it's a decision that requires careful analysis. This guide breaks down the real costs, benefits, and ROI to help you determine if an AI receptionist is worth it for your business.
           </p>
         </motion.div>
 
@@ -183,7 +183,7 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
               <ul className="space-y-3 text-gray-700">
                 <li className="flex items-start">
                   <span className="font-semibold mr-2">Monthly Fee:</span>
-                  <span>$99 - $299/month</span>
+                  <span>$549-$4997/month</span>
                 </li>
                 <li className="flex items-start">
                   <span className="font-semibold mr-2">Setup:</span>
@@ -199,7 +199,7 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
                 </li>
                 <li className="flex items-start">
                   <span className="font-semibold mr-2">Total:</span>
-                  <span className="text-green-600 font-bold">$99 - $299/month</span>
+                  <span className="text-green-600 font-bold">$549-$4997/month</span>
                 </li>
               </ul>
             </div>
@@ -483,7 +483,7 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
               </p>
               <div className="flex flex-wrap gap-3 text-sm font-semibold">
                 <span className="bg-white rounded-lg px-3 py-1 text-green-700">+$5,040 revenue month 1</span>
-                <span className="bg-white rounded-lg px-3 py-1 text-blue-700">Cost: $99/mo</span>
+                <span className="bg-white rounded-lg px-3 py-1 text-blue-700">Cost: $549/mo</span>
                 <span className="bg-white rounded-lg px-3 py-1 text-gray-700">ROI: 50x</span>
               </div>
             </div>
@@ -630,7 +630,7 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
                   ['Est. monthly revenue recovered', '$0', '$4,800 – $54,000'],
                   ['No-show rate', '18–25%', '8–12% (reminders active)'],
                   ['Google reviews/month', '0–2 (inconsistent)', '5–15 (automated requests)'],
-                  ['Monthly receptionist cost', '$0 (no after-hours coverage)', '$79–$179'],
+                  ['Monthly receptionist cost', '$0 (no after-hours coverage)', '$549-897'],
                   ['ROI (conservative)', '—', '20x – 100x+'],
                 ].map(([metric, without, withAI]) => (
                   <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">

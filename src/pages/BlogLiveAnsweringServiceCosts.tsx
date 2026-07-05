@@ -676,7 +676,7 @@ const BlogLiveAnsweringServiceCosts: React.FC = () => {
             <p className="text-lg leading-relaxed text-blue-50 mb-4">
               <strong>Cost-Effective Solution:</strong> Unlike traditional answering services that charge per minute, per call, or 
               monthly flat rates that can range from $50-$300+ per month, Boltcall offers transparent, affordable pricing starting at 
-              just $99/month. This includes unlimited calls, 24/7 availability, and advanced features like appointment scheduling, 
+              just $549/month. This includes unlimited calls, 24/7 availability, and advanced features like appointment scheduling, 
               lead qualification, and CRM integration—all without hidden fees or per-call charges.
             </p>
             <p className="text-lg leading-relaxed text-blue-50 mb-4">
@@ -783,7 +783,7 @@ const BlogLiveAnsweringServiceCosts: React.FC = () => {
                   ['Virtual assistant (offshore)', '$200 – $600', '$0.75 – $1.50', 'Sometimes', 'Business hours only'],
                   ['Live answering service', '$250 – $1,500', '$1.00 – $2.00', 'Message relay', 'Yes, at premium cost'],
                   ['In-house receptionist', '$3,200 – $4,500', 'N/A (salary)', 'Yes', 'No (40 hrs/week)'],
-                  ['AI receptionist (Boltcall)', '$79 – $179', 'None — flat rate', 'Yes — real-time', 'Yes — always on'],
+                  ['AI receptionist (Boltcall)', '$549-897', 'None — flat rate', 'Yes — real-time', 'Yes — always on'],
                 ].map(([type, monthly, perMin, books, coverage]) => (
                   <tr key={type} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-700 font-medium">{type}</td>

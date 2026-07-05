@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -455,7 +455,7 @@ const VetClinicRevenueCalculator: React.FC = () => {
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.annualRecovery)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400">Net gain after Boltcall ($179/mo)</span>
+                      <span className="text-sm text-slate-400">Net gain after Boltcall ($897/mo)</span>
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.netGain)}</span>
                     </div>
                     <div className="border-t border-emerald-500/20 pt-2.5 mt-2.5">

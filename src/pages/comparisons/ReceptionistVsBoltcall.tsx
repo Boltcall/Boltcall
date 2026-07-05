@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Zap, CheckCircle } from 'lucide-react';
@@ -33,7 +33,7 @@ const FAQS = [
   },
   {
     q: 'How much does Boltcall actually cost compared to a receptionist salary?',
-    a: 'Boltcall plans run $99 to $200 per month depending on call volume and features. A full-time receptionist in the US costs $2,500 to $4,000 per month in salary plus another $5,000 to $8,000 per year in benefits and payroll taxes. Total annual savings typically land between $25,000 and $40,000.',
+    a: 'Boltcall plans run $549 to $897 per month depending on call volume and features. A full-time receptionist in the US costs $2,500 to $4,000 per month in salary plus another $5,000 to $8,000 per year in benefits and payroll taxes. Total annual savings typically land between $25,000 and $40,000.',
   },
   {
     q: 'Will I lose the personal touch by removing a human receptionist?',
@@ -192,7 +192,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
               <tbody>
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Monthly cost</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$99-200/month</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$549-897/month</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">$2,500-4,000/month (salary + benefits)</td>
                 </tr>
                 <tr className="bg-gray-50">
@@ -265,7 +265,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
           <div className="space-y-6 text-gray-700 leading-relaxed">
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Boltcall</h3>
-              <p className="text-xl font-bold text-blue-600 mb-2">$99-200/month</p>
+              <p className="text-xl font-bold text-blue-600 mb-2">$549-897/month</p>
               <p className="text-gray-600 mb-4">No additional costs</p>
               <ul className="space-y-2 text-gray-700 ml-4">
                 <li className="flex items-start">

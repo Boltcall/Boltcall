@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -554,7 +554,7 @@ const HVACOverflowCalculator: React.FC = () => {
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.annualRecovery)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400">Net gain after Boltcall ($179/mo)</span>
+                      <span className="text-sm text-slate-400">Net gain after Boltcall ($897/mo)</span>
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.netGain)}</span>
                     </div>
                     <div className="border-t border-emerald-500/20 pt-2.5 mt-2.5">
@@ -787,7 +787,7 @@ const HVACOverflowCalculator: React.FC = () => {
             </motion.div>
 
             <motion.p variants={fadeUp} className="text-sm text-slate-500 mt-5">
-              Starting at $99/month &bull; No contracts &bull; Set up in 24 hours
+              Starting at $549/month &bull; No contracts &bull; Set up in 24 hours
             </motion.p>
           </motion.div>
         </section>

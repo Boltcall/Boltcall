@@ -675,7 +675,7 @@ const AiReceptionistRoi: React.FC = () => {
               >
                 <p className="text-sm text-gray-600">
                   <strong>Assumptions:</strong> 25% of missed calls would have converted, AI captures 70% of
-                  missed calls, Boltcall Pro at $179/mo, 50% receptionist cost reduction. Actual results vary by industry.
+                  missed calls, Boltcall Pro at $897/mo, 50% receptionist cost reduction. Actual results vary by industry.
                 </p>
               </motion.div>
 
@@ -729,7 +729,7 @@ const AiReceptionistRoi: React.FC = () => {
                 result: "+$8K/mo",
               },
               {
-                quote: "I thought a $179/month AI receptionist was expensive — until I realized I was losing $3,000+ per week in missed calls. The ROI calculator was an eye-opener.",
+                quote: "I thought a $897/month AI receptionist was expensive — until I realized I was losing $3,000+ per week in missed calls. The ROI calculator was an eye-opener.",
                 name: "Sandra L.",
                 role: "HVAC Company Owner, Arizona",
                 result: "23x ROI",
@@ -961,7 +961,7 @@ const AiReceptionistRoi: React.FC = () => {
                   <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200">Missed Calls/Mo</th>
                   <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200">Avg. Job Value</th>
                   <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200">Revenue Recovered/Mo</th>
-                  <th className="px-4 py-3 font-semibold text-indigo-700 border-b border-gray-200 bg-indigo-50">ROI at $179/mo</th>
+                  <th className="px-4 py-3 font-semibold text-indigo-700 border-b border-gray-200 bg-indigo-50">ROI at $897/mo</th>
                 </tr>
               </thead>
               <tbody>

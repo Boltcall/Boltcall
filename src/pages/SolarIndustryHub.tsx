@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, Phone, Calendar, Shield, Brain, Bell, CheckCircle, XCircle } from 'lucide-react';
@@ -128,7 +128,7 @@ const COMPARISON = [
   },
   {
     feature: 'Monthly cost',
-    boltcall: 'From $179/mo',
+    boltcall: 'From $897/mo',
     sharedLeads: '$150–$300/lead',
     inHouseSDR: '$4,000–$6,000/mo',
     genericAI: '$200–$500/mo',
@@ -424,7 +424,7 @@ const SolarIndustryHub = () => {
                   A solar installer doing 30 jobs/month with a $10,000 average job value gets roughly 150 inbound leads. If 40% of those are lost to slow response, that\'s 60 leads — $600,000 in potential revenue — slipping away every month.
                 </p>
                 <p className="text-gray-600 mb-8">
-                  Recovering even 20% of those with an 11-second response is $120,000/month in additional revenue. Boltcall costs from $179/month.
+                  Recovering even 20% of those with an 11-second response is $120,000/month in additional revenue. Boltcall costs from $897/month.
                 </p>
                 <a
                   href="/tools/solar-profit-calculator"
@@ -450,7 +450,7 @@ const SolarIndustryHub = () => {
                     { label: 'Average job value', value: '$10,000' },
                     { label: 'Revenue lost monthly', value: '$600,000', highlight: true },
                     { label: 'Recovered at 20% with Boltcall', value: '+$120,000', green: true },
-                    { label: 'Boltcall cost', value: 'From $179/mo' },
+                    { label: 'Boltcall cost', value: 'From $897/mo' },
                   ].map((row) => (
                     <div key={row.label} className={`flex justify-between items-center py-3 border-b border-gray-100 last:border-0 ${row.highlight ? 'text-red-500 font-semibold' : ''} ${row.green ? 'text-emerald-600 font-semibold' : ''}`}>
                       <span className={`text-sm ${row.highlight || row.green ? 'font-semibold' : 'text-gray-600'}`}>{row.label}</span>

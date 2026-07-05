@@ -187,16 +187,14 @@ const SetupLoading: React.FC = () => {
     return () => clearInterval(interval);
   }, [buildSegments, buildWordLoader, runWordLoader, updateSegments]);
 
-  useEffect(() => {
-    if (!user?.id || provisioningStarted.current) return;
-    provisioningStarted.current = true;
-
+  const runProvisioning = () => {
+    if (!user?.id) return;
     const pendingSetup = readPendingAgentSetup();
     if (!pendingSetup) {
       setProvisioningDone(true);
       return;
     }
-
+    setProvisioningError(null);
     void provisionAgentSetup(user.id, pendingSetup)
       .then(() => {
         clearPendingAgentSetup();
@@ -207,9 +205,16 @@ const SetupLoading: React.FC = () => {
         setProvisioningError(
           error instanceof Error
             ? error.message
-            : 'Setup provisioning failed. Please refresh and try again.',
+            : 'Setup provisioning failed. Please try again.',
         );
       });
+  };
+
+  useEffect(() => {
+    if (!user?.id || provisioningStarted.current) return;
+    provisioningStarted.current = true;
+    runProvisioning();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   useEffect(() => {
@@ -365,7 +370,26 @@ const SetupLoading: React.FC = () => {
             <div className="setup-segmented-bar" id="segmented-bar" />
             <div className="setup-loading-step">{currentStep}</div>
             {provisioningError && (
-              <div className="setup-loading-error">{provisioningError}</div>
+              <div className="setup-loading-error">
+                <div>{provisioningError}</div>
+                <button
+                  type="button"
+                  onClick={runProvisioning}
+                  style={{
+                    marginTop: 12,
+                    padding: '8px 16px',
+                    background: '#1f6feb',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  Try again
+                </button>
+              </div>
             )}
           </div>
         </div>

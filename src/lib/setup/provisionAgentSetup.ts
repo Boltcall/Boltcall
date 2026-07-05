@@ -1,9 +1,16 @@
-import { createUserWorkspaceAndProfile, getUserWorkspaces, getUserBusinessProfiles } from '../database';
+import { createBusinessProfile, createUserWorkspaceAndProfile, getUserWorkspaces, getUserBusinessProfiles } from '../database';
 import { createAgentAndKnowledgeBase } from '../webhooks';
 import { LocationService } from '../locations';
 import { FUNCTIONS_BASE } from '../api';
 import { supabase } from '../supabase';
 import type { PendingAgentSetup } from './onboarding';
+
+// Namespace the "current location" cache by userId so a second account in
+// the same browser cannot inherit — or silently reuse — the first user's
+// location id (and end up not creating its own primary location).
+function locationCacheKey(userId: string) {
+  return `currentLocationId:${userId}`;
+}
 
 export async function provisionAgentSetup(userId: string, setup: PendingAgentSetup) {
   const country = setup.country?.trim() || 'us';
@@ -14,7 +21,8 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
   let workspace = (await getUserWorkspaces(userId))[0];
   let businessProfile = (await getUserBusinessProfiles(userId))[0];
 
-  if (!workspace || !businessProfile) {
+  if (!workspace) {
+    // No workspace yet — mint both workspace + profile.
     const created = await createUserWorkspaceAndProfile(userId, {
       business_name: setup.businessName,
       website_url: setup.websiteUrl.trim() || undefined,
@@ -26,6 +34,23 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     });
     workspace = created.workspace;
     businessProfile = created.businessProfile;
+  } else if (!businessProfile) {
+    // Workspace exists (e.g. ensureWorkspaceForUser created "My Workspace"
+    // on /setup entry) but no profile row yet — DON'T re-run
+    // createUserWorkspaceAndProfile, which would try to mint a second
+    // workspace and either duplicate or blow up on workspaces.user_id
+    // uniqueness. Just attach the profile to the existing workspace.
+    businessProfile = await createBusinessProfile({
+      business_name: setup.businessName,
+      website_url: setup.websiteUrl.trim() || undefined,
+      main_category: setup.industry,
+      country,
+      service_areas: [],
+      opening_hours: {},
+      languages: ['en'],
+      workspace_id: workspace.id,
+      user_id: userId,
+    });
   }
 
   const { data: existingAgents } = await supabase
@@ -35,8 +60,9 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
   const hasAgent = (type: string) =>
     (existingAgents || []).some((a) => a.agent_type === type);
 
+  const locationKey = locationCacheKey(userId);
   let locationId: string | undefined =
-    localStorage.getItem('currentLocationId') || undefined;
+    localStorage.getItem(locationKey) || undefined;
   if (!locationId) {
     try {
       const location = await LocationService.create({
@@ -57,7 +83,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
         is_active: true,
       } as never);
       locationId = location.id;
-      localStorage.setItem('currentLocationId', locationId);
+      localStorage.setItem(locationKey, locationId);
     } catch (error) {
       console.warn('Could not create primary location:', error);
     }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Zap, CheckCircle } from 'lucide-react';
@@ -111,7 +111,7 @@ const AnsweringServicesVsBoltcall: React.FC = () => {
               <tbody>
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Monthly cost</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$99-200/month</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$549-897/month</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">$300-800/month + per-minute fees</td>
                 </tr>
                 <tr className="bg-gray-50">
@@ -173,7 +173,7 @@ const AnsweringServicesVsBoltcall: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900 mb-2">Lower Cost, More Features</h3>
               <p className="text-gray-700 leading-relaxed">
                 Answering services charge $300-800/month plus per-minute fees that can add hundreds more. Boltcall costs 
-                $99-200/month with no per-minute charges. Plus, Boltcall includes SMS, form handling, automated follow-ups, 
+                $549-897/month with no per-minute charges. Plus, Boltcall includes SMS, form handling, automated follow-ups, 
                 and website chat—features that answering services don't offer.
               </p>
             </div>

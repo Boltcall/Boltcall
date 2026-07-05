@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -207,7 +207,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
                       </div>
                       <div className="bg-white p-4 rounded border border-blue-500">
                         <h4 className="font-bold text-blue-600">Advanced AI (like Boltcall)</h4>
-                        <p className="text-2xl font-bold">$389-799/mo</p>
+                        <p className="text-2xl font-bold">$549ג€“$4997/mo</p>
                         <ul className="text-sm mt-2">
                           <li>• Complete phone + web system</li>
                           <li>• Custom training</li>
@@ -597,7 +597,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
               </thead>
               <tbody>
                 {[
-                  ['Monthly cost', '$3,200 – $4,500', '$79 – $179'],
+                  ['Monthly cost', '$3,200 – $4,500', '$549-897'],
                   ['Annual cost', '$38,400 – $54,000+', '$948 – $2,148'],
                   ['Hours covered per week', '40 hrs (business hours only)', '168 hrs (24/7)'],
                   ['After-hours call handling', 'Voicemail or missed', 'Answered instantly'],

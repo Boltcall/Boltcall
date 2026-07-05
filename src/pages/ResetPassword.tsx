@@ -33,7 +33,16 @@ const ResetPassword: React.FC = () => {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setSaving(false);
     if (updateError) {
-      setError(updateError.message);
+      // Map common Supabase auth error strings to friendlier copy;
+      // fall through to the raw message only if we don't recognize it.
+      const raw = (updateError.message || '').toLowerCase();
+      if (/session|jwt|token|expired/.test(raw)) {
+        setError('This reset link expired. Request a new one from the login page.');
+      } else if (/at least|weak|password/.test(raw)) {
+        setError('Choose a stronger password (6+ characters, mix of letters and numbers).');
+      } else {
+        setError('Could not update your password. Please request a new reset link.');
+      }
       return;
     }
     navigate('/dashboard', { replace: true });

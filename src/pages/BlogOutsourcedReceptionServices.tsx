@@ -632,7 +632,7 @@ const BlogOutsourcedReceptionServices: React.FC = () => {
                   ['Virtual receptionist', '$250–$800/mo', 'Basic', 'Limited', 'Small offices wanting human voice'],
                   ['Live answering service', '$300–$1,500/mo', 'Message relay', 'Yes, at cost', 'High volume call centers'],
                   ['Offshore call center', '$500–$3,000/mo', 'Yes', 'Yes', 'Enterprise businesses'],
-                  ['AI receptionist', '$79–$179/mo', 'Real-time', 'Always on', 'Local service businesses'],
+                  ['AI receptionist', '$79–$897/mo', 'Real-time', 'Always on', 'Local service businesses'],
                   ['In-house hire', '$3,200–$4,500/mo', 'Yes', 'No', 'Front-desk-heavy offices'],
                 ].map(([model, cost, booking, afterHours, bestFor]) => (
                   <tr key={model} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">

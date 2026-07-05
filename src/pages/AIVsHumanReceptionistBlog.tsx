@@ -199,7 +199,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                         <span>Total Annual Cost</span><span className="text-green-600">$4,668</span>
                       </li>
                     </ul>
-                    <p className="text-sm text-gray-600 mt-4">*Based on Boltcall's Core plan at $389/month</p>
+                    <p className="text-sm text-gray-600 mt-4">*Based on Boltcall's Core plan at $549/month</p>
                   </div>
 
                   <div className="bg-green-100 border border-green-300 rounded-lg p-4">
@@ -652,7 +652,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                   ['Hours available', '168 hrs/week (24/7)', '40 hrs/week (business hours)'],
                   ['Call answer rate', '99%+ (never misses)', '55–75% (hold times, breaks, busy)'],
                   ['Average answer time', 'Under 3 seconds', '4–6 rings (10–25 seconds)'],
-                  ['Monthly cost', '$79 – $179', '$3,200 – $4,500+ (salary + benefits)'],
+                  ['Monthly cost', '$549-897', '$3,200 – $4,500+ (salary + benefits)'],
                   ['Annual cost', '$948 – $2,148', '$38,400 – $54,000+'],
                   ['After-hours coverage', 'Yes — always on', 'No — overtime cost or voicemail'],
                   ['Sick days and vacation', 'Zero', '10–15 days per year'],

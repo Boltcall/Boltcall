@@ -159,8 +159,23 @@ export default function AuthSwitch({
       } else {
         navigate(redirectTo);
       }
-    } catch {
-      setError("Invalid email or password.");
+    } catch (err) {
+      // Branch on the real Supabase error rather than collapsing every
+      // failure to "Invalid email or password." Network errors and 5xx
+      // used to look identical to a bad password.
+      const msg = err instanceof Error ? err.message : '';
+      const lowered = msg.toLowerCase();
+      if (!msg || /failed to fetch|networkerror|network request failed/i.test(msg)) {
+        setError('Network error. Check your connection and try again.');
+      } else if (/rate.?limit|too many/i.test(lowered)) {
+        setError('Too many attempts. Please wait a minute and try again.');
+      } else if (/email not confirmed|not confirmed/i.test(lowered)) {
+        setError('Please confirm your email address first — check your inbox.');
+      } else if (/invalid login credentials|invalid email or password|invalid credentials/i.test(lowered)) {
+        setError('Invalid email or password.');
+      } else {
+        setError(msg || 'Sign in failed. Please try again.');
+      }
       setLoginFailed(true);
     } finally {
       setIsLoading(false);
@@ -179,7 +194,18 @@ export default function AuthSwitch({
         navigate(redirectTo, { replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create account.");
+      // Route account-exists to sign-in mode, and email-confirmation to a
+      // helpful state instead of a scary error.
+      const name = err instanceof Error ? err.name : '';
+      if (name === 'AccountExistsError') {
+        setError("You already have an account. Sign in instead.");
+        setMode("login");
+        loginForm.setValue("email", data.email);
+      } else if (name === 'EmailConfirmationRequiredError') {
+        setError("Check your email — we sent you a link to confirm your account.");
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to create account.");
+      }
     } finally {
       setIsLoading(false);
     }

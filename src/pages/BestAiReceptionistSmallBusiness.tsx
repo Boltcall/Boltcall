@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -18,14 +18,14 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = 'Best AI Receptionist for Small Business: Features, Pricing & Comparison | Boltcall';
-    updateMetaDescription('Discover the best AI receptionist for small business in 2026. Compare features, pricing & ROI. Get 24/7 phone coverage starting at $389/mo.');
+    updateMetaDescription('Discover the best AI receptionist for small business in 2026. Compare features, pricing & ROI. Get 24/7 phone coverage starting at $549/mo.');
 
     // Article schema
     const articleSchema = {
       "@context": "https://schema.org",
       "@type": "Article",
       "headline": "Best AI Receptionist for Small Business: Features, Pricing & Comparison",
-      "description": "Discover the best AI receptionist for small business in 2026. Compare features, pricing & ROI. Get 24/7 phone coverage starting at $389/mo.",
+      "description": "Discover the best AI receptionist for small business in 2026. Compare features, pricing & ROI. Get 24/7 phone coverage starting at $549/mo.",
       "image": "https://boltcall.org/og-image.jpg",
       "author": {
         "@type": "Organization",
@@ -131,7 +131,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
               >
                 <h2 className="text-lg font-semibold text-blue-900 mb-3">Quick Answer</h2>
                 <p className="text-blue-800 leading-relaxed">
-                  The best AI receptionist for small business combines 24/7 availability, natural conversation, appointment scheduling, and seamless CRM integration. Boltcall leads with comprehensive features starting at $389/month, offering website integration and local business optimization.
+                  The best AI receptionist for small business combines 24/7 availability, natural conversation, appointment scheduling, and seamless CRM integration. Boltcall leads with comprehensive features starting at $549/month, offering website integration and local business optimization.
                 </p>
               </motion.div>
 
@@ -320,7 +320,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                       </tr>
                       <tr>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Cost</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">$389-799/month flat rate</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">$549ג€“$4997/month flat rate</td>
                         <td className="px-6 py-4 text-sm text-gray-700">$800-2000+/month</td>
                       </tr>
                       <tr className="bg-gray-50">
@@ -432,7 +432,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                 <div className="grid md:grid-cols-3 gap-8 mb-8">
                   <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Core Plan</h3>
-                    <div className="text-3xl font-bold text-blue-600 mb-4">$389<span className="text-sm text-gray-500">/mo</span></div>
+                    <div className="text-3xl font-bold text-blue-600 mb-4">$549<span className="text-sm text-gray-500">/mo</span></div>
                     <ul className="text-sm text-gray-600 space-y-2">
                       <li>Professional website</li>
                       <li>AI receptionist</li>

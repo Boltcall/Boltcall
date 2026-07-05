@@ -107,6 +107,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { supabase } = await import('../lib/supabase');
       await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
     } finally {
+      // Wipe user-scoped browser state so a second account signing in on the
+      // same browser doesn't inherit the previous user's cached location or
+      // setup status.
+      try {
+        localStorage.removeItem('currentLocationId');
+        localStorage.removeItem('boltcall_setup_complete');
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('currentLocationId:')) localStorage.removeItem(k);
+        }
+      } catch { /* localStorage unavailable — safe to ignore */ }
       dispatch({ type: 'LOGOUT' });
     }
   };

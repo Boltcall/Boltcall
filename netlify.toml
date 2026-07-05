@@ -2,6 +2,17 @@
   publish = "dist"
   command = "npm run build:prerender"
 
+# Security headers — applied to every route. Keep in sync with any CSP
+# expectations added by future integrations (Retell embed, PostHog, Stripe).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "camera=(), microphone=(self), geolocation=(), payment=(self), fullscreen=(self)"
+
 # Service worker must not be cached by browser/CDN
 [[headers]]
   for = "/sw.js"

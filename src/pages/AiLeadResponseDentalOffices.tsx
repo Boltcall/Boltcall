@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -110,7 +110,7 @@ const AiLeadResponseDentalOffices: React.FC = () => {
           "name": "How much does it cost to set up AI lead response for a dental office?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Solutions like Boltcall start from $179/month with no setup fee on annual plans. Compared to the average value of a new dental patient ($1,200-$2,500 lifetime), capturing even one additional patient per month covers the cost many times over."
+            "text": "Solutions like Boltcall start from $897/month with no setup fee on annual plans. Compared to the average value of a new dental patient ($1,200-$2,500 lifetime), capturing even one additional patient per month covers the cost many times over."
           }
         }
       ]
@@ -481,7 +481,7 @@ const AiLeadResponseDentalOffices: React.FC = () => {
                         <div className="text-sm text-gray-500">Additional monthly revenue potential</div>
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-gray-900">$179/mo</div>
+                        <div className="text-2xl font-bold text-gray-900">$897/mo</div>
                         <div className="text-sm text-gray-500">Boltcall Pro plan — the AI that makes it happen</div>
                       </div>
                     </div>
@@ -525,7 +525,7 @@ const AiLeadResponseDentalOffices: React.FC = () => {
 
                     <div className="border rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">How much does it cost to set up AI lead response for a dental office?</h3>
-                      <p className="text-gray-600">Solutions like <Link to="/pricing" className="text-blue-600 hover:underline">Boltcall</Link> start from $179/month with no setup fee on annual plans. Compared to the average value of a new dental patient ($1,200-$2,500 lifetime), capturing even one additional patient per month covers the cost many times over. Most practices see positive ROI within the first week.</p>
+                      <p className="text-gray-600">Solutions like <Link to="/pricing" className="text-blue-600 hover:underline">Boltcall</Link> start from $897/month with no setup fee on annual plans. Compared to the average value of a new dental patient ($1,200-$2,500 lifetime), capturing even one additional patient per month covers the cost many times over. Most practices see positive ROI within the first week.</p>
                     </div>
                   </div>
                 </motion.section>

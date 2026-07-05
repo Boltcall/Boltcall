@@ -80,7 +80,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
           "name": "Which is more affordable for a small business?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Birdeye's Standard plan starts at approximately $299/month, while Boltcall starts at $389/month for the full AI receptionist package including a free website. However, Boltcall bundles AI phone answering, chatbot, website, and speed-to-lead into one price, whereas Birdeye charges more for advanced tiers with AI features. Total cost depends on which features you actually need."
+            "text": "Birdeye's Standard plan starts at approximately $299/month, while Boltcall starts at $549/month for the full AI receptionist package including a free website. However, Boltcall bundles AI phone answering, chatbot, website, and speed-to-lead into one price, whereas Birdeye charges more for advanced tiers with AI features. Total cost depends on which features you actually need."
           }
         }
       ]
@@ -126,7 +126,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
   }, []);
 
   const comparisonData = [
-    { feature: 'Starting Price', boltcall: '$389/mo', birdeye: '$299/mo (Standard)', boltcallWin: false },
+    { feature: 'Starting Price', boltcall: '$549/mo', birdeye: '$299/mo (Standard)', boltcallWin: false },
     { feature: 'AI Phone Receptionist', boltcall: 'Yes, 24/7', birdeye: 'No', boltcallWin: true },
     { feature: 'AI Chatbot', boltcall: 'Yes, included', birdeye: 'Yes, Webchat', boltcallWin: null },
     { feature: 'Review Management', boltcall: 'Yes, automated', birdeye: 'Yes, core feature', boltcallWin: null },
@@ -194,7 +194,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
           className="bg-blue-50 border-l-4 border-blue-600 rounded-r-lg p-6 mb-12"
         >
           <p className="text-lg text-gray-800 leading-relaxed font-medium">
-            <strong>Quick answer:</strong> Boltcall is an AI receptionist platform that answers calls, captures leads, and automates follow-ups for local businesses at $389/month. Birdeye is a reputation management platform focused on reviews, listings, and customer experience starting at $299/month. Choose Boltcall for AI phone answering and speed-to-lead. Choose Birdeye for review management at scale.
+            <strong>Quick answer:</strong> Boltcall is an AI receptionist platform that answers calls, captures leads, and automates follow-ups for local businesses at $549/month. Birdeye is a reputation management platform focused on reviews, listings, and customer experience starting at $299/month. Choose Boltcall for AI phone answering and speed-to-lead. Choose Birdeye for review management at scale.
           </p>
         </motion.div>
 
@@ -314,7 +314,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-blue-600" />
-                  <span className="text-gray-700"><strong>Core:</strong> $389/mo (website + AI receptionist + chatbot)</span>
+                  <span className="text-gray-700"><strong>Core:</strong> $549/mo (website + AI receptionist + chatbot)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-blue-600" />
@@ -359,7 +359,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
               On paper, Birdeye looks cheaper at $299/month for the Standard tier. But that price only covers reviews and listings. To get webchat, surveys, and the broader customer experience features, you're looking at $399-$449/month, and Birdeye typically requires annual commitments with per-location pricing.
             </p>
             <p>
-              Boltcall's $389/month Core plan bundles an AI phone receptionist, AI chatbot, a professionally built website, speed-to-lead automation, and automated review requests into one price. There's no per-location markup and no annual lock-in required. For businesses that need phone answering solved first, the value-per-dollar tilts toward Boltcall.
+              Boltcall's $549/month Core plan bundles an AI phone receptionist, AI chatbot, a professionally built website, speed-to-lead automation, and automated review requests into one price. There's no per-location markup and no annual lock-in required. For businesses that need phone answering solved first, the value-per-dollar tilts toward Boltcall.
             </p>
           </div>
         </motion.section>
@@ -592,7 +592,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Which is more affordable for a small business?</h3>
               <p className="text-gray-700 leading-relaxed">
-                Birdeye's Standard plan starts at approximately $299/month, while Boltcall starts at $389/month for the Core plan. However, Boltcall's price includes an AI phone receptionist, chatbot, free website, and speed-to-lead automation, features that would cost extra or require separate tools with Birdeye. Birdeye's higher tiers ($399-$449+/month) are needed for webchat and full platform access, and pricing is per-location with annual contracts common. Total cost depends entirely on which features your business needs most.
+                Birdeye's Standard plan starts at approximately $299/month, while Boltcall starts at $549/month for the Core plan. However, Boltcall's price includes an AI phone receptionist, chatbot, free website, and speed-to-lead automation, features that would cost extra or require separate tools with Birdeye. Birdeye's higher tiers ($399-$449+/month) are needed for webchat and full platform access, and pricing is per-location with annual contracts common. Total cost depends entirely on which features your business needs most.
               </p>
             </div>
           </div>

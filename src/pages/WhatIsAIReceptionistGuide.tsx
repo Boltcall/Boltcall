@@ -463,7 +463,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
                   },
                   {
                     q: 'How much does an AI receptionist cost?',
-                    a: 'AI receptionists range from $99/month for basic plans to $1,000+/month for full-featured platforms. Boltcall starts at $549/month and includes unlimited AI call answering, appointment booking, lead capture, and follow-up texts with flat-rate pricing and no per-call fees.',
+                    a: 'AI receptionists range from $549/month for basic plans to $1,000+/month for full-featured platforms. Boltcall starts at $549/month and includes unlimited AI call answering, appointment booking, lead capture, and follow-up texts with flat-rate pricing and no per-call fees.',
                   },
                   {
                     q: 'Can an AI receptionist book appointments?',

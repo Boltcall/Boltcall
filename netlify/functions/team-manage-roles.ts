@@ -81,19 +81,27 @@ const handler: Handler = async (event) => {
           return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'roleId required' }) };
         }
 
-        // Prevent editing system roles
+        // Tenant-scope + system-role guard: caller must own the workspace the role lives in.
         const { data: existingRole } = await supabase
           .from('roles')
-          .select('is_system')
+          .select('is_system, workspace_id')
           .eq('id', roleId)
           .single();
 
-        if (existingRole?.is_system) {
+        if (!existingRole || existingRole.workspace_id !== user.id) {
+          return { statusCode: 404, headers: cors, body: JSON.stringify({ error: 'Role not found' }) };
+        }
+
+        if (existingRole.is_system) {
           return { statusCode: 403, headers: cors, body: JSON.stringify({ error: 'Cannot edit system roles' }) };
         }
 
         if (updates) {
-          await supabase.from('roles').update(updates).eq('id', roleId);
+          await supabase
+            .from('roles')
+            .update(updates)
+            .eq('id', roleId)
+            .eq('workspace_id', user.id);
         }
 
         if (permissionIds !== undefined) {
@@ -122,8 +130,28 @@ const handler: Handler = async (event) => {
           return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'roleId required' }) };
         }
 
+        // Tenant-scope check before wiping anything.
+        const { data: targetRole } = await supabase
+          .from('roles')
+          .select('workspace_id, is_system')
+          .eq('id', roleId)
+          .single();
+
+        if (!targetRole || targetRole.workspace_id !== user.id) {
+          return { statusCode: 404, headers: cors, body: JSON.stringify({ error: 'Role not found' }) };
+        }
+
+        if (targetRole.is_system) {
+          return { statusCode: 403, headers: cors, body: JSON.stringify({ error: 'Cannot delete system roles' }) };
+        }
+
         await supabase.from('role_permissions').delete().eq('role_id', roleId);
-        await supabase.from('roles').delete().eq('id', roleId).eq('is_system', false);
+        await supabase
+          .from('roles')
+          .delete()
+          .eq('id', roleId)
+          .eq('workspace_id', user.id)
+          .eq('is_system', false);
 
         await supabase.from('activity_logs').insert({
           workspace_id: user.id,

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -69,7 +69,7 @@ const FAQAIReceptionistDentist: React.FC = () => {
             "name": "How much does an AI receptionist cost for a dental office?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "AI receptionists for dental offices typically cost $99-$249 per month with no per-call fees. Compare that to a front desk employee at $2,800-3,800 per month plus benefits. The AI does not replace your entire team but handles 70-80% of routine calls, freeing staff to focus on patients in the office."
+              "text": "AI receptionists for dental offices typically cost $549ג€“$4997 per month with no per-call fees. Compare that to a front desk employee at $2,800-3,800 per month plus benefits. The AI does not replace your entire team but handles 70-80% of routine calls, freeing staff to focus on patients in the office."
             }
           },
           {
@@ -186,7 +186,7 @@ const FAQAIReceptionistDentist: React.FC = () => {
     {
       question: 'How much does an AI receptionist cost for a dental office?',
       answer:
-        'AI receptionists for dental offices typically cost $99-$249 per month with no per-call fees. Compare that to a front desk employee at $2,800-3,800 per month plus benefits. The AI does not replace your entire team, but handles 70-80% of routine calls so your staff can focus on patients who are physically in the office.',
+        'AI receptionists for dental offices typically cost $549ג€“$4997 per month with no per-call fees. Compare that to a front desk employee at $2,800-3,800 per month plus benefits. The AI does not replace your entire team, but handles 70-80% of routine calls so your staff can focus on patients who are physically in the office.',
     },
     {
       question: 'How long does setup take for a dental AI receptionist?',
@@ -276,7 +276,7 @@ const FAQAIReceptionistDentist: React.FC = () => {
     {
       question: 'How does AI compare to hiring another front desk person?',
       answer:
-        'A front desk employee costs $2,800-3,800 per month, works 40 hours a week, takes breaks, calls in sick, and handles one call at a time. An AI receptionist costs $99-249 per month, works 24/7/365, handles unlimited simultaneous calls, and never puts a patient on hold. Most practices use the AI to augment their team, not replace it entirely.',
+        'A front desk employee costs $2,800-3,800 per month, works 40 hours a week, takes breaks, calls in sick, and handles one call at a time. An AI receptionist costs $549-4997 per month, works 24/7/365, handles unlimited simultaneous calls, and never puts a patient on hold. Most practices use the AI to augment their team, not replace it entirely.',
     },
     {
       question: 'Do dental patients report high satisfaction with AI receptionists?',
@@ -548,7 +548,7 @@ const FAQAIReceptionistDentist: React.FC = () => {
                   ['Google reviews per month', '1–2', '6–12'],
                   ['Front desk time on routine calls', '3–4 hours/day', 'Under 1 hour/day'],
                   ['Setup time for 24/7 coverage', '2–4 weeks (hire)', '30 minutes'],
-                  ['Monthly cost vs. human receptionist', '$3,200 – $4,500', '$79 – $179'],
+                  ['Monthly cost vs. human receptionist', '$3,200 – $4,500', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>

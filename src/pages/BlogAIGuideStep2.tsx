@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -618,9 +618,9 @@ const BlogAIGuideStep2: React.FC = () => {
               </thead>
               <tbody>
                 {[
-                  ['AI phone receptionist', 'Missed calls, after-hours leads', 'Boltcall', '$79 – $179'],
+                  ['AI phone receptionist', 'Missed calls, after-hours leads', 'Boltcall', '$549-897'],
                   ['AI writing assistant', 'Marketing copy, emails, proposals', 'ChatGPT, Claude', '$20 – $100'],
-                  ['AI scheduling tool', 'Appointment booking and reminders', 'Calendly AI, Boltcall', '$15 – $179'],
+                  ['AI scheduling tool', 'Appointment booking and reminders', 'Calendly AI, Boltcall', '$15-897'],
                   ['AI review management', 'Google review generation and response', 'Birdeye, Podium, Boltcall', '$100 – $400'],
                   ['AI social media', 'Content creation and posting', 'Hootsuite AI, Buffer', '$50 – $200'],
                   ['AI chatbot (website)', 'Website visitor questions', 'Intercom, Drift', '$100 – $500'],

@@ -539,7 +539,7 @@ const BlogAnsweringServiceAppointmentScheduling: React.FC = () => {
               <p className="text-lg leading-relaxed text-blue-50 mb-4">
                 <strong>Cost-Effective 24/7 Service:</strong> Unlike traditional answering services that charge extra for after-hours 
                 or 24/7 coverage, Boltcall provides round-the-clock appointment scheduling at no additional cost. Starting at just 
-                $99/month, you get unlimited appointment scheduling without per-call or per-minute charges.
+                $549/month, you get unlimited appointment scheduling without per-call or per-minute charges.
               </p>
               <p className="text-lg leading-relaxed text-blue-50 mb-4">
                 <strong>Handles High Call Volumes:</strong> Whether you receive 10 calls or 1000 calls per day, Boltcall's AI can 
@@ -652,7 +652,7 @@ const BlogAnsweringServiceAppointmentScheduling: React.FC = () => {
                 {[
                   ['Live appointment booking', 'Message relay only — callback required', 'Directly into your calendar, real time'],
                   ['After-hours coverage', 'Yes — at per-minute cost ($1–$2/min)', 'Yes — included in flat monthly rate'],
-                  ['Monthly cost', '$200 – $1,500+', '$79 – $179 flat'],
+                  ['Monthly cost', '$200 – $1,500+', '$549-897 flat'],
                   ['No-show reminders', 'Not included', 'Automated — included in every plan'],
                   ['SMS follow-up to missed callers', 'Not included', 'Automated within seconds'],
                   ['Lead qualification', 'Basic message only', 'Full qualification before booking'],

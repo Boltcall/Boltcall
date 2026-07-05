@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
-import { savePendingAgentSetup } from '../../lib/setup/onboarding';
+import { savePendingAgentSetup, INDUSTRY_OPTIONS as INDUSTRY_SOURCE_OPTIONS, type PendingAgentSetup } from '../../lib/setup/onboarding';
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
 
@@ -46,6 +46,35 @@ interface TurnResponse {
 }
 
 const STORAGE_KEY = 'boltcall_v2_setup_conversation_id';
+const OPENING_DRAFTS_KEY = 'boltcall_v2_setup_opening_drafts';
+
+type OpeningDrafts = {
+  ownerName?: string;
+  country?: string;
+  businessName?: string;
+  website?: string;
+  industry?: string;
+  transferNumber?: string;
+};
+
+function readOpeningDrafts(): OpeningDrafts {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = sessionStorage.getItem(OPENING_DRAFTS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed ? (parsed as OpeningDrafts) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeOpeningDrafts(drafts: OpeningDrafts): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(OPENING_DRAFTS_KEY, JSON.stringify(drafts));
+  } catch { /* quota / disabled — skip */ }
+}
 
 const SEED_GREETING =
   "I'll get your instant lead response system ready through a quick setup. First, tell me who owns this setup.";
@@ -95,6 +124,11 @@ const AGENT_STYLE_OPTIONS = [
   },
 ] as const;
 
+// Local shape mirrors the source-of-truth INDUSTRY_OPTIONS from
+// src/lib/setup/onboarding.ts. Adding a value there flows through here
+// automatically.
+const INDUSTRY_OPTIONS = INDUSTRY_SOURCE_OPTIONS;
+
 type OpeningStep = 'owner' | 'business' | 'agent';
 
 function genId() {
@@ -133,17 +167,30 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   const [conversationId, setConversationId] = useState<string | null>(
     typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null,
   );
-  const [openingStep, setOpeningStep] = useState<OpeningStep>('owner');
+  // Rehydrate the three opening fields from sessionStorage so a mid-wizard
+  // refresh, back-nav, or session expiry does not restart the user at step 1.
+  const restoredDrafts = readOpeningDrafts();
+  const [openingStep, setOpeningStep] = useState<OpeningStep>(() => {
+    // Rewind to the earliest incomplete opening step so the user picks up
+    // where they left off after a refresh.
+    if (restoredDrafts.businessName) return 'agent';
+    if (restoredDrafts.ownerName && restoredDrafts.country) return 'business';
+    return 'owner';
+  });
   const [isOpeningTransitioning, setIsOpeningTransitioning] = useState(false);
-  const [ownerNameDraft, setOwnerNameDraft] = useState('');
-  const [countryDraft, setCountryDraft] = useState('');
-  const [businessNameDraft, setBusinessNameDraft] = useState('');
-  const [websiteDraft, setWebsiteDraft] = useState('');
+  const [ownerNameDraft, setOwnerNameDraft] = useState(restoredDrafts.ownerName || '');
+  const [countryDraft, setCountryDraft] = useState(restoredDrafts.country || '');
+  const [businessNameDraft, setBusinessNameDraft] = useState(restoredDrafts.businessName || '');
+  const [websiteDraft, setWebsiteDraft] = useState(restoredDrafts.website || '');
   const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['id']>(
     VOICE_OPTIONS[0].id,
   );
   const [agentStyleDraft, setAgentStyleDraft] =
     useState<(typeof AGENT_STYLE_OPTIONS)[number]['id']>('friendly_concise');
+  const [industryDraft, setIndustryDraft] = useState<PendingAgentSetup['industry']>(
+    (restoredDrafts.industry as PendingAgentSetup['industry']) || 'other',
+  );
+  const [transferNumberDraft, setTransferNumberDraft] = useState<string>(restoredDrafts.transferNumber || '');
   const [playingVoiceId, setPlayingVoiceId] = useState<(typeof VOICE_OPTIONS)[number]['id'] | null>(
     null,
   );
@@ -161,6 +208,18 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   const finishTimer = useRef<number | null>(null);
   const speakingTimer = useRef<number | null>(null);
   const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Persist opening drafts every keystroke so a refresh doesn't wipe them.
+  useEffect(() => {
+    writeOpeningDrafts({
+      ownerName: ownerNameDraft || undefined,
+      country: countryDraft || undefined,
+      businessName: businessNameDraft || undefined,
+      website: websiteDraft || undefined,
+      industry: industryDraft || undefined,
+      transferNumber: transferNumberDraft || undefined,
+    });
+  }, [ownerNameDraft, countryDraft, businessNameDraft, websiteDraft, industryDraft, transferNumberDraft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -300,7 +359,14 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
 
       const data = await readResponseJson<TurnResponse>(res);
       if (!res.ok || data.error) {
-        setError(data.error || `Setup error (${res.status}). Try again.`);
+        // 401 in the middle of the wizard = session expired. Show a
+        // friendly re-auth prompt instead of the raw "Missing bearer
+        // token" string that the API returns.
+        if (res.status === 401) {
+          setError('Your session expired. Please sign in again and continue.');
+        } else {
+          setError(data.error || `Setup error (${res.status}). Try again.`);
+        }
         setIsStreaming(false);
         return;
       }
@@ -468,14 +534,15 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       businessName: companyName,
       websiteUrl: website,
       country,
-      industry: 'other',
+      industry: industryDraft || 'other',
       voiceId: voice.id,
       goal: 'book-appointments',
       tone: agentStyleDraft,
-      transferNumber: '',
+      transferNumber: transferNumberDraft.trim(),
       createdAt: new Date().toISOString(),
     });
     sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(OPENING_DRAFTS_KEY);
     setIsOpeningTransitioning(true);
     if (finishTimer.current) window.clearTimeout(finishTimer.current);
     finishTimer.current = window.setTimeout(() => {
@@ -723,6 +790,39 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                       </button>
                     ))}
                   </fieldset>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">Industry</span>
+                    <select
+                      value={industryDraft}
+                      onChange={(e) => setIndustryDraft(e.target.value as PendingAgentSetup['industry'])}
+                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white focus:border-white focus:outline-none"
+                    >
+                      {INDUSTRY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">
+                      Transfer number <span className="font-normal normal-case text-white/50">(optional)</span>
+                    </span>
+                    <input
+                      type="tel"
+                      value={transferNumberDraft}
+                      onChange={(e) => setTransferNumberDraft(e.target.value)}
+                      placeholder="+1 555 123 4567"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-white focus:outline-none"
+                    />
+                    <span className="mt-1 block text-xs text-white/50">Calls the agent can't handle are forwarded here.</span>
+                  </label>
                 </div>
               </div>
             )}

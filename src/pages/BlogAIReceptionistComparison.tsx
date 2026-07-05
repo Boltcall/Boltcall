@@ -95,14 +95,14 @@ const BlogAIReceptionistComparison: React.FC = () => {
         'Complete solution: calls, SMS, forms, and follow-ups in one platform',
         '30-minute setup with industry templates',
         'Built specifically for local service businesses',
-        'Affordable pricing starting at $99/month',
+        'Affordable pricing starting at $549/month',
         'No long-term contracts required'
       ],
       cons: [
         'Newer platform (less brand recognition than established players)',
         'Best suited for small to medium businesses'
       ],
-      pricing: 'Starting at $99/month',
+      pricing: 'Starting at $549/month',
       icon: <Phone className="w-6 h-6" />,
       color: 'blue'
     },
@@ -401,7 +401,7 @@ const BlogAIReceptionistComparison: React.FC = () => {
                 </div>
                 <div className="bg-white rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 mb-2">Affordable Pricing</h4>
-                  <p className="text-sm">Starting at $99/month with no long-term contracts. Perfect for small businesses 
+                  <p className="text-sm">Starting at $549/month with no long-term contracts. Perfect for small businesses 
                   that need professional AI without enterprise pricing.</p>
                 </div>
                 <div className="bg-white rounded-lg p-4">
@@ -516,7 +516,7 @@ const BlogAIReceptionistComparison: React.FC = () => {
             <div className="bg-green-50 rounded-xl p-6">
               <h3 className="font-semibold text-green-800 mb-3">✓ Pros</h3>
               <ul className="space-y-2 text-gray-700 text-sm">
-                <li>Dramatically lower cost than human receptionists — $99–$299/month vs. $3,200–$5,300/month for a hire</li>
+                <li>Dramatically lower cost than human receptionists — $549-4997/month vs. $3,200–$5,300/month for a hire</li>
                 <li>24/7 availability captures leads outside business hours, which account for 30%+ of all inbound calls</li>
                 <li>Responds to callers in under 2 seconds, increasing conversion rates by up to 391%</li>
                 <li>Scales to any call volume without additional staffing costs or training</li>
@@ -555,7 +555,7 @@ const BlogAIReceptionistComparison: React.FC = () => {
               </thead>
               <tbody>
                 {[
-                  ["Starting price", "$99/mo", "$200+/mo", "Contact", "$15/user/mo"],
+                  ["Starting price", "$549/mo", "$200+/mo", "Contact", "$15/user/mo"],
                   ["Voice call handling", "✓", "✓", "—", "✓"],
                   ["SMS / text automation", "✓", "Limited", "✓", "Limited"],
                   ["Setup time", "30 min", "2–5 days", "1–2 days", "~1 day"],
