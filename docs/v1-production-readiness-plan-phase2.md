@@ -3,7 +3,7 @@
 > **Status**: active plan of record. Successor to `docs/v1-production-readiness-plan.md` (Phase 1 — 36/37 items closed).
 > **Prepared**: 2026-07-05 via three parallel deep audits covering the areas Phase 1 never reached:
 > dashboard pages (60+ pages), settings + billing wiring, and 91 previously-unaudited Netlify functions.
-> **Counts**: **9 P0 · 18 P1 · 14 P2**.
+> **Counts**: **9 P0 · 18 P1 · 14 P2**. Execution 2026-07-06: **8/9 P0 closed** + 5 P1 (billing correctness, retell LLM rollback, webhook fail-closed rolled up in the same commits). Remaining P0: HIBP toggle (carryover, needs Noam + Supabase PAT).
 
 **How to use this file.** Same protocol as Phase 1: execute top-down, mark `[x]` with commit hash, append new findings, never delete items. Work in a worktree — root main checkout is read-only.
 
@@ -29,43 +29,67 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 
 ### Billing / money
 
-- [ ] **PackagesPage fake purchase**
+- [x] **PackagesPage fake purchase** (ac140623f)
+  Redirected `/dashboard/settings/packages` to `/dashboard/settings/plan-billing` + dropped Packages entry from settings nav. Route + component removed from bundle. Restore once add-on charges are wired through PayPal.
+
+  ORIGINAL:
   `src/pages/dashboard/settings/PackagesPage.tsx:29-98, 142-163`
   "$29/$29/$39 per month" add-ons toggle a boolean in `business_features` with zero billing wiring. Legal/refund exposure. Decision: either wire real PayPal plan add-ons, or remove prices and relabel as feature toggles gated by plan, or hide the page for V1. **Recommended for V1: hide the page** (smallest correct diff), re-ship when billing wiring exists.
 
-- [ ] **PayPal webhook never writes invoices**
+- [x] **PayPal webhook never writes invoices** (f15eb1f94)
+  `handlePaymentSaleCompleted` now looks up the subscription, rolls its period forward, and upserts an `invoices` row (amount_paid in cents, paypal_capture_id as conflict key) so Billing History renders.
+
+  ORIGINAL:
   `netlify/functions/paypal-webhook.ts:223-244`
   `PAYMENT.SALE.COMPLETED` updates subscription status but inserts no `invoices` row → `PlanBillingPage` Billing History is always empty for every PayPal customer. Insert an invoice row (amount, date, plan, PayPal txn id) on each completed sale.
 
-- [ ] **Delete-workspace leaves the PayPal subscription active**
+- [x] **Delete-workspace leaves the PayPal subscription active** (7f5cd6eb7)
+  New `netlify/functions/delete-workspace.ts` (JWT-authed): cancels active PayPal subs via `/v1/billing/subscriptions/:id/cancel`, then cascade-deletes 12 dependent tables + KB storage. Aborts (502) if the PayPal cancel fails so a customer never gets deleted while still being charged. Both GeneralPage delete button + `teamStore.deleteWorkspace` now route through this single function.
+
+  ORIGINAL:
   `src/pages/dashboard/settings/GeneralPage.tsx:583-599` + `WorkspacePage.tsx:118-134`
   Delete removes `business_profiles` + `workspaces` + storage but not `subscriptions`, `agents`, `workspace_members`, `business_features`, `paypal_payments` — and never cancels the PayPal subscription server-side. Customer keeps getting charged after "deleting" their account. Move deletion behind one Netlify function (service role) that: cancels PayPal sub → deletes dependent rows → deletes workspace. Also collapse the two divergent delete paths (GeneralPage vs WorkspacePage) into that one function.
 
 ### Fake features
 
-- [ ] **AssistantPage is fully mocked**
+- [x] **AssistantPage is fully mocked** (ac140623f)
+  Deleted `src/pages/dashboard/AssistantPage.tsx` (314 lines). Route `/dashboard/assistant` already redirects to `/dashboard/calls`. Also removed dead "Set Up Personal Assistant" step from `Dashboard.tsx` getting-started list.
+
+  ORIGINAL:
   `src/pages/dashboard/AssistantPage.tsx:1-314`
   Enable/disable toggles are local `useState`; nothing persists, nothing wires. Ship decision: delete the page (routes already redirect `/dashboard/assistant` → `/dashboard/calls`) or wire it. **Recommended: delete** — the redirect already exists; the component is dead-code risk.
 
-- [ ] **LeadReactivationPage fake CRM connect**
+- [x] **LeadReactivationPage fake CRM connect** (ac140623f)
+  Deleted `src/pages/dashboard/LeadReactivationPage.tsx` (329 lines). Route already redirects to `/dashboard/leads`. Also removed the Lead Reactivation card from `FeatureHub.tsx` so users don't hit a redirect-only path.
+
+  ORIGINAL:
   `src/pages/dashboard/LeadReactivationPage.tsx:1-329`
   "Connect CRM" sets local state; no OAuth, no persistence, no fetch. `/lead-reactivation` redirect (AppRoutes:495) routes users into a dead feature. Same decision: hide/delete for V1 or build it. **Recommended: remove from nav + route for V1.**
 
 ### Security
 
-- [ ] **Fail-open webhook auth when secrets are unset**
+- [x] **Fail-open webhook auth when secrets are unset** (f15eb1f94)
+  All four functions now return 500 `misconfigured` in production if their secret env is unset (checks `CONTEXT === 'production'` or `NODE_ENV === 'production'`). Dev/preview still allow the skip path so local testing works.
+
+  ORIGINAL:
   `netlify/functions/lead-webhook.ts:292`, `whatsapp-webhook.ts:78`, `instantly-webhook.ts:27`, `twilio-inbound-sms.ts:41`
   All four skip signature/secret verification entirely when their env var is unset. A prod env drift silently opens lead injection → outbound Retell calls + SMS billing (lead-webhook), fake WhatsApp inbound → auto-reply billing, etc. Fix: fail-closed — if the secret env is unset, return 500 `misconfigured` and alert; never process unsigned payloads.
 
 ### Navigation
 
-- [ ] **Sidebar exposes 6 of ~35 dashboard routes**
+- [x] **Sidebar exposes 6 of ~35 dashboard routes** (7f5cd6eb7)
+  Rewrote `Sidebar.tsx` with 6 grouped sections (Home, Leads & Calls, Channels, Setup, Growth, Account) exposing 20 real dashboard routes with plain-language labels ("Missed Calls", "Text Messages", "Voice Receptionist"). Preserves ClientPortal + Agency section render order.
+
+  ORIGINAL:
   `src/components/dashboard/Sidebar.tsx:20-27`
   Leads, Calls, Messages, Missed Calls, Phone Numbers, Reminders, Reputation, SMS, WhatsApp, Email, Integrations, Knowledge Base, Getting Started etc. are reachable only by typed URL or in-page cross-links. Non-technical owners can't find the product. Redesign nav into grouped sections (e.g. Home · Leads & Calls · Channels · Agents · Knowledge · Settings). This is the single highest-leverage UX fix for the "understandable for local business owners" goal.
 
 ### Test infrastructure
 
-- [ ] **Vitest suite dead — 155/158 test files fail collection**
+- [x] **Vitest suite dead — 155/158 test files fail collection** (e322c7bde)
+  Root cause: vitest 4 default threads pool. Added `pool: 'forks'` to `vitest.config.ts`. Result: 157/158 files pass, 1149/1152 tests pass. Remaining 3 test failures in one file are real content bugs to triage separately, not infra.
+
+  ORIGINAL:
   `TypeError: Cannot read properties of undefined (reading 'config')` at `describe()` (vitest 4.1.2). All Phase 1 security tests (`team-manage-roles-security`, `saas-v2-security`) currently don't run. Fix the vitest config/setup breakage, then make CI actually block on the suite.
 
 ### Carryover from Phase 1
@@ -79,9 +103,9 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 
 ### Billing correctness
 
-- [ ] **paypal-webhook: unknown planId silently defaults to starter/monthly** — `paypal-webhook.ts:276-278`. Misconfigured env mis-provisions customers. Error + Telegram alert instead.
-- [ ] **paypal-webhook: no `current_period_end` on ACTIVATED** — `paypal-webhook.ts:146-168`. "Renews {date}" renders empty until first PAYMENT.SALE.
-- [ ] **paypal-webhook: `findUserByEmail` only checks page 1 of 1000 users** — `paypal-webhook.ts:24-35`. Breaks silently past 1000 users. Query `auth.users` by email via admin API filter instead.
+- [x] **paypal-webhook: unknown planId silently defaults to starter/monthly** (f15eb1f94). `mapPayPalPlan` now returns null on miss; handler throws + Telegram alert so PayPal retries and Noam fixes the env var mapping.
+- [x] **paypal-webhook: no `current_period_end` on ACTIVATED** (f15eb1f94). Uses `resource.billing_info.next_billing_time` when present, else computes +1 month/year from `start_time`.
+- [x] **paypal-webhook: `findUserByEmail` only checks page 1 of 1000 users** (f15eb1f94). Paginates up to 50 pages (50k users), stops at the first partial page.
 - [ ] **PlanBillingPage silent checkout failure** — `PlanBillingPage.tsx:165-182`. Catch clears spinner, shows nothing. Add error toast.
 - [ ] **PlanBillingPage hardcoded prices duplicate `PLAN_INFO`** — `PlanBillingPage.tsx:140-146`. Import from `src/lib/stripe.ts` — one source of truth (this is exactly how Phase 1's stale-price P0 happened).
 - [ ] **create-paypal-subscription: no server-side plan validation + env-name leak in error hint** — `create-paypal-subscription.ts:107`.
@@ -96,7 +120,7 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 
 ### Provisioning / functions
 
-- [ ] **retell-agents orphans a billable Retell LLM on agent.create failure** — `retell-agents.ts:533` (create_agent) and `:692` (create_full). Rollback (`llm.delete`) only exists on the Supabase-insert branch; extend to the agent.create throw path via the existing `createdLlmId` tracker.
+- [x] **retell-agents orphans a billable Retell LLM on agent.create failure** (f15eb1f94). Both create_agent and create_full now wrap `client.agent.create` in try/catch that deletes the minted LLM before rethrowing.
 - [ ] **whatsapp-ai-responder internal-secret drift** — `whatsapp-ai-responder.ts:96` only accepts `INTERNAL_WEBHOOK_SECRET`; callers send `INTERNAL_API_SECRET || INTERNAL_WEBHOOK_SECRET`. If only the new name is set, internal calls silently 401. Accept both (match `_shared/user-auth.ts` pattern).
 - [ ] **outbound-calls start_campaign can exceed the 10s function budget and double-call leads** — `outbound-calls.ts:164-227`. Move to background function; mark lead row before Retell call so retries skip already-called leads.
 
