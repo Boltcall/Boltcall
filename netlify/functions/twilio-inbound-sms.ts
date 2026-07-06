@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
 import { verifyTwilioSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
-import { isHostedDeploy } from './_shared/prod-detect';
+import { isLocalDev } from './_shared/prod-detect';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -38,9 +38,9 @@ const handler: Handler = async (event) => {
     };
   }
 
-  // Fail-closed on hosted deploys: TWILIO_AUTH_TOKEN MUST be set to verify signatures.
-  if (!process.env.TWILIO_AUTH_TOKEN && isHostedDeploy()) {
-    console.error('[twilio-inbound-sms] TWILIO_AUTH_TOKEN unset in production; refusing');
+  // Fail-closed unless running under `netlify dev`. TWILIO_AUTH_TOKEN MUST be set.
+  if (!process.env.TWILIO_AUTH_TOKEN && !isLocalDev()) {
+    console.error('[twilio-inbound-sms] TWILIO_AUTH_TOKEN unset; refusing');
     return { statusCode: 500, headers: { 'Content-Type': 'text/xml' }, body: '<Response/>' };
   }
   const sigResult = verifyTwilioSignature(event);

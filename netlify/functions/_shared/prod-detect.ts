@@ -1,13 +1,12 @@
 /**
- * True when this function is running on a hosted Netlify deploy
- * (production, deploy-preview, or branch-deploy).
+ * True when this function is running under `netlify dev` locally.
  *
- * Netlify sets NETLIFY=true on every hosted function and NETLIFY_DEV=true
- * only when running under `netlify dev` locally. CONTEXT and NODE_ENV are
- * available at build time but NOT reliably set at function runtime — checking
- * them causes fail-open bugs. Use this helper for anything gated on "is this
- * really prod?".
+ * Netlify's function runtime (AWS Lambda) does NOT reliably expose CONTEXT,
+ * NODE_ENV, or NETLIFY at runtime. The only reliable local-dev marker is
+ * NETLIFY_DEV, which `netlify dev` sets. Everywhere else — production,
+ * deploy-preview, branch-deploy, standalone Lambda — treat as production and
+ * fail-closed.
  */
-export function isHostedDeploy(): boolean {
-  return process.env.NETLIFY === 'true' && process.env.NETLIFY_DEV !== 'true';
+export function isLocalDev(): boolean {
+  return process.env.NETLIFY_DEV === 'true';
 }
