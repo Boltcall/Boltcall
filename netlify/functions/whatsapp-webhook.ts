@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
 import { notifyError } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isHostedDeploy } from './_shared/prod-detect';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -74,10 +75,10 @@ const handler: Handler = async (event) => {
 
   const rawBody = event.body || '';
 
-  // HMAC signature verification. Fail-closed in production.
+  // HMAC signature verification. Fail-closed on any hosted deploy.
   const appSecret = process.env.WHATSAPP_APP_SECRET;
   if (!appSecret) {
-    if (process.env.CONTEXT === 'production' || process.env.NODE_ENV === 'production') {
+    if (isHostedDeploy()) {
       console.error('[whatsapp-webhook] WHATSAPP_APP_SECRET unset in production');
       return { statusCode: 500, body: 'Server misconfigured' };
     }

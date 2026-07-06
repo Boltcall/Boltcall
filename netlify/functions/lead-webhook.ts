@@ -8,6 +8,7 @@ import { authenticateApiKey } from './_shared/validate-api-key';
 import { verifyFacebookSignature } from './_shared/verify-signatures';
 import { handleInboundLead } from './_shared/lead-response-service';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isHostedDeploy } from './_shared/prod-detect';
 
 /**
  * Lead Webhook — receives leads from external sources and inserts into Supabase `leads` table.
@@ -293,7 +294,7 @@ const handler: Handler = async (event) => {
       // billable outbound Retell calls / SMS.
       const globalSecret = process.env.WEBHOOK_SECRET;
       if (!globalSecret) {
-        if (process.env.CONTEXT === 'production' || process.env.NODE_ENV === 'production') {
+        if (isHostedDeploy()) {
           console.error('[lead-webhook] WEBHOOK_SECRET unset in production; refusing unauthenticated user_id path');
           return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server misconfigured: webhook secret required' }) };
         }

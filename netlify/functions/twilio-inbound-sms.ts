@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
 import { verifyTwilioSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isHostedDeploy } from './_shared/prod-detect';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -37,8 +38,8 @@ const handler: Handler = async (event) => {
     };
   }
 
-  // Fail-closed in production: TWILIO_AUTH_TOKEN MUST be set to verify signatures.
-  if (!process.env.TWILIO_AUTH_TOKEN && (process.env.CONTEXT === 'production' || process.env.NODE_ENV === 'production')) {
+  // Fail-closed on hosted deploys: TWILIO_AUTH_TOKEN MUST be set to verify signatures.
+  if (!process.env.TWILIO_AUTH_TOKEN && isHostedDeploy()) {
     console.error('[twilio-inbound-sms] TWILIO_AUTH_TOKEN unset in production; refusing');
     return { statusCode: 500, headers: { 'Content-Type': 'text/xml' }, body: '<Response/>' };
   }
