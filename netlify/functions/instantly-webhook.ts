@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { withLegacyHandler } from './_shared/runtime-compat';
-import { isHostedDeploy } from './_shared/prod-detect';
+import { isLocalDev } from './_shared/prod-detect';
 
 // Instantly webhook receiver — captures lead-level events for attribution.
 // Configured in Instantly dashboard at:
@@ -27,8 +27,8 @@ const handler: Handler = async (event) => {
   // using INSTANTLY_WEBHOOK_SECRET. Fail-closed in production.
   const secret = process.env.INSTANTLY_WEBHOOK_SECRET;
   if (!secret) {
-    if (isHostedDeploy()) {
-      console.error('[instantly-webhook] INSTANTLY_WEBHOOK_SECRET unset in production');
+    if (!isLocalDev()) {
+      console.error('[instantly-webhook] INSTANTLY_WEBHOOK_SECRET unset — refusing');
       return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server misconfigured' }) };
     }
   } else {
