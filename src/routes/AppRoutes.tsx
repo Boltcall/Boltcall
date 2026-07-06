@@ -170,7 +170,6 @@ const PostSetupRouteShell: React.FC<{
   </ErrorBoundary>
 );
 const WorkspacePage = React.lazy(() => import('../pages/dashboard/settings/WorkspacePage'));
-const PackagesPage = React.lazy(() => import('../pages/dashboard/settings/PackagesPage'));
 
 // ── Lazy loads — Static / info pages ─────────────────────────────────────
 const HelpCenter = React.lazy(() => import('../pages/HelpCenter'));
@@ -512,7 +511,8 @@ const NavigationWrapper: React.FC = () => {
             <Route path="activity-log" element={<ActivityLogPage />} />
             <Route path="api-keys" element={<ApiKeysPage />} />
             <Route path="workspace" element={<WorkspacePage />} />
-            <Route path="packages" element={<PackagesPage />} />
+            {/* ponytail: PackagesPage hidden for V1 — fake purchase (no billing wiring). Redirect to plan-billing. Restore once add-on charges wired through PayPal. */}
+            <Route path="packages" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
             {/* Redirects for removed settings pages */}
             <Route path="billing" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
             <Route path="notification-preferences" element={<Navigate to="/dashboard/settings/notifications" replace />} />

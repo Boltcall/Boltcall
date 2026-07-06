@@ -74,9 +74,14 @@ const handler: Handler = async (event) => {
 
   const rawBody = event.body || '';
 
-  // HMAC signature verification (skip if no APP_SECRET set — dev mode)
+  // HMAC signature verification. Fail-closed in production.
   const appSecret = process.env.WHATSAPP_APP_SECRET;
-  if (appSecret) {
+  if (!appSecret) {
+    if (process.env.CONTEXT === 'production' || process.env.NODE_ENV === 'production') {
+      console.error('[whatsapp-webhook] WHATSAPP_APP_SECRET unset in production');
+      return { statusCode: 500, body: 'Server misconfigured' };
+    }
+  } else {
     const sigHeader = event.headers['x-hub-signature-256'] || event.headers['X-Hub-Signature-256'] || '';
     const expected = 'sha256=' + crypto.createHmac('sha256', appSecret).update(rawBody).digest('hex');
     if (sigHeader !== expected) {

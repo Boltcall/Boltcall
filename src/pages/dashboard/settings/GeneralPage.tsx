@@ -577,25 +577,22 @@ const GeneralPage: React.FC = () => {
 
                 setIsDeleting(true);
                 try {
-                  // Get the current user
-                  const { data: { user } } = await supabase.auth.getUser();
-                  if (!user) throw new Error('Not authenticated');
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session) throw new Error('Not authenticated');
 
-                  // Delete business profiles for this user
-                  await supabase.from('business_profiles').delete().eq('user_id', user.id);
-                  localStorage.removeItem('boltcall_setup_complete');
-
-                  // Delete workspaces for this user
-                  await supabase.from('workspaces').delete().eq('user_id', user.id);
-
-                  // Delete knowledge base files from storage
-                  const { data: files } = await supabase.storage.from('knowledge-base').list(user.id);
-                  if (files?.length) {
-                    const paths = files.map(f => `${user.id}/${f.name}`);
-                    await supabase.storage.from('knowledge-base').remove(paths);
+                  const res = await fetch('/.netlify/functions/delete-workspace', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ confirm: 'DELETE' }),
+                  });
+                  if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Deletion failed');
                   }
-
-                  // Sign out the user
+                  localStorage.removeItem('boltcall_setup_complete');
                   await supabase.auth.signOut();
 
                   showToast({
@@ -607,11 +604,12 @@ const GeneralPage: React.FC = () => {
                   setShowDeleteModal(false);
                   navigate('/');
                 } catch (error) {
+                  const message = error instanceof Error ? error.message : 'Failed to delete workspace. Please try again.';
                   showToast({
                     title: 'Deletion Failed',
-                    message: 'Failed to delete workspace. Please try again.',
+                    message,
                     variant: 'error',
-                    duration: 4000
+                    duration: 5000
                   });
                 } finally {
                   setIsDeleting(false);

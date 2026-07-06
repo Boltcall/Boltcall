@@ -518,15 +518,18 @@ export const useTeamStore = create<TeamState>((set, get) => ({
   },
 
   deleteWorkspace: async () => {
-    const ws = get().workspace;
-    if (!ws) return;
-
-    const { error } = await supabase
-      .from('workspaces')
-      .delete()
-      .eq('id', ws.id);
-    if (error) throw error;
-
+    // Route through the server-side function so we (1) cancel any active PayPal
+    // subscription before deleting the workspace row and (2) cascade all
+    // dependent data. See netlify/functions/delete-workspace.ts.
+    const res = await fetch(`${FUNCTIONS_BASE}/delete-workspace`, {
+      method: 'POST',
+      headers: await authedHeaders(),
+      body: JSON.stringify({ confirm: 'DELETE' }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Delete workspace failed');
+    }
     set({ workspace: null });
   },
 }));

@@ -13,6 +13,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // vitest 4 default threads pool crashes at describe() with
+    // "Cannot read properties of undefined (reading 'config')" across most
+    // files. Forks pool avoids the shared-worker state bug.
+    pool: 'forks',
     setupFiles: ['./src/test/setup.ts'],
     include: [
       'src/**/*.{test,spec}.{ts,tsx}',

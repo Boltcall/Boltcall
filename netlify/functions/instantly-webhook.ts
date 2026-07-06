@@ -23,9 +23,14 @@ const handler: Handler = async (event) => {
   }
 
   // Signature verification: Instantly signs payloads via HMAC on the body
-  // using INSTANTLY_WEBHOOK_SECRET. Skip verification if secret unset (dev).
+  // using INSTANTLY_WEBHOOK_SECRET. Fail-closed in production.
   const secret = process.env.INSTANTLY_WEBHOOK_SECRET;
-  if (secret) {
+  if (!secret) {
+    if (process.env.CONTEXT === 'production' || process.env.NODE_ENV === 'production') {
+      console.error('[instantly-webhook] INSTANTLY_WEBHOOK_SECRET unset in production');
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server misconfigured' }) };
+    }
+  } else {
     const sig = event.headers['x-instantly-signature'] || event.headers['X-Instantly-Signature'];
     if (!sig) {
       return { statusCode: 401, headers, body: JSON.stringify({ error: 'Missing signature' }) };

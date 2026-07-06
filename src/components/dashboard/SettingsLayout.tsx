@@ -38,7 +38,6 @@ const categories = [
     label: 'Preferences',
     sidebar: [
       { id: 'preferences', label: 'Appearance & Region', route: '/dashboard/settings/preferences' },
-      { id: 'packages', label: 'Packages', route: '/dashboard/settings/packages' },
       { id: 'notifications', label: 'Notifications', route: '/dashboard/settings/notifications' },
     ],
   },
