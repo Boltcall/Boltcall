@@ -50,6 +50,7 @@ interface TeamState {
   // ─── Activity Log ───
   activityLogs: ActivityLog[];
   activityLogsLoading: boolean;
+  activityLogsError: string | null;
   activityLogsTotalCount: number;
   fetchActivityLogs: (userId: string, filter?: ActivityLogFilter, page?: number, limit?: number) => Promise<void>;
   logActivity: (action: string, details: string, metadata?: Record<string, unknown>) => Promise<void>;
@@ -350,10 +351,11 @@ export const useTeamStore = create<TeamState>((set, get) => ({
   // ─── Activity Log State ────────────────────────────────────────────────
   activityLogs: [],
   activityLogsLoading: true,
+  activityLogsError: null,
   activityLogsTotalCount: 0,
 
   fetchActivityLogs: async (userId: string, filter?: ActivityLogFilter, page = 0, limit = 50) => {
-    set({ activityLogsLoading: true });
+    set({ activityLogsLoading: true, activityLogsError: null });
     try {
       let query = supabase
         .from('activity_logs')
@@ -377,6 +379,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
       });
     } catch (err) {
       console.error('[teamStore] fetchActivityLogs failed:', err);
+      set({ activityLogsError: err instanceof Error ? err.message : 'Failed to load activity' });
     } finally {
       set({ activityLogsLoading: false });
     }
