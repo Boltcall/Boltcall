@@ -174,6 +174,13 @@ export const useTeamStore = create<TeamState>((set, get) => ({
     return { success, failed };
   },
 
+  // Direct client writes are safe here: workspace_members RLS is
+  //   UPDATE USING (invited_by = auth.uid())  [no WITH CHECK -> applies to new row too].
+  // A member's own row has invited_by = <owner>, not their uid, so they can't even
+  // select it for update — self-escalation is blocked at the DB. Roles are likewise
+  // gated to `is_system = false AND workspace_id IN (owner's workspaces)`. Verified
+  // against supabase/migrations/20260325_team_rbac_workspace.sql — do NOT re-route
+  // these through a Netlify function; that only duplicates enforced RLS.
   updateMemberRole: async (memberId: string, role: string) => {
     const { error } = await supabase
       .from('workspace_members')
