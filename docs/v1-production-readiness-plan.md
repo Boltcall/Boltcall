@@ -57,14 +57,8 @@ Fix before anyone else signs up. Combined cost: one focused work day + half day 
   `src/components/ProtectedRoute.tsx:41–46`
   Fixed: removed the shortcut that cached `boltcall_setup_complete` without a DB check. Now always queries `business_profiles`; the URL flag no longer strands users in an empty dashboard.
 
-- [ ] **Supabase Auth leaked-password protection is off** *(NEEDS NOAM — one-command)*
-  Supabase Auth settings (advisor: `auth_leaked_password_protection`)
-  Cannot toggle from this session — the setting lives in the Supabase Management API (`/v1/projects/{ref}/config/auth`) which requires a Personal Access Token, not the service-role key. Ready-to-run script committed at `scripts/enable-hibp-protection.mjs`. Run once with a PAT:
-  ```
-  $env:SUPABASE_ACCESS_TOKEN = "sbp_..."   # (Windows) / export on Linux
-  node scripts/enable-hibp-protection.mjs
-  ```
-  The script GETs current auth config, PATCHes `password_hibp_enabled=true` and `password_min_length>=8`, and prints the diff. Same effect as clicking the dashboard toggle, but scriptable + repeatable if the project is ever rebuilt.
+- [x] **Supabase Auth leaked-password protection** — DESCOPED 2026-07-07 (founder decision)
+  HIBP leaked-password protection is a Supabase Pro-plan feature (Management API returned `402` on Free tier). Verified the PAT path works; the block is purely the plan tier. Founder chose not to upgrade to Pro solely for this, so the item is dropped from V1 scope, not deferred. Re-add by upgrading to Pro and flipping the dashboard toggle (Auth → Providers → Password) if credential-stuffing on owner accounts becomes a concern. The one-off enable script was removed as dead code.
 
 ---
 
@@ -214,7 +208,7 @@ Solo founder, ~40 productive hrs/wk. Order chosen so nothing later depends on so
 
 ### Week 1 — Stop the bleed
 
-- Mon: Fix Stripe prices in `src/lib/stripe.ts`, sweep 40 marketing pages, deploy. Flip Supabase leaked-password protection on.
+- Mon: Fix Stripe prices in `src/lib/stripe.ts`, sweep 40 marketing pages, deploy.
 - Mon: Enable RLS on the 14 disabled tables; add minimal explicit policies or move AIOS/marketing tables to separate project.
 - Tue: Add workspace scoping to `team-manage-roles.ts` UPDATE/DELETE/`role_permissions` rewrite. Extend `__tests__/saas-v2-security.test.ts` cross-tenant test.
 - Tue: Fix `retell-agents.ts create_full`: fail-hard on insert error + delete created Retell agent; switch inserts to JWT `userId`.

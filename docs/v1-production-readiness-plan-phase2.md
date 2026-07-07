@@ -3,8 +3,8 @@
 > **Status**: active plan of record. Successor to `docs/v1-production-readiness-plan.md` (Phase 1 — 36/37 items closed).
 > **Prepared**: 2026-07-05 via three parallel deep audits covering the areas Phase 1 never reached:
 > dashboard pages (60+ pages), settings + billing wiring, and 91 previously-unaudited Netlify functions.
-> **Counts**: **9 P0 · 18 P1 · 14 P2**. Execution 2026-07-06: **8/9 P0 closed** + 5 P1 (billing correctness, retell LLM rollback, webhook fail-closed rolled up in the same commits). Remaining P0: HIBP toggle (carryover, needs Noam + Supabase PAT).
-> Execution 2026-07-07: **remaining 13 P1 closed** (billing 4759bdc55 · dashboard data 4c066b8e9 · functions c51e5c0fd · teamStore+notifications ff27df667 · activity-log 0fec00440). **All 18 P1 now closed.** typecheck ✅ · 392 affected tests ✅ · vite build ✅. Remaining before "done": HIBP toggle (P0, needs Noam), all 14 P2, and the live-verification list.
+> **Counts**: **9 P0 · 18 P1 · 14 P2**. Execution 2026-07-06: **8/9 P0 closed** + 5 P1 (billing correctness, retell LLM rollback, webhook fail-closed rolled up in the same commits). Last P0 (HIBP toggle) DESCOPED 2026-07-07 — Pro-plan-only feature (`402` on Free tier), founder chose not to upgrade. **All 9 P0 now resolved (8 closed + 1 descoped).**
+> Execution 2026-07-07: **remaining 13 P1 closed** (billing 4759bdc55 · dashboard data 4c066b8e9 · functions c51e5c0fd · teamStore+notifications ff27df667 · activity-log 0fec00440). **All 18 P1 now closed.** typecheck ✅ · 392 affected tests ✅ · vite build ✅. Merged cf23fbebc, deployed to boltcall.org. Remaining before "done": all 14 P2, and the live-verification list.
 
 **How to use this file.** Same protocol as Phase 1: execute top-down, mark `[x]` with commit hash, append new findings, never delete items. Work in a worktree — root main checkout is read-only.
 
@@ -22,7 +22,7 @@ The three findings that matter most:
 
 Also: the vitest suite is dead — 155 of 158 test files fail at collection (`TypeError: Cannot read properties of undefined (reading 'config')` in `describe()`, vitest v4 infra breakage). Typecheck is clean, but the CI test gate currently verifies nothing.
 
-Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/158 files fail collection · Supabase security advisors: 0 ERROR, 7 WARN (incl. HIBP off).
+Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/158 files fail collection · Supabase security advisors: 0 ERROR, 7 WARN (HIBP-off warn accepted — Pro-only, descoped).
 
 ---
 
@@ -95,8 +95,8 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 
 ### Carryover from Phase 1
 
-- [ ] **Supabase HIBP leaked-password protection still off** *(NEEDS NOAM — one command)*
-  Advisor WARN still present. Run `node scripts/enable-hibp-protection.mjs` with a `SUPABASE_ACCESS_TOKEN` PAT. See Phase 1 P0.8 for details.
+- [x] **Supabase HIBP leaked-password protection** — DESCOPED 2026-07-07 (founder decision)
+  Pro-plan-only feature; Management API returned `402` on the Free-tier project. Not upgrading solely for this. Advisor WARN accepted. See Phase 1 P0.8.
 
 ---
 
@@ -169,7 +169,7 @@ Solo founder. Ordered so money and trust land first, correctness second, polish 
 - Mon: PayPal invoices row on PAYMENT.SALE; `current_period_end` on ACTIVATED; unknown-planId hard-error. Verify with sandbox sub end-to-end.
 - Tue: Single server-side delete-workspace function: cancel PayPal sub → cascade deletes. Wire both delete buttons to it.
 - Wed: Hide PackagesPage for V1. Delete AssistantPage + LeadReactivationPage (routes already redirect). Delete dead code batch.
-- Thu: Fail-closed auth on the 4 webhook functions + Netlify env audit (all secrets present in prod). Run HIBP script (Noam, 1 command).
+- Thu: Fail-closed auth on the 4 webhook functions + Netlify env audit (all secrets present in prod).
 - Fri: Fix vitest infra; get the 46 existing tests + Phase 1 security tests green in CI. Buffer.
 
 ### Week 2 — Data correctness + error handling (P1 sweep)
