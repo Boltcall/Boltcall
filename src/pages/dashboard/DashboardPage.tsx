@@ -17,6 +17,8 @@ const DashboardPage: React.FC = () => {
   const [agentCustomizations, setAgentCustomizations] = useState<AgentCustomization[]>([]);
 
   const fetchLiveData = useDashboardStore((s) => s.fetchLiveData);
+  const fetchError = useDashboardStore((s) => s.fetchError);
+  const dashboardLoading = useDashboardStore((s) => s.loading);
   const hasFetchedLiveData = useRef(false);
   const { user } = useAuth();
   const { planLevel } = useSubscription();
@@ -73,6 +75,20 @@ const DashboardPage: React.FC = () => {
         isOpen={showCompletionPopup}
         onClose={() => setShowCompletionPopup(false)}
       />
+
+      {/* Live-data failure — distinct from "no data yet" so an outage isn't hidden */}
+      {fetchError && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <span>Couldn't load your latest activity. {fetchError}</span>
+          <button
+            onClick={() => fetchLiveData()}
+            disabled={dashboardLoading}
+            className="shrink-0 rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+          >
+            {dashboardLoading ? 'Retrying…' : 'Retry'}
+          </button>
+        </div>
+      )}
 
       {/* While You Were Gone — shows if user was away 30+ min */}
       <WhileYouWereGone />

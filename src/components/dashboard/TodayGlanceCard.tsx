@@ -5,12 +5,9 @@ import { Bot, TrendingUp, Users, PhoneMissed } from 'lucide-react';
 import { useDashboardStore } from '../../stores/dashboardStore';
 import OverviewMetricCard from './OverviewMetricCard';
 
-function buildMiniSeries(value: number, direction: 'up' | 'down' = 'up') {
-  const step = Math.max(1, Math.ceil(Math.max(value, 1) * 0.18));
-  return direction === 'up'
-    ? [Math.max(value - step, 0), Math.max(value - Math.ceil(step / 2), 0), value]
-    : [value + step, Math.max(value + Math.ceil(step / 2), 0), value];
-}
+// No historical series exists for these headline numbers, so the card is left to
+// render its flat "no trend yet" fallback. Do not synthesize a fake slope from the
+// single current value — that invents a trend the data never showed.
 
 const TodayGlanceCard: React.FC = () => {
   const { liveStats, callbackStats, loading } = useDashboardStore();
@@ -51,7 +48,6 @@ const TodayGlanceCard: React.FC = () => {
                   value={missed}
                   badge={missed > 0 ? 'Risk' : 'Clear'}
                   badgeTone={missed > 0 ? 'negative' : 'neutral'}
-                  chartData={buildMiniSeries(missed, 'down')}
                   icon={PhoneMissed}
                   accentColor="#ef4444"
                   caption={missed > 0 ? 'Calls waiting on cleanup' : 'No calls slipped today'}
@@ -62,7 +58,6 @@ const TodayGlanceCard: React.FC = () => {
                   value={handled}
                   badge={handled > 0 ? 'Live' : 'Idle'}
                   badgeTone={handled > 0 ? 'positive' : 'neutral'}
-                  chartData={buildMiniSeries(handled, 'up')}
                   icon={Bot}
                   accentColor="#10b981"
                   caption="Resolved without a human handoff"
@@ -73,7 +68,6 @@ const TodayGlanceCard: React.FC = () => {
                   value={leadsToday}
                   badge={pending > 0 ? `${pending} pending` : 'Captured'}
                   badgeTone={pending > 0 ? 'negative' : 'positive'}
-                  chartData={buildMiniSeries(leadsToday, 'up')}
                   icon={Users}
                   accentColor="#2563eb"
                   caption="New callback opportunities created"
@@ -84,7 +78,6 @@ const TodayGlanceCard: React.FC = () => {
                   value={`${winRate}%`}
                   badge={winRate >= 80 ? 'Strong' : winRate >= 50 ? 'Stable' : 'Watch'}
                   badgeTone={winRate >= 80 ? 'positive' : winRate >= 50 ? 'neutral' : 'negative'}
-                  chartData={buildMiniSeries(winRate, 'up')}
                   icon={TrendingUp}
                   accentColor={winRate >= 80 ? '#10b981' : winRate >= 50 ? '#f59e0b' : '#ef4444'}
                   caption="Share of handled calls versus misses"
