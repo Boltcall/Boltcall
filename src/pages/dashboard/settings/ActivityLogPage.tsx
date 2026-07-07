@@ -52,7 +52,7 @@ const ActivityLogPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const {
-    activityLogs, activityLogsLoading, activityLogsTotalCount,
+    activityLogs, activityLogsLoading, activityLogsError, activityLogsTotalCount,
     fetchActivityLogs, members, fetchMembers,
   } = useTeamStore();
 
@@ -246,6 +246,16 @@ const ActivityLogPage: React.FC = () => {
         {activityLogsLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+          </div>
+        ) : activityLogsError ? (
+          <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+            <p className="text-sm text-red-600">Couldn't load activity. {activityLogsError}</p>
+            <button
+              onClick={loadLogs}
+              className="mt-3 rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Retry
+            </button>
           </div>
         ) : activityLogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">

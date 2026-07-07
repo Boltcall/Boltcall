@@ -93,7 +93,10 @@ const handler: Handler = async (event) => {
   // Verify auth: internal webhook calls bypass JWT using a shared secret header;
   // all other callers must supply a valid Supabase Bearer JWT.
   const internalSecret = event.headers['x-internal-secret'];
-  const isInternalCall = !!(process.env.INTERNAL_WEBHOOK_SECRET && internalSecret === process.env.INTERNAL_WEBHOOK_SECRET);
+  // Accept either env name — callers send INTERNAL_API_SECRET || INTERNAL_WEBHOOK_SECRET.
+  // Matching _shared/user-auth.ts so an INTERNAL_API_SECRET-only prod doesn't silently 401.
+  const expectedInternalSecret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET;
+  const isInternalCall = !!(expectedInternalSecret && internalSecret === expectedInternalSecret);
 
   if (!isInternalCall) {
     const authHeader = event.headers.authorization || event.headers.Authorization;

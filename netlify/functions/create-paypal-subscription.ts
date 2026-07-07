@@ -21,6 +21,9 @@ import { getServiceSupabase } from './_shared/token-utils';
 
 const isSandbox = process.env.PAYPAL_MODE === 'sandbox';
 
+const ALLOWED_PLANS = new Set(['starter', 'pro', 'ultimate']);
+const ALLOWED_INTERVALS = new Set(['monthly', 'yearly']);
+
 const PLAN_MAP: Record<string, string | undefined> = {
   starter_monthly: isSandbox
     ? process.env.PAYPAL_PLAN_STARTER_MONTHLY_SANDBOX
@@ -88,6 +91,11 @@ const handler: Handler = async (event) => {
   if (!plan || !interval) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing plan or interval' }) };
   }
+  // Validate against a fixed allowlist before touching the plan map — never
+  // interpolate raw client input into responses or use it to probe env config.
+  if (!ALLOWED_PLANS.has(plan) || !ALLOWED_INTERVALS.has(interval)) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid plan or interval' }) };
+  }
   if (!isAllowedRedirect(successUrl) || !isAllowedRedirect(cancelUrl)) {
     return {
       statusCode: 400,
@@ -99,13 +107,15 @@ const handler: Handler = async (event) => {
   const planKey = `${plan}_${interval}`;
   const planId = PLAN_MAP[planKey];
   if (!planId) {
+    // Env var missing for a valid tier — server misconfig. Log the specifics
+    // server-side; the client only learns the plan is unavailable (no env-name leak).
+    console.error(
+      `create-paypal-subscription: missing PAYPAL_PLAN_${plan.toUpperCase()}_${interval.toUpperCase()}${isSandbox ? '_SANDBOX' : ''}`,
+    );
     return {
-      statusCode: 400,
+      statusCode: 503,
       headers,
-      body: JSON.stringify({
-        error: `No PayPal plan configured for ${planKey}`,
-        hint: `Set PAYPAL_PLAN_${plan.toUpperCase()}_${interval.toUpperCase()}${isSandbox ? '_SANDBOX' : ''} in env`,
-      }),
+      body: JSON.stringify({ error: 'This plan is not available for checkout right now.' }),
     };
   }
 

@@ -209,7 +209,9 @@ const AnalyticsPage: React.FC = () => {
   const callSparkline = metrics.map((m) => m.calls ?? m.leads ?? 0);
   const smsSparkline = metrics.map((m) => m.sms_sent ?? 0);
   const successSparkline = metrics.map((m) => m.success_rate ?? 0);
-  const emptySparkline = [0, 0, 0, 0, 0, 0, 0];
+  // Empty (not [0,0,...]) — a zero-filled series draws a false flat-zero line under
+  // a non-zero value. Empty lets the card fall back to its "no history" rendering.
+  const emptySparkline: number[] = [];
 
   /* ----- Build time series data for chart ----- */
   const timeSeriesData = metrics.map((m) => ({

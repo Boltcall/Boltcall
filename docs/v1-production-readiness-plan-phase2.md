@@ -4,6 +4,7 @@
 > **Prepared**: 2026-07-05 via three parallel deep audits covering the areas Phase 1 never reached:
 > dashboard pages (60+ pages), settings + billing wiring, and 91 previously-unaudited Netlify functions.
 > **Counts**: **9 P0 · 18 P1 · 14 P2**. Execution 2026-07-06: **8/9 P0 closed** + 5 P1 (billing correctness, retell LLM rollback, webhook fail-closed rolled up in the same commits). Remaining P0: HIBP toggle (carryover, needs Noam + Supabase PAT).
+> Execution 2026-07-07: **remaining 13 P1 closed** (billing 4759bdc55 · dashboard data 4c066b8e9 · functions c51e5c0fd · teamStore+notifications ff27df667 · activity-log 0fec00440). **All 18 P1 now closed.** typecheck ✅ · 392 affected tests ✅ · vite build ✅. Remaining before "done": HIBP toggle (P0, needs Noam), all 14 P2, and the live-verification list.
 
 **How to use this file.** Same protocol as Phase 1: execute top-down, mark `[x]` with commit hash, append new findings, never delete items. Work in a worktree — root main checkout is read-only.
 
@@ -106,29 +107,29 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 - [x] **paypal-webhook: unknown planId silently defaults to starter/monthly** (f15eb1f94). `mapPayPalPlan` now returns null on miss; handler throws + Telegram alert so PayPal retries and Noam fixes the env var mapping.
 - [x] **paypal-webhook: no `current_period_end` on ACTIVATED** (f15eb1f94). Uses `resource.billing_info.next_billing_time` when present, else computes +1 month/year from `start_time`.
 - [x] **paypal-webhook: `findUserByEmail` only checks page 1 of 1000 users** (f15eb1f94). Paginates up to 50 pages (50k users), stops at the first partial page.
-- [ ] **PlanBillingPage silent checkout failure** — `PlanBillingPage.tsx:165-182`. Catch clears spinner, shows nothing. Add error toast.
-- [ ] **PlanBillingPage hardcoded prices duplicate `PLAN_INFO`** — `PlanBillingPage.tsx:140-146`. Import from `src/lib/stripe.ts` — one source of truth (this is exactly how Phase 1's stale-price P0 happened).
-- [ ] **create-paypal-subscription: no server-side plan validation + env-name leak in error hint** — `create-paypal-subscription.ts:107`.
-- [ ] **stripe-webhook service key falls back to `''`** — `stripe-webhook.ts:10-13`. Fail loudly on missing env.
+- [x] **PlanBillingPage silent checkout failure** (4759bdc55). handlePlanChange + both openCustomerPortal handlers now set a `changeError` state rendered as a banner instead of only console.error.
+- [x] **PlanBillingPage hardcoded prices duplicate `PLAN_INFO`** (4759bdc55). `planDetails` now derives every price from `PLAN_INFO` in `src/lib/stripe.ts`; the literal $549/$897/$4997 duplicates are gone.
+- [x] **create-paypal-subscription: no server-side plan validation + env-name leak in error hint** (4759bdc55). Allowlist plan∈{starter,pro,ultimate} / interval∈{monthly,yearly} before the plan-map lookup; missing env now logs server-side and returns a generic 503 (no `PAYPAL_PLAN_*` name leaked to the client).
+- [x] **stripe-webhook service key falls back to `''`** (4759bdc55). Handler returns 500 `Server misconfigured` when SUPABASE_URL/SUPABASE_SERVICE_KEY is unset instead of silently running an anon/empty client.
 
 ### Data correctness (backend → charts)
 
-- [ ] **Leads have two sources of truth** — `SpeedToLeadPage.tsx:214-241` reads `leads` table; `dashboardStore`/`dashboardApi.ts:170` reads `callbacks`. The two "leads" surfaces will disagree. Pick the authoritative table, migrate the other reader.
-- [ ] **dashboardStore KPI semantics wrong** — `dashboardStore.ts:206-208`: `kpis.leads` set from callback total; `bookings` set from `ai_calls_today`. Home KPIs lie. Map each KPI to its real query.
-- [ ] **Fake sparklines** — `TodayGlanceCard.tsx:8-13` synthesizes a 3-point "trend" from one scalar; `AnalyticsPage.tsx:212,474` passes `emptySparkline=[0,0,...]` to secondary KPI row even with live data. Wire real series or drop the sparkline.
-- [ ] **dashboardApi swallows every error into empty arrays** — `dashboardApi.ts:95-100,123-125,146-149,189-193`. UI can't distinguish "no data" from "server down"; combined with missing empty states, outage and new-user look identical. Surface `fetchError` in `DashboardPage` (currently no error state at all).
+- [x] **Leads have two sources of truth** (4c066b8e9). Authoritative table is `leads` (backend `saas-v2-leads.ts` + SpeedToLeadPage read it). The store's `callbacks`-as-leads mirror was dead (nothing consumed `store.leads`) and is removed, so only one reader of "leads" remains.
+- [x] **dashboardStore KPI semantics wrong** (4c066b8e9). The fabricated mapping (`bookings := ai_calls_today`, `leads := callbacks.total`) wrote to an unconsumed `store.kpis` field; removed rather than "corrected" since no surface reads it. TodayGlanceCard's numbers come straight from `liveStats`.
+- [x] **Fake sparklines** (4c066b8e9). Removed `TodayGlanceCard.buildMiniSeries` (invented a slope from one scalar) — cards fall back to the flat "no history" render. `AnalyticsPage.emptySparkline` changed `[0,0,…]` → `[]` so a no-series card doesn't draw a false flat-zero line under a live value.
+- [x] **dashboardApi swallows every error into empty arrays** (4c066b8e9). `fetchLiveData` sets `fetchError` from a real `fetchDashboardStats` rejection (it throws on HTTP error/timeout); `DashboardPage` renders an error + Retry banner distinct from the empty/new-user state.
 
 ### Provisioning / functions
 
 - [x] **retell-agents orphans a billable Retell LLM on agent.create failure** (f15eb1f94). Both create_agent and create_full now wrap `client.agent.create` in try/catch that deletes the minted LLM before rethrowing.
-- [ ] **whatsapp-ai-responder internal-secret drift** — `whatsapp-ai-responder.ts:96` only accepts `INTERNAL_WEBHOOK_SECRET`; callers send `INTERNAL_API_SECRET || INTERNAL_WEBHOOK_SECRET`. If only the new name is set, internal calls silently 401. Accept both (match `_shared/user-auth.ts` pattern).
-- [ ] **outbound-calls start_campaign can exceed the 10s function budget and double-call leads** — `outbound-calls.ts:164-227`. Move to background function; mark lead row before Retell call so retries skip already-called leads.
+- [x] **whatsapp-ai-responder internal-secret drift** (c51e5c0fd). Now accepts `INTERNAL_API_SECRET || INTERNAL_WEBHOOK_SECRET`, matching `_shared/user-auth.ts`, so an API-secret-only prod no longer silently 401s internal calls.
+- [x] **outbound-calls start_campaign can exceed the 10s budget and double-call leads** (c51e5c0fd). Batch is now claimed atomically (single conditional `pending→calling` UPDATE returning only rows this call flipped) so concurrent runs/retries can't re-call a lead; removed the 18s of blocking inter-call sleep. Left a note: convert to `outbound-calls-background.ts` if the loop ever nears the budget (no UI caller reads the sync response today).
 
 ### Settings reliability (client configurability)
 
-- [ ] **teamStore client-side role/status updates bypass server checks** — `stores/teamStore.ts:177-205`. `updateMemberRole`/`updateMemberStatus` write `workspace_members` directly from the client; only RLS stands between a member and self-escalation. Verify the RLS policy blocks role self-modification, or route through a Netlify function like `invite-member`. Same verification for `createRole/updateRole/deleteRole` (`RolesPage.tsx:131-145`) and `WorkspacePage` `transferOwnership`.
-- [ ] **NotificationPage data model can't round-trip** — `NotificationPage.tsx:143-163`. Per-channel toggles (email/push/sms) collapse into single booleans on save; reload shows all channels enabled if any was. Store per-channel columns or a JSONB map. Also verify anything actually consumes these prefs — if no dispatcher reads them, say so on the page.
-- [ ] **Settings pages missing loading/error/empty states** — `WorkspacePage` (no loading, generic catch swallows real error `:79-99`), `ActivityLogPage` (no error/empty UI), `RolesPage` (no loading), `GeneralPage`/`BusinessPage` (form flashes empty then hydrates), `MembersPage` (owner auto-seed race + silent swallow `:80-93`), plus empty states across ApiKeys/Members/Notification/Packages/PlanBilling/Preferences/Usage ("Invite your first teammate", "No invoices yet"). One sweep, one pattern: skeleton on load, toast+retry on error, friendly empty state.
+- [x] **teamStore client-side role/status updates bypass server checks** (ff27df667). VERIFIED (static, against `supabase/migrations/20260325_team_rbac_workspace.sql`): `workspace_members` UPDATE policy is `USING (invited_by = auth.uid())` with no WITH CHECK (so it applies to the new row too). A member's own row has `invited_by = <owner>`, so they can't even select it for update — self-escalation is blocked at the DB. `roles` UPDATE/DELETE require `is_system = false AND workspace_id IN (owner's workspaces)`; `transferOwnership` requires `owner_id = auth.uid()`. RLS is sufficient — routing through a function would only duplicate it. Documented the guarantee in-code above `updateMemberRole` so it isn't "fixed" later.
+- [x] **NotificationPage data model can't round-trip** (ff27df667). Confirmed a dispatcher exists (`src/lib/notificationService.ts` → `should_send_notification(type, method)` RPC = per-type flag AND per-channel enable). Rebuilt the page to that exact model: global per-type toggles + per-channel enables. The old per-channel×per-type matrix (and the sound/vibration/master controls that mapped to no column) is gone; every control now persists and round-trips.
+- [x] **Settings pages missing loading/error/empty states** (0fec00440). Re-audited: the line refs were largely stale — WorkspacePage/MembersPage/ApiKeysPage/UsagePage already have loading + error toast + empty state; RolesPage always falls back to `PREDEFINED_ROLES` (never empty); Preferences/Notification are forms (no list). The one real remaining gap — ActivityLogPage rendering a load failure as "No activity yet" — is fixed: added `activityLogsError` to teamStore and an error + Retry state distinct from empty.
 
 ---
 
