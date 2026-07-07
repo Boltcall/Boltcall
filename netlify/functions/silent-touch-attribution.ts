@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getSupabase, getServiceSupabase } from './_shared/token-utils';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
@@ -33,6 +34,19 @@ const handler: Handler = async (event) => {
   if (!uid || !UID_RE.test(uid)) {
     // Silent failure — we don't want a malformed uid to surface an error on the page
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, action: 'noop' }) };
+  }
+
+  // Unauthenticated service-role writer — cap per-IP so a bot can't flood
+  // placeholder rows. It's a tracking pixel: never 429 the page, just stop
+  // writing (return a silent 200) once the per-IP minute budget is spent.
+  const rl = await consumePublicRateLimit(getServiceSupabase(), {
+    bucket: 'silent_touch_attribution',
+    key: hashRateLimitKey([getClientIp(event.headers as Record<string, string>)]),
+    maxAttempts: 60,
+    windowSeconds: 60,
+  });
+  if (!rl.allowed) {
+    return { statusCode: 200, headers, body: JSON.stringify({ ok: true, action: 'rate_limited' }) };
   }
 
   const supabase = getSupabase();

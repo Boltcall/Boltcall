@@ -786,6 +786,10 @@ const handler: Handler = async (event) => {
         // Step 6: Save agent to Supabase agents table + create/link KB folder
         let supabaseAgentId: string | null = null;
         let kbFolderId: string | null = body.kb_folder_id || null;
+        // Collect non-fatal KB-linkage failures so the response can tell the UI
+        // the agent exists but its knowledge base wasn't attached (instead of
+        // swallowing the errors into the server log and reporting plain success).
+        const kbWarnings: string[] = [];
 
         const sb = serviceSupabase;
         if (body.user_id) {
@@ -864,6 +868,7 @@ const handler: Handler = async (event) => {
 
               if (folderErr) {
                 console.error('[retell-agents] KB folder creation failed:', folderErr);
+                kbWarnings.push('Could not create the knowledge base folder.');
               } else {
                 kbFolderId = folderRow.id;
                 console.log(`[retell-agents] Created KB folder: ${kbFolderId}`);
@@ -880,6 +885,7 @@ const handler: Handler = async (event) => {
 
               if (updateErr) {
                 console.error('[retell-agents] KB doc folder assignment failed:', updateErr);
+                kbWarnings.push('Could not attach your knowledge base documents to the folder.');
               }
             }
 
@@ -892,10 +898,12 @@ const handler: Handler = async (event) => {
 
               if (linkErr) {
                 console.error('[retell-agents] Agent-folder link failed:', linkErr);
+                kbWarnings.push('Could not link the agent to its knowledge base.');
               }
             }
           } catch (dbErr) {
             console.error('[retell-agents] Supabase operations failed:', dbErr);
+            kbWarnings.push('Knowledge base setup did not complete.');
           }
         }
 
@@ -911,6 +919,9 @@ const handler: Handler = async (event) => {
             agent,
             prompt_used: body.prompt_config ? 'professional' : body.general_prompt ? 'custom' : 'legacy',
             cekura_setup: cekuraSetup,
+            // Present only when the agent saved but its KB didn't fully attach —
+            // lets the UI show a "KB not attached" notice instead of silent success.
+            kb_warnings: kbWarnings.length ? kbWarnings : undefined,
           }),
         };
       }
