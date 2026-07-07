@@ -4,7 +4,7 @@ import { CreditCard, Download, CheckCircle, Loader2, ExternalLink, Zap, Coins, S
 import { PopButton } from '../../../components/ui/pop-button';
 import { PageSkeleton } from '../../../components/ui/loading-skeleton';
 import { useTranslation } from 'react-i18next';
-import { getUserSubscription, getUserInvoices, type PlanLevel } from '../../../lib/stripe';
+import { getUserSubscription, getUserInvoices, PLAN_INFO, type PlanLevel } from '../../../lib/stripe';
 import { openCustomerPortal } from '../../../lib/stripe-checkout';
 import {
   capturePayPalTestPayment,
@@ -46,6 +46,7 @@ const PlanBillingPage: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [changeError, setChangeError] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const [isFounder, setIsFounder] = useState(false);
   const [paypalTestLoading, setPaypalTestLoading] = useState(false);
@@ -137,12 +138,14 @@ const PlanBillingPage: React.FC = () => {
   const currentPlanLevel = subscription?.plan_level || 'free';
   const currentInterval = (subscription?.billing_interval || 'monthly') as 'monthly' | 'yearly';
 
+  // Prices come from PLAN_INFO (single source of truth). Do not hardcode —
+  // duplicating these literals is exactly how the Phase 1 stale-price bug happened.
   const planDetails: Record<string, { name: string; price: { monthly: number; yearly: number } }> = {
     free: { name: 'Free', price: { monthly: 0, yearly: 0 } },
-    starter: { name: 'Starter', price: { monthly: 549, yearly: 4941 } },
-    pro: { name: 'Pro', price: { monthly: 897, yearly: 8073 } },
-    ultimate: { name: 'Ultimate', price: { monthly: 4997, yearly: 44973 } },
-    enterprise: { name: 'Enterprise', price: { monthly: 997, yearly: 11964 } },
+    starter: { name: PLAN_INFO.starter.name, price: { monthly: PLAN_INFO.starter.monthlyPrice, yearly: PLAN_INFO.starter.yearlyPrice } },
+    pro: { name: PLAN_INFO.pro.name, price: { monthly: PLAN_INFO.pro.monthlyPrice, yearly: PLAN_INFO.pro.yearlyPrice } },
+    ultimate: { name: PLAN_INFO.ultimate.name, price: { monthly: PLAN_INFO.ultimate.monthlyPrice, yearly: PLAN_INFO.ultimate.yearlyPrice } },
+    enterprise: { name: PLAN_INFO.enterprise.name, price: { monthly: PLAN_INFO.enterprise.monthlyPrice, yearly: PLAN_INFO.enterprise.yearlyPrice } },
   };
 
   const currentPlan = planDetails[currentPlanLevel] || planDetails.free;
@@ -164,6 +167,7 @@ const PlanBillingPage: React.FC = () => {
 
   const handlePlanChange = async (plan: PlanLevel) => {
     setUpgrading(plan);
+    setChangeError(null);
     try {
       if (plan === 'enterprise') {
         window.location.href = '/book-a-call';
@@ -177,6 +181,9 @@ const PlanBillingPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Plan change error:', error);
+      setChangeError(
+        error instanceof Error ? error.message : 'Could not start checkout. Please try again.',
+      );
       setUpgrading(null);
     }
   };
@@ -230,6 +237,11 @@ const PlanBillingPage: React.FC = () => {
       {/* ── Subscription Tab ── */}
       {activeTab === 'plan' && (
         <div className="space-y-6">
+          {changeError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {changeError}
+            </div>
+          )}
           {/* Current Plan Card */}
           <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('plan.currentPlan')}</h3>
@@ -299,10 +311,14 @@ const PlanBillingPage: React.FC = () => {
                   color="blue"
                   size="sm"
                   onClick={async () => {
+                    setChangeError(null);
                     try {
                       await openCustomerPortal();
                     } catch (error) {
                       console.error('Portal error:', error);
+                      setChangeError(
+                        error instanceof Error ? error.message : 'Could not open billing management. Please try again.',
+                      );
                     }
                   }}
                   className="gap-2"
@@ -324,10 +340,14 @@ const PlanBillingPage: React.FC = () => {
                   disabled={portalLoading}
                   onClick={async () => {
                     setPortalLoading(true);
+                    setChangeError(null);
                     try {
                       await openCustomerPortal();
                     } catch (error) {
                       console.error('Portal error:', error);
+                      setChangeError(
+                        error instanceof Error ? error.message : 'Could not open billing management. Please try again.',
+                      );
                     } finally {
                       setPortalLoading(false);
                     }
