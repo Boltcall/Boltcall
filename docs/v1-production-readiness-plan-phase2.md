@@ -135,20 +135,22 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 
 ## P2 — polish
 
-- [ ] Delete dead code: `src/server/mockApi.ts` (zero importers), `createMockServer` in `src/server/api.ts:126-143`, `src/lib/stripe-checkout.ts` `redirectToCheckout` (nothing imports it), `LeadsPage.tsx` wrapper, PayPal sandbox test functions (`*-paypal-test-*.ts`), `break-my-ai.ts` if truly uncalled.
-- [ ] `openCustomerPortal` misnamed — opens paypal.com; broken for legacy Stripe subs — `stripe-checkout.ts:60-74`.
-- [ ] Enterprise plan unreachable from PlanBilling grid; its `handlePlanChange` branch is dead — `PlanBillingPage.tsx:451-517`.
-- [ ] Usage progress bar `limit || 1000` masks a 0 token limit — `PlanBillingPage.tsx:153`.
-- [ ] MembersPage renders literal `—` text instead of em-dash — `MembersPage.tsx:495,541`.
-- [ ] Timezone lists hardcoded (13 zones) + default `America/New_York` — `PreferencesPage.tsx:39,198-212`. Use `Intl.supportedValuesOf('timeZone')` + browser-resolved default.
-- [ ] UnsavedChanges banner sticks after successful save — `PreferencesPage.tsx:431-438`.
-- [ ] Country list hardcoded to 12; no postal/state validation — `GeneralPage.tsx:242-255`.
-- [ ] Predefined-role edits lost on reload (no override table) — `RolesPage.tsx:102-108`. Disable editing of system roles in UI.
-- [ ] `agency-reporting-scribe.ts:249` non-constant-time bearer compare — use `crypto.timingSafeEqual`.
-- [ ] `calcom-webhook.ts:130` stores Cal.com API key plaintext in JSONB — move to encrypted storage or dedicated secrets table post-V1.
-- [ ] Rate-limit `generate-agent-prompt.ts` (unauthenticated pure compute) and `silent-touch-attribution.ts` (unauthenticated service-role insert).
-- [ ] `agent-tools.ts:58` fail-open in non-prod — add loud misconfig log.
-- [ ] KB-linkage errors console-swallowed in create_full — `retell-agents.ts:833-863`. Return warning in response payload so UI can surface "KB not attached".
+> Execution 2026-07-07: **12 fixed, 1 verified-already-correct, 1 deferred post-V1.** Commits: billing/dead-code `7d48d852f` · settings `542febcb6` · functions `467cd8625`. typecheck ✅ · 39 affected tests ✅ · vite build ✅ · reviewer: no issues.
+
+- [x] Delete dead code (7d48d852f) — removed `src/server/mockApi.ts`, `createMockServer`, and the dead Stripe `redirectToCheckout`/`getStripe`. **Kept** `LeadsPage.tsx` (routed at `/dashboard/leads`), `*-paypal-test-*.ts` (called by `paypal-checkout.ts:56,92`), and `break-my-ai.ts` (has hardening tests) — the "dead" premise was falsified for those three.
+- [x] `openCustomerPortal` renamed → `openPayPalSubscriptionManagement` (7d48d852f); dead Stripe checkout path deleted so the "legacy Stripe" confusion is gone at the source.
+- [x] Enterprise dead `handlePlanChange` branch removed (7d48d852f) — grid only offers starter/pro/ultimate; `planDetails.enterprise` kept for users already on that tier.
+- [x] Usage progress bar 0-limit fix (7d48d852f) — real `tokenLimit` + `usageRatio`/`usagePct`/`usageOver90` guards; no more faked `/1000` denominator, no divide-by-zero.
+- [x] MembersPage literal dash text (542febcb6) — fixed 4 JSX-text occurrences (doc named 2); also fixed the same bug on `ActivityLogPage.tsx:310`.
+- [x] Timezone list (542febcb6) — `Intl.supportedValuesOf('timeZone')` full list + browser-resolved default.
+- [x] UnsavedChanges bar (542febcb6) — `open = isDirty || isSaving`; closes on success (toast confirms), stays on error.
+- [x] Country list (542febcb6) — full ISO list via `Intl.DisplayNames` over AA–ZZ region codes; display-name value round-trips. Postal/state validation deferred (separate per-country feature).
+- [x] Predefined-role editing — **already gated** in UI: edit/delete render under `!role.is_system` and all `PREDEFINED_ROLES` carry `is_system: true`. No change needed (audit ref stale); a redundant guard would be dead code.
+- [x] `agency-reporting-scribe` constant-time compare (467cd8625) — `crypto.timingSafeEqual` with length guard.
+- [ ] `calcom-webhook.ts:130` Cal.com API key plaintext — **DEFERRED post-V1** (doc itself scopes this "post-V1"; needs an encrypted secrets table).
+- [x] Rate-limit `generate-agent-prompt.ts` + `silent-touch-attribution.ts` (467cd8625) — IP-scoped `consumePublicRateLimit`; pixel returns silent 200 on limit.
+- [x] `agent-tools.ts` non-prod fail-open (467cd8625) — loud `console.warn` before allowing; explicit true/false.
+- [x] KB-linkage warnings (467cd8625) — `retell-agents` create_full collects swallowed KB errors into `kb_warnings` in the success payload.
 
 ---
 
