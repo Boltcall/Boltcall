@@ -248,7 +248,7 @@ const MembersPage: React.FC = () => {
 
   // ─── Formatters ─────────────────────────────────────────────
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '\u2014';
+    if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -492,7 +492,7 @@ const MembersPage: React.FC = () => {
                     </td>
                     <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
                       {isMemberOwner ? (
-                        <span className="text-xs text-gray-400">\u2014</span>
+                        <span className="text-xs text-gray-400">—</span>
                       ) : canManageMembers ? (
                         <div className="flex items-center gap-1">
                           <button
@@ -538,7 +538,7 @@ const MembersPage: React.FC = () => {
                           </button>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">\u2014</span>
+                        <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>
                   </motion.tr>
@@ -826,7 +826,7 @@ const MembersPage: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {ASSIGNABLE_ROLES.map((r) => (
-                <option key={r.slug} value={r.slug}>{r.name} \u2014 {r.description}</option>
+                <option key={r.slug} value={r.slug}>{r.name} — {r.description}</option>
               ))}
             </select>
           </div>

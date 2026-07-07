@@ -307,7 +307,7 @@ const ActivityLogPage: React.FC = () => {
         {totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 sm:px-5 py-3 border-t border-gray-200 bg-gray-50">
             <span className="text-xs sm:text-sm text-gray-500">
-              Showing {page * PAGE_SIZE + 1}\u2013{Math.min((page + 1) * PAGE_SIZE, activityLogsTotalCount)} of {activityLogsTotalCount}
+              Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activityLogsTotalCount)} of {activityLogsTotalCount}
             </span>
             <div className="flex items-center gap-2">
               <button
