@@ -5,7 +5,7 @@ import { PopButton } from '../../../components/ui/pop-button';
 import { PageSkeleton } from '../../../components/ui/loading-skeleton';
 import { useTranslation } from 'react-i18next';
 import { getUserSubscription, getUserInvoices, PLAN_INFO, type PlanLevel } from '../../../lib/stripe';
-import { openCustomerPortal } from '../../../lib/stripe-checkout';
+import { openPayPalSubscriptionManagement } from '../../../lib/stripe-checkout';
 import {
   capturePayPalTestPayment,
   redirectToPayPalCheckout,
@@ -153,8 +153,16 @@ const PlanBillingPage: React.FC = () => {
   // Real usage from token context
   const tokenLimit = monthlyAllocation > 0 ? monthlyAllocation : (TOKEN_PLANS[currentPlanLevel as keyof typeof TOKEN_PLANS]?.monthlyTokens ?? 0);
   const usageItems = [
-    { label: 'Tokens Used', used: tokensUsed, limit: tokenLimit || 1000 },
+    { label: 'Tokens Used', used: tokensUsed, limit: tokenLimit },
   ];
+  // limit can legitimately be 0 (unprovisioned account / no monthly allocation).
+  // Guard every division so the bar reports a real 0 / 0 instead of a faked
+  // "/ 1000" denominator that made an empty allocation look like a live plan.
+  const usageUsed = usageItems[0].used;
+  const usageLimit = usageItems[0].limit;
+  const usageRatio = usageLimit > 0 ? usageUsed / usageLimit : usageUsed > 0 ? 1 : 0;
+  const usagePct = Math.min(usageRatio * 100, 100);
+  const usageOver90 = usageRatio > 0.9;
 
   // Enterprise stays high-touch (sales call); self-serve tiers go through
   // PayPal Subscriptions API checkout via redirectToPayPalCheckout.
@@ -169,15 +177,14 @@ const PlanBillingPage: React.FC = () => {
     setUpgrading(plan);
     setChangeError(null);
     try {
-      if (plan === 'enterprise') {
-        window.location.href = '/book-a-call';
-        return;
-      }
+      // ponytail: no 'enterprise' branch — the Available Plans grid only offers
+      // starter/pro/ultimate, so enterprise can never reach here. If Enterprise
+      // is ever added to the grid, route it to /book-a-call at that point.
       if (isUpgrade(plan)) {
         await redirectToPayPalCheckout({ plan, interval: currentInterval });
       } else {
         // Downgrade or change of interval — open PayPal autopay management.
-        await openCustomerPortal();
+        await openPayPalSubscriptionManagement();
       }
     } catch (error) {
       console.error('Plan change error:', error);
@@ -270,23 +277,21 @@ const PlanBillingPage: React.FC = () => {
                   <div className="flex items-baseline justify-between mb-1.5">
                     <span className="text-sm text-gray-700">{t('plan.aiConversations')}</span>
                     <span className="text-sm">
-                      <span className={usageItems[0].used / usageItems[0].limit > 0.9 ? 'text-red-600 font-semibold' : 'text-blue-600 font-semibold'}>
-                        {usageItems[0].used.toLocaleString()}
+                      <span className={usageOver90 ? 'text-red-600 font-semibold' : 'text-blue-600 font-semibold'}>
+                        {usageUsed.toLocaleString()}
                       </span>
                       {' / '}
-                      <span className={usageItems[0].used / usageItems[0].limit > 0.9 ? 'text-red-600 font-semibold' : 'text-blue-600 font-semibold'}>
-                        {usageItems[0].limit.toLocaleString()}
+                      <span className={usageOver90 ? 'text-red-600 font-semibold' : 'text-blue-600 font-semibold'}>
+                        {usageLimit.toLocaleString()}
                       </span>
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                     <div
                       className={`h-1.5 rounded-full transition-all ${
-                        usageItems[0].used / usageItems[0].limit > 0.9
-                          ? 'bg-red-500'
-                          : 'bg-blue-500'
+                        usageOver90 ? 'bg-red-500' : 'bg-blue-500'
                       }`}
-                      style={{ width: `${Math.min((usageItems[0].used / usageItems[0].limit) * 100, 100)}%` }}
+                      style={{ width: `${usagePct}%` }}
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
@@ -313,7 +318,7 @@ const PlanBillingPage: React.FC = () => {
                   onClick={async () => {
                     setChangeError(null);
                     try {
-                      await openCustomerPortal();
+                      await openPayPalSubscriptionManagement();
                     } catch (error) {
                       console.error('Portal error:', error);
                       setChangeError(
@@ -342,7 +347,7 @@ const PlanBillingPage: React.FC = () => {
                     setPortalLoading(true);
                     setChangeError(null);
                     try {
-                      await openCustomerPortal();
+                      await openPayPalSubscriptionManagement();
                     } catch (error) {
                       console.error('Portal error:', error);
                       setChangeError(
@@ -435,7 +440,7 @@ const PlanBillingPage: React.FC = () => {
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Plan Usage</h3>
             <div className="border-t border-gray-100 pt-5 space-y-5">
               {usageItems.map((item) => {
-                const pct = Math.min((item.used / item.limit) * 100, 100);
+                const pct = item.limit > 0 ? Math.min((item.used / item.limit) * 100, 100) : item.used > 0 ? 100 : 0;
                 const isHigh = pct >= 90;
                 const isMid = pct >= 75;
 
