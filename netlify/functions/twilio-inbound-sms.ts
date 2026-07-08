@@ -194,8 +194,9 @@ const handler: Handler = async (event) => {
   } catch (err: any) {
     console.error('[twilio-inbound-sms] Error:', err);
     await notifyError('twilio-inbound-sms: Unhandled exception', err);
+    // ponytail: 500 (not 200) so Twilio's own retry policy kicks in on transient failures
     return {
-      statusCode: 200,
+      statusCode: 500,
       headers: { 'Content-Type': 'text/xml' },
       body: '<Response/>',
     };

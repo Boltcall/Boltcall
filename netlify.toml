@@ -142,6 +142,11 @@
 [functions."agent-self-heal"]
   timeout = 300
 
+# create_full chains up to 11 sequential external calls (scrape, LLM prompt-gen,
+# Retell agent/LLM create, Cekura register+evaluators, Supabase writes) — can exceed default cap.
+[functions."retell-agents"]
+  timeout = 300
+
 # Run message dispatcher every 5 minutes to process due scheduled_messages
 [functions."message-dispatcher"]
   schedule = "*/5 * * * *"
