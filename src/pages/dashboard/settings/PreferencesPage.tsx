@@ -36,7 +36,8 @@ function applyAccentColor(hex: string | null) {
 const defaultPreferences = {
   theme: 'light',
   language: 'en',
-  timezone: 'America/New_York',
+  // Default to the visitor's actual zone instead of assuming US Eastern.
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
   dateFormat: 'MM/DD/YYYY',
   timeFormat: '12h',
   accentColor: null as string | null,
@@ -195,21 +196,11 @@ const PreferencesPage: React.FC = () => {
     }
   };
 
-  const timezones = [
-    { value: 'America/New_York', label: 'Eastern Time (ET)' },
-    { value: 'America/Chicago', label: 'Central Time (CT)' },
-    { value: 'America/Denver', label: 'Mountain Time (MT)' },
-    { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
-    { value: 'Europe/London', label: 'London (GMT)' },
-    { value: 'Europe/Paris', label: 'Paris (CET)' },
-    { value: 'Asia/Jerusalem', label: 'Jerusalem (IST)' },
-    { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
-    { value: 'Asia/Shanghai', label: 'Shanghai (CST)' },
-    { value: 'America/Mexico_City', label: 'Mexico City (CST)' },
-    { value: 'America/Bogota', label: 'Bogota (COT)' },
-    { value: 'America/Buenos_Aires', label: 'Buenos Aires (ART)' },
-    { value: 'Europe/Madrid', label: 'Madrid (CET)' },
-  ];
+  // Full IANA zone list from the platform, not a hand-picked 13. Label is the
+  // zone name with underscores spaced out. ?? guard covers the rare browser
+  // without supportedValuesOf (falls back to the current zone only).
+  const timezones = (Intl.supportedValuesOf?.('timeZone') ?? [Intl.DateTimeFormat().resolvedOptions().timeZone])
+    .map((z) => ({ value: z, label: z.replace(/_/g, ' ') }));
 
   const selectClass = "w-full h-11 px-4 pr-10 bg-white dark:bg-[#161619] border border-gray-200 dark:border-[#2a2a30] rounded-xl text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer outline-none";
 
@@ -429,7 +420,10 @@ const PreferencesPage: React.FC = () => {
       </div>
 
       <UnsavedChanges
-        open={isDirty || isSaving || saveSuccess || saveError}
+        // Close the moment changes are no longer pending. On success isDirty
+        // clears and the bar dismisses (toast confirms the save) instead of
+        // lingering; on error isDirty stays true so the bar keeps offering Save.
+        open={isDirty || isSaving}
         isSaving={isSaving}
         success={saveSuccess}
         error={saveError}

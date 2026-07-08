@@ -43,6 +43,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 
 import type { Handler, HandlerEvent } from '@netlify/functions';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { runAgent, callClaude, type ModelTier } from './_shared/agency-agents/run-agent';
@@ -52,6 +53,12 @@ import * as retell from './_shared/agency-adapters/retell-adapter';
 import * as calcom from './_shared/agency-adapters/calcom-adapter';
 import * as meta from './_shared/agency-adapters/meta-ads-adapter';
 import { renderClientReport } from './_shared/agency-adapters/pdf-renderer';
+
+// Constant-time bearer compare so token verification can't be timing-probed.
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Constants
@@ -246,7 +253,7 @@ const handler: Handler = async (event: HandlerEvent) => {
   const expected = process.env.AGENCY_OS_SERVICE_TOKEN ?? process.env.SUPABASE_SERVICE_KEY;
   const authHeader = event.headers['authorization'] || '';
   const token = authHeader.replace('Bearer ', '').trim();
-  if (!expected || !token || token !== expected) {
+  if (!expected || !token || !safeEqual(token, expected)) {
     return {
       statusCode: 401,
       headers,

@@ -13,6 +13,28 @@ import Button from '../../../components/ui/Button';
 import ModalShell from '../../../components/ui/modal-shell';
 import { UnsavedChanges } from '../../../components/ui/unsaved-changes';
 
+// Full ISO 3166-1 country list, computed once. There is no built-in enumerator,
+// so we resolve every 2-letter code through Intl.DisplayNames and keep the ones
+// that map to a real name. Value stays the display name (e.g. 'United States')
+// so existing saved values round-trip. ponytail: postal/state validation is a
+// separate, per-country feature — deferred, not part of this list fix.
+const ALL_COUNTRIES: string[] = (() => {
+  try {
+    const names = new Intl.DisplayNames(['en'], { type: 'region' });
+    const out: string[] = [];
+    for (let i = 65; i <= 90; i++) {
+      for (let j = 65; j <= 90; j++) {
+        const code = String.fromCharCode(i) + String.fromCharCode(j);
+        const name = names.of(code);
+        if (name && name !== code) out.push(name);
+      }
+    }
+    return out.sort((a, b) => a.localeCompare(b));
+  } catch {
+    return ['United States', 'Canada', 'United Kingdom', 'Australia'];
+  }
+})();
+
 const GeneralPage: React.FC = () => {
   const { t } = useTranslation('settings');
   const { showToast } = useToast();
@@ -239,20 +261,7 @@ const GeneralPage: React.FC = () => {
     { code: 'ja', name: 'Japanese' }
   ];
 
-  const countries = [
-    'United States',
-    'Canada',
-    'United Kingdom',
-    'Australia',
-    'Germany',
-    'France',
-    'Spain',
-    'Italy',
-    'Netherlands',
-    'Sweden',
-    'Norway',
-    'Denmark'
-  ];
+  const countries = ALL_COUNTRIES;
 
   // Keep these slugs aligned with business_profiles.main_category so saved
   // values (for example 'plumber') round-trip cleanly in settings.

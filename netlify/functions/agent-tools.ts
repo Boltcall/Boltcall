@@ -55,7 +55,16 @@ function isAuthorizedToolRequest(event: HandlerEvent): boolean {
     return Boolean(provided) && safeEqual(sharedSecret, provided);
   }
 
-  return process.env.NODE_ENV !== 'production';
+  // Fail-open only outside production, and never silently: log loudly so a
+  // misconfigured deploy (no Retell signature verified, no shared secret set)
+  // is obvious in the function logs instead of quietly accepting every request.
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      '[agent-tools] AUTH BYPASS: request accepted without a valid Retell signature or shared secret because NODE_ENV != production. Set AGENT_TOOLS_SHARED_SECRET (or RETELL_TOOL_SECRET) to lock this down.',
+    );
+    return true;
+  }
+  return false;
 }
 
 // ── Cal.com helpers ──

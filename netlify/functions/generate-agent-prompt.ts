@@ -1,5 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { getServiceSupabase } from './_shared/token-utils';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -3517,6 +3519,22 @@ const handler: Handler = async (event) => {
   }
 
   try {
+    // Unauthenticated pure-compute endpoint — cap per-IP so it can't be used
+    // as a free CPU sink. 20 generations/min/IP is well above real onboarding use.
+    const rl = await consumePublicRateLimit(getServiceSupabase(), {
+      bucket: 'generate_agent_prompt',
+      key: hashRateLimitKey([getClientIp(event.headers as Record<string, string>)]),
+      maxAttempts: 20,
+      windowSeconds: 60,
+    });
+    if (!rl.allowed) {
+      return {
+        statusCode: rl.statusCode,
+        headers: { ...headers, ...(rl.retryAfterSeconds ? { 'Retry-After': String(rl.retryAfterSeconds) } : {}) },
+        body: JSON.stringify({ error: rl.statusCode === 429 ? 'Too many requests, please slow down' : 'Rate limit unavailable' }),
+      };
+    }
+
     const body: PromptRequest = JSON.parse(event.body || '{}');
 
     if (!body.businessProfile?.businessName) {
