@@ -137,6 +137,8 @@ export default function VoiceAgentOnboarding() {
         payload.additional_info ? `Additional Info: ${payload.additional_info}` : '',
       ].filter(Boolean).join('\n\n');
 
+      // Bound the request so a hung backend surfaces a clear error instead of
+      // an indefinite spinner — well above the "usually 30-60s" UI copy.
       const agentRes = await authedFetch(`${FUNCTIONS_BASE}/retell-agents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -147,9 +149,16 @@ export default function VoiceAgentOnboarding() {
           language: 'en-US',
           knowledge_base_texts: [{ title: `${payload.name} Knowledge Base`, text: kbText }],
         }),
+        signal: AbortSignal.timeout(90000),
       });
 
-      if (!agentRes.ok) throw new Error('Failed to create AI agent');
+      if (!agentRes.ok) {
+        const errBody = await agentRes.json().catch(() => ({} as any));
+        if (agentRes.status === 409 && errBody.code === 'provisioning_in_progress') {
+          throw new Error('Setup is already in progress for your account. Please wait a moment and refresh.');
+        }
+        throw new Error(errBody.error || 'Failed to create AI agent');
+      }
       const agentData = await agentRes.json();
       if (!agentData.success) throw new Error(agentData.error || 'Agent creation failed');
 
@@ -187,7 +196,10 @@ export default function VoiceAgentOnboarding() {
       });
       setStatus('done');
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      const message = err?.name === 'AbortError' || err?.name === 'TimeoutError'
+        ? 'This is taking longer than expected. Please try again in a minute.'
+        : err.message || 'Something went wrong';
+      setError(message);
       setStatus('error');
     }
   };

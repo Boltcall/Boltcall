@@ -579,6 +579,31 @@ const handler: Handler = async (event) => {
           };
         }
 
+        // Guard against concurrent create_full calls for the same user
+        // (double-click, two tabs) minting duplicate Retell agents/LLMs.
+        // Stale locks (crashed function) self-expire after 10 min — see
+        // acquire_provisioning_lock in the provisioning_locks migration.
+        const { data: lockAcquired, error: lockErr } = await serviceSupabase.rpc('acquire_provisioning_lock', { p_user_id: userId });
+        if (lockErr) {
+          console.error('[retell-agents] Failed to acquire provisioning lock:', lockErr);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Could not start agent provisioning. Please try again.' }),
+          };
+        }
+        if (!lockAcquired) {
+          return {
+            statusCode: 409,
+            headers,
+            body: JSON.stringify({
+              error: 'Agent setup is already in progress for this account. Please wait for it to finish.',
+              code: 'provisioning_in_progress',
+            }),
+          };
+        }
+
+        try {
         // Step 0: Scrape website with Firecrawl if URL provided — adds rich content to KB
         if (body.website_url) {
           try {
@@ -587,6 +612,8 @@ const handler: Handler = async (event) => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
               body: JSON.stringify({ url: body.website_url }),
+              // Bound this so a slow scrape can't eat the whole function's timeout budget.
+              signal: AbortSignal.timeout(8000),
             });
 
             if (scrapeRes.ok) {
@@ -730,58 +757,46 @@ const handler: Handler = async (event) => {
           throw agentCreateErr;
         }
 
-        // Step 5: Register agent in Cekura + create test scenarios (don't run yet)
-        let cekuraSetup: { success: boolean; cekura_agent_id?: number; evaluators_created?: number; error?: string } = { success: false };
-        try {
-          const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+        // Step 5: Register agent in Cekura + create test scenarios (don't run yet).
+        // Fire-and-forget — Cekura is best-effort and its 2 sequential network
+        // calls should not add wall-clock time to the client-facing response,
+        // which is the main contributor to this endpoint's timeout risk.
+        const cekuraSetup: { success: boolean } = { success: false };
+        void (async () => {
+          try {
+            const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
-          // Step 5a: Register agent in Cekura
-          const registerRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
-            body: JSON.stringify({
-              action: 'register_agent',
-              retell_agent_id: agent.agent_id,
-              agent_name: `${body.business_name} AI Receptionist`,
-              phone_number: body.phone_number,
-              language: body.language,
-            }),
-          });
-
-          if (registerRes.ok) {
-            const registerData = await registerRes.json();
-            const cekuraAgentId = registerData.cekura_agent_id;
-
-            // Step 5b: Create test evaluators (prepared, not run)
-            const evalRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
+            const registerRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
               body: JSON.stringify({
-                action: 'create_evaluators',
-                cekura_agent_id: cekuraAgentId,
+                action: 'register_agent',
+                retell_agent_id: agent.agent_id,
                 agent_name: `${body.business_name} AI Receptionist`,
-                business_name: body.business_name,
+                phone_number: body.phone_number,
+                language: body.language,
               }),
             });
 
-            if (evalRes.ok) {
-              const evalData = await evalRes.json();
-              cekuraSetup = {
-                success: true,
-                cekura_agent_id: cekuraAgentId,
-                evaluators_created: evalData.evaluators_created,
-              };
-            } else {
-              cekuraSetup = { success: true, cekura_agent_id: cekuraAgentId, evaluators_created: 0, error: 'Evaluator creation failed' };
+            if (registerRes.ok) {
+              const registerData = await registerRes.json();
+              const cekuraAgentId = registerData.cekura_agent_id;
+
+              await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
+                body: JSON.stringify({
+                  action: 'create_evaluators',
+                  cekura_agent_id: cekuraAgentId,
+                  agent_name: `${body.business_name} AI Receptionist`,
+                  business_name: body.business_name,
+                }),
+              });
             }
-          } else {
-            const err = await registerRes.json().catch(() => ({}));
-            cekuraSetup = { success: false, error: err.details || err.error || 'Cekura registration failed' };
+          } catch (testErr) {
+            console.error('Cekura setup failed (non-blocking):', testErr);
           }
-        } catch (testErr) {
-          console.error('Cekura setup failed:', testErr);
-          cekuraSetup = { success: false, error: testErr instanceof Error ? testErr.message : 'Cekura setup failed' };
-        }
+        })();
 
         // Step 6: Save agent to Supabase agents table + create/link KB folder
         let supabaseAgentId: string | null = null;
@@ -924,6 +939,9 @@ const handler: Handler = async (event) => {
             kb_warnings: kbWarnings.length ? kbWarnings : undefined,
           }),
         };
+        } finally {
+          await serviceSupabase.from('provisioning_locks').delete().eq('user_id', userId);
+        }
       }
 
       // Create a web call for testing the agent in-browser
