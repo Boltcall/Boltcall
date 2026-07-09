@@ -24,6 +24,7 @@ import {
 import NavItem from './NavItem';
 import AgencyNavSection from './AgencyNavSection';
 import ClientPortalNavSection from './ClientPortalNavSection';
+import WorkspaceBrand from './WorkspaceBrand';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -108,9 +109,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         `}
       >
         <div className="flex flex-col h-full">
-          {/* Logo section */}
+          {/* Logo section — workspace's own brand when a logo was captured */}
           <div className="p-6 border-b border-zinc-200">
-            <h1 className="text-xl font-bold text-zinc-900">Boltcall</h1>
+            <WorkspaceBrand />
           </div>
 
           {/* Navigation */}
