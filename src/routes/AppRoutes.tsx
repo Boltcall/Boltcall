@@ -347,6 +347,8 @@ const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
 // signed-in user can reach the wizard before V2 is flipped on. The finalize
 // endpoint is where V2 actually goes live for the workspace.
 const V2SetupPage = React.lazy(() => import('../pages/v2/V2SetupPage'));
+// /start — premium website-first onboarding (additive; /setup stays default).
+const StartOnboarding = React.lazy(() => import('../pages/start/StartOnboarding'));
 
 const RECOVERABLE_AUTH_REDIRECT_PATHS = new Set(['/', '/login', '/signup', '/auth/callback']);
 
@@ -521,6 +523,8 @@ const NavigationWrapper: React.FC = () => {
         </Route>
         {/* /setup is the canonical V2 AI-guided onboarding page. */}
         <Route path="/setup" element={<V2SetupPage />} />
+        {/* /start is the website-first cinematic onboarding (additive; /setup untouched). */}
+        <Route path="/start" element={<StartOnboarding />} />
         <Route path="/v2/setup" element={<Navigate to="/setup" replace />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this

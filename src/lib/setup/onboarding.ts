@@ -17,9 +17,24 @@ export const INDUSTRY_OPTIONS = [
 ] as const;
 
 export const VOICE_OPTIONS = [
-  { value: '11labs-Grace', label: 'Grace', description: 'Warm and confident' },
-  { value: '11labs-Nico', label: 'Nico', description: 'Direct and energetic' },
-  { value: 'retell-Leland', label: 'Leland', description: 'Polished and calm' },
+  {
+    value: '11labs-Grace',
+    label: 'Grace',
+    description: 'Warm and confident',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/grace.mp3',
+  },
+  {
+    value: '11labs-Nico',
+    label: 'Nico',
+    description: 'Direct and energetic',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/11labs-pdBC2RxjF7wu7aBAu86E.mp3',
+  },
+  {
+    value: 'retell-Leland',
+    label: 'Leland',
+    description: 'Polished and calm',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/minimax-Leland.mp3',
+  },
 ] as const;
 
 export const GOAL_OPTIONS = [
@@ -45,6 +60,12 @@ export interface PendingAgentSetup {
   transferNumber: string;
   kbFileNames?: string[];
   createdAt: string;
+  // Optional enrichment from the /start onboarding — website-extracted
+  // knowledge that seeds the agents' KB instead of launching them empty.
+  services?: Array<{ name: string; duration: number; price: number }>;
+  faqs?: Array<{ question: string; answer: string }>;
+  logoUrl?: string;
+  painPoint?: string;
 }
 
 export function savePendingAgentSetup(data: PendingAgentSetup) {

@@ -100,8 +100,8 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     clientId: userId,
     businessProfileId: businessProfile.id,
     locationId,
-    services: [],
-    faqs: [],
+    services: setup.services ?? [],
+    faqs: setup.faqs ?? [],
     policies: {
       cancellation: '',
       reschedule: '',
@@ -134,6 +134,25 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  // Brand the workspace with the logo scraped during /start onboarding.
+  // Non-fatal: a missing logo never blocks launch.
+  if (setup.logoUrl) {
+    try {
+      await fetch(`${FUNCTIONS_BASE}/saas-v2-settings-update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {}),
+        },
+        body: JSON.stringify({ patch: { logo_url: setup.logoUrl } }),
+      });
+    } catch (error) {
+      console.warn('Could not save workspace logo:', error);
+    }
+  }
   const launchRes = await fetch(`${FUNCTIONS_BASE}/setup-launch`, {
     method: 'POST',
     headers: {
