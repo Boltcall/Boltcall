@@ -98,6 +98,10 @@
   "validation.phone": "נא להזין מספר טלפון תקין",
 
   "nav.overview": "סקירה כללית",
+  "nav.home": "בית",
+  "nav.conversations": "שיחות ופניות",
+  "nav.yourAi": "ה-AI שלך",
+  "nav.growth": "צמיחה",
   "nav.leads": "לידים",
   "nav.calls": "שיחות",
   "nav.messages": "הודעות",

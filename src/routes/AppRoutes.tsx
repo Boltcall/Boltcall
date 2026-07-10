@@ -56,7 +56,7 @@ const V2SettingsPage = React.lazy(() => import('../pages/v2/V2SettingsPage'));
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
 const SettingsLayout = React.lazy(() => import('../components/dashboard/SettingsLayout'));
-const DashboardPage = React.lazy(() => import('../pages/dashboard/DashboardPage'));
+const HomePage = React.lazy(() => import('../pages/dashboard/HomePage'));
 const AnalyticsPage = React.lazy(() => import('../pages/dashboard/AnalyticsPage'));
 const DeepAnalyticsPage = React.lazy(() => import('../pages/dashboard/DeepAnalyticsPage'));
 const AgentsPage = React.lazy(() => import('../pages/dashboard/AgentsPage'));
@@ -82,9 +82,13 @@ const LeadsPage = React.lazy(() => import('../pages/dashboard/LeadsPage'));
 const MissedCallsPage = React.lazy(() => import('../pages/dashboard/MissedCallsPage'));
 const MessagesPage = React.lazy(() => import('../pages/dashboard/MessagesPage'));
 const LocationDashboardPage = React.lazy(() => import('../pages/dashboard/LocationDashboardPage'));
-const GettingStartedPage = React.lazy(() => import('../pages/dashboard/GettingStartedPage'));
 const FeedbackPage = React.lazy(() => import('../pages/dashboard/FeedbackPage'));
 const BoltcallAgentPage = React.lazy(() => import('../pages/dashboard/BoltcallAgentPage'));
+const AgentTestsPage = React.lazy(() => import('../pages/dashboard/AgentTestsPage'));
+const ConversationsPage = React.lazy(() => import('../pages/dashboard/ConversationsPage'));
+const YourAiPage = React.lazy(() => import('../pages/dashboard/YourAiPage'));
+const YourAiOverview = React.lazy(() => import('../pages/dashboard/YourAiOverview'));
+const GrowthPage = React.lazy(() => import('../pages/dashboard/GrowthPage'));
 // ── Lazy loads — Agency OS (founder-gated via FounderGate) ───────────────
 const QueuePage = React.lazy(() => import('../pages/dashboard/agency/QueuePage'));
 const HealthPage = React.lazy(() => import('../pages/dashboard/agency/HealthPage'));
@@ -408,14 +412,6 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Navigate to="/dashboard/getting-started" replace />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/dashboard/*"
           element={
             <ProtectedRoute>
@@ -425,8 +421,8 @@ const NavigationWrapper: React.FC = () => {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
-          <Route path="getting-started" element={<GettingStartedPage />} />
+          <Route index element={<HomePage />} />
+          <Route path="getting-started" element={<Navigate to="/dashboard" replace />} />
           <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="feedback" element={<FeedbackPage />} />
           <Route path="locations/:locationId" element={<LocationDashboardPage />} />
@@ -457,31 +453,63 @@ const NavigationWrapper: React.FC = () => {
 
           {/* Pro-gated merged pages */}
           <Route path="leads" element={<PlanGate requiredPlan="pro"><LeadsPage /></PlanGate>} />
-          <Route path="calls" element={<PlanGate requiredPlan="starter"><CallHistoryPage /></PlanGate>} />
-          <Route path="messages" element={<PlanGate requiredPlan="pro"><MessagesPage /></PlanGate>} />
+
+          {/* Conversations hub — tabs for Calls / Messages / Missed */}
+          <Route path="conversations" element={<ConversationsPage />}>
+            <Route index element={<Navigate to="calls" replace />} />
+            <Route path="calls" element={<PlanGate requiredPlan="starter"><CallHistoryPage /></PlanGate>} />
+            <Route path="messages" element={<PlanGate requiredPlan="pro"><MessagesPage /></PlanGate>} />
+            <Route path="missed" element={<PlanGate requiredPlan="pro"><MissedCallsPage /></PlanGate>} />
+          </Route>
+
+          {/* Your AI hub — Overview / Personality / Knowledge / Voice / Phone / Test */}
+          <Route path="your-ai" element={<YourAiPage />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<YourAiOverview />} />
+            <Route path="personality" element={<PlanGate requiredPlan="starter"><AgentsPage /></PlanGate>} />
+            <Route path="knowledge" element={<PlanGate requiredPlan="starter"><KnowledgeBasePage /></PlanGate>} />
+            <Route path="voice" element={<PlanGate requiredPlan="starter"><VoiceLibraryPage /></PlanGate>} />
+            <Route path="phone" element={<PlanGate requiredPlan="starter"><PhoneNumbersPage /></PlanGate>} />
+            <Route path="test" element={<PlanGate requiredPlan="starter"><AgentTestsPage /></PlanGate>} />
+          </Route>
+
+          {/* Growth hub — Analytics / Reputation / Reminders / Follow-ups */}
+          <Route path="growth" element={<GrowthPage />}>
+            <Route index element={<Navigate to="analytics" replace />} />
+            <Route path="analytics" element={<PlanGate requiredPlan="pro"><AnalyticsPage /></PlanGate>} />
+            <Route path="reputation" element={<PlanGate requiredPlan="pro"><ReputationPage /></PlanGate>} />
+            <Route path="reminders" element={<PlanGate requiredPlan="pro"><RemindersPage /></PlanGate>} />
+            <Route path="follow-ups" element={<PlanGate requiredPlan="pro"><MessagesPage /></PlanGate>} />
+          </Route>
+
+          {/* Redirects from old top-level paths → hub tabs (bookmarks, external links) */}
+          <Route path="calls" element={<Navigate to="/dashboard/conversations/calls" replace />} />
+          <Route path="messages" element={<Navigate to="/dashboard/conversations/messages" replace />} />
+          <Route path="missed-calls" element={<Navigate to="/dashboard/conversations/missed" replace />} />
+          <Route path="agents" element={<Navigate to="/dashboard/your-ai/personality" replace />} />
+          <Route path="agent-tests" element={<Navigate to="/dashboard/your-ai/test" replace />} />
+          <Route path="voice-library" element={<Navigate to="/dashboard/your-ai/voice" replace />} />
+          <Route path="knowledge-base" element={<Navigate to="/dashboard/your-ai/knowledge" replace />} />
+          <Route path="phone" element={<Navigate to="/dashboard/your-ai/phone" replace />} />
+          <Route path="phone-numbers" element={<Navigate to="/dashboard/your-ai/phone" replace />} />
+          <Route path="analytics" element={<Navigate to="/dashboard/growth/analytics" replace />} />
+          <Route path="reputation" element={<Navigate to="/dashboard/growth/reputation" replace />} />
+          <Route path="reminders" element={<Navigate to="/dashboard/growth/reminders" replace />} />
+          <Route path="follow-ups" element={<Navigate to="/dashboard/growth/follow-ups" replace />} />
 
           {/* Starter-gated pages */}
           <Route path="qa/rubrics"   element={<PlanGate requiredPlan="starter"><QARubricsPage /></PlanGate>} />
           <Route path="qa/review"    element={<PlanGate requiredPlan="starter"><QAReviewPage /></PlanGate>} />
           <Route path="qa/analytics" element={<PlanGate requiredPlan="starter"><QAAnalyticsPage /></PlanGate>} />
           <Route path="ai-receptionist" element={<PlanGate requiredPlan="starter"><ReceptionistPage /></PlanGate>} />
-          <Route path="agents" element={<PlanGate requiredPlan="starter"><AgentsPage /></PlanGate>} />
           <Route path="agents/:agentId" element={<PlanGate requiredPlan="starter"><AgentDetailPage /></PlanGate>} />
-          <Route path="agent-tests" element={<Navigate to="/dashboard/agents" replace />} />
-          <Route path="voice-library" element={<PlanGate requiredPlan="starter"><VoiceLibraryPage /></PlanGate>} />
-          <Route path="knowledge-base" element={<PlanGate requiredPlan="starter"><KnowledgeBasePage /></PlanGate>} />
-          <Route path="phone" element={<PlanGate requiredPlan="starter"><PhoneNumbersPage /></PlanGate>} />
-          <Route path="phone-numbers" element={<Navigate to="/dashboard/phone" replace />} />
           <Route path="chat-widget" element={<PlanGate requiredPlan="starter"><WebsiteBubblePage /></PlanGate>} />
 
           {/* Free pages */}
           <Route path="integrations" element={<IntegrationsPage />} />
 
           {/* Pro-gated pages */}
-          <Route path="analytics" element={<PlanGate requiredPlan="pro"><AnalyticsPage /></PlanGate>} />
           <Route path="deep-analytics" element={<PlanGate requiredPlan="pro"><DeepAnalyticsPage /></PlanGate>} />
-          <Route path="reminders" element={<PlanGate requiredPlan="pro"><RemindersPage /></PlanGate>} />
-          <Route path="reputation" element={<PlanGate requiredPlan="pro"><ReputationPage /></PlanGate>} />
           <Route path="instant-lead-response" element={<PlanGate requiredPlan="pro"><InstantLeadReplyPage /></PlanGate>} />
           <Route path="website-instant-response" element={<PlanGate requiredPlan="pro"><WebsiteInstantResponsePage /></PlanGate>} />
           <Route path="ad-instant-response" element={<PlanGate requiredPlan="pro"><AdInstantResponsePage /></PlanGate>} />
@@ -490,15 +518,13 @@ const NavigationWrapper: React.FC = () => {
           <Route path="whatsapp" element={<PlanGate requiredPlan="pro"><WhatsappPage /></PlanGate>} />
           <Route path="email" element={<PlanGate requiredPlan="pro"><EmailPage /></PlanGate>} />
 
-          {/* Redirects from old paths to new merged pages */}
+          {/* Legacy path redirects → hub tabs */}
           <Route path="speed-to-lead" element={<Navigate to="/dashboard/leads" replace />} />
-          <Route path="missed-calls" element={<PlanGate requiredPlan="pro"><MissedCallsPage /></PlanGate>} />
           <Route path="lead-reactivation" element={<Navigate to="/dashboard/leads" replace />} />
-          <Route path="call-history" element={<Navigate to="/dashboard/calls" replace />} />
-          <Route path="assistant" element={<Navigate to="/dashboard/calls" replace />} />
-          <Route path="chat-history" element={<Navigate to="/dashboard/messages" replace />} />
-          <Route path="sms-booking" element={<Navigate to="/dashboard/messages" replace />} />
-          <Route path="follow-ups" element={<Navigate to="/dashboard/messages" replace />} />
+          <Route path="call-history" element={<Navigate to="/dashboard/conversations/calls" replace />} />
+          <Route path="assistant" element={<Navigate to="/dashboard/conversations/calls" replace />} />
+          <Route path="chat-history" element={<Navigate to="/dashboard/conversations/messages" replace />} />
+          <Route path="sms-booking" element={<Navigate to="/dashboard/conversations/messages" replace />} />
           <Route path="website-bubble" element={<Navigate to="/dashboard/chat-widget" replace />} />
           <Route path="instant-lead-reply" element={<Navigate to="/dashboard/leads" replace />} />
           <Route path="settings" element={<SettingsLayout />}>

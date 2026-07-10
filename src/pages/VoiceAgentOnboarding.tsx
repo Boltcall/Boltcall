@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, Bot, Building2, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Zap, Shield, MessageSquare } from 'lucide-react';
+import { Phone, Bot, Building2, ArrowRight, ArrowLeft, Loader2, CheckCircle2, Zap, Shield, MessageSquare, Sparkles } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { FUNCTIONS_BASE } from '../lib/api';
 import { authedFetch } from '../lib/authedFetch';
 
@@ -22,6 +23,7 @@ function useNoindex() {
 }
 
 type FormData = {
+  agentName: string;
   name: string;
   industry: string;
   location: string;
@@ -36,7 +38,30 @@ type FormData = {
   services: { name: string; description: string; price: string }[];
   faq: { question: string; answer: string }[];
   additional_info: string;
+  houseRule: string;
 };
+
+// Foot-in-the-door (P10): naming the agent is the tiniest possible first ask,
+// and the name personalizes every later step (P8 endowment).
+const SUGGESTED_NAMES = ['Alex', 'Sam', 'Riley'];
+
+// Ovsiankina (P20): persist progress so an interrupted setup resumes at the
+// exact step with answers intact. localStorage is per-browser — good enough.
+const RESUME_KEY = 'voiceAgentOnboarding.v1';
+
+type SavedState = { step: number; form: FormData; startedAt: number };
+
+function loadSavedState(): SavedState | null {
+  try {
+    const raw = localStorage.getItem(RESUME_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SavedState;
+    if (typeof parsed.step !== 'number' || !parsed.form) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
 
 const INDUSTRIES = [
   'Dental', 'Healthcare', 'Medical', 'Legal', 'Real Estate',
@@ -59,21 +84,44 @@ const TIMEZONES = [
 ];
 
 const initialForm: FormData = {
-  name: '', industry: '', location: '', website: '', phone: '',
+  agentName: '', name: '', industry: '', location: '', website: '', phone: '',
   email: '', hours: '9am-5pm Mon-Fri', timezone: 'America/New_York',
   tone: 'professional', transfer_number: '', booking_url: '',
   services: [{ name: '', description: '', price: '' }],
   faq: [{ question: '', answer: '' }],
   additional_info: '',
+  houseRule: '',
 };
 
 export default function VoiceAgentOnboarding() {
   useNoindex();
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormData>(initialForm);
+  const saved = React.useMemo(loadSavedState, []);
+  const [step, setStep] = useState(saved?.step ?? 0);
+  const [form, setForm] = useState<FormData>(saved?.form ? { ...initialForm, ...saved.form } : initialForm);
+  const [startedAt] = useState<number>(saved?.startedAt ?? Date.now());
   const [status, setStatus] = useState<'idle' | 'submitting' | 'provisioning' | 'done' | 'error'>('idle');
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
+
+  // Agent name for copy — fallback keeps strings readable before naming
+  const agentName = form.agentName.trim() || 'your agent';
+
+  // Persist progress on every change (P20); cleared on successful launch
+  useEffect(() => {
+    if (status === 'done') {
+      localStorage.removeItem(RESUME_KEY);
+      return;
+    }
+    try {
+      localStorage.setItem(RESUME_KEY, JSON.stringify({ step, form, startedAt } satisfies SavedState));
+    } catch { /* storage full/blocked — resume is best-effort */ }
+  }, [step, form, startedAt, status]);
+
+  // Peak-end (P9): celebrate the launch
+  useEffect(() => {
+    if (status !== 'done') return;
+    confetti({ particleCount: 140, spread: 75, origin: { y: 0.6 } });
+  }, [status]);
 
   const update = (field: keyof FormData, value: any) =>
     setForm(prev => ({ ...prev, [field]: value }));
@@ -103,9 +151,8 @@ export default function VoiceAgentOnboarding() {
     setForm(prev => ({ ...prev, faq: prev.faq.filter((_, idx) => idx !== i) }));
 
   const canProceed = () => {
-    if (step === 0) return form.name && form.industry;
-    if (step === 1) return true;
-    if (step === 2) return true;
+    if (step === 0) return form.agentName.trim().length > 0;
+    if (step === 1) return form.name && form.industry;
     return true;
   };
 
@@ -134,6 +181,7 @@ export default function VoiceAgentOnboarding() {
         payload.faq.length > 0
           ? `FAQ:\n${payload.faq.map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n')}`
           : '',
+        payload.houseRule.trim() ? `House Rule (must always be followed): ${payload.houseRule.trim()}` : '',
         payload.additional_info ? `Additional Info: ${payload.additional_info}` : '',
       ].filter(Boolean).join('\n\n');
 
@@ -145,6 +193,7 @@ export default function VoiceAgentOnboarding() {
         body: JSON.stringify({
           action: 'create_full',
           business_name: payload.name,
+          agent_name: payload.agentName.trim() || undefined,
           website_url: payload.website || undefined,
           language: 'en-US',
           knowledge_base_texts: [{ title: `${payload.name} Knowledge Base`, text: kbText }],
@@ -205,10 +254,11 @@ export default function VoiceAgentOnboarding() {
   };
 
   const steps = [
-    { title: 'Business Info', icon: Building2 },
-    { title: 'Services & FAQ', icon: MessageSquare },
+    { title: 'Name your agent', icon: Sparkles },
+    { title: 'Your business', icon: Building2 },
+    { title: `Teach ${form.agentName.trim() || 'it'}`, icon: MessageSquare },
     { title: 'Preferences', icon: Zap },
-    { title: 'Review & Launch', icon: Shield },
+    { title: 'Launch', icon: Shield },
   ];
 
   return (
@@ -224,6 +274,14 @@ export default function VoiceAgentOnboarding() {
       {/* Progress */}
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-12">
+          {/* Endowed progress (P6): account step pre-checked so the meter never starts empty */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-green-500/20 text-green-400">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <span className="text-xs font-medium text-white">Account</span>
+          </div>
+          <div className="flex-1 h-px mx-4 mt-[-20px] bg-green-500/40" />
           {steps.map((s, i) => (
             <React.Fragment key={i}>
               <div className="flex flex-col items-center gap-2">
@@ -253,11 +311,44 @@ export default function VoiceAgentOnboarding() {
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Step 0: Business Info */}
+            {/* Step 0: Name your agent (P10 tiniest first ask, P8 endowment) */}
             {step === 0 && (
+              <div className="space-y-6 max-w-xl mx-auto text-center">
+                <h2 className="text-2xl font-bold">First, give your AI a name</h2>
+                <p className="text-gray-400">This is who answers your calls. You can change it anytime.</p>
+
+                <input
+                  type="text"
+                  value={form.agentName}
+                  onChange={e => update('agentName', e.target.value)}
+                  autoFocus
+                  className="w-full px-4 py-4 text-center text-xl bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                  placeholder="e.g., Alex"
+                />
+
+                <div className="flex items-center justify-center gap-3">
+                  {SUGGESTED_NAMES.map(n => (
+                    <button
+                      key={n}
+                      onClick={() => update('agentName', n)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
+                        form.agentName === n
+                          ? 'border-blue-500 bg-blue-500/10 text-white'
+                          : 'border-white/10 bg-white/5 text-gray-300 hover:border-white/25'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 1: Business Info */}
+            {step === 1 && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold">Tell us about your business</h2>
-                <p className="text-gray-400">We'll create AI voice agents tailored to your business.</p>
+                <p className="text-gray-400">{form.agentName.trim() ? `${form.agentName.trim()} will represent your business on every call.` : "We'll tailor your AI to your business."}</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -327,11 +418,11 @@ export default function VoiceAgentOnboarding() {
               </div>
             )}
 
-            {/* Step 1: Services & FAQ */}
-            {step === 1 && (
+            {/* Step 2: Teach it your business (P7 IKEA — the labor) */}
+            {step === 2 && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold">Services & FAQ</h2>
-                <p className="text-gray-400">Your AI agent will use this to answer caller questions.</p>
+                <h2 className="text-2xl font-bold">What should {agentName} know?</h2>
+                <p className="text-gray-400">{form.agentName.trim() ? `${form.agentName.trim()} is learning your business — the more you teach, the better the answers.` : 'Your AI will use this to answer caller questions.'}</p>
 
                 {/* Services */}
                 <div>
@@ -396,11 +487,11 @@ export default function VoiceAgentOnboarding() {
               </div>
             )}
 
-            {/* Step 2: Preferences */}
-            {step === 2 && (
+            {/* Step 3: Preferences + house rule */}
+            {step === 3 && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold">Agent Preferences</h2>
-                <p className="text-gray-400">Configure how your AI agents behave.</p>
+                <h2 className="text-2xl font-bold">How should {agentName} behave?</h2>
+                <p className="text-gray-400">Set the hours, tone, and rules {agentName} follows.</p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -467,6 +558,19 @@ export default function VoiceAgentOnboarding() {
                   </div>
                 </div>
 
+                {/* House rule (P11 commitment): user-authored rule the UI can reference later */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Write one house rule for {agentName}</label>
+                  <textarea
+                    value={form.houseRule}
+                    onChange={e => update('houseRule', e.target.value)}
+                    rows={2}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 outline-none resize-none"
+                    placeholder={'e.g., "Never quote prices over $500 — offer to transfer instead"'}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">{agentName ? `${form.agentName.trim() || 'Your agent'} will always follow this.` : ''}</p>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-1">Additional Info</label>
                   <textarea
@@ -480,12 +584,12 @@ export default function VoiceAgentOnboarding() {
               </div>
             )}
 
-            {/* Step 3: Review & Launch */}
-            {step === 3 && (
+            {/* Step 4: Review & Launch */}
+            {step === 4 && (
               <div className="space-y-6">
                 {status === 'idle' && (
                   <>
-                    <h2 className="text-2xl font-bold">Review & Launch</h2>
+                    <h2 className="text-2xl font-bold">{form.agentName.trim() ? `${form.agentName.trim()} is ready to go live` : 'Review & Launch'}</h2>
                     <p className="text-gray-400">We'll create 2 AI voice agents and assign a phone number.</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -518,12 +622,14 @@ export default function VoiceAgentOnboarding() {
                     <div className="p-5 bg-white/5 rounded-xl border border-white/10">
                       <h3 className="font-semibold mb-3">Your Info</h3>
                       <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="text-gray-400">Agent name:</div><div>{form.agentName.trim() || '—'}</div>
                         <div className="text-gray-400">Business:</div><div>{form.name}</div>
                         <div className="text-gray-400">Industry:</div><div>{form.industry}</div>
                         <div className="text-gray-400">Location:</div><div>{form.location || '—'}</div>
                         <div className="text-gray-400">Tone:</div><div className="capitalize">{form.tone}</div>
                         <div className="text-gray-400">Services:</div><div>{form.services.filter(s => s.name).length} listed</div>
                         <div className="text-gray-400">FAQs:</div><div>{form.faq.filter(f => f.question).length} listed</div>
+                        <div className="text-gray-400">House rule:</div><div>{form.houseRule.trim() ? '1 set' : '—'}</div>
                       </div>
                     </div>
                   </>
@@ -540,7 +646,7 @@ export default function VoiceAgentOnboarding() {
                 {status === 'provisioning' && (
                   <div className="text-center py-16">
                     <Loader2 className="w-12 h-12 text-blue-400 animate-spin mx-auto mb-4" />
-                    <h2 className="text-xl font-bold">Creating your AI voice agents...</h2>
+                    <h2 className="text-xl font-bold">Bringing {agentName} to life...</h2>
                     <p className="text-gray-400 mt-2">
                       Generating prompts, deploying agents, and provisioning your phone number.
                       <br />This usually takes 30-60 seconds.
@@ -558,32 +664,26 @@ export default function VoiceAgentOnboarding() {
                 {status === 'done' && result && (
                   <div className="text-center py-12">
                     <CheckCircle2 className="w-16 h-16 text-green-400 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold mb-2">Your AI Agents Are Live!</h2>
-                    <p className="text-gray-400 mb-8">Both agents are deployed and ready to take calls.</p>
+                    <h2 className="text-2xl font-bold mb-2">
+                      You built {form.agentName.trim() || 'your agent'} in {Math.max(1, Math.round((Date.now() - startedAt) / 60000))} minute{Math.max(1, Math.round((Date.now() - startedAt) / 60000)) !== 1 ? 's' : ''}.
+                    </h2>
+                    <p className="text-gray-400 mb-8">
+                      {form.agentName.trim() || 'Your agent'} is now answering for {form.name || 'your business'}.
+                    </p>
 
                     <div className="max-w-md mx-auto space-y-4">
+                      {/* The peak (P9): make the test call the first thing they do */}
                       <div className="p-5 bg-green-500/10 rounded-xl border border-green-500/20">
-                        <div className="text-green-400 font-semibold mb-2">Your AI Phone Number</div>
+                        <div className="text-green-400 font-semibold mb-2">Call {form.agentName.trim() || 'your agent'} right now</div>
                         <div className="text-3xl font-bold">{result.phone_number}</div>
-                        <p className="text-sm text-gray-400 mt-2">Call this number to test your inbound agent</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                          <div className="text-gray-400">Inbound Agent</div>
-                          <div className="font-mono text-xs mt-1 text-blue-400">{result.inbound_agent?.agent_id}</div>
-                        </div>
-                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                          <div className="text-gray-400">Outbound Agent</div>
-                          <div className="font-mono text-xs mt-1 text-blue-400">{result.outbound_agent?.agent_id}</div>
-                        </div>
+                        <p className="text-sm text-gray-400 mt-2">Dial from your phone and hear {form.agentName.trim() || 'your agent'} answer for {form.name || 'your business'}</p>
                       </div>
 
                       <a
                         href="/dashboard"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-medium transition-colors"
                       >
-                        Go to Dashboard <ArrowRight className="w-4 h-4" />
+                        Go to your dashboard <ArrowRight className="w-4 h-4" />
                       </a>
                     </div>
                   </div>
@@ -622,7 +722,7 @@ export default function VoiceAgentOnboarding() {
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
 
-            {step < 3 ? (
+            {step < 4 ? (
               <button
                 onClick={() => setStep(s => s + 1)}
                 disabled={!canProceed()}

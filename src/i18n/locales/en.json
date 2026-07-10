@@ -1,5 +1,9 @@
 {
   "nav.overview": "Overview",
+  "nav.home": "Home",
+  "nav.conversations": "Conversations",
+  "nav.yourAi": "Your AI",
+  "nav.growth": "Growth",
   "nav.leads": "Leads",
   "nav.calls": "Calls",
   "nav.messages": "Messages",

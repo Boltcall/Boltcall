@@ -6,8 +6,6 @@ import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Bot,
-  BookOpen,
-
   Settings,
   Menu,
   X,
@@ -19,19 +17,11 @@ import {
   Bell,
   UserPlus,
   Calendar,
-  Phone,
   FileText,
   Ticket,
   Crown,
-  Server,
   Globe,
-  Plug,
   Zap,
-  PhoneMissed,
-  Reply,
-  Mail,
-  ClipboardList,
-  ListChecks,
   TrendingUp,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -49,12 +39,6 @@ import FeedbackSlider from '../ui/feedback-slider';
 import { useDashboardStore } from '../../stores/dashboardStore';
 import { useAgentMilestoneAlerts } from '../../hooks/useAgentMilestoneAlerts';
 
-const WhatsAppIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-  </svg>
-);
-
 const DashboardLayout: React.FC = () => {
   const { t, i18n } = useTranslation('common');
   const dir = useDirection();
@@ -62,9 +46,6 @@ const DashboardLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
-  });
-  const [showGettingStartedBox, setShowGettingStartedBox] = useState(() => {
-    return localStorage.getItem('gettingStartedBoxDismissed') !== 'true';
   });
   // sidebarHovered removed — collapsed sidebar shows tooltips instead of expanding
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -74,7 +55,6 @@ const DashboardLayout: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [scrollbarVisible, setScrollbarVisible] = useState(false);
   const [showLanguageExpanded, setShowLanguageExpanded] = useState(false);
-  const [pendingQACount, setPendingQACount] = useState(0);
 
   // Get current user from auth context
   const { user } = useAuth();
@@ -99,17 +79,6 @@ const DashboardLayout: React.FC = () => {
     reputation: false,
     instantLeadResponse: false,
   });
-
-  // Fetch pending QA review count for sidebar badge
-  useEffect(() => {
-    if (!user?.id) return;
-    supabase
-      .from('qa_reviews')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('status', 'pending')
-      .then(({ count }) => { if (count != null) setPendingQACount(count); });
-  }, [user?.id]);
 
   // Log dashboard access when component mounts
   useEffect(() => {
@@ -209,12 +178,21 @@ const DashboardLayout: React.FC = () => {
   const getPageName = () => {
     const path = location.pathname;
 
+    // Hub pages — one title per hub regardless of active tab
+    if (path.startsWith('/dashboard/conversations')) {
+      return t('nav.conversations');
+    }
+    if (path.startsWith('/dashboard/your-ai')) {
+      return t('nav.yourAi');
+    }
+    if (path.startsWith('/dashboard/growth')) {
+      return t('nav.growth');
+    }
+
     // Define page name mappings using i18n keys
     const pageNames: Record<string, string> = {
       '/dashboard': t('page.overview'),
       '/dashboard/leads': t('page.leads'),
-      '/dashboard/calls': t('page.calls'),
-      '/dashboard/messages': t('page.messages'),
       '/dashboard/sms': 'SMS Agent',
       '/dashboard/instant-lead-response': t('page.instantLeadResponse'),
       '/dashboard/website-instant-response': 'Website Instant Response',
@@ -348,36 +326,13 @@ const DashboardLayout: React.FC = () => {
     }
   }, []);
 
-  // MAIN
+  // MAIN — 5 hubs (P1 Hick's law: max 6 top-level items)
   const navItemsMain = [
-    { to: '/dashboard', label: t('nav.overview'), icon: <LayoutDashboard className="w-3.5 h-3.5 scale-[0.95]" /> },
+    { to: '/dashboard', label: t('nav.home'), icon: <LayoutDashboard className="w-3.5 h-3.5 scale-[0.95]" /> },
     { to: '/dashboard/leads', label: t('nav.leads'), icon: <Zap className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/calls', label: t('nav.calls'), icon: <Phone className="w-3.5 h-3.5 scale-[0.95]" /> },
-  ];
-
-  // SERVICES
-  const navItemsServices = [
-    { to: '/dashboard/ai-receptionist', label: t('nav.aiReceptionist'), icon: <Bot className="w-3.5 h-3.5 scale-[0.95]" />, needsSetup: !services.aiReceptionist },
-    { to: '/dashboard/calls', label: t('nav.missedCalls'), icon: <PhoneMissed className="w-3.5 h-3.5 scale-[0.95]" />, badge: t('beta') as string, needsSetup: !services.phoneSystem },
-    { to: '/dashboard/sms', label: 'SMS Agent', icon: <MessageSquare className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/whatsapp', label: 'WhatsApp', icon: <WhatsAppIcon className="w-3.5 h-3.5 scale-[0.95]" />, badge: 'Coming Soon', needsSetup: !services.whatsapp },
-    { to: '/dashboard/website-instant-response', label: 'Website Response', icon: <Globe className="w-3.5 h-3.5 scale-[0.95]" />, needsSetup: !services.instantLeadResponse },
-    { to: '/dashboard/ad-instant-response', label: 'Ad Response', icon: <Reply className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/email', label: 'AI Email', icon: <Mail className="w-3.5 h-3.5 scale-[0.95]" /> },
-  ];
-
-  // SETUP
-  const navItemsSetup = [
-    { to: '/dashboard/agents', label: t('nav.aiAgents'), icon: <Bot className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/knowledge-base', label: t('nav.knowledgeBase'), icon: <BookOpen className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/phone', label: t('nav.phoneNumbers'), icon: <Phone className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/integrations', label: t('nav.integrations'), icon: <Plug className="w-3.5 h-3.5 scale-[0.95]" /> },
-  ];
-
-  const navItemsQuality = [
-    { to: '/dashboard/qa/rubrics',   label: 'QA Rubrics',    icon: <ClipboardList className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/qa/review',    label: 'Review Queue',  icon: <ListChecks className="w-3.5 h-3.5 scale-[0.95]" />, badge: pendingQACount > 0 ? String(pendingQACount) : undefined },
-    { to: '/dashboard/qa/analytics', label: 'QA Analytics',  icon: <TrendingUp className="w-3.5 h-3.5 scale-[0.95]" /> },
+    { to: '/dashboard/conversations', label: t('nav.conversations'), icon: <MessageSquare className="w-3.5 h-3.5 scale-[0.95]" /> },
+    { to: '/dashboard/your-ai', label: t('nav.yourAi'), icon: <Bot className="w-3.5 h-3.5 scale-[0.95]" /> },
+    { to: '/dashboard/growth', label: t('nav.growth'), icon: <TrendingUp className="w-3.5 h-3.5 scale-[0.95]" /> },
   ];
 
   const navItemsFooter = [
@@ -522,39 +477,7 @@ const DashboardLayout: React.FC = () => {
             </Link>
           </div>
 
-            {/* Getting Started box — top, below logo */}
-            {showGettingStartedBox && !sidebarCollapsed && (
-              <div className="mx-2 mb-2">
-                <Link
-                  to="/dashboard/getting-started"
-                  onClick={closeSidebar}
-                  className="block rounded-lg border border-gray-200 dark:border-[#1e1e24] bg-gray-50 dark:bg-[#0e0e11] overflow-hidden hover:bg-gray-100 dark:hover:bg-[#1a1a1f] transition-colors"
-                >
-                  <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
-                    <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">Getting Started</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gray-400 font-medium">4 of 7</span>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          localStorage.setItem('gettingStartedBoxDismissed', 'true');
-                          setShowGettingStartedBox(false);
-                        }}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                        aria-label="Dismiss"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                  {/* Progress bar */}
-                  <div className="mx-3 mb-2.5 h-1.5 rounded-full bg-gray-200 dark:bg-[#1e1e24] overflow-hidden">
-                    <div className="h-full bg-green-500 rounded-full" style={{ width: '57%' }} />
-                  </div>
-                </Link>
-              </div>
-            )}
+            {/* Getting Started box removed — Home hub setup ring replaces it (Phase 2) */}
 
             {/* Ask Boltcall Agent button */}
             {!sidebarCollapsed && (
@@ -601,56 +524,16 @@ const DashboardLayout: React.FC = () => {
             {/* Navigation — scrollbar hidden by default, visible on sidebar hover */}
             <nav className="flex-1 flex flex-col overflow-y-auto sidebar-nav-scroll" aria-label="Main navigation">
               <div className="flex-1 px-2">
-                {/* Main */}
+                {/* Main — 5 hubs */}
                 <div className="space-y-1 mb-4">
                   {navItemsMain.map((item) => {
-                    const isActive = location.pathname === item.to;
+                    const isActive =
+                      item.to === '/dashboard'
+                        ? location.pathname === '/dashboard' || location.pathname === '/dashboard/getting-started'
+                        : location.pathname === item.to || location.pathname.startsWith(item.to + '/');
                     return renderNavItem(item, isActive);
                   })}
                 </div>
-
-                {/* Setup */}
-                <div className="mb-4" data-onboarding="section-setup">
-                  {!(sidebarCollapsed) && (
-                    <p className={`px-2 mb-1 text-[10px] font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{t('nav.section.setup')}</p>
-                  )}
-                  {sidebarCollapsed && <div className="border-t border-gray-200 dark:border-[#1e1e24] my-2 mx-2" />}
-                  <div className="space-y-1">
-                    {navItemsSetup.map((item) => {
-                      const isActive = location.pathname === item.to;
-                      return renderNavItem(item, isActive);
-                    })}
-                  </div>
-                </div>
-
-                {/* Services */}
-                <div className="mb-4" data-onboarding="section-services">
-                  {!(sidebarCollapsed) && (
-                    <p className={`px-2 mb-1 text-[10px] font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{t('nav.section.services')}</p>
-                  )}
-                  {sidebarCollapsed && <div className="border-t border-gray-200 dark:border-[#1e1e24] my-2 mx-2" />}
-                  <div className="space-y-1">
-                    {navItemsServices.map((item) => {
-                      const isActive = location.pathname === item.to;
-                      return renderNavItem(item, isActive);
-                    })}
-                  </div>
-                </div>
-
-                {/* Quality */}
-                <div className="mb-4">
-                  {!(sidebarCollapsed) && (
-                    <p className={`px-2 mb-1 text-[10px] font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>Quality</p>
-                  )}
-                  {sidebarCollapsed && <div className="border-t border-gray-200 dark:border-[#1e1e24] my-2 mx-2" />}
-                  <div className="space-y-1">
-                    {navItemsQuality.map((item) => {
-                      const isActive = location.pathname.startsWith(item.to);
-                      return renderNavItem(item, isActive);
-                    })}
-                  </div>
-                </div>
-
               </div>
 
               {/* Footer Group - Always at very bottom */}
@@ -751,58 +634,26 @@ const DashboardLayout: React.FC = () => {
                    <NotificationsWithActions alerts={allAlerts} />
                  </div>
 
-                 {/* Services Status Dropdown (hidden on mobile) */}
-                 <div className="relative group hidden md:block">
-                   <button
-                     className="p-2 rounded-lg transition-colors text-gray-600 hover:text-gray-900 hover:bg-gray-300/30 relative"
-                     aria-label="Services status"
-                   >
-                     <Server className="w-5 h-5" />
-                   </button>
-
-                   {/* Services Dropdown — minimal list */}
-                   <div className="absolute right-0 top-full mt-2 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                     <div className={`rounded-lg shadow-lg border py-2 ${isDarkMode ? 'bg-[#111114] border-[#1e1e24]' : 'bg-white border-gray-200'}`}>
-                       <div className="px-3 py-1.5 mb-1">
-                         <span className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>{t('topbar.services')}</span>
-                       </div>
-
-                       {([
-                         { key: 'aiReceptionist' as const, label: 'AI Receptionist', icon: <Bot className="w-4 h-4" />, enabled: services.aiReceptionist, configLink: '/dashboard/agents' },
-                         { key: 'phoneSystem' as const, label: 'Phone System', icon: <Phone className="w-4 h-4" />, enabled: services.phoneSystem, configLink: '/dashboard/phone' },
-                         { key: 'sms' as const, label: 'SMS Agent', icon: <MessageSquare className="w-4 h-4" />, enabled: services.sms, configLink: '/dashboard/messages' },
-                         { key: 'websiteBubble' as const, label: 'Website Widget', icon: <Globe className="w-4 h-4" />, enabled: services.websiteBubble, configLink: '/dashboard/chat-widget' },
-                         { key: 'whatsapp' as const, label: 'WhatsApp', icon: <WhatsAppIcon className="w-4 h-4" />, enabled: services.whatsapp, configLink: '/dashboard/whatsapp' },
-                       ] as const).map((svc) => (
-                         <div
-                           key={svc.key}
-                           className={`flex items-center justify-between px-3 py-2.5 ${isDarkMode ? 'hover:bg-[#1a1a1f]' : 'hover:bg-gray-50'}`}
-                         >
-                           <div className="flex items-center gap-2.5">
-                             <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{svc.icon}</span>
-                             <span className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{svc.label}</span>
-                           </div>
-
-                           {svc.enabled ? (
-                             <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                               <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                               Active
-                             </span>
-                           ) : svc.configLink ? (
-                             <Link
-                               to={svc.configLink}
-                               className="text-xs font-medium text-blue-600 hover:text-blue-700"
-                             >
-                               Configure
-                             </Link>
-                           ) : (
-                             <span className="text-xs text-gray-400">Coming soon</span>
-                           )}
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                 </div>
+                 {/* Services status pill — single indicator, opens Home hub for details */}
+                 {(() => {
+                   const trackedKeys = ['aiReceptionist', 'phoneSystem', 'sms', 'websiteBubble', 'whatsapp'] as const;
+                   const paused = trackedKeys.filter((k) => !services[k]).length;
+                   const allLive = paused === 0;
+                   return (
+                     <Link
+                       to="/dashboard"
+                       aria-label={allLive ? 'All systems live' : `${paused} features paused`}
+                       className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                         allLive
+                           ? 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/40 dark:text-green-300 dark:hover:bg-green-950/60'
+                           : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60'
+                       }`}
+                     >
+                       <span className={`w-1.5 h-1.5 rounded-full ${allLive ? 'bg-green-500' : 'bg-amber-500'}`} />
+                       {allLive ? 'All systems live' : `${paused} feature${paused > 1 ? 's' : ''} paused`}
+                     </Link>
+                   );
+                 })()}
 
                   {/* User Avatar */}
                   <div className="relative" data-user-menu>

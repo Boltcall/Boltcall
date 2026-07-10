@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { resolveCompletedStepIds, type CompletionSignals } from '../GettingStartedPage';
+import { resolveCompletedStepIds, type CompletionSignals } from '../useSetupProgress';
 
 describe('resolveCompletedStepIds', () => {
   it('marks each activation step complete when its real product signal exists', () => {
