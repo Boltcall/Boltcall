@@ -7,6 +7,8 @@ import WhileYouWereGone from '../../components/dashboard/WhileYouWereGone';
 import { useDashboardStore } from '../../stores/dashboardStore';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSetupProgress } from '../../hooks/useSetupProgress';
+import { useFeatureTriggers } from '../../hooks/useFeatureTriggers';
+import { resolveMilestones, unseenMilestones, markMilestoneSeen, type Milestone } from '../../utils/milestones';
 import { supabase } from '../../lib/supabase';
 
 // Zone A copy — time-aware greeting with a real-data outcome line (P15, P19).
@@ -73,7 +75,23 @@ const HomePage: React.FC = () => {
   const { liveStats, businessName, fetchLiveData, fetchError, loading: dashboardLoading } = useDashboardStore();
   const progress = useSetupProgress();
   const [agentName, setAgentName] = useState<string>('Your AI');
+  const suggestion = useFeatureTriggers(agentName);
+  const [milestone, setMilestone] = useState<Milestone | null>(null);
   const hasFetchedLiveData = useRef(false);
+
+  // One-time milestone celebration (P24/P9); booking count is real data
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from('conversation_wins')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('outcome_type', 'booked')
+      .then(({ count }) => {
+        const fresh = unseenMilestones(resolveMilestones({ bookingCount: count ?? 0, callCount: 0 }));
+        if (fresh.length > 0) setMilestone(fresh[0]);
+      });
+  }, [user?.id]);
 
   useEffect(() => {
     if (hasFetchedLiveData.current) return;
@@ -110,10 +128,13 @@ const HomePage: React.FC = () => {
 
   const daysLive = daysLiveSince(user?.createdAt, now);
 
-  // Zone D — exactly ONE primary action on the page (P3)
+  // Zone D — exactly ONE primary action on the page (P3):
+  // next setup step → feature-trigger suggestion → review calls
   const nextAction = !progress.isComplete && progress.nextStep
     ? { label: progress.nextStep.title, description: progress.nextStep.description, link: progress.nextStep.link }
-    : { label: "Review yesterday's calls", description: `See what ${agentName} handled and where leads came from`, link: '/dashboard/conversations/calls' };
+    : suggestion
+      ? { label: suggestion.title, description: suggestion.description, link: suggestion.link }
+      : { label: "Review yesterday's calls", description: `See what ${agentName} handled and where leads came from`, link: '/dashboard/conversations/calls' };
 
   return (
     <div className="space-y-4 px-1 md:px-0 max-w-5xl mx-auto">
@@ -191,6 +212,23 @@ const HomePage: React.FC = () => {
               Every day live is another day no lead waits.
             </p>
           </div>
+        </div>
+      )}
+
+      {/* One-time milestone celebration (P24) */}
+      {milestone && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 p-4 md:p-5 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">🎉 {milestone.title}</h3>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{milestone.detail}</p>
+          </div>
+          <button
+            onClick={() => { markMilestoneSeen(milestone.id); setMilestone(null); }}
+            className="flex-shrink-0 text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
         </div>
       )}
 
