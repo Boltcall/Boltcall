@@ -87,7 +87,7 @@ const BoltcallAgentPage = React.lazy(() => import('../pages/dashboard/BoltcallAg
 const AgentTestsPage = React.lazy(() => import('../pages/dashboard/AgentTestsPage'));
 const ConversationsPage = React.lazy(() => import('../pages/dashboard/ConversationsPage'));
 const YourAiPage = React.lazy(() => import('../pages/dashboard/YourAiPage'));
-const YourAiOverviewPlaceholder = React.lazy(() => import('../pages/dashboard/YourAiOverviewPlaceholder'));
+const YourAiOverview = React.lazy(() => import('../pages/dashboard/YourAiOverview'));
 const GrowthPage = React.lazy(() => import('../pages/dashboard/GrowthPage'));
 // ── Lazy loads — Agency OS (founder-gated via FounderGate) ───────────────
 const QueuePage = React.lazy(() => import('../pages/dashboard/agency/QueuePage'));
@@ -465,7 +465,7 @@ const NavigationWrapper: React.FC = () => {
           {/* Your AI hub — Overview / Personality / Knowledge / Voice / Phone / Test */}
           <Route path="your-ai" element={<YourAiPage />}>
             <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<YourAiOverviewPlaceholder />} />
+            <Route path="overview" element={<YourAiOverview />} />
             <Route path="personality" element={<PlanGate requiredPlan="starter"><AgentsPage /></PlanGate>} />
             <Route path="knowledge" element={<PlanGate requiredPlan="starter"><KnowledgeBasePage /></PlanGate>} />
             <Route path="voice" element={<PlanGate requiredPlan="starter"><VoiceLibraryPage /></PlanGate>} />
