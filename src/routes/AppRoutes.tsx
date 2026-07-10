@@ -56,7 +56,7 @@ const V2SettingsPage = React.lazy(() => import('../pages/v2/V2SettingsPage'));
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
 const SettingsLayout = React.lazy(() => import('../components/dashboard/SettingsLayout'));
-const DashboardPage = React.lazy(() => import('../pages/dashboard/DashboardPage'));
+const HomePage = React.lazy(() => import('../pages/dashboard/HomePage'));
 const AnalyticsPage = React.lazy(() => import('../pages/dashboard/AnalyticsPage'));
 const DeepAnalyticsPage = React.lazy(() => import('../pages/dashboard/DeepAnalyticsPage'));
 const AgentsPage = React.lazy(() => import('../pages/dashboard/AgentsPage'));
@@ -82,7 +82,6 @@ const LeadsPage = React.lazy(() => import('../pages/dashboard/LeadsPage'));
 const MissedCallsPage = React.lazy(() => import('../pages/dashboard/MissedCallsPage'));
 const MessagesPage = React.lazy(() => import('../pages/dashboard/MessagesPage'));
 const LocationDashboardPage = React.lazy(() => import('../pages/dashboard/LocationDashboardPage'));
-const GettingStartedPage = React.lazy(() => import('../pages/dashboard/GettingStartedPage'));
 const FeedbackPage = React.lazy(() => import('../pages/dashboard/FeedbackPage'));
 const BoltcallAgentPage = React.lazy(() => import('../pages/dashboard/BoltcallAgentPage'));
 const AgentTestsPage = React.lazy(() => import('../pages/dashboard/AgentTestsPage'));
@@ -413,14 +412,6 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Navigate to="/dashboard/getting-started" replace />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/dashboard/*"
           element={
             <ProtectedRoute>
@@ -430,8 +421,8 @@ const NavigationWrapper: React.FC = () => {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
-          <Route path="getting-started" element={<GettingStartedPage />} />
+          <Route index element={<HomePage />} />
+          <Route path="getting-started" element={<Navigate to="/dashboard" replace />} />
           <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="feedback" element={<FeedbackPage />} />
           <Route path="locations/:locationId" element={<LocationDashboardPage />} />

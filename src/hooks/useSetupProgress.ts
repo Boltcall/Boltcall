@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { ChevronRight, PhoneMissed, Zap, Moon, Calendar, Inbox, BookOpen, FlaskConical, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { PhoneMissed, Zap, Moon, Calendar, Inbox, BookOpen, FlaskConical, MessageSquare, UserCheck, MailCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
-import { useSetupStore } from '../../stores/setupStore';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import { useSetupStore } from '../stores/setupStore';
 
 export interface CompletionSignals {
   hasKnowledgeBase: boolean;
@@ -18,7 +17,7 @@ export interface CompletionSignals {
   hasSubmittedFeedback: boolean;
 }
 
-type Step = {
+export type SetupStep = {
   id: string;
   title: string;
   description: string;
@@ -30,12 +29,12 @@ type Step = {
 };
 
 // Personalized tasks driven by survey.painPoints answered during setup
-const PAIN_POINT_TASKS: Record<string, Omit<Step, 'completed'>> = {
+export const PAIN_POINT_TASKS: Record<string, Omit<SetupStep, 'completed'>> = {
   missed_calls: {
     id: 'missed_calls',
     title: 'Set up Missed-Call Recovery',
     description: 'Auto-text every missed call within seconds',
-    link: '/dashboard/missed-calls',
+    link: '/dashboard/conversations/missed',
     icon: PhoneMissed,
     timeEstimate: 'About 2 min',
     credits: 4,
@@ -88,10 +87,16 @@ const PAIN_POINT_TASKS: Record<string, Omit<Step, 'completed'>> = {
 };
 
 // Always-shown core tasks (regardless of survey answers)
-const CORE_TASKS: Omit<Step, 'completed'>[] = [
-  { id: 'knowledge_base', title: 'Setup Knowledge Base', description: 'Add your business information', link: '/dashboard/knowledge-base', icon: BookOpen, timeEstimate: 'About 1 min', credits: 5 },
-  { id: 'test_agent', title: 'Test Your Agent', description: 'Test and verify your setup', link: '/dashboard/agents?tab=tests', icon: FlaskConical, timeEstimate: 'About 1 min', credits: 3 },
+export const CORE_TASKS: Omit<SetupStep, 'completed'>[] = [
+  { id: 'knowledge_base', title: 'Setup Knowledge Base', description: 'Add your business information', link: '/dashboard/your-ai/knowledge', icon: BookOpen, timeEstimate: 'About 1 min', credits: 5 },
+  { id: 'test_agent', title: 'Test Your Agent', description: 'Test and verify your setup', link: '/dashboard/your-ai/test', icon: FlaskConical, timeEstimate: 'About 1 min', credits: 3 },
   { id: 'feedback', title: 'Give Feedback', description: 'Share your experience with us', link: '/dashboard/feedback', icon: MessageSquare, timeEstimate: 'About 1 min', credits: 2 },
+];
+
+// Endowed progress (P6): pre-completed steps so a fresh user never sees 0%
+export const ENDOWED_TASKS: SetupStep[] = [
+  { id: 'account_created', title: 'Account created', description: '', link: '/dashboard', icon: UserCheck, completed: true, credits: 0 },
+  { id: 'email_verified', title: 'Email verified', description: '', link: '/dashboard', icon: MailCheck, completed: true, credits: 0 },
 ];
 
 const INBOUND_AGENT_TYPES = new Set(['inbound', 'ai_receptionist', 'voice_agent']);
@@ -117,7 +122,7 @@ export function resolveCompletedStepIds(signals: CompletionSignals): Set<string>
   return completed;
 }
 
-async function fetchCompletionSignals(userId: string): Promise<CompletionSignals> {
+export async function fetchCompletionSignals(userId: string): Promise<CompletionSignals> {
   const [
     kbRes,
     leadRes,
@@ -199,13 +204,43 @@ async function fetchCompletionSignals(userId: string): Promise<CompletionSignals
   };
 }
 
-const GettingStartedPage: React.FC = () => {
+export interface SetupProgress {
+  steps: SetupStep[];       // endowed steps first, then personalized + core
+  completedCount: number;
+  totalCount: number;
+  pct: number;              // includes endowed steps — never 0 for a fresh user
+  nextStep: SetupStep | null;
+  isComplete: boolean;
+  loading: boolean;
+}
+
+export function useSetupProgress(): SetupProgress {
   const { user } = useAuth();
   const painPoints = useSetupStore((s) => s.survey.painPoints);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
 
-  const STEPS = useMemo<Step[]>(() => {
-    // Personalized tasks first, in the order the user picked them
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    fetchCompletionSignals(user.id)
+      .then((signals) => {
+        if (!cancelled) setCompletedIds(resolveCompletedStepIds(signals));
+      })
+      .catch((error) => {
+        console.error('Failed to detect setup progress:', error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  return useMemo(() => {
     const personalized = painPoints
       .map((p) => PAIN_POINT_TASKS[p])
       .filter(Boolean)
@@ -214,119 +249,24 @@ const GettingStartedPage: React.FC = () => {
     const core = CORE_TASKS.map((task) => ({ ...task, completed: completedIds.has(task.id) }));
 
     // Fall back to all features if survey was skipped
-    if (personalized.length === 0) {
-      const allFeatures = Object.values(PAIN_POINT_TASKS).map((task) => ({
-        ...task,
-        completed: completedIds.has(task.id),
-      }));
-      return [...allFeatures, ...core];
-    }
+    const dynamic = personalized.length === 0
+      ? [...Object.values(PAIN_POINT_TASKS).map((task) => ({ ...task, completed: completedIds.has(task.id) })), ...core]
+      : [...personalized, ...core];
 
-    return [...personalized, ...core];
-  }, [painPoints, completedIds]);
+    const steps = [...ENDOWED_TASKS, ...dynamic];
+    const completedCount = steps.filter((s) => s.completed).length;
+    const totalCount = steps.length;
+    const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    const nextStep = steps.find((s) => !s.completed) ?? null;
 
-  const completedCount = STEPS.filter(s => s.completed).length;
-  const progressPct = STEPS.length > 0 ? Math.round((completedCount / STEPS.length) * 100) : 0;
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    let cancelled = false;
-
-    const detect = async () => {
-      try {
-        const signals = await fetchCompletionSignals(user.id);
-        if (!cancelled) {
-          setCompletedIds(resolveCompletedStepIds(signals));
-        }
-      } catch (error) {
-        console.error('Failed to detect getting-started progress:', error);
-      }
+    return {
+      steps,
+      completedCount,
+      totalCount,
+      pct,
+      nextStep,
+      isComplete: nextStep === null,
+      loading,
     };
-
-    void detect();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
-
-  return (
-    <div className="max-w-2xl mx-auto space-y-4">
-      <div className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
-        <div className="bg-gray-50 dark:bg-[#0e0e11] border-b border-gray-200 dark:border-[#1e1e24] px-4 py-3 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Getting Started</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              {painPoints.length > 0
-                ? 'Personalized for what you told us matters most'
-                : 'Complete these steps to go live'}
-            </p>
-          </div>
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {completedCount} of {STEPS.length}
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="h-1.5 bg-gray-100 dark:bg-[#1e1e24]">
-          <div
-            className="h-full bg-green-500 transition-all duration-500"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-
-        <div className="p-4">
-          <div className="space-y-2">
-            {STEPS.map((step) => {
-              const Icon = step.icon;
-              return (
-                <Link
-                  key={step.id}
-                  to={step.link}
-                  className="flex items-center gap-3 bg-gray-50 dark:bg-[#0e0e11] rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-[#1a1a1f] transition-colors border border-gray-200 dark:border-[#1e1e24]"
-                >
-                  <div className="flex-shrink-0">
-                    {step.completed ? (
-                      <CheckCircle2 className="w-6 h-6 text-green-500" />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-[#2a2a32]" />
-                    )}
-                  </div>
-
-                  <div className="flex-shrink-0 w-8 h-8 rounded-md bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`font-medium text-sm ${step.completed ? 'text-gray-500 dark:text-gray-500 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
-                        {step.title}
-                      </span>
-                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                        {step.credits} credits
-                      </span>
-                    </div>
-                    {!step.completed && (
-                      <div className="text-xs text-gray-500 mt-0.5">{step.description}</div>
-                    )}
-                  </div>
-
-                  {!step.completed && step.timeEstimate && (
-                    <span className="flex-shrink-0 px-2 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                      {step.timeEstimate}
-                    </span>
-                  )}
-
-                  <ChevronRight className="flex-shrink-0 w-4 h-4 text-gray-400" />
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default GettingStartedPage;
+  }, [painPoints, completedIds, loading]);
+}

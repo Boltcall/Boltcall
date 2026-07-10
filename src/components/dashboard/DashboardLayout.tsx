@@ -47,9 +47,6 @@ const DashboardLayout: React.FC = () => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
   });
-  const [showGettingStartedBox, setShowGettingStartedBox] = useState(() => {
-    return localStorage.getItem('gettingStartedBoxDismissed') !== 'true';
-  });
   // sidebarHovered removed — collapsed sidebar shows tooltips instead of expanding
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showHelpSidebar, setShowHelpSidebar] = useState(false);
@@ -480,39 +477,7 @@ const DashboardLayout: React.FC = () => {
             </Link>
           </div>
 
-            {/* Getting Started box — top, below logo */}
-            {showGettingStartedBox && !sidebarCollapsed && (
-              <div className="mx-2 mb-2">
-                <Link
-                  to="/dashboard/getting-started"
-                  onClick={closeSidebar}
-                  className="block rounded-lg border border-gray-200 dark:border-[#1e1e24] bg-gray-50 dark:bg-[#0e0e11] overflow-hidden hover:bg-gray-100 dark:hover:bg-[#1a1a1f] transition-colors"
-                >
-                  <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
-                    <span className="text-xs font-semibold text-gray-800 dark:text-gray-100">Getting Started</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gray-400 font-medium">4 of 7</span>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          localStorage.setItem('gettingStartedBoxDismissed', 'true');
-                          setShowGettingStartedBox(false);
-                        }}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                        aria-label="Dismiss"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                  {/* Progress bar */}
-                  <div className="mx-3 mb-2.5 h-1.5 rounded-full bg-gray-200 dark:bg-[#1e1e24] overflow-hidden">
-                    <div className="h-full bg-green-500 rounded-full" style={{ width: '57%' }} />
-                  </div>
-                </Link>
-              </div>
-            )}
+            {/* Getting Started box removed — Home hub setup ring replaces it (Phase 2) */}
 
             {/* Ask Boltcall Agent button */}
             {!sidebarCollapsed && (
