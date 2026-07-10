@@ -75,8 +75,8 @@ export function MetricChart({
               border: '1px solid rgba(148, 163, 184, 0.2)',
               boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12)',
             }}
-            formatter={(value: number) => [valueFormatter(value), primary.name]}
-            labelFormatter={(label: string) => dateFormatter(label)}
+            formatter={(value: any) => [valueFormatter(value), primary.name]}
+            labelFormatter={(label: any) => dateFormatter(label)}
           />
           <Bar dataKey="value" radius={[10, 10, 4, 4]} fill={primary.color} fillOpacity={0.9} />
         </BarChart>
@@ -97,8 +97,8 @@ export function MetricChart({
               border: '1px solid rgba(148, 163, 184, 0.2)',
               boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12)',
             }}
-            formatter={(value: number) => [valueFormatter(value), primary.name]}
-            labelFormatter={(label: string) => dateFormatter(label)}
+            formatter={(value: any) => [valueFormatter(value), primary.name]}
+            labelFormatter={(label: any) => dateFormatter(label)}
           />
           <Area
             type="monotone"

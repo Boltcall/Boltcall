@@ -299,7 +299,7 @@ const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
         {RAIL_PHASES.map((phase, i) => {
           const phaseStart = phase.scenes.length ? SCENE_ORDER.indexOf(phase.scenes[0]) : -1;
           const phaseEnd = phase.scenes.length ? SCENE_ORDER.indexOf(phase.scenes[phase.scenes.length - 1]) : -1;
-          const done = i === 0 || sceneIdx > phaseEnd || scene === 'live';
+          const done = i === 0 || sceneIdx > phaseEnd;
           const active = !done && sceneIdx >= phaseStart && sceneIdx <= phaseEnd;
           return (
             <div key={phase.label} className="flex flex-1 flex-col items-center gap-1.5">

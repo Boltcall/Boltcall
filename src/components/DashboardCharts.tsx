@@ -57,7 +57,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ type }) => {
   if (type === 'leads') {
     return (
       <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={data}>
+        <AreaChart data={data as any}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis 
             dataKey="name" 
@@ -94,7 +94,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ type }) => {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
+      <LineChart data={data as any}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
         <XAxis 
           dataKey="name" 

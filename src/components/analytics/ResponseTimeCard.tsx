@@ -120,7 +120,7 @@ const ResponseTimeCard: React.FC<ResponseTimeCardProps> = ({ stats, loading }) =
               <YAxis stroke="#475569" tick={{ fontSize: 10 }} label={{ value: 'seconds', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }} />
               <Tooltip
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px' }}
-                formatter={(value: number) => [`${value}s`, 'Avg Response']}
+                formatter={(value: any) => [`${value}s`, 'Avg Response']}
               />
               <Bar dataKey="avg" fill="#2563EB" radius={[4, 4, 0, 0]} />
             </BarChart>
