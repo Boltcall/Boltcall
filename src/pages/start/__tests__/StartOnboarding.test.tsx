@@ -101,7 +101,7 @@ describe('StartOnboarding', () => {
     );
 
     await act(async () => { await Promise.resolve(); });
-    expect(screen.getByText(/Welcome, Noam/i)).toBeInTheDocument();
+    expect(screen.getByText(/Welcome to Boltcall Noam/i)).toBeInTheDocument();
 
     await act(async () => { vi.advanceTimersByTime(3000); });
     vi.useRealTimers();
@@ -145,8 +145,8 @@ describe('StartOnboarding', () => {
       </MemoryRouter>,
     );
 
-    // Skip the welcome auto-advance by waiting it out.
-    await screen.findByText(/Where does your business live online/i, {}, { timeout: 5000 });
+    // Skip welcome auto-advance (~2.8s).
+    await screen.findByText(/Where does your business live online/i, {}, { timeout: 8000 });
 
     await user.type(screen.getByLabelText('Business website'), 'smithdental.com');
     await user.click(screen.getByLabelText('Continue'));

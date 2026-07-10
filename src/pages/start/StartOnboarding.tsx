@@ -289,9 +289,12 @@ const LogoTile: React.FC<{
 
 /** Top progress rail — starts with "Account" already complete (endowed progress). */
 const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
+  // Hide during cinematic scenes so nothing competes with the Boltcall logo
+  // header (top-8) or the "welcome" title animation.
+  if (scene === 'welcome' || scene === 'live') return null;
   const sceneIdx = SCENE_ORDER.indexOf(scene);
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-6 pt-8">
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-6 pt-24 sm:pt-28">
       <div className="flex w-full max-w-xl items-center gap-2">
         {RAIL_PHASES.map((phase, i) => {
           const phaseStart = phase.scenes.length ? SCENE_ORDER.indexOf(phase.scenes[0]) : -1;
@@ -327,44 +330,64 @@ const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
 
 // ─── Scenes ───────────────────────────────────────────────────────────────
 
-const WelcomeScene: React.FC<{ firstName: string | null; avatarUrl: string | null }> = ({ firstName, avatarUrl }) => (
-  <SceneShell id="welcome">
-    <div className="flex flex-col items-center text-center">
-      {avatarUrl && (
-        <Reveal>
-          <div className="relative mb-8">
-            <motion.div
-              className="absolute -inset-[6px] rounded-full"
-              style={{
-                background: 'conic-gradient(from 0deg, rgba(125,155,255,0.9), rgba(190,120,255,0.7), rgba(90,200,255,0.8), rgba(125,155,255,0.9))',
-              }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-            />
-            <img
-              src={avatarUrl}
-              alt=""
-              referrerPolicy="no-referrer"
-              className="relative h-20 w-20 rounded-full border-2 border-[#050507] object-cover"
-            />
-          </div>
-        </Reveal>
-      )}
-      <Reveal delay={0.15}>
-        <h1 className="text-4xl font-black uppercase tracking-[0.08em] text-white sm:text-6xl">
-          {firstName ? `Welcome, ${firstName}.` : 'Welcome.'}
+// Welcome scene mirrors /setup's cinematic entrance: gradient beam falls from
+// top, WELCOME TO BOLTCALL {NAME} fades in with blur/letter-spacing, holds,
+// then fades out as the next scene takes over. Avatar sits above the title.
+const WelcomeScene: React.FC<{ firstName: string | null; avatarUrl: string | null }> = ({ firstName, avatarUrl }) => {
+  const welcomeText = firstName ? `Welcome to Boltcall ${firstName}` : 'Welcome to Boltcall';
+  return (
+    <SceneShell id="welcome">
+      <style>{`
+        @keyframes startWelcomeIn {
+          0% {
+            opacity: 0;
+            transform: translateY(18px) scale(0.96);
+            filter: blur(14px);
+            letter-spacing: 0.18em;
+          }
+          42% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+            letter-spacing: 0.11em;
+          }
+          78% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.985);
+            filter: blur(8px);
+          }
+        }
+        @keyframes startWelcomeAvatarIn {
+          0% { opacity: 0; transform: translateY(-8px) scale(0.92); filter: blur(10px); }
+          60% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+          100% { opacity: 0; transform: translateY(-6px) scale(0.98); filter: blur(6px); }
+        }
+      `}</style>
+      <div className="flex flex-col items-center text-center">
+        {avatarUrl && (
+          <img
+            src={avatarUrl}
+            alt=""
+            referrerPolicy="no-referrer"
+            className="mb-7 h-16 w-16 rounded-full border-2 border-white/25 object-cover shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
+            style={{ animation: 'startWelcomeAvatarIn 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
+          />
+        )}
+        <h1
+          className="text-3xl font-black uppercase tracking-[0.1em] text-white sm:text-5xl lg:text-6xl"
+          style={{ animation: 'startWelcomeIn 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
+        >
+          {welcomeText}
         </h1>
-      </Reveal>
-      <Reveal delay={0.55}>
-        <p className="mt-5 max-w-md text-base leading-relaxed text-white/60">
-          Your account is ready — that part&rsquo;s done.
-          <br />
-          Now let&rsquo;s make sure your business never misses another lead.
-        </p>
-      </Reveal>
-    </div>
-  </SceneShell>
-);
+      </div>
+    </SceneShell>
+  );
+};
 
 const WebsiteScene: React.FC<{
   value: string;
@@ -1176,7 +1199,7 @@ const StartOnboarding: React.FC = () => {
 
   return (
     <div className="dark relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] py-24 text-white">
-      <SetupGradientBackground />
+      <SetupGradientBackground logoVariant="white" />
       <ProgressRail scene={draft.scene} />
       <AnimatePresence mode="wait">
         {draft.scene === 'welcome' && (

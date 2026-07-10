@@ -1,4 +1,12 @@
-export function SetupGradientBackground() {
+interface SetupGradientBackgroundProps {
+  /**
+   * 'blue' (default) — original PNG. 'white' — inverted for /start onboarding
+   * over the dark #050507 field (matches Contact.tsx pattern).
+   */
+  logoVariant?: 'blue' | 'white';
+}
+
+export function SetupGradientBackground({ logoVariant = 'blue' }: SetupGradientBackgroundProps = {}) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <style>{`
@@ -50,13 +58,17 @@ export function SetupGradientBackground() {
         <div className="absolute inset-0 scale-[1.24] rounded-[100%] bg-[#4922e5] blur-[21px]" />
         <div className="absolute inset-0 scale-[1.2] rounded-[100%] bg-black blur-[51px]" />
       </div>
-      <div className="absolute inset-x-0 top-6 flex justify-center px-6 sm:top-8">
+      <div className="absolute inset-x-0 top-8 flex justify-center px-6 sm:top-10">
         <picture>
           <source srcSet="/boltcall_full_logo.webp" type="image/webp" />
           <img
             src="/boltcall_full_logo.png"
             alt="Boltcall"
-            className="h-11 w-auto opacity-100 sm:h-12"
+            className={
+              logoVariant === 'white'
+                ? 'h-9 w-auto opacity-95 brightness-0 invert sm:h-10'
+                : 'h-11 w-auto opacity-100 sm:h-12'
+            }
             width={160}
             height={52}
             loading="eager"
