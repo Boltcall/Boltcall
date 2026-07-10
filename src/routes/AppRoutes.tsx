@@ -228,6 +228,7 @@ const AIAuditThankYouPage = React.lazy(() => import('../pages/AIAuditThankYouPag
 const SEOAuditPDF = React.lazy(() => import('../pages/SEOAuditPDF'));
 const SEOAuditPDFThankYou = React.lazy(() => import('../pages/SEOAuditPDFThankYou'));
 const BusinessAuditPage = React.lazy(() => import('../pages/BusinessAuditPage'));
+const AuditPage = React.lazy(() => import('../pages/AuditPage'));
 const RankOnGoogleOfferPage = React.lazy(() => import('../pages/RankOnGoogleOfferPage'));
 const NicheToolPage = React.lazy(() => import('../pages/NicheToolPage'));
 const FunnelOptimizer = React.lazy(() => import('../pages/FunnelOptimizer'));
@@ -758,6 +759,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/lead-response-scorecard/results" element={<LeadResponseScorecardResults />} />
         <Route path="/seo-audit" element={<SEOAnalyzer />} />
         <Route path="/business-audit" element={<BusinessAuditPage />} />
+        <Route path="/audit/:id" element={<AuditPage />} />
         <Route path="/ai-audit" element={<AIAuditPage />} />
         <Route path="/ai-audit/thank-you" element={<AIAuditThankYouPage />} />
         <Route path="/seo-aeo-audit" element={<SEOAuditPDF />} />
