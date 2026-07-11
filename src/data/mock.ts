@@ -69,14 +69,12 @@ const generateKpis = (): Kpis => {
     bookings: 89,
     speedToFirstReplyMedianSec: 28,
     showRatePct: 0.82,
-    estRevenue: 44500,
     deltas: {
       leads: 12.5,
       qualifiedPct: -2.3,
       bookings: 8.7,
       speedToFirstReplyMedianSec: -15.2,
       showRatePct: 3.1,
-      estRevenue: 15.8,
     },
   };
 };

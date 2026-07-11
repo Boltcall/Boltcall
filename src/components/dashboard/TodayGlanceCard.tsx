@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bot, TrendingUp, Users, PhoneMissed } from 'lucide-react';
+import { Bot, TrendingUp, Users, PhoneMissed, DollarSign } from 'lucide-react';
 import { useDashboardStore } from '../../stores/dashboardStore';
+import { useAuth } from '../../contexts/AuthContext';
+import { fetchBookedRevenueMTD, type BookedRevenueMTD } from '../../lib/dashboardApi';
 import OverviewMetricCard from './OverviewMetricCard';
 
 // No historical series exists for these headline numbers, so the card is left to
@@ -11,6 +13,15 @@ import OverviewMetricCard from './OverviewMetricCard';
 
 const TodayGlanceCard: React.FC = () => {
   const { liveStats, callbackStats, loading } = useDashboardStore();
+  const { user } = useAuth();
+  const [revenue, setRevenue] = useState<BookedRevenueMTD | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    fetchBookedRevenueMTD(user.id)
+      .then(setRevenue)
+      .catch((err) => console.error('Booked revenue fetch failed:', err));
+  }, [user?.id]);
 
   const handled = liveStats?.retell?.successful_calls_today ?? 0;
   const missed = liveStats?.retell?.missed_calls_today ?? 0;
@@ -32,9 +43,9 @@ const TodayGlanceCard: React.FC = () => {
       aria-live="polite"
       aria-label="Today's activity summary"
     >
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         {loading
-          ? [0, 1, 2, 3].map((index) => (
+          ? [0, 1, 2, 3, 4].map((index) => (
               <div
                 key={index}
                 className="h-[152px] animate-pulse rounded-[24px] border border-slate-200/80 bg-white/70"
@@ -82,6 +93,31 @@ const TodayGlanceCard: React.FC = () => {
                   accentColor={winRate >= 80 ? '#10b981' : winRate >= 50 ? '#f59e0b' : '#ef4444'}
                   caption="Share of handled calls versus misses"
                 />
+                {revenue && revenue.valuedBookings === 0 ? (
+                  <Link to="/dashboard/settings/services" className="block">
+                    <OverviewMetricCard
+                      label="Booked this month"
+                      period="Overview"
+                      value="$0"
+                      badge="Set up"
+                      badgeTone="neutral"
+                      icon={DollarSign}
+                      accentColor="#10b981"
+                      caption="Set your service prices to see booked revenue"
+                    />
+                  </Link>
+                ) : (
+                  <OverviewMetricCard
+                    label="Booked this month"
+                    period="Overview"
+                    value={`$${Math.round((revenue?.totalCents ?? 0) / 100).toLocaleString()}`}
+                    badge={revenue && revenue.bookings > 0 ? `${revenue.bookings} booking${revenue.bookings !== 1 ? 's' : ''}` : 'MTD'}
+                    badgeTone={revenue && revenue.totalCents > 0 ? 'positive' : 'neutral'}
+                    icon={DollarSign}
+                    accentColor="#10b981"
+                    caption="Estimated value of this month's bookings"
+                  />
+                )}
               </>
             )}
       </div>

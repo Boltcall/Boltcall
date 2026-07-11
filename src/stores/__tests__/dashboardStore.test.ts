@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 // Mock dependencies before importing the store
 vi.mock('../../data/mock', () => ({
   mockData: {
-    kpis: { leads: 0, qualifiedPct: 0, bookings: 0, speedToFirstReplyMedianSec: 0, showRatePct: 0, estRevenue: 0, deltas: {} },
+    kpis: { leads: 0, qualifiedPct: 0, bookings: 0, speedToFirstReplyMedianSec: 0, showRatePct: 0, deltas: {} },
     timeSeries: [],
     channelPerf: [],
     leads: [],

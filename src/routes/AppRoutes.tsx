@@ -126,6 +126,7 @@ const NotificationPage = React.lazy(() => import('../pages/dashboard/settings/No
 const RolesPage = React.lazy(() => import('../pages/dashboard/settings/RolesPage'));
 const ActivityLogPage = React.lazy(() => import('../pages/dashboard/settings/ActivityLogPage'));
 const ApiKeysPage = React.lazy(() => import('../pages/dashboard/settings/ApiKeysPage'));
+const ServicesSettingsPage = React.lazy(() => import('../pages/dashboard/settings/ServicesPage'));
 
 const SetupTransitionFallback: React.FC<{ message?: string }> = ({
   message = 'Loading setup...',
@@ -544,7 +545,7 @@ const NavigationWrapper: React.FC = () => {
             {/* Redirects for removed settings pages */}
             <Route path="billing" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
             <Route path="notification-preferences" element={<Navigate to="/dashboard/settings/notifications" replace />} />
-            <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
+            <Route path="services" element={<ServicesSettingsPage />} />
           </Route>
         </Route>
         {/* /setup is the canonical V2 AI-guided onboarding page. */}

@@ -21,6 +21,9 @@ export interface RoiMetrics {
   costPerLead: number;
   avgDealValue: number;
   estimatedRevenue: number;
+  // 'actual' when summed from real booking values stamped on appointments;
+  // 'estimate' when derived from leads × avg deal value × close rate.
+  revenueSource: 'actual' | 'estimate';
   roiPercentage: number;
   callsHandled: number;
   avgCallDurationMin: number;
@@ -268,7 +271,26 @@ export async function fetchRoiMetrics(
   const timeSavedHours = (callsHandled * avgCallDuration) / 60;
   const moneySaved = timeSavedHours * config.hourlyRate;
   const costPerLead = totalLeads > 0 ? config.subscriptionCost / totalLeads : 0;
-  const estimatedRevenue = totalLeads * config.avgDealValue * 0.3; // 30% close rate estimate
+
+  // Prefer real booked values (stamped on appointments from the services
+  // catalog) over the synthetic leads × close-rate estimate.
+  let bookedValueQuery = supabase
+    .from('appointments')
+    .select('estimated_value_cents')
+    .neq('status', 'cancelled')
+    .not('estimated_value_cents', 'is', null)
+    .gte('created_at', dateRange.start)
+    .lte('created_at', dateRange.end + 'T23:59:59');
+  if (filters.userId) bookedValueQuery = bookedValueQuery.eq('user_id', filters.userId);
+  const { data: valuedBookings } = await bookedValueQuery;
+
+  const actualRevenue = (valuedBookings || []).reduce(
+    (s, r) => s + (r.estimated_value_cents || 0), 0
+  ) / 100;
+  const revenueSource: 'actual' | 'estimate' = (valuedBookings || []).length > 0 ? 'actual' : 'estimate';
+  const estimatedRevenue = revenueSource === 'actual'
+    ? actualRevenue
+    : totalLeads * config.avgDealValue * 0.3; // 30% close rate estimate
   const roiPercentage = config.subscriptionCost > 0
     ? ((estimatedRevenue + moneySaved - config.subscriptionCost) / config.subscriptionCost) * 100
     : 0;
@@ -279,6 +301,7 @@ export async function fetchRoiMetrics(
     costPerLead: Math.round(costPerLead * 100) / 100,
     avgDealValue: config.avgDealValue,
     estimatedRevenue: Math.round(estimatedRevenue),
+    revenueSource,
     roiPercentage: Math.round(roiPercentage),
     callsHandled,
     avgCallDurationMin: Math.round(avgCallDuration * 10) / 10,

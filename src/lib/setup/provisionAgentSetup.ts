@@ -53,6 +53,33 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     });
   }
 
+  // Persist the services catalog — prices power the booked-revenue
+  // dashboard (bookings get valued by matching service name). Non-fatal,
+  // and skipped on retry if rows already exist.
+  if (setup.services?.length) {
+    try {
+      const { data: existingServices } = await supabase
+        .from('services')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+      if (!existingServices?.length) {
+        const { error: svcErr } = await supabase.from('services').insert(
+          setup.services.map((s) => ({
+            user_id: userId,
+            workspace_id: workspace.id,
+            name: s.name,
+            price_cents: Number.isFinite(s.price) ? Math.round(s.price * 100) : null,
+            duration_min: Number.isFinite(s.duration) ? s.duration : null,
+          }))
+        );
+        if (svcErr) console.warn('Could not persist services catalog:', svcErr);
+      }
+    } catch (error) {
+      console.warn('Could not persist services catalog:', error);
+    }
+  }
+
   const { data: existingAgents } = await supabase
     .from('agents')
     .select('id, agent_type')

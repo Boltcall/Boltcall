@@ -4,6 +4,7 @@ import { notifyError } from './_shared/notify';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { verifyCalcomSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { estimateBookingValueCents } from './_shared/booking-value';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -155,7 +156,8 @@ const handler: Handler = async (event) => {
 
     // ─── BOOKING_CREATED ──────────────────────────────────────────────
     if (triggerEvent === 'BOOKING_CREATED') {
-      // 1. Insert appointment
+      // 1. Insert appointment (valued from the services catalog — never blocks)
+      const estimatedValueCents = await estimateBookingValueCents(supabase, userId, eventTitle);
       const { data: appt, error: apptError } = await supabase
         .from('appointments')
         .insert({
@@ -171,6 +173,7 @@ const handler: Handler = async (event) => {
           ends_at: endTime,
           timezone: payload.organizer?.timeZone || 'UTC',
           status: 'confirmed',
+          estimated_value_cents: estimatedValueCents,
           raw_webhook: body,
         })
         .select('id')

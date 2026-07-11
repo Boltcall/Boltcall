@@ -26,7 +26,6 @@ export interface Kpis {
   bookings: number;
   speedToFirstReplyMedianSec: number;
   showRatePct: number; // 0..1
-  estRevenue: number;
   deltas: Record<keyof Omit<Kpis, "deltas">, number>; // percentage deltas
 }
 

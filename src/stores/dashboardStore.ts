@@ -13,14 +13,12 @@ const emptyKpis: Kpis = {
   bookings: 0,
   speedToFirstReplyMedianSec: 0,
   showRatePct: 0,
-  estRevenue: 0,
   deltas: {
     leads: 0,
     qualifiedPct: 0,
     bookings: 0,
     speedToFirstReplyMedianSec: 0,
     showRatePct: 0,
-    estRevenue: 0,
   },
 };
 
