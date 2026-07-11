@@ -38,6 +38,8 @@ import PageInfoTooltip from '../ui/PageInfoTooltip';
 import FeedbackSlider from '../ui/feedback-slider';
 import { useDashboardStore } from '../../stores/dashboardStore';
 import { useAgentMilestoneAlerts } from '../../hooks/useAgentMilestoneAlerts';
+import { useSetupProgress } from '../../hooks/useSetupProgress';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 
 const DashboardLayout: React.FC = () => {
   const { t, i18n } = useTranslation('common');
@@ -62,8 +64,22 @@ const DashboardLayout: React.FC = () => {
   const milestoneAlerts = useAgentMilestoneAlerts();
   const allAlerts = [...milestoneAlerts, ...alerts];
   
-  // Features are currently enabled for every dashboard user.
-  const userPlan = 'elite' as 'free' | 'pro' | 'elite';
+  // Setup progress gates the topbar status pill so a brand-new user doesn't
+  // see loss-framing ("N features paused") on their first render before they
+  // could even have turned anything on.
+  const { isComplete: setupComplete, loading: setupLoading } = useSetupProgress();
+
+  // Real plan from SubscriptionContext, mapped onto the three display buckets
+  // the help panel styles. Fresh users with no subscription => 'free'; trial
+  // users become 'pro' via SubscriptionContext.effectivePlan. Never fabricate
+  // 'ultimate' when no billing exists.
+  const { planLevel } = useSubscription();
+  const userPlan: 'free' | 'pro' | 'elite' =
+    planLevel === 'ultimate' || planLevel === 'enterprise'
+      ? 'elite'
+      : planLevel === 'pro' || planLevel === 'starter'
+        ? 'pro'
+        : 'free';
   
   
 
@@ -634,23 +650,34 @@ const DashboardLayout: React.FC = () => {
                    <NotificationsWithActions alerts={allAlerts} />
                  </div>
 
-                 {/* Services status pill — single indicator, opens Home hub for details */}
+                 {/* Services status pill — single indicator, opens Home hub for details.
+                     While setup is still in progress the pill nudges toward completion
+                     instead of loss-framing untriggered features as "paused". */}
                  {(() => {
+                   if (setupLoading) return null;
                    const trackedKeys = ['aiReceptionist', 'phoneSystem', 'sms', 'websiteBubble', 'whatsapp'] as const;
                    const paused = trackedKeys.filter((k) => !services[k]).length;
                    const allLive = paused === 0;
+                   const showFinishSetup = !setupComplete && !allLive;
+                   const label = allLive
+                     ? 'All systems live'
+                     : showFinishSetup
+                       ? 'Finish setup'
+                       : `${paused} feature${paused > 1 ? 's' : ''} paused`;
+                   const tone = allLive
+                     ? 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/40 dark:text-green-300 dark:hover:bg-green-950/60'
+                     : showFinishSetup
+                       ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-950/60'
+                       : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60';
+                   const dot = allLive ? 'bg-green-500' : showFinishSetup ? 'bg-blue-500' : 'bg-amber-500';
                    return (
                      <Link
                        to="/dashboard"
-                       aria-label={allLive ? 'All systems live' : `${paused} features paused`}
-                       className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                         allLive
-                           ? 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/40 dark:text-green-300 dark:hover:bg-green-950/60'
-                           : 'bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60'
-                       }`}
+                       aria-label={label}
+                       className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${tone}`}
                      >
-                       <span className={`w-1.5 h-1.5 rounded-full ${allLive ? 'bg-green-500' : 'bg-amber-500'}`} />
-                       {allLive ? 'All systems live' : `${paused} feature${paused > 1 ? 's' : ''} paused`}
+                       <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+                       {label}
                      </Link>
                    );
                  })()}

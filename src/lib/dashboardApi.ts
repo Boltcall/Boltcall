@@ -44,9 +44,12 @@ export interface DashboardStats {
 }
 
 /**
- * Fetch aggregated dashboard stats from all APIs
+ * Fetch aggregated dashboard stats from all APIs.
+ * Returns null when the caller lacks access (401/403) — this endpoint exposes
+ * admin-only global aggregates, so a non-admin 403 is "not for you", not an
+ * error. Real outages (5xx / network / timeout) still throw.
  */
-export async function fetchDashboardStats(): Promise<DashboardStats> {
+export async function fetchDashboardStats(): Promise<DashboardStats | null> {
   const { data: { session } } = await supabase.auth.getSession();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
@@ -57,6 +60,9 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
       },
       signal: controller.signal,
     });
+    if (response.status === 401 || response.status === 403) {
+      return null;
+    }
     if (!response.ok) {
       throw new Error(`Dashboard stats failed: ${response.status}`);
     }

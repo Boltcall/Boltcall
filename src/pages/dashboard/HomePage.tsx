@@ -72,12 +72,32 @@ const SetupRing: React.FC<{ pct: number }> = ({ pct }) => {
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
-  const { liveStats, businessName, fetchLiveData, fetchError, loading: dashboardLoading } = useDashboardStore();
+  const { liveStats, businessName, setBusinessName, fetchLiveData, fetchError, loading: dashboardLoading } = useDashboardStore();
   const progress = useSetupProgress();
   const [agentName, setAgentName] = useState<string>('Your AI');
   const suggestion = useFeatureTriggers(agentName);
   const [milestone, setMilestone] = useState<Milestone | null>(null);
   const hasFetchedLiveData = useRef(false);
+
+  // Hydrate businessName from business_profiles so the greeting can weave it in
+  // ("Alex is standing by for Acme Plumbing"). Store keeps the value across
+  // routes; only fetch when it's missing.
+  useEffect(() => {
+    if (!user?.id || businessName) return;
+    let cancelled = false;
+    supabase
+      .from('business_profiles')
+      .select('business_name')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const name = data?.business_name?.trim();
+        if (!cancelled && name) setBusinessName(name);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, businessName, setBusinessName]);
 
   // One-time milestone celebration (P24/P9); booking count is real data
   useEffect(() => {
@@ -118,11 +138,15 @@ const HomePage: React.FC = () => {
   const now = new Date();
   const firstName = (user?.name || 'there').split(' ')[0];
   const handled = liveStats?.retell?.successful_calls_today ?? 0;
+  // Business name comes from dashboardStore (mirrored from settings/general) —
+  // may be empty on very first login until Setup persists it, so keep the
+  // fallback in buildGreeting. Trim to avoid rendering a stray comma or space.
+  const trimmedBusiness = typeof businessName === 'string' ? businessName.trim() : '';
   const { hello, outcome } = buildGreeting({
     now,
     firstName,
     agentName,
-    businessName,
+    businessName: trimmedBusiness || null,
     handledSinceYesterday: handled,
   });
 
