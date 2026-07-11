@@ -71,6 +71,8 @@ const MissedCallsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCall, setSelectedCall] = useState<MissedCallDisplay | null>(null);
   const [showEditPanel, setShowEditPanel] = useState(false);
+  // Text-back delivery badge per call id — the "we texted them back" proof
+  const [textbackBadges, setTextbackBadges] = useState<Record<string, { label: string; className: string }>>({});
 
   // Stats
   const [textbacksSent, setTextbacksSent] = useState(0);
@@ -229,11 +231,79 @@ const MissedCallsPage: React.FC = () => {
 
       missed.sort((a, b) => b.missedAt - a.missedAt);
       setMissedCalls(missed);
+      await fetchTextbackBadges(missed);
     } catch (err) {
       console.error('Error fetching missed calls:', err);
       setError('Failed to fetch missed calls. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Match each missed call to its follow-up SMS (scheduled_messages) and any
+  // inbound reply (sms_conversations) by phone + time window, and build a badge.
+  const fetchTextbackBadges = async (missed: MissedCallDisplay[]) => {
+    if (!user?.id) return;
+    const phones = [...new Set(missed.map((c) => c.callerPhone).filter((p) => p !== 'Unknown'))];
+    if (!phones.length) return;
+
+    try {
+      const oldest = new Date(Math.min(...missed.map((c) => c.missedAt)) - 60 * 1000).toISOString();
+      const [{ data: msgs }, { data: replies }] = await Promise.all([
+        supabase
+          .from('scheduled_messages')
+          .select('recipient_phone, status, sent_at, created_at')
+          .eq('user_id', user.id)
+          .eq('channel', 'sms')
+          .in('recipient_phone', phones)
+          .gte('created_at', oldest),
+        supabase
+          .from('sms_conversations')
+          .select('from_number, created_at')
+          .eq('user_id', user.id)
+          .eq('direction', 'inbound')
+          .in('from_number', phones)
+          .gte('created_at', oldest),
+      ]);
+
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      const badges: Record<string, { label: string; className: string }> = {};
+
+      for (const call of missed) {
+        if (call.callerPhone === 'Unknown') continue;
+
+        const replied = (replies || []).some(
+          (r) => r.from_number === call.callerPhone && new Date(r.created_at).getTime() > call.missedAt
+        );
+        if (replied) {
+          badges[call.id] = { label: 'Replied', className: 'bg-green-100 text-green-800' };
+          continue;
+        }
+
+        // Follow-up SMS created within 24h after the missed call
+        const msg = (msgs || []).find((m) => {
+          if (m.recipient_phone !== call.callerPhone) return false;
+          const created = new Date(m.created_at).getTime();
+          return created >= call.missedAt - 60 * 1000 && created <= call.missedAt + DAY_MS;
+        });
+        if (!msg) continue;
+
+        if (msg.status === 'sent') {
+          const mins = Math.max(0, Math.round((new Date(msg.sent_at || msg.created_at).getTime() - call.missedAt) / 60000));
+          badges[call.id] = {
+            label: mins < 1 ? 'Text sent · <1m after' : `Text sent · ${mins}m after`,
+            className: 'bg-blue-100 text-blue-800',
+          };
+        } else if (msg.status === 'scheduled') {
+          badges[call.id] = { label: 'Text scheduled', className: 'bg-gray-100 text-gray-700' };
+        } else if (msg.status === 'failed') {
+          badges[call.id] = { label: 'Text failed', className: 'bg-red-100 text-red-800' };
+        }
+      }
+
+      setTextbackBadges(badges);
+    } catch (err) {
+      console.error('Error fetching text-back statuses:', err);
     }
   };
 
@@ -532,6 +602,13 @@ const MissedCallsPage: React.FC = () => {
                     >
                       {call.statusLabel}
                     </span>
+                    {textbackBadges[call.id] && (
+                      <span
+                        className={`mt-1 block w-fit px-2.5 py-0.5 rounded-full text-xs font-medium ${textbackBadges[call.id].className}`}
+                      >
+                        {textbackBadges[call.id].label}
+                      </span>
+                    )}
                   </div>
 
                   {/* Agent */}

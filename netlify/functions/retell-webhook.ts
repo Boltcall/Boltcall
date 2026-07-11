@@ -439,6 +439,22 @@ const handler: Handler = async (event) => {
           .eq('is_active', true);
 
         if (sequences && sequences.length > 0) {
+          // Dedup: an active enrollment for this number already owns the
+          // follow-up. A second missed call must not double-enroll — that
+          // means duplicate texts to the same lead.
+          const { data: activeEnrollment } = await supabase
+            .from('followup_enrollments')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('contact_phone', callerPhone)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle();
+
+          if (activeEnrollment) {
+            console.log(`[retell-webhook] Skipping enrollment — active enrollment already exists for ${callerPhone}`);
+            sequenceControlledTextback = true;
+          } else {
           for (const seq of sequences) {
             // Get the first step's delay to calculate next_step_at
             const { data: firstStep } = await supabase
@@ -528,6 +544,13 @@ const handler: Handler = async (event) => {
             const { error: enrollmentError } = await supabase.from('followup_enrollments').insert(enrollmentInsert);
 
             if (enrollmentError) {
+              if ((enrollmentError as { code?: string }).code === '23505') {
+                // Lost the race to a concurrent webhook — the winner's
+                // enrollment owns the follow-up. Not an error.
+                console.log(`[retell-webhook] Enrollment race lost for ${callerPhone} (unique index) — skipping`);
+                sequenceControlledTextback = true;
+                continue;
+              }
               console.error('[retell-webhook] Failed to enroll no-answer sequence:', enrollmentError);
               await notifyError('retell-webhook: Follow-up enrollment failed', enrollmentError, {
                 callerPhone, userId, callId: call.call_id, sequenceId: seq.id,
@@ -540,6 +563,7 @@ const handler: Handler = async (event) => {
           }
           if (sequenceEnrollmentCount > 0) {
             console.log(`[retell-webhook] Auto-enrolled ${callerPhone} in ${sequenceEnrollmentCount} ${triggerType} sequence(s)`);
+          }
           }
         }
       } catch (enrollErr) {
@@ -610,6 +634,29 @@ const handler: Handler = async (event) => {
     // Step 6: Calculate scheduled time based on delay config
     const delayMinutes = config.delay_minutes ?? 0;
     const scheduledFor = new Date(Date.now() + delayMinutes * 60 * 1000).toISOString();
+
+    // Step 7a: Dedup — don't stack a second text-back if one was already
+    // queued or sent to this number in the last 24h (second missed call
+    // from the same lead = duplicate texts otherwise).
+    const { data: recentTextback } = await supabase
+      .from('scheduled_messages')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('recipient_phone', callerPhone)
+      .eq('type', 'missed_call_textback')
+      .in('status', ['scheduled', 'sent'])
+      .gte('scheduled_for', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .limit(1)
+      .maybeSingle();
+
+    if (recentTextback) {
+      console.log(`[retell-webhook] Text-back deduped — recent message already exists for ${callerPhone}`);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ ok: true, missed: true, textback: false, reason: 'deduped', lead_created: !!lead }),
+      };
+    }
 
     // Step 7: Insert scheduled message
     const { error: msgError } = await supabase.from('scheduled_messages').insert({

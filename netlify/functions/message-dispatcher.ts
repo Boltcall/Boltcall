@@ -47,6 +47,37 @@ async function sendTwilioSms(to: string, message: string): Promise<{ sid: string
   return { sid: data.sid };
 }
 
+// ─── Quiet hours (TCPA) ──────────────────────────────────────────────
+// No SMS outside 08:00–21:00 local business time. Deferred messages stay
+// `scheduled` and re-enter a later batch, which re-checks — so an imprecise
+// defer self-corrects on the next cron run.
+const QUIET_END_HOUR = 8;
+const QUIET_START_HOUR = 21;
+
+function localHour(tz: string, now: Date = new Date()): number {
+  try {
+    return parseInt(
+      new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: tz }).format(now),
+      10
+    );
+  } catch {
+    return now.getUTCHours(); // bad tz string — fall back to UTC
+  }
+}
+
+export function isQuietHours(tz: string, now: Date = new Date()): boolean {
+  const h = localHour(tz, now);
+  return h >= QUIET_START_HOUR || h < QUIET_END_HOUR;
+}
+
+export function nextAllowedSendTime(tz: string, now: Date = new Date()): string {
+  const h = localHour(tz, now);
+  const hoursUntilOpen = h >= QUIET_START_HOUR ? 24 - h + QUIET_END_HOUR : QUIET_END_HOUR - h;
+  const d = new Date(now.getTime() + hoursUntilOpen * 3600_000);
+  d.setUTCMinutes(0, 0, 0); // ponytail: hour granularity; half-hour timezones self-correct on re-check
+  return d.toISOString();
+}
+
 const handler: Handler = async (event) => {
   // Support both Netlify scheduled invocations and manual POST calls
   const isScheduled = !event.httpMethod || event.httpMethod === 'POST';
@@ -88,9 +119,58 @@ const handler: Handler = async (event) => {
 
     let sent = 0;
     let failed = 0;
+    let deferred = 0;
+    let blocked = 0;
+
+    // Batch-load opt-outs and business timezones for the SMS messages in
+    // this run (one query each instead of one per message).
+    const smsMessages = messages.filter((m) => m.channel === 'sms' && m.recipient_phone);
+    const smsPhones = [...new Set(smsMessages.map((m) => m.recipient_phone as string))];
+    const smsUserIds = [...new Set(smsMessages.map((m) => m.user_id).filter(Boolean))];
+
+    const [optoutsRes, tzRes] = await Promise.all([
+      smsPhones.length
+        ? supabase.from('sms_optouts').select('phone').in('phone', smsPhones)
+        : Promise.resolve({ data: [] as { phone: string }[] }),
+      smsUserIds.length
+        ? supabase.from('sms_settings').select('user_id, business_timezone').in('user_id', smsUserIds)
+        : Promise.resolve({ data: [] as { user_id: string; business_timezone: string | null }[] }),
+    ]);
+    const optedOut = new Set((optoutsRes.data || []).map((r) => r.phone));
+    const tzByUser = new Map(
+      (tzRes.data || []).map((r) => [r.user_id, r.business_timezone])
+    );
+    // 'UTC' is the sms_settings column default, i.e. "never configured".
+    // ponytail: default US-Eastern for this US-local-business product until a real tz is set.
+    const businessTz = (userId: string | null): string => {
+      const tz = userId ? tzByUser.get(userId) : null;
+      return tz && tz !== 'UTC' ? tz : 'America/New_York';
+    };
 
     for (const msg of messages) {
       if (msg.channel === 'sms' && msg.recipient_phone) {
+        // Blocklist: catches messages queued before the recipient opted out.
+        if (optedOut.has(msg.recipient_phone)) {
+          await supabase
+            .from('scheduled_messages')
+            .update({ status: 'cancelled', error: 'recipient opted out (STOP)' })
+            .eq('id', msg.id);
+          blocked++;
+          continue;
+        }
+
+        // Quiet hours: defer to the next allowed window, keep status
+        // `scheduled` so a later run picks it up.
+        const tz = businessTz(msg.user_id);
+        if (isQuietHours(tz)) {
+          await supabase
+            .from('scheduled_messages')
+            .update({ scheduled_for: nextAllowedSendTime(tz) })
+            .eq('id', msg.id);
+          deferred++;
+          continue;
+        }
+
         const result = await sendTwilioSms(msg.recipient_phone, msg.message_body);
 
         if ('sid' in result) {
@@ -297,11 +377,11 @@ const handler: Handler = async (event) => {
       }
     }
 
-    console.log(`[message-dispatcher] Processed: ${messages.length}, Sent: ${sent}, Failed: ${failed}`);
+    console.log(`[message-dispatcher] Processed: ${messages.length}, Sent: ${sent}, Failed: ${failed}, Deferred: ${deferred}, Blocked: ${blocked}`);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ processed: messages.length, sent, failed }),
+      body: JSON.stringify({ processed: messages.length, sent, failed, deferred, blocked }),
     };
   } catch (err: any) {
     console.error('[message-dispatcher] Error:', err);
