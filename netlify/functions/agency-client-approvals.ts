@@ -346,6 +346,77 @@ async function handleList(
   };
 }
 
+/**
+ * Objection-miner approve hook (batch-2 task 10 step 3): an approved
+ * prompt_revision from objection-miner becomes a retell_prompt_versions row
+ * (status cekura_passed) and is handed to retell-shadow-promote. The shadow
+ * monitor then auto-promotes or auto-reverts — no new rollback code here.
+ * Best-effort: a failure leaves the artifact approved for the founder queue.
+ */
+async function promoteObjectionFix(
+  artifact_id: string,
+  content: Record<string, unknown>,
+): Promise<{ version_id?: string; shadowing: boolean; detail?: string }> {
+  const supabase = getServiceSupabase();
+  const patch = content.prompt_patch;
+  const agentRowId = content.agent_row_id;
+  if (typeof patch !== 'string' || !patch.trim() || typeof agentRowId !== 'string') {
+    return { shadowing: false, detail: 'missing prompt_patch or agent_row_id' };
+  }
+
+  const { data: agentRow } = await supabase
+    .from('agents')
+    .select('id, system_prompt')
+    .eq('id', agentRowId)
+    .maybeSingle();
+  if (!agentRow?.system_prompt) {
+    return { shadowing: false, detail: 'agent row or system_prompt not found' };
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const prompt_text = `${agentRow.system_prompt}\n\n## OBJECTION FIX (${today})\n${patch}`;
+
+  const { data: version, error: insErr } = await supabase
+    .from('retell_prompt_versions')
+    .insert({
+      scope: 'customer',
+      vertical: typeof content.vertical === 'string' ? content.vertical : 'other',
+      agent_id: agentRowId,
+      version: Math.floor(Date.now() / 1000),
+      prompt_text,
+      status: 'cekura_passed',
+      created_by: 'objection-miner',
+      rollback_data: { experiment: { source_artifact_id: artifact_id } },
+    })
+    .select('id')
+    .single();
+  if (insErr || !version) {
+    return { shadowing: false, detail: `version insert failed: ${insErr?.message}` };
+  }
+
+  // Hand off to shadow-promote. Client JWTs can't pass authorizeRunner there,
+  // so authenticate function-to-function with the shared cron secret.
+  const cronSecret = process.env.CRON_SECRET || '';
+  if (!cronSecret) {
+    return { version_id: version.id, shadowing: false, detail: 'CRON_SECRET unset — version staged for founder-side promote' };
+  }
+  const base = process.env.URL || process.env.DEPLOY_URL || process.env.SITE_URL || 'https://boltcall.org';
+  try {
+    const res = await fetch(`${base}/.netlify/functions/retell-shadow-promote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-cron-secret': cronSecret },
+      body: JSON.stringify({ version_id: version.id }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { version_id: version.id, shadowing: false, detail: `shadow-promote ${res.status}: ${(body as any)?.error || ''}` };
+    }
+    return { version_id: version.id, shadowing: true };
+  } catch (err) {
+    return { version_id: version.id, shadowing: false, detail: `shadow-promote fetch failed: ${err}` };
+  }
+}
+
 // ───────────────────────── POST ─────────────────────────
 
 async function handleAction(
@@ -488,6 +559,19 @@ async function handleAction(
     };
   }
 
+  // Approved objection-miner fix → stage prompt version + start shadow rollout.
+  let shadow: { version_id?: string; shadowing: boolean; detail?: string } | undefined;
+  if (
+    action === 'approve' &&
+    art.type === 'prompt_revision' &&
+    content.source === 'objection-miner'
+  ) {
+    shadow = await promoteObjectionFix(artifact_id, content);
+    if (!shadow.shadowing) {
+      console.warn('[agency-client-approvals] objection fix approved but not shadowing:', shadow.detail);
+    }
+  }
+
   // Audit trail lives on the artifact itself (content.client_decision); we
   // log here so Netlify's drain captures the timeline even when the row read
   // is RLS-restricted. Avoids emitting custom-type agency_events that aren't
@@ -503,7 +587,7 @@ async function handleAction(
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ status: nextStatus, artifact_id }),
+    body: JSON.stringify({ status: nextStatus, artifact_id, shadow }),
   };
 }
 

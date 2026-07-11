@@ -34,6 +34,16 @@ interface AgentData {
   color?: string | null;
 }
 
+interface PromptExperiment {
+  id: string;
+  status: 'ab_testing' | 'shadowing' | 'live' | 'reverted' | 'superseded';
+  shadow_started_at: string | null;
+  shadow_ended_at: string | null;
+  shadow_book_rate: number | null;
+  created_at: string;
+  rollback_data: { experiment?: { shadow_split_pct?: number } } | null;
+}
+
 interface CallLog {
   id: string;
   caller_number: string;
@@ -51,6 +61,7 @@ const AgentDetailPage: React.FC = () => {
 
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [recentCalls, setRecentCalls] = useState<CallLog[]>([]);
+  const [experiments, setExperiments] = useState<PromptExperiment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showTalkModal, setShowTalkModal] = useState(false);
@@ -154,6 +165,28 @@ const AgentDetailPage: React.FC = () => {
     fetchAgentFolders();
     fetchAllFolders();
   }, [fetchAgentFolders, fetchAllFolders]);
+
+  // Load prompt experiments (A/B tests + shadow rollouts) for this agent.
+  // Read-only card; experiments are created by the objection-mining loop and
+  // founder-side tooling. Hidden entirely when the agent has none.
+  useEffect(() => {
+    const fetchExperiments = async () => {
+      if (!agentId) return;
+      const { data, error } = await supabase
+        .from('retell_prompt_versions')
+        .select('id, status, shadow_started_at, shadow_ended_at, shadow_book_rate, created_at, rollback_data')
+        .eq('agent_id', agentId)
+        .in('status', ['ab_testing', 'shadowing', 'live', 'reverted', 'superseded'])
+        .order('created_at', { ascending: false })
+        .limit(6);
+      if (error) {
+        console.warn('prompt experiments unavailable (AgentDetailPage):', error.message);
+        return;
+      }
+      if (data) setExperiments(data);
+    };
+    fetchExperiments();
+  }, [agentId]);
 
   // Load recent calls
   useEffect(() => {
@@ -535,6 +568,58 @@ const AgentDetailPage: React.FC = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Script Experiments — read-only; hidden when the agent has none.
+          ponytail: read-only card; creation UI when users ask for it */}
+      {experiments.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5"
+        >
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Script Experiments</h3>
+          <div className="space-y-2">
+            {experiments.map((exp) => {
+              const statusLabel =
+                exp.status === 'ab_testing' ? 'Testing new script' :
+                exp.status === 'shadowing' ? 'Rolling out new script' :
+                exp.status === 'live' ? 'Live' :
+                exp.status === 'superseded' ? 'Replaced' : 'Reverted';
+              const statusClass =
+                exp.status === 'ab_testing' || exp.status === 'shadowing' ? 'bg-blue-100 text-blue-700' :
+                exp.status === 'live' ? 'bg-green-100 text-green-700' :
+                'bg-gray-100 text-gray-600';
+              const split = exp.rollback_data?.experiment?.shadow_split_pct;
+              return (
+                <div
+                  key={exp.id}
+                  className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-zinc-800 last:border-0"
+                >
+                  <div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusClass}`}>
+                      {statusLabel}
+                    </span>
+                    {exp.status === 'ab_testing' && split ? (
+                      <span className="text-xs text-gray-500 ml-2">{split}% of calls on the new script</span>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {exp.shadow_book_rate != null && (
+                      <span className="text-xs text-gray-600 dark:text-gray-300">
+                        {(exp.shadow_book_rate * 100).toFixed(0)}% booked
+                      </span>
+                    )}
+                    <span className="text-xs text-gray-400">
+                      {new Date(exp.shadow_started_at || exp.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Save Bar — sticky at bottom when changes exist */}
       {hasChanges && (

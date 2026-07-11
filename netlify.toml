@@ -211,6 +211,17 @@
 [functions."agency-cron-benchmark-curation"]
   schedule = "0 4 * * 0"
 
+# Objection miner — Mondays 08:00 UTC. Clusters last week's lost-call
+# objections per workspace and files one prompt fix into the approval queue.
+[functions."objection-miner"]
+  schedule = "0 8 * * 1"
+
+# Shadow monitor — every 4h. Evaluates shadowing prompt versions and
+# auto-promotes/reverts. Was documented as "every 4h" but never scheduled;
+# without this the shadow FSM silently never resolves.
+[functions."retell-shadow-monitor"]
+  schedule = "0 */4 * * *"
+
 # Netlify handles /.netlify/functions/* routing automatically — no redirect needed
 
 # Long cache for hashed static assets

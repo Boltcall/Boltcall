@@ -986,9 +986,39 @@ const handler: Handler = async (event) => {
         if (!(await userOwnsAgent(userId, body.agent_id))) {
           return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to create a call for this agent' }) };
         }
+
+        // A/B traffic split (batch-2 task 6): if this agent has an active
+        // ab_testing prompt version, route split_pct of web calls to the
+        // variant agent and stamp the version id into call metadata so the
+        // scorer can attribute the call to the experiment arm.
+        let targetAgentId: string = body.agent_id;
+        const callMetadata: Record<string, unknown> = { ...(body.metadata || {}) };
+        try {
+          const { data: abVersion } = await getSupabaseAdmin()
+            .from('retell_prompt_versions')
+            .select('id, rollback_data')
+            .eq('status', 'ab_testing')
+            .eq('rollback_data->experiment->>base_retell_agent_id', body.agent_id)
+            .limit(1)
+            .maybeSingle();
+          const exp = ((abVersion?.rollback_data || {}) as any).experiment || {};
+          if (abVersion && exp.variant_retell_agent_id) {
+            const splitPct = Number(exp.shadow_split_pct) || 50;
+            if (Math.random() * 100 < splitPct) {
+              targetAgentId = exp.variant_retell_agent_id;
+              callMetadata.prompt_version_id = abVersion.id;
+              callMetadata.ab_arm = 'variant';
+            } else {
+              callMetadata.ab_arm = 'control';
+            }
+          }
+        } catch (abErr) {
+          console.warn('[retell-agents] AB split lookup failed, using base agent:', abErr);
+        }
+
         const webCall = await client.call.createWebCall({
-          agent_id: body.agent_id,
-          metadata: body.metadata || {},
+          agent_id: targetAgentId,
+          metadata: callMetadata,
         });
         return {
           statusCode: 200,

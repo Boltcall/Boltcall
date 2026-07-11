@@ -14,6 +14,18 @@ export const INDUSTRY_OPTIONS = [
   { value: 'auto_repair', label: 'Auto repair' },
   { value: 'cleaning', label: 'Cleaning services' },
   { value: 'landscaping', label: 'Landscaping' },
+  { value: 'electrical', label: 'Electrical' },
+  { value: 'pest_control', label: 'Pest control' },
+  { value: 'moving', label: 'Moving' },
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'fitness', label: 'Fitness / Gym' },
+  { value: 'accounting', label: 'Accounting / Tax' },
+  { value: 'towing', label: 'Towing' },
+  { value: 'locksmith', label: 'Locksmith' },
+  { value: 'garage_door', label: 'Garage door' },
+  { value: 'pool_service', label: 'Pool service' },
+  { value: 'painting', label: 'Painting' },
+  { value: 'chiropractor', label: 'Chiropractor' },
 ] as const;
 
 export const VOICE_OPTIONS = [

@@ -573,6 +573,7 @@ async function handleBookAppointment(
         const estimatedValueCents = await estimateBookingValueCents(supabase, userId, service);
         await supabase.from('appointments').insert({
           user_id: userId,
+          call_id: callId || null,
           cal_booking_id: String(bookingId),
           cal_event_type: service || 'Appointment',
           client_name: name,
