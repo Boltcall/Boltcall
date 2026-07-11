@@ -170,8 +170,11 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // ponytail: skip entry crawling; local Vite/Netlify dev was dying before the app booted.
-    noDiscovery: true,
+    // noDiscovery skipped CJS-only transitive deps (void-elements,
+    // html-parse-stringify, use-sync-external-store/shim, etc.) which then
+    // failed to be ESM-imported and left the dev server serving a white page.
+    // Let Vite discover + pre-bundle deps normally; if entry crawling regresses
+    // in netlify dev again, prefer `entries: [...]` over reintroducing noDiscovery.
   },
   base: '/',
   build: {
