@@ -28,7 +28,7 @@ const Hero: React.FC = () => {
         style={{ clipPath: 'polygon(0 0, 100% 0, 100% 92%, 0 100%)' }}
       >
         {/* Parallax floating icon boxes — kept dir="ltr" since they are purely decorative */}
-        <div className="absolute inset-0 w-full h-full pointer-events-none" dir="ltr">
+        <div className="absolute inset-0 w-full h-full pointer-events-none hidden md:block" dir="ltr">
           <Floating sensitivity={-0.5} className="h-full">
 
             {/* Top-left — Phone */}

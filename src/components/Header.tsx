@@ -350,7 +350,7 @@ const Header: React.FC = () => {
                   <img
                     src="/boltcall_full_logo.png"
                     alt="Boltcall - AI Receptionist, Follow Ups, Reminders"
-                    className="h-[68px] w-auto -translate-y-[2.8px]"
+                    className={`h-[68px] w-auto -translate-y-[2.8px] transition-[filter] duration-200 ${isOverBlueBackground ? 'brightness-0 invert' : ''}`}
                     width="136"
                     height="68"
                     loading="eager"

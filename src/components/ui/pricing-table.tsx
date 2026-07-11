@@ -125,6 +125,7 @@ export function PricingTable({
                 ) : (
                   <>
                     <NumberFlow
+                      locales="en-US"
                       format={{
                         style: "currency",
                         currency: "USD",

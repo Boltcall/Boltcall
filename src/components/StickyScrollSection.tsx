@@ -46,7 +46,7 @@ export const StickyScrollSection: React.FC = () => {
             />{' '}
             <WhisperText
               text={t('stickyScroll.heading3')}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-500 inline-block"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-sky inline-block"
               delay={150}
               duration={0.625}
               x={-20}
