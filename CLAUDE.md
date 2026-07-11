@@ -101,30 +101,17 @@ No blog page may be written without this skill active. This applies to every new
 
 ## Skill routing
 
-When the user's request matches an available gstack skill, ALWAYS invoke it using the Skill
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
 tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
 
-- Bugs, errors, "why is this broken", unexpected behavior → invoke gstack:debug
-- "Does this work?", "test this page", verify a deploy → invoke gstack:qa-only
-- Ship, deploy, push, create PR → invoke gstack:ship
-- Code review, check my diff → invoke gstack:review
-- Security questions, auth review, API exposure → invoke gstack:cso
-- Architecture or refactor decisions → invoke gstack:plan-eng-review
-- Design polish, visual audit → invoke gstack:design-review
-- Save progress, checkpoint session → invoke gstack:context-save
-- Post-deploy verification → invoke gstack:post-deploy
+- Bugs, errors, "why is this broken", unexpected behavior → invoke investigate
+- "Does this work?", "test this page", verify a deploy → invoke qa-only
+- Ship, deploy, push, create PR → invoke merge-deploy
+- Code review, check my diff → invoke review
+- Security questions, auth review, API exposure → invoke security-review
+- Architecture or refactor decisions → use Plan agent (no dedicated skill)
+- Design polish, visual audit → invoke design-review
+- Save progress, checkpoint session → invoke checkpoint
+- Post-deploy verification → invoke verify
 
-## Coding Behavior (Karpathy Guidelines)
-
-### Think Before Coding
-- State assumptions explicitly before implementing. If uncertain, ask.
-- If multiple interpretations exist, present them — don't pick silently.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-### Goal-Driven Execution
-For multi-step tasks, state a brief plan with verifiable success criteria before starting:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-```
-Transform vague tasks: "fix the bug" → "write a test that reproduces it, then make it pass".
+Karpathy coding guidelines (state assumptions, ask when unclear, plan multi-step work with verify checks) live in global CLAUDE.md — apply here too.
