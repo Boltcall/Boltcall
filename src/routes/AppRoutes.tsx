@@ -250,7 +250,6 @@ const SolarIndustryHub = React.lazy(() => import('../pages/SolarIndustryHub'));
 const SolarSpeedToLeadPlaybook = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybook'));
 const SolarSpeedToLeadPlaybookThankYou = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybookThankYou'));
 const SolarBenchmarkPage = React.lazy(() => import('../pages/SolarBenchmarkPage'));
-const VoiceAgentOnboarding = React.lazy(() => import('../pages/VoiceAgentOnboarding'));
 const AiReadinessScorecard = React.lazy(() => import('../pages/AiReadinessScorecard'));
 const AiReceptionistRoi = React.lazy(() => import('../pages/AiReceptionistRoi'));
 const FiveMinuteResponsePlaybook = React.lazy(() => import('../pages/FiveMinuteResponsePlaybook'));
@@ -905,7 +904,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/tools/landscaping-seasonal-revenue-calculator" element={<LandscapingSeasonalRevenueCalculator />} />
         {/* All niche tools now served by dynamic route from Supabase */}
         <Route path="/tools/:slug" element={<NicheToolPage />} />
-        <Route path="/voice-agent-setup" element={<VoiceAgentOnboarding />} />
+        {/* V1 wizard retired — /start is the canonical onboarding */}
+        <Route path="/voice-agent-setup" element={<Navigate to="/start" replace />} />
         <Route path="/ai-readiness-scorecard" element={<AiReadinessScorecard />} />
         <Route path="/ai-receptionist-roi" element={<AiReceptionistRoi />} />
         <Route path="/privacy-policy" element={<Privacy />} />
