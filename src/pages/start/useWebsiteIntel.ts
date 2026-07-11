@@ -83,14 +83,30 @@ export function guessIndustry(text: string): PendingAgentSetup['industry'] {
 }
 
 export function deriveBusinessName(title: string, domain: string): string {
-  // Titles are usually "Business Name | tagline" or "Business Name - City plumber".
-  const head = title.split(/[|–—-]/)[0].trim();
+  const root = domain.split('.')[0];
+  const fallback = root.charAt(0).toUpperCase() + root.slice(1);
+
+  // Split only on strong separators: | · • – — , or hyphens flanked by
+  // whitespace. Naked hyphens stay intact so a tagline like
+  // "Speed-to-lead | Boltcall" doesn't shatter into "Speed".
+  const parts = title
+    .split(/\s*[|·•–—]\s*|\s+-\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  // Prefer the segment that actually mentions the domain root — that's the
+  // brand name, not the tagline.
+  const rootLower = root.toLowerCase();
+  const branded = parts.find((p) => p.toLowerCase().includes(rootLower));
+  if (branded && branded.length >= 2 && branded.length <= 60 && !/^https?:/i.test(branded)) {
+    return branded;
+  }
+
+  const head = parts[0];
   if (head && head.length >= 2 && head.length <= 60 && !/^https?:/i.test(head)) {
     return head;
   }
-  // Fall back to the domain root, title-cased: "smithdental" → "Smithdental".
-  const root = domain.split('.')[0];
-  return root.charAt(0).toUpperCase() + root.slice(1);
+  return fallback;
 }
 
 export function useWebsiteIntel() {

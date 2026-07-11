@@ -1293,9 +1293,13 @@ const StartOnboarding: React.FC = () => {
   }
 
   return (
-    <div className="dark relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] py-24 text-white">
+    <div className="dark relative isolate flex min-h-screen flex-col overflow-hidden bg-[#050507] text-white">
       <SetupGradientBackground logoVariant="white" />
       <ProgressRail scene={draft.scene} />
+      {/* Header slot reserves vertical space so tall scenes never grow up
+          into the Boltcall logo + progress rail. */}
+      <div aria-hidden className="h-32 flex-shrink-0 sm:h-36" />
+      <main className="relative flex flex-1 items-center justify-center px-4 pb-16 sm:pb-20">
       <AnimatePresence mode="wait">
         {draft.scene === 'welcome' && (
           <WelcomeScene key="welcome" firstName={firstName} avatarUrl={avatarUrl} />
@@ -1382,6 +1386,7 @@ const StartOnboarding: React.FC = () => {
           />
         )}
       </AnimatePresence>
+      </main>
     </div>
   );
 };
