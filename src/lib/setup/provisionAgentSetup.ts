@@ -162,6 +162,44 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     data: { session },
   } = await supabase.auth.getSession();
 
+  // Phone number: /start's promise includes a dialable line. Non-fatal —
+  // launch never blocks on it — but the failure is RETURNED so the UI can
+  // show it with a retry, never silently swallowed (the V1 wizard's sin).
+  const phone: { number: string | null; error: string | null } = { number: null, error: null };
+  try {
+    const { data: existingPhone } = await supabase
+      .from('phone_numbers')
+      .select('phone_number')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .limit(1)
+      .maybeSingle();
+    if (existingPhone?.phone_number) {
+      phone.number = existingPhone.phone_number;
+    } else {
+      const purchaseRes = await fetch(`${FUNCTIONS_BASE}/twilio-numbers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {}),
+        },
+        body: JSON.stringify({ action: 'purchase', country_code: country.toUpperCase() }),
+      });
+      const purchaseData = await purchaseRes.json().catch(() => ({}));
+      if (purchaseRes.ok && purchaseData.phone_number) {
+        phone.number = purchaseData.phone_number;
+      } else {
+        phone.error = purchaseData.detail || purchaseData.error || `Phone purchase failed (${purchaseRes.status})`;
+        console.error('Phone purchase failed during /start launch:', phone.error);
+      }
+    }
+  } catch (error) {
+    phone.error = error instanceof Error ? error.message : 'Phone purchase failed';
+    console.error('Phone purchase failed during /start launch:', error);
+  }
+
   // Brand the workspace with the logo scraped during /start onboarding.
   // Non-fatal: a missing logo never blocks launch.
   if (setup.logoUrl) {
@@ -207,5 +245,6 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     workspace,
     businessProfile,
     locationId,
+    phone,
   };
 }

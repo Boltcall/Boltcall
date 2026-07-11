@@ -53,6 +53,8 @@ import {
 import { provisionAgentSetup } from '../../lib/setup/provisionAgentSetup';
 import { useWebsiteIntel, normalizeWebsite, logoCandidates, type WebsiteIntel } from './useWebsiteIntel';
 import { cn } from '../../lib/utils';
+import { FUNCTIONS_BASE } from '../../lib/api';
+import { authedFetch } from '../../lib/authedFetch';
 
 // ─── Types & constants ────────────────────────────────────────────────────
 
@@ -958,7 +960,16 @@ const LaunchScene: React.FC<{
   );
 };
 
-const LiveScene: React.FC<{ draft: Draft; onCall: () => void; onDashboard: () => void }> = ({ draft, onCall, onDashboard }) => {
+const LiveScene: React.FC<{
+  draft: Draft;
+  phoneNumber: string | null;
+  phoneError: string | null;
+  retryingPhone: boolean;
+  onRetryPhone: () => void;
+  onConnectCalendar: () => void;
+  onCall: () => void;
+  onDashboard: () => void;
+}> = ({ draft, phoneNumber, phoneError, retryingPhone, onRetryPhone, onConnectCalendar, onCall, onDashboard }) => {
   const pain = PAIN_POINTS.find((p) => p.id === draft.pain);
   return (
     <SceneShell id="live" wide>
@@ -1020,6 +1031,35 @@ const LiveScene: React.FC<{ draft: Draft; onCall: () => void; onDashboard: () =>
           </Reveal>
         )}
 
+        {/* Purchased number — the tangible proof the agent is reachable */}
+        {phoneNumber && (
+          <Reveal delay={0.75}>
+            <div className="mt-6 w-full max-w-lg rounded-2xl border border-emerald-300/20 bg-emerald-400/[0.06] p-5 text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
+                Your business line
+              </p>
+              <a
+                href={`tel:${phoneNumber.replace(/[^+\d]/g, '')}`}
+                className="mt-1 block text-2xl font-bold tracking-tight text-white hover:text-emerald-200 transition-colors"
+              >
+                {phoneNumber}
+              </a>
+              <p className="mt-1 text-xs text-white/45">Call it right now — your agent picks up.</p>
+            </div>
+          </Reveal>
+        )}
+        {phoneError && (
+          <Reveal delay={0.75}>
+            <div className="mt-6 w-full max-w-lg rounded-2xl border border-amber-300/25 bg-amber-400/[0.08] p-5 text-left">
+              <p className="text-sm font-semibold text-amber-200">Phone number pending</p>
+              <p className="mt-1 text-xs leading-relaxed text-amber-200/70">{phoneError}</p>
+              <GhostButton onClick={onRetryPhone} className="mt-3 h-9 px-4 text-xs" disabled={retryingPhone}>
+                {retryingPhone ? 'Retrying…' : 'Retry now'}
+              </GhostButton>
+            </div>
+          </Reveal>
+        )}
+
         <Reveal delay={0.85} className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
           <PrimaryButton onClick={onCall}>
             <PhoneCall className="h-4 w-4" />
@@ -1034,6 +1074,14 @@ const LiveScene: React.FC<{ draft: Draft; onCall: () => void; onDashboard: () =>
           <p className="mt-5 text-xs text-white/35">
             Don&rsquo;t just take our word for it — call it like a customer would.
           </p>
+        </Reveal>
+        <Reveal delay={1.1}>
+          <button
+            onClick={onConnectCalendar}
+            className="mt-6 text-xs font-medium text-white/50 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white/80"
+          >
+            Connect Google Calendar so your agent can book jobs →
+          </button>
         </Reveal>
       </div>
     </SceneShell>
@@ -1054,6 +1102,9 @@ const StartOnboarding: React.FC = () => {
   const [manualMode, setManualMode] = useState(false);
   const [launchStepIdx, setLaunchStepIdx] = useState(0);
   const [launchError, setLaunchError] = useState<string | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [retryingPhone, setRetryingPhone] = useState(false);
   const launchStarted = useRef(false);
 
   const websiteIntel = useWebsiteIntel();
@@ -1168,9 +1219,11 @@ const StartOnboarding: React.FC = () => {
     const minimumShow = new Promise((r) => setTimeout(r, LAUNCH_STEPS.length * 1600));
 
     Promise.all([provisionAgentSetup(user.id, setup), minimumShow])
-      .then(() => {
+      .then(([result]) => {
         clearPendingAgentSetup();
         window.clearInterval(stepTimer);
+        setPhoneNumber(result.phone?.number ?? null);
+        setPhoneError(result.phone?.error ?? null);
         setLaunchStepIdx(LAUNCH_STEPS.length);
         setTimeout(() => goTo('live'), 500);
       })
@@ -1189,6 +1242,48 @@ const StartOnboarding: React.FC = () => {
     launchStarted.current = true;
     runLaunch();
   }, [draft.scene, runLaunch]);
+
+  // Phone purchase retry — the launch itself already succeeded, only the
+  // number is pending. Never bounce the user back through provisioning.
+  const retryPhone = useCallback(async () => {
+    setRetryingPhone(true);
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/twilio-numbers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'purchase', country_code: 'US' }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.phone_number) {
+        setPhoneNumber(data.phone_number);
+        setPhoneError(null);
+      } else {
+        setPhoneError(data.detail || data.error || `Phone purchase failed (${res.status})`);
+      }
+    } catch (error) {
+      setPhoneError(error instanceof Error ? error.message : 'Phone purchase failed');
+    } finally {
+      setRetryingPhone(false);
+    }
+  }, []);
+
+  // Optional calendar hookup — OAuth callback lands on /dashboard/integrations,
+  // which is fine: the live scene is the end of the flow anyway.
+  const connectCalendar = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/google-calendar-auth-start?user_id=${user.id}`);
+      const data = await res.json();
+      if (data.url) {
+        sessionStorage.removeItem(DRAFT_KEY);
+        window.location.href = data.url;
+      } else {
+        console.error('Calendar OAuth start failed:', data.error);
+      }
+    } catch (error) {
+      console.error('Calendar OAuth start failed:', error);
+    }
+  }, [user?.id]);
 
   if (isLoading) {
     return <div className="min-h-screen bg-[#050507]" />;
@@ -1271,6 +1366,11 @@ const StartOnboarding: React.FC = () => {
           <LiveScene
             key="live"
             draft={draft}
+            phoneNumber={phoneNumber}
+            phoneError={phoneError}
+            retryingPhone={retryingPhone}
+            onRetryPhone={retryPhone}
+            onConnectCalendar={connectCalendar}
             onCall={() => {
               sessionStorage.removeItem(DRAFT_KEY);
               navigate('/setup/talk-to-agent');

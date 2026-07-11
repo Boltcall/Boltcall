@@ -637,17 +637,24 @@ const handler: Handler = async (event) => {
 
     // Step 7a: Dedup — don't stack a second text-back if one was already
     // queued or sent to this number in the last 24h (second missed call
-    // from the same lead = duplicate texts otherwise).
-    const { data: recentTextback } = await supabase
-      .from('scheduled_messages')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('recipient_phone', callerPhone)
-      .eq('type', 'missed_call_textback')
-      .in('status', ['scheduled', 'sent'])
-      .gte('scheduled_for', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .limit(1)
-      .maybeSingle();
+    // from the same lead = duplicate texts otherwise). Best-effort: a
+    // failed dedup check must never block the text-back itself.
+    let recentTextback: { id: string } | null = null;
+    try {
+      const { data } = await supabase
+        .from('scheduled_messages')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('recipient_phone', callerPhone)
+        .eq('type', 'missed_call_textback')
+        .in('status', ['scheduled', 'sent'])
+        .gte('scheduled_for', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(1)
+        .maybeSingle();
+      recentTextback = data;
+    } catch (dedupErr) {
+      console.error('[retell-webhook] Text-back dedup check failed (non-blocking):', dedupErr);
+    }
 
     if (recentTextback) {
       console.log(`[retell-webhook] Text-back deduped — recent message already exists for ${callerPhone}`);
