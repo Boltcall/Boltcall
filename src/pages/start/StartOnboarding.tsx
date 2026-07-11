@@ -299,7 +299,7 @@ const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
         {RAIL_PHASES.map((phase, i) => {
           const phaseStart = phase.scenes.length ? SCENE_ORDER.indexOf(phase.scenes[0]) : -1;
           const phaseEnd = phase.scenes.length ? SCENE_ORDER.indexOf(phase.scenes[phase.scenes.length - 1]) : -1;
-          const done = i === 0 || sceneIdx > phaseEnd || scene === 'live';
+          const done = i === 0 || sceneIdx > phaseEnd;
           const active = !done && sceneIdx >= phaseStart && sceneIdx <= phaseEnd;
           return (
             <div key={phase.label} className="flex flex-1 flex-col items-center gap-1.5">
@@ -1198,9 +1198,13 @@ const StartOnboarding: React.FC = () => {
   }
 
   return (
-    <div className="dark relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] py-24 text-white">
+    <div className="dark relative isolate flex min-h-screen flex-col overflow-hidden bg-[#050507] text-white">
       <SetupGradientBackground logoVariant="white" />
       <ProgressRail scene={draft.scene} />
+      {/* Header slot reserves vertical space so tall scenes never grow up
+          into the Boltcall logo + progress rail. */}
+      <div aria-hidden className="h-32 flex-shrink-0 sm:h-36" />
+      <main className="relative flex flex-1 items-center justify-center px-4 pb-16 sm:pb-20">
       <AnimatePresence mode="wait">
         {draft.scene === 'welcome' && (
           <WelcomeScene key="welcome" firstName={firstName} avatarUrl={avatarUrl} />
@@ -1282,6 +1286,7 @@ const StartOnboarding: React.FC = () => {
           />
         )}
       </AnimatePresence>
+      </main>
     </div>
   );
 };
