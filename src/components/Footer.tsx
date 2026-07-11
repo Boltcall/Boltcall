@@ -92,7 +92,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'Solar Benchmark 2026', labelHe: 'בנצ׳מרק סולאר 2026', href: '/solar-benchmark-2026' },
       { label: 'Solar Speed Playbook', labelHe: 'פלייבוק מהירות לסולאר', href: '/solar-speed-playbook' },
       { label: 'Solar Speed Score Quiz', labelHe: 'חידון ציון מהירות לסולאר', href: '/solar-speed-score' },
-      { label: 'Voice Agent Setup', labelHe: 'הגדרת סוכן קולי', href: '/voice-agent-setup' },
+      { label: 'Voice Agent Setup', labelHe: 'הגדרת סוכן קולי', href: '/start' },
       { label: 'Rank on Google Offer', labelHe: 'הצעת דירוג בגוגל', href: '/rank-on-google-offer' },
       { label: 'Free Website Offer', labelHe: 'הצעת אתר חינם', href: '/free-website' },
       { label: 'Giveaway', labelHe: 'הגרלה', href: '/giveaway' },

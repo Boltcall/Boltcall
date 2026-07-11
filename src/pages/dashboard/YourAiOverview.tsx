@@ -125,7 +125,7 @@ const YourAiOverview: React.FC = () => {
           Five minutes of setup and it answers every call for you.
         </p>
         <Link
-          to="/voice-agent-setup"
+          to="/start"
           className="inline-block px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
         >
           Build your AI

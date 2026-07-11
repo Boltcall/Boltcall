@@ -530,7 +530,7 @@ const blogPosts: BlogPost[] = [
 const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'AI Visibility Check', href: '/ai-visibility-check', tagline: 'Score how AI-search-ready your site is.' },
   { label: 'Funnel Optimizer', href: '/funnel-optimizer', tagline: 'Find the leak in your lead funnel.' },
-  { label: 'Voice Agent Setup', href: '/voice-agent-setup', tagline: 'Walkthrough for your first AI voice agent.' },
+  { label: 'Voice Agent Setup', href: '/start', tagline: 'Walkthrough for your first AI voice agent.' },
   { label: 'Rank on Google Offer', href: '/rank-on-google-offer', tagline: 'Done-for-you SEO + AEO push.' },
   { label: 'Free Website Offer', href: '/free-website', tagline: 'Get a Boltcall-built site at no cost.' },
   { label: 'Giveaway', href: '/giveaway', tagline: 'Current Boltcall giveaway.' },

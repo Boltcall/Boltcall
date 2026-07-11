@@ -119,8 +119,53 @@ const handler: Handler = async (event) => {
 
     // Check if this is a reply to a scheduled message (appointment confirmation, etc.)
     const lowerBody = body.toLowerCase().trim();
+
+    // ─── SMS opt-out (TCPA) ────────────────────────────────────────
+    // Carrier keywords. "cancel" excluded — it belongs to the appointment
+    // flow below. All outbound SMS share one Twilio from-number, so an
+    // opt-out is platform-wide, keyed by phone alone.
+    const isOptOut = /^(stop|stopall|unsubscribe|end|quit)$/.test(lowerBody);
+    const isOptIn = /^(start|unstop)$/.test(lowerBody);
+
+    if (isOptOut) {
+      const [optoutRes, enrollRes, cancelRes] = await Promise.all([
+        supabase.from('sms_optouts').upsert({ phone: from, user_id: userId }, { onConflict: 'phone' }),
+        supabase
+          .from('followup_enrollments')
+          .update({ status: 'unsubscribed' })
+          .eq('contact_phone', from)
+          .eq('status', 'active'),
+        supabase
+          .from('scheduled_messages')
+          .update({ status: 'cancelled', error: 'recipient opted out (STOP)' })
+          .eq('recipient_phone', from)
+          .eq('status', 'scheduled'),
+      ]);
+      const optErr = optoutRes.error || enrollRes.error || cancelRes.error;
+      if (optErr) {
+        console.error('[twilio-inbound-sms] Opt-out processing failed:', optErr);
+        await notifyError('twilio-inbound-sms: Opt-out processing failed', optErr, { from });
+      }
+      console.log(`[twilio-inbound-sms] Opt-out processed for ${from}`);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'text/xml' },
+        body: '<Response><Message>You have been unsubscribed and will receive no further messages. Reply START to resubscribe.</Message></Response>',
+      };
+    }
+
+    if (isOptIn) {
+      const { error: optInErr } = await supabase.from('sms_optouts').delete().eq('phone', from);
+      if (optInErr) console.error('[twilio-inbound-sms] Opt-in processing failed:', optInErr);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'text/xml' },
+        body: '<Response><Message>You have been resubscribed. Reply STOP to unsubscribe.</Message></Response>',
+      };
+    }
+
     const isConfirm = /^(yes|confirm|ok|y|sure|1)$/i.test(lowerBody);
-    const isCancel = /^(no|cancel|n|stop|2)$/i.test(lowerBody);
+    const isCancel = /^(no|cancel|n|2)$/i.test(lowerBody);
 
     if (userId && (isConfirm || isCancel)) {
       // Find the most recent appointment for this phone number

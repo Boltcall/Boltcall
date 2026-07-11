@@ -4,6 +4,7 @@ import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { estimateBookingValueCents } from './_shared/booking-value';
 
 /**
  * Agent Tools Webhook
@@ -569,6 +570,7 @@ async function handleBookAppointment(
       const supabase = getSupabase();
 
       try {
+        const estimatedValueCents = await estimateBookingValueCents(supabase, userId, service);
         await supabase.from('appointments').insert({
           user_id: userId,
           cal_booking_id: String(bookingId),
@@ -580,6 +582,7 @@ async function handleBookAppointment(
           starts_at: startISO,
           timezone: 'America/New_York',
           status: 'confirmed',
+          estimated_value_cents: estimatedValueCents,
           raw_webhook: { source: 'agent_tool', call_id: callId, booked_via: bookedVia },
         });
       } catch (dbErr) {

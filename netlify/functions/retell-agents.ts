@@ -604,6 +604,40 @@ const handler: Handler = async (event) => {
         }
 
         try {
+        // Idempotency: the lock only stops concurrent calls — a sequential
+        // re-run (wizard retry, back button, second onboarding pass) would
+        // mint a second Retell agent + LLM. If this user already has an
+        // agent of this type, return it instead of provisioning again.
+        const requestedAgentType = body.agent_type || 'inbound';
+        const { data: existingAgent, error: existingErr } = await serviceSupabase
+          .from('agents')
+          .select('id, retell_agent_id')
+          .eq('user_id', userId)
+          .eq('agent_type', requestedAgentType)
+          .limit(1)
+          .maybeSingle();
+        if (existingErr) {
+          console.error('[retell-agents] Idempotency pre-check failed:', existingErr);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Could not verify existing agents. Please try again.' }),
+          };
+        }
+        if (existingAgent) {
+          console.log(`[retell-agents] create_full skipped — ${requestedAgentType} agent already exists for user ${userId}`);
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+              success: true,
+              agent_id: existingAgent.retell_agent_id,
+              supabase_agent_id: existingAgent.id,
+              already_provisioned: true,
+            }),
+          };
+        }
+
         // Step 0: Scrape website with Firecrawl if URL provided — adds rich content to KB
         if (body.website_url) {
           try {

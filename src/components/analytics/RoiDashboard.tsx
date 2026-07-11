@@ -87,13 +87,15 @@ const RoiDashboard: React.FC<RoiDashboardProps> = ({
       caption: 'Average acquisition cost per lead',
     },
     {
-      label: 'Est. Revenue',
+      label: metrics.revenueSource === 'actual' ? 'Booked Revenue' : 'Est. Revenue',
       value: `$${metrics.estimatedRevenue.toLocaleString()}`,
       icon: TrendingUp,
       accentColor: '#059669',
-      badge: 'Revenue',
+      badge: metrics.revenueSource === 'actual' ? 'Actual' : 'Estimate',
       badgeTone: 'positive' as const,
-      caption: 'Projected revenue captured with Boltcall',
+      caption: metrics.revenueSource === 'actual'
+        ? 'Sum of real booking values this period'
+        : 'Projected revenue captured with Boltcall',
     },
     {
       label: 'ROI',

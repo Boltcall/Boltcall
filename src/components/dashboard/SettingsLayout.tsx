@@ -12,6 +12,7 @@ const categories = [
     label: 'Account & Settings',
     sidebar: [
       { id: 'general', label: 'General', route: '/dashboard/settings/general' },
+      { id: 'services', label: 'Services & Pricing', route: '/dashboard/settings/services' },
       { id: 'workspace', label: 'Workspace', route: '/dashboard/settings/workspace' },
     ],
   },

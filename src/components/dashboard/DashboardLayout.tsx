@@ -32,6 +32,7 @@ import { supabase } from '../../lib/supabase';
 import { LocationSwitcher } from './LocationSwitcher';
 import { useDirection } from '../../hooks/useDirection';
 import UsageBanner from './UsageBanner';
+import CalendarConnectBanner from './CalendarConnectBanner';
 import UsageLimitModal from './UsageLimitModal';
 import TrialExpiryPopup from './TrialExpiryPopup';
 import PageInfoTooltip from '../ui/PageInfoTooltip';
@@ -846,6 +847,7 @@ const DashboardLayout: React.FC = () => {
            {/* Page Content */}
            <div className="p-3 md:p-6">
              <UsageBanner className="mb-4" />
+             <CalendarConnectBanner className="mb-4" />
              <motion.div
                key={location.pathname.startsWith('/dashboard/settings/') ? '/dashboard/settings' : location.pathname}
                initial={{ opacity: 0, y: 12 }}

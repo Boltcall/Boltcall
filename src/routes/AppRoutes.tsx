@@ -126,6 +126,7 @@ const NotificationPage = React.lazy(() => import('../pages/dashboard/settings/No
 const RolesPage = React.lazy(() => import('../pages/dashboard/settings/RolesPage'));
 const ActivityLogPage = React.lazy(() => import('../pages/dashboard/settings/ActivityLogPage'));
 const ApiKeysPage = React.lazy(() => import('../pages/dashboard/settings/ApiKeysPage'));
+const ServicesSettingsPage = React.lazy(() => import('../pages/dashboard/settings/ServicesPage'));
 
 const SetupTransitionFallback: React.FC<{ message?: string }> = ({
   message = 'Loading setup...',
@@ -249,7 +250,6 @@ const SolarIndustryHub = React.lazy(() => import('../pages/SolarIndustryHub'));
 const SolarSpeedToLeadPlaybook = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybook'));
 const SolarSpeedToLeadPlaybookThankYou = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybookThankYou'));
 const SolarBenchmarkPage = React.lazy(() => import('../pages/SolarBenchmarkPage'));
-const VoiceAgentOnboarding = React.lazy(() => import('../pages/VoiceAgentOnboarding'));
 const AiReadinessScorecard = React.lazy(() => import('../pages/AiReadinessScorecard'));
 const AiReceptionistRoi = React.lazy(() => import('../pages/AiReceptionistRoi'));
 const FiveMinuteResponsePlaybook = React.lazy(() => import('../pages/FiveMinuteResponsePlaybook'));
@@ -544,7 +544,7 @@ const NavigationWrapper: React.FC = () => {
             {/* Redirects for removed settings pages */}
             <Route path="billing" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
             <Route path="notification-preferences" element={<Navigate to="/dashboard/settings/notifications" replace />} />
-            <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
+            <Route path="services" element={<ServicesSettingsPage />} />
           </Route>
         </Route>
         {/* /setup is the canonical V2 AI-guided onboarding page. */}
@@ -904,7 +904,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/tools/landscaping-seasonal-revenue-calculator" element={<LandscapingSeasonalRevenueCalculator />} />
         {/* All niche tools now served by dynamic route from Supabase */}
         <Route path="/tools/:slug" element={<NicheToolPage />} />
-        <Route path="/voice-agent-setup" element={<VoiceAgentOnboarding />} />
+        {/* V1 wizard retired — /start is the canonical onboarding */}
+        <Route path="/voice-agent-setup" element={<Navigate to="/start" replace />} />
         <Route path="/ai-readiness-scorecard" element={<AiReadinessScorecard />} />
         <Route path="/ai-receptionist-roi" element={<AiReceptionistRoi />} />
         <Route path="/privacy-policy" element={<Privacy />} />
