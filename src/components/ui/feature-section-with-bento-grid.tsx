@@ -43,7 +43,7 @@ function Feature() {
       <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl ${isRtl ? 'mr-0 sm:mr-8 ml-0' : 'ml-0 sm:ml-8'}`}>
             {/* Wide Card - Text on Left */}
             <motion.div
-              className="bg-muted rounded-xl lg:col-span-2 p-6 flex items-center shadow-2xl h-64 w-full"
+              className="bg-muted rounded-xl lg:col-span-2 p-6 flex flex-col sm:flex-row items-center shadow-2xl h-auto sm:h-64 w-full"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -55,7 +55,7 @@ function Feature() {
               }}
             >
               {/* Text content */}
-              <div className={`flex flex-col max-w-xs ${isRtl ? 'text-right order-2' : 'text-left'}`}>
+              <div className={`flex flex-col max-w-xs ${isRtl ? 'text-right sm:order-2' : 'text-left'}`}>
                 <h3 className="text-2xl font-semibold tracking-tight mb-2 text-black">{t('features.closingRates.title')}</h3>
                 <p className="text-muted-foreground text-base mb-4">
                   {t('features.closingRates.description')}
@@ -63,7 +63,7 @@ function Feature() {
               </div>
 
               {/* Chart */}
-              <div className={`flex-1 flex items-center justify-center ${isRtl ? 'mr-6 order-1' : 'ml-6'}`}>
+              <div className={`flex-1 flex items-center justify-center ${isRtl ? 'sm:mr-6 sm:order-1' : 'sm:ml-6'}`}>
                 <div className="relative w-full h-48 bg-muted rounded-xl overflow-hidden">
                   {/* Chart */}
                   <ResponsiveContainer width="100%" height="100%">
@@ -147,20 +147,20 @@ function Feature() {
             
             {/* Wide Card - Text on Left */}
             <motion.div
-              className="bg-muted rounded-xl lg:col-span-2 p-4 md:p-6 flex items-center shadow-2xl h-48 w-full overflow-hidden"
+              className="bg-muted rounded-xl lg:col-span-2 p-4 md:p-6 flex flex-col sm:flex-row items-center shadow-2xl h-auto sm:h-48 w-full overflow-hidden"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
             >
-              <div className={`flex flex-col max-w-sm ${isRtl ? 'text-right order-2' : 'text-left'}`}>
+              <div className={`flex flex-col max-w-sm ${isRtl ? 'text-right sm:order-2' : 'text-left'}`}>
                 <h3 className="text-lg md:text-2xl font-semibold tracking-tight mb-2 text-black">{t('features.customerSatisfaction.title')}</h3>
                 <p className="text-muted-foreground text-sm md:text-base">
                   {t('features.customerSatisfaction.description')}
                 </p>
               </div>
-              <div className={`flex-1 flex items-center justify-center ${isRtl ? 'order-1' : ''}`}>
-                <div className="w-56 h-56 md:w-80 md:h-80">
+              <div className={`flex-1 flex items-center justify-center ${isRtl ? 'sm:order-1' : ''}`}>
+                <div className="w-40 h-40 sm:w-56 sm:h-56 md:w-80 md:h-80">
                   <LazyLottie
                     src="/costumer_statisfication.lottie"
                     loop

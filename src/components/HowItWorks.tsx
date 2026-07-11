@@ -42,7 +42,7 @@ const HowItWorks: React.FC = () => {
               />
               <WhisperText
                 text={t('howItWorks.heading2')}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-blue-500 inline-block"
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-brand-sky inline-block"
                 delay={125}
                 duration={0.625}
                 x={-20}
