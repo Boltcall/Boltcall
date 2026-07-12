@@ -66,7 +66,7 @@ const handler: Handler = async (event) => {
   // Load the version — must exist and be cekura_passed
   const { data: version, error: verErr } = await supabase
     .from('retell_prompt_versions')
-    .select('id, vertical, prompt_text, status')
+    .select('id, vertical, prompt_text, status, scope, agent_id')
     .eq('id', version_id)
     .eq('status', 'cekura_passed')
     .maybeSingle();
@@ -85,9 +85,14 @@ const handler: Handler = async (event) => {
     .select('id, retell_agent_id, name, description')
     .not('retell_agent_id', 'is', null);
 
-  const targetAgents = (allAgents || []).filter(a =>
-    inferVertical([a.name, a.description].filter(Boolean).join(' ')) === version.vertical
-  );
+  // Customer-scoped versions with a pinned agent only patch that agent —
+  // never every agent in the vertical (cross-tenant prompt clobber).
+  const pinnedAgentId = (version as any).agent_id as string | null;
+  const targetAgents = pinnedAgentId
+    ? (allAgents || []).filter(a => a.id === pinnedAgentId || a.retell_agent_id === pinnedAgentId)
+    : (allAgents || []).filter(a =>
+        inferVertical([a.name, a.description].filter(Boolean).join(' ')) === version.vertical
+      );
 
   if (targetAgents.length === 0) {
     console.log(`[shadow-promote] No agents found for vertical=${version.vertical}`);

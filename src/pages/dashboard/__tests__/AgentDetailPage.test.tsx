@@ -115,6 +115,20 @@ vi.mock('../../../lib/supabase', () => ({
         };
       }
 
+      if (table === 'retell_prompt_versions') {
+        return {
+          select: () => ({
+            eq: () => ({
+              in: () => ({
+                order: () => ({
+                  limit: () => Promise.resolve({ data: [], error: null }),
+                }),
+              }),
+            }),
+          }),
+        };
+      }
+
       throw new Error(`Unexpected table: ${table}`);
     },
   },

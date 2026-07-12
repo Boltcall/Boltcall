@@ -194,19 +194,25 @@ const handler: Handler = async (event) => {
     return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'DB write failed' }) };
   }
 
-  // Stamp prompt_version_id if a shadow version is active for this vertical
-  const { data: shadowVersion } = await supabase
-    .from('retell_prompt_versions')
-    .select('id')
-    .eq('vertical', vertical)
-    .eq('status', 'shadowing')
-    .limit(1)
-    .maybeSingle();
+  // Stamp prompt_version_id: call metadata wins (A/B variant arm, set at
+  // call creation), else fall back to the vertical's active shadow version.
+  let stampVersionId: string | null =
+    typeof call.metadata?.prompt_version_id === 'string' ? call.metadata.prompt_version_id : null;
+  if (!stampVersionId) {
+    const { data: shadowVersion } = await supabase
+      .from('retell_prompt_versions')
+      .select('id')
+      .eq('vertical', vertical)
+      .eq('status', 'shadowing')
+      .limit(1)
+      .maybeSingle();
+    stampVersionId = shadowVersion?.id || null;
+  }
 
-  if (shadowVersion?.id) {
+  if (stampVersionId) {
     supabase
       .from('retell_calls')
-      .update({ prompt_version_id: shadowVersion.id })
+      .update({ prompt_version_id: stampVersionId })
       .eq('call_id', callId)
       .then(({ error }) => {
         if (error) console.error('[retell-call-scorer] prompt_version_id stamp failed:', error);
