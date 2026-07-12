@@ -264,7 +264,7 @@ const V2SetupChat: React.FC = () => {
         return;
       }
       sessionStorage.removeItem(STORAGE_KEY);
-      const redirect = data.redirect_to || '/dashboard';
+      const redirect = data.redirect_to || '/v2';
       navigate(redirect);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Deploy failed. Try again.');
@@ -394,7 +394,7 @@ const V2SetupChat: React.FC = () => {
       </div>
 
       {error && (
-        <div className="mx-1 mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+        <div className="mx-1 mt-3 rounded-lg border border-rose-400/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
           {error}
         </div>
       )}
@@ -597,10 +597,10 @@ const V2SetupChat: React.FC = () => {
       </div>
 
       {readyToDeploy && (
-        <div className="mx-1 mb-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+        <div className="mx-1 mb-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-3">
           <div className="text-sm">
-            <div className="font-semibold text-emerald-900">Everything is set</div>
-            <div className="text-xs text-emerald-700">
+            <div className="font-semibold text-emerald-200">Everything is set</div>
+            <div className="text-xs text-emerald-300/80">
               Deploys two agents: inbound receptionist and speed-to-lead follow-up.
             </div>
           </div>
@@ -632,7 +632,7 @@ const MessageText: React.FC<{ message: ChatMessage }> = ({ message }) => {
         style={{ animation: 'v2SetupPromptFadeIn 600ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
       >
         {message.toolNote && !isUser && (
-          <div className="mb-1 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-700">
+          <div className="mb-1 text-[10px] font-medium uppercase tracking-[0.14em] text-amber-300">
             {message.toolNote}
           </div>
         )}

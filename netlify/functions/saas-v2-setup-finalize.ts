@@ -3,7 +3,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
  * V2 conversational setup wizard — finalize / deploy endpoint.
  *
  * POST { conversation_id, confirm: true } → { agent_id, kb_entries_created,
- *   voice_id, redirect_to: '/v2/' }
+ *   voice_id, redirect_to: '/v2' }
  *
  * Reads the drafted artifacts from workspaces.v2_setup_state, then:
  *   1. Upserts the business_profile row for this workspace.
@@ -565,7 +565,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       kb_entries_created: kbEntries,
       voice_id: voiceId,
       duration_seconds: durationSec,
-      redirect_to: '/dashboard',
+      redirect_to: '/v2',
     }),
   };
 };
