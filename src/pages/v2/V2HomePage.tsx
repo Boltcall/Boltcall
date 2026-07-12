@@ -5,7 +5,7 @@ import AskBoltcallAIV2 from '../../components/v2/AskBoltcallAIV2';
 import { useAuth } from '../../contexts/AuthContext';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
-import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
+import MetricCardV2 from '../../components/v2/MetricCardV2';
 
 /**
  * V2HomePage — single-tenant SaaS V2 home.
@@ -218,7 +218,7 @@ const KpiTile: React.FC<{
           : 'Time to first response';
 
   return (
-    <OverviewMetricCard
+    <MetricCardV2
       compact
       label={label}
       period="Vs yesterday"

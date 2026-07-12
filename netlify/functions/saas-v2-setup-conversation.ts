@@ -771,7 +771,7 @@ const handler: Handler = async (event) => {
       headers,
       body: JSON.stringify({
         error: 'AI provider error',
-        recovery: 'Retry or switch to V1 setup at /setup',
+        recovery: 'Retry, or use the classic setup at /setup/classic',
         conversation_id: conversationId,
       }),
     };

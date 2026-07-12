@@ -34,12 +34,16 @@ const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 
-// ── Lazy loads — V2 shell (opt-in, parallel surface to V1) ───────────────
+// ── Lazy loads — V2 shell (AI-native default, parallel surface to V1) ────
 // V2 is the AI-native redesign that all 12 Day-8 V2 pages compose into.
-// Gated per-workspace via workspaces.v2_enabled — see V2OptInGate. V1 stays
-// untouched; this is a sibling route surface, not a replacement.
+// Completing setup flips workspaces.v2_enabled (setup-launch), so new
+// workspaces land here by default; pre-existing V1 workspaces opt in via
+// V2OptInGate. V1 stays available as a sibling route surface.
 const DashboardLayoutV2 = React.lazy(() => import('../components/v2/DashboardLayoutV2'));
 const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+// Mirror gate: keeps V2 workspaces out of /dashboard/* (redirects to the V2
+// sibling page) so V1 and V2 never mix. Agency OS + client portal are exempt.
+const ClassicDashboardGate = React.lazy(() => import('../components/v2/ClassicDashboardGate'));
 // V2 page wave 2 — Leads / Messages / Agent / Knowledge mount under /v2/*.
 const V2LeadsPage = React.lazy(() => import('../pages/v2/V2LeadsPage'));
 const V2MessagesPage = React.lazy(() => import('../pages/v2/V2MessagesPage'));
@@ -392,7 +396,9 @@ const NavigationWrapper: React.FC = () => {
           element={
             <ProtectedRoute>
               <DashboardProviders>
-                <DashboardLayout />
+                <ClassicDashboardGate>
+                  <DashboardLayout />
+                </ClassicDashboardGate>
               </DashboardProviders>
             </ProtectedRoute>
           }

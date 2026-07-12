@@ -8,8 +8,8 @@ import { withLegacyHandler } from './_shared/runtime-compat';
  * edits" drawer on /v2/agent.
  *
  * Suggestions are PROPOSED only — this endpoint never writes the prompt back.
- * The Apply button in the drawer is a stub today; a follow-up PR will add
- * an /apply endpoint that revisits the prompt + emits prompt_revised.
+ * The Apply button in the drawer POSTs the chosen suggestion to
+ * saas-v2-agent-apply-edit, which syncs Retell + the mirrored system_prompt.
  *
  * Auth: Bearer JWT only. Workspace derived server-side from JWT.
  *

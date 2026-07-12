@@ -104,6 +104,7 @@ export type AgencyEventType =
   | 'saas_v2_kb_draft_accepted'
   | 'saas_v2_message_thread_opened'
   | 'saas_v2_agent_suggest_edits'
+  | 'saas_v2_agent_edit_applied'
   // SaaS V2 surface (wave-3 integrations/reviews/help/qa/settings)
   | 'saas_v2_integrations_list_rendered'
   | 'saas_v2_integration_recommended'
@@ -625,6 +626,15 @@ const saasV2AgentSuggestEditsSchema = z.object({
   used_qa_failures: z.boolean().optional(),
 }).strict();
 
+const saasV2AgentEditAppliedSchema = z.object({
+  workspace_id: z.string(),
+  agent_id: z.string(),
+  retell_agent_id: z.string().nullable().optional(),
+  title: z.string(),
+  synced_to_retell: z.boolean(),
+  prompt_length: z.number().int().nonnegative(),
+}).strict();
+
 // ── SaaS V2 surface schemas (wave-3 integrations/reviews/help/qa/settings) ─
 // V2 events are internal-only — they describe owner-facing UI surface activity
 // and never carry client-facing payload bits. All payloads are .strict().
@@ -823,6 +833,7 @@ export const EVENT_SCHEMAS = {
   saas_v2_kb_draft_accepted: saasV2KbDraftAcceptedSchema,
   saas_v2_message_thread_opened: saasV2MessageThreadOpenedSchema,
   saas_v2_agent_suggest_edits: saasV2AgentSuggestEditsSchema,
+  saas_v2_agent_edit_applied: saasV2AgentEditAppliedSchema,
   // SaaS V2 wave-3 (integrations/reviews/help/qa/settings)
   saas_v2_integrations_list_rendered: saasV2IntegrationsListRenderedSchema,
   saas_v2_integration_recommended: saasV2IntegrationRecommendedSchema,
@@ -901,6 +912,7 @@ export const CLIENT_VISIBLE_FIELDS: Record<AgencyEventType, ReadonlyArray<string
   saas_v2_kb_draft_accepted:        [],
   saas_v2_message_thread_opened:    [],
   saas_v2_agent_suggest_edits:      [],
+  saas_v2_agent_edit_applied:       [],
   // SaaS V2 surface (wave-3) — owner-only internal telemetry; never client-facing.
   saas_v2_integrations_list_rendered:  [],
   saas_v2_integration_recommended:     [],
@@ -1283,6 +1295,7 @@ export type SaasV2EventType =
   | 'saas_v2_kb_draft_accepted'
   | 'saas_v2_message_thread_opened'
   | 'saas_v2_agent_suggest_edits'
+  | 'saas_v2_agent_edit_applied'
   | 'saas_v2_integrations_list_rendered'
   | 'saas_v2_integration_recommended'
   | 'saas_v2_review_drafted'
