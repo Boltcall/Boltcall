@@ -43,7 +43,7 @@ vi.mock('../../../components/ui/loading-skeleton', () => ({
 }));
 
 // Mock the IntegrationHubTab directly
-vi.mock('../integrations/IntegrationHubTab', () => ({
+vi.mock('../../../components/integrations/IntegrationHubTab', () => ({
   default: () => (
     <div data-testid="integration-hub">
       <input placeholder="Search integrations..." />

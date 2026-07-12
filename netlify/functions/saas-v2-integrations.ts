@@ -569,11 +569,11 @@ const handler: Handler = async (event) => {
       category: entry.category,
       connected,
       description: entry.description,
-      // Stable hash-anchors so V2 can deep-link into V1's hub if/when needed.
-      manage_href: connected ? `/dashboard/integrations#${entry.id}` : undefined,
-      connect_href: connected
-        ? undefined
-        : `/dashboard/integrations#${entry.id}`,
+      // No hrefs into the V1 dashboard: V2 renders its own connect/manage
+      // panel (shared IntegrationHubTab) inline. Fields stay in the contract
+      // for future external links (e.g. provider OAuth pages).
+      manage_href: undefined,
+      connect_href: undefined,
     };
   });
 

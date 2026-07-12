@@ -41,6 +41,9 @@ const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 // V2OptInGate. V1 stays available as a sibling route surface.
 const DashboardLayoutV2 = React.lazy(() => import('../components/v2/DashboardLayoutV2'));
 const V2OptInGate = React.lazy(() => import('../components/v2/V2OptInGate'));
+// Mirror gate: keeps V2 workspaces out of /dashboard/* (redirects to the V2
+// sibling page) so V1 and V2 never mix. Agency OS + client portal are exempt.
+const ClassicDashboardGate = React.lazy(() => import('../components/v2/ClassicDashboardGate'));
 // V2 page wave 2 — Leads / Messages / Agent / Knowledge mount under /v2/*.
 const V2LeadsPage = React.lazy(() => import('../pages/v2/V2LeadsPage'));
 const V2MessagesPage = React.lazy(() => import('../pages/v2/V2MessagesPage'));
@@ -393,7 +396,9 @@ const NavigationWrapper: React.FC = () => {
           element={
             <ProtectedRoute>
               <DashboardProviders>
-                <DashboardLayout />
+                <ClassicDashboardGate>
+                  <DashboardLayout />
+                </ClassicDashboardGate>
               </DashboardProviders>
             </ProtectedRoute>
           }

@@ -450,7 +450,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       body: JSON.stringify({
         error: 'Inbound agent creation failed',
         details: inboundResult.error,
-        recovery: 'Retry or switch to V1 setup at /setup',
+        recovery: 'Retry, or use the classic setup at /setup/classic',
       }),
     };
   }
@@ -472,7 +472,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       body: JSON.stringify({
         error: 'Speed-to-lead agent creation failed',
         details: stlResult.error,
-        recovery: 'Retry or switch to V1 setup at /setup',
+        recovery: 'Retry, or use the classic setup at /setup/classic',
       }),
     };
   }
@@ -499,7 +499,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
         body: JSON.stringify({
           error: 'Setup activation failed',
           details: details || `setup-launch ${launchRes.status}`,
-          recovery: 'Retry or switch to V1 setup at /setup',
+          recovery: 'Retry, or use the classic setup at /setup/classic',
         }),
       };
     }
@@ -517,7 +517,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       body: JSON.stringify({
         error: 'Setup activation failed',
         details: e instanceof Error ? e.message : 'Unknown setup-launch error',
-        recovery: 'Retry or switch to V1 setup at /setup',
+        recovery: 'Retry, or use the classic setup at /setup/classic',
       }),
     };
   }

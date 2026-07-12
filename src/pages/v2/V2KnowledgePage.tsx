@@ -478,10 +478,10 @@ const EmptyState: React.FC = () => (
       automatically. Takes about 30 seconds.
     </p>
     <Link
-      to="/dashboard/knowledge-base?import=website"
+      to="/v2/help"
       className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-slate-900 text-white hover:bg-slate-800 transition-colors"
     >
-      Import from your website
+      Ask Boltcall AI to import it
       <ArrowRight className="w-3.5 h-3.5" />
     </Link>
   </div>
@@ -531,15 +531,8 @@ const EntryDrawer: React.FC<{ entry: KBEntry; onClose: () => void }> = ({ entry,
           </p>
         </div>
 
-        <footer className="px-5 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex items-center justify-between flex-shrink-0">
+        <footer className="px-5 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 flex-shrink-0">
           <span>{entry.updated_at ? `Updated ${formatRelative(entry.updated_at)}` : 'No timestamp'}</span>
-          <Link
-            to="/dashboard/knowledge-base"
-            className="text-slate-700 hover:text-slate-900 font-medium inline-flex items-center gap-1"
-          >
-            Edit in full editor
-            <ArrowRight className="w-3 h-3" />
-          </Link>
         </footer>
       </aside>
     </div>
