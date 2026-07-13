@@ -194,6 +194,7 @@ const ROUTES = [
   { path: "/ai-revenue-calculator",                             priority: "0.8", changefreq: "monthly" },
   { path: "/demo",                                              priority: "0.7", changefreq: "monthly" },
   { path: "/dpa",                                               priority: "0.5", changefreq: "yearly"  },
+  { path: "/law-firm-security",                                 priority: "0.5", changefreq: "yearly"  },
   { path: "/free-website-package",                              priority: "0.7", changefreq: "monthly" },
   { path: "/free-website-package/pricing",                      priority: "0.6", changefreq: "monthly" },
   { path: "/funnel-optimiser",                                  priority: "0.6", changefreq: "monthly" },

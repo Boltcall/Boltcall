@@ -257,7 +257,7 @@ const DPA: React.FC = () => {
               <div className="p-2 bg-blue-100 rounded-lg shrink-0"><Mail className="w-4 h-4 text-blue-600" /></div>
               <a href="mailto:privacy@boltcall.org" className="text-blue-600 hover:underline font-medium">privacy@boltcall.org</a>
             </div>
-            <p className="text-gray-500 mt-4">Related documents: <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a> · <a href="/terms-of-service" className="text-blue-600 hover:underline">Terms of Service</a></p>
+            <p className="text-gray-500 mt-4">Related documents: <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a> · <a href="/terms-of-service" className="text-blue-600 hover:underline">Terms of Service</a> · <a href="/law-firm-security" className="text-blue-600 hover:underline">Security for Law Firms</a></p>
           </div>
         </motion.div>
 
