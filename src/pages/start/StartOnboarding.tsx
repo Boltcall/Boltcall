@@ -332,25 +332,14 @@ const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
 
 // Welcome scene: pairs with the GlowHorizon beam falling from the top of the
 // page. WELCOME TO BOLTCALL {NAME} rises in via AnimatedTitleFM; SceneShell's
-// exit animation fades it out when the flow advances. Avatar sits above.
-const WelcomeScene: React.FC<{ firstName: string | null; avatarUrl: string | null }> = ({ firstName, avatarUrl }) => {
+// exit animation fades it out when the flow advances.
+const WelcomeScene: React.FC<{ firstName: string | null }> = ({ firstName }) => {
   const welcomeText = firstName
     ? `WELCOME TO BOLTCALL ${firstName.toUpperCase()}`
     : 'WELCOME TO BOLTCALL';
   return (
     <SceneShell id="welcome" wide>
       <div className="flex flex-col items-center text-center">
-        {avatarUrl && (
-          <motion.img
-            src={avatarUrl}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="mb-7 h-16 w-16 rounded-full border-2 border-white/25 object-cover shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
-            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-          />
-        )}
         <AnimatedTitleFM open title={welcomeText} />
       </div>
     </SceneShell>
@@ -935,7 +924,6 @@ const StartOnboarding: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   const [draft, setDraft] = useState<Draft>(() => readDraft());
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [googleName, setGoogleName] = useState<string | null>(null);
   const [websiteError, setWebsiteError] = useState<string | null>(null);
   const [manualMode, setManualMode] = useState(false);
@@ -959,17 +947,15 @@ const StartOnboarding: React.FC = () => {
     } catch { /* quota — skip */ }
   }, [draft]);
 
-  // Google identity: avatar + full name live in user_metadata, which the app's
-  // User shape doesn't carry — read the raw session user once.
+  // OAuth full_name lives in user_metadata (Google/Microsoft only). Email
+  // signups have no name — welcome falls back to the plain "WELCOME TO BOLTCALL".
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
     void supabase.auth.getUser().then(({ data }) => {
       if (cancelled) return;
       const meta = data.user?.user_metadata as Record<string, unknown> | undefined;
-      const picture = (meta?.avatar_url || meta?.picture) as string | undefined;
       const fullName = (meta?.full_name || meta?.name) as string | undefined;
-      if (picture) setAvatarUrl(picture);
       if (fullName) setGoogleName(fullName);
     });
     return () => { cancelled = true; };
@@ -984,10 +970,11 @@ const StartOnboarding: React.FC = () => {
     return () => window.clearTimeout(t);
   }, [draft.scene, isLoading, isAuthenticated, goTo]);
 
-  const firstName = useMemo(
-    () => firstNameOf(googleName) ?? firstNameOf(user?.name),
-    [googleName, user?.name],
-  );
+  // Only trust an OAuth-provided name (Google/Microsoft user_metadata.full_name).
+  // Email signups have no real name — user.name is derived from the email
+  // prefix in transformSupabaseUser, and we don't want "WELCOME TO BOLTCALL
+  // NOAMYAKOBY6" showing up.
+  const firstName = useMemo(() => firstNameOf(googleName), [googleName]);
 
   function submitWebsite() {
     const normalized = normalizeWebsite(draft.websiteInput);
@@ -1126,7 +1113,7 @@ const StartOnboarding: React.FC = () => {
       <main className="relative flex flex-1 items-center justify-center px-4 pb-16 sm:pb-20">
       <AnimatePresence mode="wait">
         {draft.scene === 'welcome' && (
-          <WelcomeScene key="welcome" firstName={firstName} avatarUrl={avatarUrl} />
+          <WelcomeScene key="welcome" firstName={firstName} />
         )}
         {draft.scene === 'website' && (
           <WebsiteScene

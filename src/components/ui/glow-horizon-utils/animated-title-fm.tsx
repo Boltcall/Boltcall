@@ -16,7 +16,7 @@ export function AnimatedTitleFM({
       initial={open ? { opacity: 0, y: 28, filter: "blur(12px)" } : false}
       animate={open ? { opacity: 1, y: 0, filter: "blur(0px)" } : undefined}
       transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
-      className="text-center text-4xl font-semibold uppercase tracking-[0.32em] text-white sm:text-5xl md:text-6xl"
+      className="whitespace-nowrap text-center font-semibold uppercase tracking-[0.22em] text-white text-[clamp(0.85rem,3.6vw,3.5rem)]"
     >
       {title}
     </motion.h1>
