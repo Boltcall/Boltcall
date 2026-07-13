@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   Card,
   CardContent,
@@ -111,6 +113,7 @@ function formatRelative(iso: string): string {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 const V2MessagesPage: React.FC = () => {
+  const { user } = useAuth();
   const [threads, setThreads] = useState<ThreadRow[]>([]);
   const [loadingList, setLoadingList] = useState<boolean>(true);
   const [listError, setListError] = useState<string | null>(null);
@@ -168,6 +171,25 @@ const V2MessagesPage: React.FC = () => {
     void fetchThreads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelFilter, statusFilter, needsReplyOnly, assigneeFilter]);
+
+  // ─── Realtime subscription ─────────────────────────────────────────────────
+  // One subscription on `chats` covers every channel dual-written into it
+  // (SMS, email — see _shared/chats-sync.ts) instead of one per channel table.
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel(`v2-messages-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'chats', filter: `user_id=eq.${user.id}` },
+        () => void fetchThreads(),
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // ─── Thread + draft fetch ─────────────────────────────────────────────────
   const fetchThread = useCallback(async (id: string) => {

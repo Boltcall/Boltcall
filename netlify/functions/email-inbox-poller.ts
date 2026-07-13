@@ -2,6 +2,8 @@ import { Handler, schedule } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { getValidAccessToken, shouldSkipSender, type EmailAccount } from './_shared/email-token-refresh';
 import { authorizeRunner } from './_shared/agency-runner-auth';
+import { appendChatMessage } from './_shared/chats-sync';
+import { ensureWorkspaceForUser } from './_shared/setup-workspace';
 
 /**
  * Email Inbox Poller — Cron function that runs every 3 minutes.
@@ -383,6 +385,25 @@ async function storeMessage(supabase: any, account: EmailAccount, msg: ParsedMes
     .from('email_threads')
     .update({ message_count: (thread.message_count || 0) + 1 })
     .eq('id', thread.id);
+
+  // Dual-write into `chats` so the unified inbox (V2MessagesPage) shows
+  // live email threads instead of the empty state.
+  try {
+    const workspace = await ensureWorkspaceForUser<{ id: string }>(account.user_id, 'id');
+    await appendChatMessage(supabase, {
+      userId: account.user_id,
+      workspaceId: workspace?.id || null,
+      sessionId: thread.id,
+      source: 'email',
+      leadId,
+      customerName: msg.fromName || null,
+      customerEmail: msg.fromAddress,
+      sender: 'customer',
+      content: msg.bodyText.slice(0, 2000),
+    });
+  } catch (chatSyncErr) {
+    console.error('[email-inbox-poller] chats dual-write failed:', chatSyncErr);
+  }
 
   // Trigger AI draft generation (fire-and-forget via internal function call)
   try {

@@ -4,6 +4,8 @@ import { notifyError } from './_shared/notify';
 import { verifyTwilioSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { isLocalDev } from './_shared/prod-detect';
+import { appendChatMessage } from './_shared/chats-sync';
+import { ensureWorkspaceForUser } from './_shared/setup-workspace';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
 
@@ -115,6 +117,25 @@ const handler: Handler = async (event) => {
     if (insertError) {
       console.error('[twilio-inbound-sms] Failed to store message:', insertError);
       await notifyError('twilio-inbound-sms: Insert failed', insertError, { from, to });
+    }
+
+    // Dual-write into `chats` so the unified inbox (V2MessagesPage) shows
+    // live SMS threads instead of the empty state.
+    if (userId) {
+      try {
+        const workspace = await ensureWorkspaceForUser<{ id: string }>(userId, 'id');
+        await appendChatMessage(supabase, {
+          userId,
+          workspaceId: workspace?.id || null,
+          sessionId: threadId,
+          source: 'phone',
+          primaryPhone: from,
+          sender: 'customer',
+          content: body,
+        });
+      } catch (chatSyncErr) {
+        console.error('[twilio-inbound-sms] chats dual-write failed:', chatSyncErr);
+      }
     }
 
     // Check if this is a reply to a scheduled message (appointment confirmation, etc.)
