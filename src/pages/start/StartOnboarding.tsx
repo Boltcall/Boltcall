@@ -31,21 +31,16 @@ import {
   Loader2,
   Moon,
   PhoneMissed,
-  PhoneCall,
   Play,
-  Sparkles,
   Timer,
   Users,
   Volume2,
-  X,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import GlowHorizonFM from '../../components/ui/glow-horizon';
 import { AnimatedTitleFM } from '../../components/ui/glow-horizon-utils/animated-title-fm';
 import {
-  INDUSTRY_OPTIONS,
-  TONE_OPTIONS,
   VOICE_OPTIONS,
   savePendingAgentSetup,
   clearPendingAgentSetup,
@@ -54,14 +49,12 @@ import {
 import { provisionAgentSetup } from '../../lib/setup/provisionAgentSetup';
 import { useWebsiteIntel, normalizeWebsite, logoCandidates, type WebsiteIntel } from './useWebsiteIntel';
 import { cn } from '../../lib/utils';
-import { FUNCTIONS_BASE } from '../../lib/api';
-import { authedFetch } from '../../lib/authedFetch';
 
 // ─── Types & constants ────────────────────────────────────────────────────
 
-type Scene = 'welcome' | 'website' | 'intel' | 'pain' | 'voice' | 'launch' | 'live';
+type Scene = 'welcome' | 'website' | 'intel' | 'pain' | 'voice' | 'launch';
 
-const SCENE_ORDER: Scene[] = ['welcome', 'website', 'intel', 'pain', 'voice', 'launch', 'live'];
+const SCENE_ORDER: Scene[] = ['welcome', 'website', 'intel', 'pain', 'voice', 'launch'];
 
 const DRAFT_KEY = 'boltcall_start_draft';
 
@@ -70,7 +63,7 @@ const RAIL_PHASES: Array<{ label: string; scenes: Scene[] }> = [
   { label: 'Business', scenes: ['welcome', 'website', 'intel'] },
   { label: 'Focus', scenes: ['pain'] },
   { label: 'Voice', scenes: ['voice'] },
-  { label: 'Launch', scenes: ['launch', 'live'] },
+  { label: 'Launch', scenes: ['launch'] },
 ];
 
 const PAIN_POINTS = [
@@ -160,7 +153,7 @@ function readDraft(): Draft {
     if (!raw) return EMPTY_DRAFT;
     const parsed = JSON.parse(raw) as Partial<Draft>;
     // Never resume into transient scenes.
-    const scene = parsed.scene === 'launch' || parsed.scene === 'live' || parsed.scene === 'welcome'
+    const scene = parsed.scene === 'launch' || parsed.scene === 'welcome'
       ? (parsed.businessName ? 'intel' : 'website')
       : (parsed.scene ?? 'welcome');
     return { ...EMPTY_DRAFT, ...parsed, scene };
@@ -294,7 +287,7 @@ const LogoTile: React.FC<{
 const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
   // Hide during cinematic scenes so nothing competes with the Boltcall logo
   // header (top-8) or the "welcome" title animation.
-  if (scene === 'welcome' || scene === 'live') return null;
+  if (scene === 'welcome') return null;
   const sceneIdx = SCENE_ORDER.indexOf(scene);
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-6 pt-24 sm:pt-28">
@@ -335,25 +328,14 @@ const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
 
 // Welcome scene: pairs with the GlowHorizon beam falling from the top of the
 // page. WELCOME TO BOLTCALL {NAME} rises in via AnimatedTitleFM; SceneShell's
-// exit animation fades it out when the flow advances. Avatar sits above.
-const WelcomeScene: React.FC<{ firstName: string | null; avatarUrl: string | null }> = ({ firstName, avatarUrl }) => {
+// exit animation fades it out when the flow advances.
+const WelcomeScene: React.FC<{ firstName: string | null }> = ({ firstName }) => {
   const welcomeText = firstName
     ? `WELCOME TO BOLTCALL ${firstName.toUpperCase()}`
     : 'WELCOME TO BOLTCALL';
   return (
     <SceneShell id="welcome" wide>
       <div className="flex flex-col items-center text-center">
-        {avatarUrl && (
-          <motion.img
-            src={avatarUrl}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="mb-7 h-16 w-16 rounded-full border-2 border-white/25 object-cover shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
-            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-          />
-        )}
         <AnimatedTitleFM open title={welcomeText} />
       </div>
     </SceneShell>
@@ -372,18 +354,13 @@ const WebsiteScene: React.FC<{
   return (
     <SceneShell id="website">
       <Reveal>
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-          Where does your business live online?
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+          Your website?
         </h2>
       </Reveal>
-      <Reveal delay={0.12}>
-        <p className="mt-3 text-base text-white/55">
-          Paste your website. We&rsquo;ll read it and build your whole setup for you — services, answers, even your logo.
-        </p>
-      </Reveal>
-      <Reveal delay={0.24}>
+      <Reveal delay={0.2}>
         <form
-          className="mt-9 flex items-center gap-3"
+          className="mt-6 flex items-center gap-3"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
@@ -456,7 +433,6 @@ const IntelScene: React.FC<{
   onChangeWebsite: () => void;
 }> = ({ draft, loading, manual, onPatch, onConfirm, onChangeWebsite }) => {
   const [lineIdx, setLineIdx] = useState(0);
-  const [faqsOpen, setFaqsOpen] = useState(false);
 
   useEffect(() => {
     if (!loading) return;
@@ -502,162 +478,50 @@ const IntelScene: React.FC<{
     );
   }
 
-  const foundThings = draft.services.length > 0 || draft.faqs.length > 0;
-
   return (
-    <SceneShell id="intel" wide>
+    <SceneShell id="intel">
       <Reveal>
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-          {manual
-            ? 'Tell us about your business.'
-            : foundThings
-              ? 'We built your profile. Check our work.'
-              : 'Here’s what we found. Fill in the rest.'}
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+          {manual ? 'Your business' : 'Confirm your business'}
         </h2>
       </Reveal>
-      {!manual && (
-        <Reveal delay={0.1}>
-          <p className="mt-3 text-base text-white/55">
-            Everything below came from your website. Fix anything we got wrong — it takes one tap.
-          </p>
-        </Reveal>
-      )}
 
-      <Reveal delay={0.2}>
-        <div className="mt-8 rounded-3xl border border-white/12 bg-white/[0.05] p-6 backdrop-blur-sm sm:p-8">
-          {/* Identity row */}
-          <div className="flex items-center gap-5">
-            <LogoTile
-              logoUrl={draft.logoUrl}
-              fallbackUrl={draft.logoFallbackUrl}
-              name={draft.businessName || draft.domain}
-              size={64}
-            />
-            <div className="flex-1">
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                Business name
-              </label>
-              <input
-                type="text"
-                value={draft.businessName}
-                onChange={(e) => onPatch({ businessName: e.target.value })}
-                placeholder="Your business name"
-                aria-label="Business name"
-                className="w-full border-b border-white/15 bg-transparent pb-1 text-xl font-semibold text-white placeholder-white/25 outline-none transition-colors focus:border-white/60"
-              />
-            </div>
-          </div>
-
-          {/* Industry chips */}
-          <div className="mt-7">
-            <div className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Industry</div>
-            <div className="flex flex-wrap gap-2">
-              {INDUSTRY_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => onPatch({ industry: opt.value })}
-                  className={cn(
-                    'rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all',
-                    draft.industry === opt.value
-                      ? 'border-white bg-white text-zinc-950'
-                      : 'border-white/15 bg-white/[0.04] text-white/65 hover:border-white/35 hover:text-white',
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Services */}
-          <div className="mt-7">
-            <div className="mb-2.5 flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                Services{draft.services.length > 0 ? ` · ${draft.services.length} found` : ''}
-              </span>
-              <button
-                type="button"
-                onClick={() => onPatch({ services: [...draft.services, { name: '', duration: 30, price: 0 }] })}
-                className="text-xs font-medium text-white/55 transition-colors hover:text-white"
-              >
-                + Add service
-              </button>
-            </div>
-            {draft.services.length === 0 ? (
-              <p className="text-sm text-white/35">
-                No services yet — add a couple so your agent knows what to book.
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {draft.services.map((svc, i) => (
-                  <motion.li
-                    key={i}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, ease: EASE, delay: i * 0.05 }}
-                    className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5"
-                  >
-                    <Check className="h-4 w-4 shrink-0 text-emerald-300/80" />
-                    <input
-                      type="text"
-                      value={svc.name}
-                      placeholder="Service name"
-                      aria-label={`Service ${i + 1} name`}
-                      onChange={(e) => {
-                        const services = [...draft.services];
-                        services[i] = { ...services[i], name: e.target.value };
-                        onPatch({ services });
-                      }}
-                      className="flex-1 bg-transparent text-sm text-white placeholder-white/25 outline-none"
-                    />
-                    {svc.price > 0 && (
-                      <span className="text-xs tabular-nums text-white/45">${svc.price}</span>
-                    )}
-                    <button
-                      type="button"
-                      aria-label={`Remove service ${i + 1}`}
-                      onClick={() => onPatch({ services: draft.services.filter((_, idx) => idx !== i) })}
-                      className="text-white/30 transition-colors hover:text-rose-300"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </motion.li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* FAQs — collapsed proof of work */}
-          {draft.faqs.length > 0 && (
-            <div className="mt-7">
-              <button
-                type="button"
-                onClick={() => setFaqsOpen((o) => !o)}
-                className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition-colors hover:bg-white/[0.07]"
-              >
-                <span className="flex items-center gap-2 text-sm text-white/80">
-                  <Sparkles className="h-4 w-4 text-violet-300/80" />
-                  {draft.faqs.length} caller questions — already answered from your site
-                </span>
-                <span className="text-xs text-white/40">{faqsOpen ? 'Hide' : 'Review'}</span>
-              </button>
-              {faqsOpen && (
-                <ul className="mt-2 space-y-2">
-                  {draft.faqs.map((f, i) => (
-                    <li key={i} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                      <p className="text-sm font-medium text-white/85">{f.question}</p>
-                      <p className="mt-1 text-xs leading-relaxed text-white/50">{f.answer}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
+      <Reveal delay={0.15}>
+        <div className="mt-6 flex items-center gap-4">
+          <LogoTile
+            logoUrl={draft.logoUrl}
+            fallbackUrl={draft.logoFallbackUrl}
+            name={draft.businessName || draft.domain}
+            size={48}
+          />
+          <input
+            type="text"
+            value={draft.businessName}
+            onChange={(e) => onPatch({ businessName: e.target.value })}
+            placeholder="Business name"
+            aria-label="Business name"
+            className="flex-1 border-b border-white/15 bg-transparent pb-1 text-lg font-semibold text-white placeholder-white/25 outline-none transition-colors focus:border-white/60"
+          />
         </div>
       </Reveal>
 
-      <Reveal delay={0.35} className="mt-8 flex flex-wrap items-center gap-4">
+      {draft.services.length > 0 && (
+        <Reveal delay={0.22}>
+          <ul className="mt-6 space-y-1.5">
+            {draft.services.slice(0, 4).map((svc, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm text-white/75">
+                <Check className="h-3.5 w-3.5 shrink-0 text-emerald-300/70" />
+                <span className="truncate">{svc.name}</span>
+              </li>
+            ))}
+            {draft.services.length > 4 && (
+              <li className="pl-5 text-xs text-white/40">+ {draft.services.length - 4} more</li>
+            )}
+          </ul>
+        </Reveal>
+      )}
+
+      <Reveal delay={0.3} className="mt-7 flex flex-wrap items-center gap-4">
         <PrimaryButton onClick={onConfirm} disabled={!draft.businessName.trim()}>
           Looks right
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -668,7 +532,7 @@ const IntelScene: React.FC<{
             onClick={onChangeWebsite}
             className="text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
           >
-            Wrong website? Change it
+            Change website
           </button>
         )}
       </Reveal>
@@ -679,42 +543,29 @@ const IntelScene: React.FC<{
 const PainScene: React.FC<{ selected: PainId | null; onSelect: (id: PainId) => void }> = ({ selected, onSelect }) => (
   <SceneShell id="pain" wide>
     <Reveal>
-      <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-        What&rsquo;s costing you the most right now?
+      <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+        What&rsquo;s costing you the most?
       </h2>
     </Reveal>
-    <Reveal delay={0.12}>
-      <p className="mt-3 text-base text-white/55">Be honest. This is the first thing we&rsquo;ll fix — today.</p>
-    </Reveal>
-    <div className="mt-9 grid gap-3 sm:grid-cols-2">
+    <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
       {PAIN_POINTS.map((p, i) => {
         const Icon = p.icon;
         const active = selected === p.id;
         return (
-          <Reveal key={p.id} delay={0.2 + i * 0.08}>
+          <Reveal key={p.id} delay={0.15 + i * 0.06}>
             <button
               type="button"
               onClick={() => onSelect(p.id)}
               aria-pressed={active}
               className={cn(
-                'group h-full w-full rounded-2xl border p-5 text-left transition-all duration-300',
+                'group flex h-full w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-300',
                 active
-                  ? 'border-white bg-white/[0.14] shadow-[0_0_60px_rgba(255,255,255,0.08)]'
-                  : 'border-white/12 bg-white/[0.04] hover:border-white/30 hover:bg-white/[0.08]',
+                  ? 'border-white bg-white/[0.1]'
+                  : 'border-white/10 bg-transparent hover:border-white/25 hover:bg-white/[0.04]',
               )}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-xl border transition-colors',
-                    active ? 'border-white/40 bg-white text-zinc-950' : 'border-white/15 bg-white/[0.06] text-white/70',
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className="text-base font-semibold text-white">{p.title}</span>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-white/55">{p.detail}</p>
+              <Icon className={cn('h-5 w-5 shrink-0 transition-colors', active ? 'text-white' : 'text-white/60')} />
+              <span className="text-sm font-medium text-white">{p.title}</span>
             </button>
           </Reveal>
         );
@@ -757,92 +608,44 @@ const VoiceScene: React.FC<{
   return (
     <SceneShell id="voice" wide>
       <Reveal>
-        <h2 className="text-3xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-4xl">
-          Meet your new first responder.
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+          Pick a voice
         </h2>
       </Reveal>
-      <Reveal delay={0.12}>
-        <p className="mt-3 text-base text-white/55">
-          This is who answers for {draft.businessName || 'your business'} when you can&rsquo;t. Pick the voice — tap to hear it.
-        </p>
-      </Reveal>
 
-      <div className="mt-9 grid gap-3 sm:grid-cols-3">
+      <div className="mt-6 grid gap-2.5 sm:grid-cols-3">
         {VOICE_OPTIONS.map((voice, i) => {
           const active = draft.voiceId === voice.value;
           const isPlaying = playing === voice.value;
           return (
-            <Reveal key={voice.value} delay={0.2 + i * 0.08}>
+            <Reveal key={voice.value} delay={0.15 + i * 0.06}>
               <button
                 type="button"
                 onClick={() => void preview(voice)}
                 aria-pressed={active}
                 className={cn(
-                  'w-full rounded-2xl border p-5 text-left transition-all duration-300',
+                  'flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-all duration-300',
                   active
-                    ? 'border-white bg-white/[0.14] shadow-[0_0_50px_rgba(255,255,255,0.08)]'
-                    : 'border-white/12 bg-white/[0.04] hover:border-white/30 hover:bg-white/[0.08]',
+                    ? 'border-white bg-white/[0.1]'
+                    : 'border-white/10 bg-transparent hover:border-white/25 hover:bg-white/[0.04]',
                 )}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-semibold text-white">{voice.label}</span>
-                  <span
-                    className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-full border transition-colors',
-                      isPlaying ? 'border-white bg-white text-zinc-950' : 'border-white/20 text-white/60',
-                    )}
-                  >
-                    {isPlaying ? <Volume2 className="h-3.5 w-3.5 animate-pulse" /> : <Play className="ml-0.5 h-3.5 w-3.5" />}
-                  </span>
-                </div>
-                <p className="mt-2 text-xs text-white/55">{voice.description}</p>
+                <span className="text-sm font-semibold text-white">{voice.label}</span>
+                <span
+                  className={cn(
+                    'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
+                    isPlaying ? 'bg-white text-zinc-950' : 'text-white/60',
+                  )}
+                >
+                  {isPlaying ? <Volume2 className="h-3.5 w-3.5 animate-pulse" /> : <Play className="ml-0.5 h-3.5 w-3.5" />}
+                </span>
               </button>
             </Reveal>
           );
         })}
       </div>
 
-      <Reveal delay={0.4}>
-        <div className="mt-7">
-          <div className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">How it talks</div>
-          <div className="flex flex-wrap gap-2">
-            {TONE_OPTIONS.map((t) => (
-              <button
-                key={t.value}
-                type="button"
-                onClick={() => onPatch({ tone: t.value })}
-                className={cn(
-                  'rounded-full border px-4 py-2 text-xs font-medium transition-all',
-                  draft.tone === t.value
-                    ? 'border-white bg-white text-zinc-950'
-                    : 'border-white/15 bg-white/[0.04] text-white/65 hover:border-white/35 hover:text-white',
-                )}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.5}>
-        <div className="mt-7 max-w-sm">
-          <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-            Transfer number <span className="font-normal normal-case text-white/30">(optional — for calls that need a human)</span>
-          </label>
-          <input
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            value={draft.transferNumber}
-            onChange={(e) => onPatch({ transferNumber: e.target.value })}
-            placeholder="+1 555 123 4567"
-            className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.05] px-4 text-sm text-white placeholder-white/25 outline-none transition-colors focus:border-white/50"
-          />
-        </div>
-      </Reveal>
-
-      <Reveal delay={0.6} className="mt-9">
+      <Reveal delay={0.4} className="mt-8">
         <PrimaryButton onClick={onLaunch}>
           Build my agent
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -929,133 +732,6 @@ const LaunchScene: React.FC<{
   );
 };
 
-const LiveScene: React.FC<{
-  draft: Draft;
-  phoneNumber: string | null;
-  phoneError: string | null;
-  retryingPhone: boolean;
-  onRetryPhone: () => void;
-  onConnectCalendar: () => void;
-  onCall: () => void;
-  onDashboard: () => void;
-}> = ({ draft, phoneNumber, phoneError, retryingPhone, onRetryPhone, onConnectCalendar, onCall, onDashboard }) => {
-  const pain = PAIN_POINTS.find((p) => p.id === draft.pain);
-  return (
-    <SceneShell id="live" wide>
-      <div className="flex flex-col items-center text-center">
-        <motion.div
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 160, damping: 16 }}
-        >
-          <LogoTile
-            logoUrl={draft.logoUrl}
-            fallbackUrl={draft.logoFallbackUrl}
-            name={draft.businessName}
-            size={88}
-            className="shadow-[0_0_100px_rgba(110,231,183,0.25)]"
-          />
-        </motion.div>
-
-        <Reveal delay={0.25}>
-          <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-1.5">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
-            </span>
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-200">Live now</span>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.35}>
-          <h2 className="mt-5 text-4xl font-black tracking-tight text-white sm:text-5xl">
-            {draft.businessName} answers in under 5 seconds.
-          </h2>
-        </Reveal>
-        <Reveal delay={0.5}>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-white/60">
-            Two agents are deployed and on duty: a receptionist for every inbound call, and a
-            speed-to-lead agent that chases every new lead the moment it lands.
-          </p>
-        </Reveal>
-
-        {pain && (
-          <Reveal delay={0.65}>
-            <div className="mt-8 w-full max-w-lg rounded-2xl border border-white/12 bg-white/[0.05] p-6 text-left">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                You said this was costing you the most
-              </p>
-              <div className="mt-2 flex items-start gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-zinc-950">
-                  <pain.icon className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className="text-base font-semibold text-white">
-                    {pain.title} — <span className="text-emerald-300">handled.</span>
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-white/60">{pain.fix}</p>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        )}
-
-        {/* Purchased number — the tangible proof the agent is reachable */}
-        {phoneNumber && (
-          <Reveal delay={0.75}>
-            <div className="mt-6 w-full max-w-lg rounded-2xl border border-emerald-300/20 bg-emerald-400/[0.06] p-5 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
-                Your business line
-              </p>
-              <a
-                href={`tel:${phoneNumber.replace(/[^+\d]/g, '')}`}
-                className="mt-1 block text-2xl font-bold tracking-tight text-white hover:text-emerald-200 transition-colors"
-              >
-                {phoneNumber}
-              </a>
-              <p className="mt-1 text-xs text-white/45">Call it right now — your agent picks up.</p>
-            </div>
-          </Reveal>
-        )}
-        {phoneError && (
-          <Reveal delay={0.75}>
-            <div className="mt-6 w-full max-w-lg rounded-2xl border border-amber-300/25 bg-amber-400/[0.08] p-5 text-left">
-              <p className="text-sm font-semibold text-amber-200">Phone number pending</p>
-              <p className="mt-1 text-xs leading-relaxed text-amber-200/70">{phoneError}</p>
-              <GhostButton onClick={onRetryPhone} className="mt-3 h-9 px-4 text-xs" disabled={retryingPhone}>
-                {retryingPhone ? 'Retrying…' : 'Retry now'}
-              </GhostButton>
-            </div>
-          </Reveal>
-        )}
-
-        <Reveal delay={0.85} className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
-          <PrimaryButton onClick={onCall}>
-            <PhoneCall className="h-4 w-4" />
-            Hear your agent live
-          </PrimaryButton>
-          <GhostButton onClick={onDashboard}>
-            Enter dashboard
-            <ArrowRight className="h-4 w-4" />
-          </GhostButton>
-        </Reveal>
-        <Reveal delay={1}>
-          <p className="mt-5 text-xs text-white/35">
-            Don&rsquo;t just take our word for it — call it like a customer would.
-          </p>
-        </Reveal>
-        <Reveal delay={1.1}>
-          <button
-            onClick={onConnectCalendar}
-            className="mt-6 text-xs font-medium text-white/50 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white/80"
-          >
-            Connect Google Calendar so your agent can book jobs →
-          </button>
-        </Reveal>
-      </div>
-    </SceneShell>
-  );
-};
 
 // ─── Page ─────────────────────────────────────────────────────────────────
 
@@ -1065,15 +741,11 @@ const StartOnboarding: React.FC = () => {
   const { isAuthenticated, isLoading, user } = useAuth();
 
   const [draft, setDraft] = useState<Draft>(() => readDraft());
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [googleName, setGoogleName] = useState<string | null>(null);
   const [websiteError, setWebsiteError] = useState<string | null>(null);
   const [manualMode, setManualMode] = useState(false);
   const [launchStepIdx, setLaunchStepIdx] = useState(0);
   const [launchError, setLaunchError] = useState<string | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
-  const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [retryingPhone, setRetryingPhone] = useState(false);
   const launchStarted = useRef(false);
 
   const websiteIntel = useWebsiteIntel();
@@ -1092,17 +764,15 @@ const StartOnboarding: React.FC = () => {
     } catch { /* quota — skip */ }
   }, [draft]);
 
-  // Google identity: avatar + full name live in user_metadata, which the app's
-  // User shape doesn't carry — read the raw session user once.
+  // OAuth full_name lives in user_metadata (Google/Microsoft only). Email
+  // signups have no name — welcome falls back to the plain "WELCOME TO BOLTCALL".
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
     void supabase.auth.getUser().then(({ data }) => {
       if (cancelled) return;
       const meta = data.user?.user_metadata as Record<string, unknown> | undefined;
-      const picture = (meta?.avatar_url || meta?.picture) as string | undefined;
       const fullName = (meta?.full_name || meta?.name) as string | undefined;
-      if (picture) setAvatarUrl(picture);
       if (fullName) setGoogleName(fullName);
     });
     return () => { cancelled = true; };
@@ -1117,10 +787,11 @@ const StartOnboarding: React.FC = () => {
     return () => window.clearTimeout(t);
   }, [draft.scene, isLoading, isAuthenticated, goTo]);
 
-  const firstName = useMemo(
-    () => firstNameOf(googleName) ?? firstNameOf(user?.name),
-    [googleName, user?.name],
-  );
+  // Only trust an OAuth-provided name (Google/Microsoft user_metadata.full_name).
+  // Email signups have no real name — user.name is derived from the email
+  // prefix in transformSupabaseUser, and we don't want "WELCOME TO BOLTCALL
+  // NOAMYAKOBY6" showing up.
+  const firstName = useMemo(() => firstNameOf(googleName), [googleName]);
 
   function submitWebsite() {
     const normalized = normalizeWebsite(draft.websiteInput);
@@ -1190,13 +861,14 @@ const StartOnboarding: React.FC = () => {
     const minimumShow = new Promise((r) => setTimeout(r, LAUNCH_STEPS.length * 1600));
 
     Promise.all([provisionAgentSetup(user.id, setup), minimumShow])
-      .then(([result]) => {
+      .then(() => {
         clearPendingAgentSetup();
         window.clearInterval(stepTimer);
-        setPhoneNumber(result.phone?.number ?? null);
-        setPhoneError(result.phone?.error ?? null);
         setLaunchStepIdx(LAUNCH_STEPS.length);
-        setTimeout(() => goTo('live'), 500);
+        setTimeout(() => {
+          sessionStorage.removeItem(DRAFT_KEY);
+          navigate('/setup/talk-to-agent');
+        }, 500);
       })
       .catch((error) => {
         window.clearInterval(stepTimer);
@@ -1205,7 +877,7 @@ const StartOnboarding: React.FC = () => {
           error instanceof Error ? error.message : 'Something went wrong while deploying. Try again.',
         );
       });
-  }, [user, googleName, draft, goTo]);
+  }, [user, googleName, draft, navigate]);
 
   // Kick provisioning exactly once when entering the launch scene.
   useEffect(() => {
@@ -1213,48 +885,6 @@ const StartOnboarding: React.FC = () => {
     launchStarted.current = true;
     runLaunch();
   }, [draft.scene, runLaunch]);
-
-  // Phone purchase retry — the launch itself already succeeded, only the
-  // number is pending. Never bounce the user back through provisioning.
-  const retryPhone = useCallback(async () => {
-    setRetryingPhone(true);
-    try {
-      const res = await authedFetch(`${FUNCTIONS_BASE}/twilio-numbers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'purchase', country_code: 'US' }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.phone_number) {
-        setPhoneNumber(data.phone_number);
-        setPhoneError(null);
-      } else {
-        setPhoneError(data.detail || data.error || `Phone purchase failed (${res.status})`);
-      }
-    } catch (error) {
-      setPhoneError(error instanceof Error ? error.message : 'Phone purchase failed');
-    } finally {
-      setRetryingPhone(false);
-    }
-  }, []);
-
-  // Optional calendar hookup — OAuth callback lands on /dashboard/integrations,
-  // which is fine: the live scene is the end of the flow anyway.
-  const connectCalendar = useCallback(async () => {
-    if (!user?.id) return;
-    try {
-      const res = await authedFetch(`${FUNCTIONS_BASE}/google-calendar-auth-start?user_id=${user.id}`);
-      const data = await res.json();
-      if (data.url) {
-        sessionStorage.removeItem(DRAFT_KEY);
-        window.location.href = data.url;
-      } else {
-        console.error('Calendar OAuth start failed:', data.error);
-      }
-    } catch (error) {
-      console.error('Calendar OAuth start failed:', error);
-    }
-  }, [user?.id]);
 
   if (isLoading) {
     return <div className="min-h-screen bg-[#050507]" />;
@@ -1294,13 +924,14 @@ const StartOnboarding: React.FC = () => {
         </div>
       </div>
       <ProgressRail scene={draft.scene} />
-      {/* Header slot reserves vertical space so tall scenes never grow up
-          into the Boltcall logo + progress rail. */}
-      <div aria-hidden className="h-32 flex-shrink-0 sm:h-36" />
-      <main className="relative flex flex-1 items-center justify-center px-4 pb-16 sm:pb-20">
+      {/* Header slot reserves vertical space so scene content stays clear of
+          the Boltcall logo, progress rail, AND the purple glow arc top edge.
+          Sized to sit just below the widest arc curve. */}
+      <div aria-hidden className="h-44 flex-shrink-0 sm:h-56 md:h-64" />
+      <main className="relative flex flex-1 items-start justify-center px-4 pb-16 sm:pb-20">
       <AnimatePresence mode="wait">
         {draft.scene === 'welcome' && (
-          <WelcomeScene key="welcome" firstName={firstName} avatarUrl={avatarUrl} />
+          <WelcomeScene key="welcome" firstName={firstName} />
         )}
         {draft.scene === 'website' && (
           <WebsiteScene
@@ -1362,25 +993,6 @@ const StartOnboarding: React.FC = () => {
             stepIdx={launchStepIdx}
             error={launchError}
             onRetry={() => runLaunch()}
-          />
-        )}
-        {draft.scene === 'live' && (
-          <LiveScene
-            key="live"
-            draft={draft}
-            phoneNumber={phoneNumber}
-            phoneError={phoneError}
-            retryingPhone={retryingPhone}
-            onRetryPhone={retryPhone}
-            onConnectCalendar={connectCalendar}
-            onCall={() => {
-              sessionStorage.removeItem(DRAFT_KEY);
-              navigate('/setup/talk-to-agent');
-            }}
-            onDashboard={() => {
-              sessionStorage.removeItem(DRAFT_KEY);
-              navigate('/dashboard/?setupCompleted=true');
-            }}
           />
         )}
       </AnimatePresence>
