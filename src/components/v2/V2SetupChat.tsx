@@ -13,6 +13,7 @@ import { FUNCTIONS_BASE } from '../../lib/api';
 import { savePendingAgentSetup, INDUSTRY_OPTIONS as INDUSTRY_SOURCE_OPTIONS, type PendingAgentSetup } from '../../lib/setup/onboarding';
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
+import { recordTosAcceptance } from '../../lib/tosAcceptance';
 
 interface ChatMessage {
   id: string;
@@ -182,6 +183,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   const [countryDraft, setCountryDraft] = useState(restoredDrafts.country || '');
   const [businessNameDraft, setBusinessNameDraft] = useState(restoredDrafts.businessName || '');
   const [websiteDraft, setWebsiteDraft] = useState(restoredDrafts.website || '');
+  const [acceptTermsDraft, setAcceptTermsDraft] = useState(false);
   const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['id']>(
     VOICE_OPTIONS[0].id,
   );
@@ -572,7 +574,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
     openingStep === 'owner'
       ? !!ownerNameDraft.trim() && !!countryDraft.trim()
       : openingStep === 'business'
-        ? !!businessNameDraft.trim()
+        ? !!businessNameDraft.trim() && acceptTermsDraft
         : !!voiceDraft;
 
   return (
@@ -718,6 +720,33 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                     aria-invalid={error ? true : undefined}
                   />
                 </div>
+                <label
+                  htmlFor="v2-accept-terms"
+                  className="col-span-full flex items-start gap-2.5 pt-1 text-sm text-white/60 opacity-0"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 340ms both' }}
+                >
+                  <input
+                    id="v2-accept-terms"
+                    type="checkbox"
+                    checked={acceptTermsDraft}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setAcceptTermsDraft(checked);
+                      if (checked) void recordTosAcceptance('signup_wizard');
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+                  />
+                  <span>
+                    I agree to the{' '}
+                    <a href="/terms-of-service" target="_blank" rel="noreferrer" className="underline hover:text-white/80">
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a href="/privacy-policy" target="_blank" rel="noreferrer" className="underline hover:text-white/80">
+                      Privacy Policy
+                    </a>
+                  </span>
+                </label>
               </div>
             )}
 

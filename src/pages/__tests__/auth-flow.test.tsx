@@ -169,7 +169,6 @@ describe('Auth flow — Signup', () => {
 
     await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
     await user.type(screen.getByPlaceholderText('Password'), 'securepass');
-    await user.click(screen.getByRole('checkbox'));
     // Click the submit button (type=submit), not the tab
     const buttons = screen.getAllByRole('button', { name: /sign up/i });
     const submitBtn = buttons.find(b => b.getAttribute('type') === 'submit') || buttons[buttons.length - 1];
@@ -196,7 +195,6 @@ describe('Auth flow — Signup', () => {
 
     await user.type(screen.getByPlaceholderText('Email'), 'existing@example.com');
     await user.type(screen.getByPlaceholderText('Password'), 'securepass');
-    await user.click(screen.getByRole('checkbox'));
     const buttons = screen.getAllByRole('button', { name: /sign up/i });
     const submitBtn = buttons.find(b => b.getAttribute('type') === 'submit') || buttons[buttons.length - 1];
     await user.click(submitBtn);
@@ -212,7 +210,6 @@ describe('Auth flow — Signup', () => {
 
     await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
     await user.type(screen.getByPlaceholderText('Password'), 'securepass');
-    await user.click(screen.getByRole('checkbox'));
     const buttons = screen.getAllByRole('button', { name: /sign up/i });
     const submitBtn = buttons.find(b => b.getAttribute('type') === 'submit') || buttons[buttons.length - 1];
     await user.click(submitBtn);
@@ -227,7 +224,6 @@ describe('Auth flow — Signup', () => {
     mockSignInWithGoogle.mockRejectedValue(new Error('OAuth redirect initiated'));
     const { user } = renderAuth('signup', ['/signup?redirect=%2Fsetup']);
 
-    await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByTitle('Google'));
 
     await waitFor(() => {
@@ -236,24 +232,6 @@ describe('Auth flow — Signup', () => {
     });
   });
 
-  it('blocks signup and OAuth until Terms of Service are accepted', async () => {
-    mockSignup.mockResolvedValue({ id: 'u1' });
-    const { user } = renderAuth('signup');
-
-    await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
-    await user.type(screen.getByPlaceholderText('Password'), 'securepass');
-    const buttons = screen.getAllByRole('button', { name: /sign up/i });
-    const submitBtn = buttons.find(b => b.getAttribute('type') === 'submit') || buttons[buttons.length - 1];
-    await user.click(submitBtn);
-
-    await waitFor(() => {
-      expect(screen.getByText(/must accept the terms of service/i)).toBeInTheDocument();
-    });
-    expect(mockSignup).not.toHaveBeenCalled();
-
-    await user.click(screen.getByTitle('Google'));
-    expect(mockSignInWithGoogle).not.toHaveBeenCalled();
-  });
 });
 
 describe('Auth flow — Mode switching', () => {

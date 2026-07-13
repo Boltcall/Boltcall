@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 import {
@@ -9,15 +10,18 @@ import {
 } from '../../lib/tosAcceptance';
 
 /**
- * Blocking clickwrap gate. Fires for any authenticated user whose
- * user_metadata.tos_accepted_version doesn't match TOS_VERSION:
- * legacy accounts, OAuth signups (no signup checkbox on that path),
- * and everyone after a future ToS version bump.
+ * Blocking clickwrap gate — the fallback for whoever doesn't accept inline.
+ * The primary acceptance path is now the checkbox in the /setup onboarding
+ * wizard (V2SetupChat), so this is suppressed there to avoid double-prompting;
+ * it still fires for legacy accounts, anyone who leaves /setup before
+ * checking the box, and everyone after a future ToS version bump.
  */
 export default function TosAcceptanceGate() {
+  const location = useLocation();
   const [needsAccept, setNeedsAccept] = useState(false);
   const [checked, setChecked] = useState(false);
   const [saving, setSaving] = useState(false);
+  const suppressedRoute = location.pathname.startsWith('/setup');
 
   useEffect(() => {
     const evaluate = (session: Session | null) => {
@@ -37,7 +41,7 @@ export default function TosAcceptanceGate() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  if (!needsAccept) return null;
+  if (!needsAccept || suppressedRoute) return null;
 
   const handleAccept = async () => {
     setSaving(true);
