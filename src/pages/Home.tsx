@@ -213,6 +213,13 @@ const Home: React.FC = () => {
           {/* Boltcall Platform Preview — interactive dark bento card */}
           <section className="relative z-[2] -mt-24 px-4 py-8 sm:-mt-[360px] sm:px-8 lg:px-16">
             <BentoCard />
+            <p className="mx-auto mt-4 max-w-6xl text-center text-sm text-[#51607b]">
+              Want proof, not a demo?{' '}
+              <a href="/response-time-test" className="text-[#4369eb] hover:underline">
+                Request a live test call to your own number
+              </a>{' '}
+              and see exactly how many seconds Boltcall takes to answer.
+            </p>
           </section>
 
           {/* HowItWorks — first below-fold section, preload aggressively */}

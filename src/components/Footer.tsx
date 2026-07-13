@@ -61,6 +61,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'AI Visibility Check', labelHe: 'בדיקת נראות AI', href: '/ai-visibility-check' },
       { label: 'Website Health Check', labelHe: 'בדיקת בריאות אתר', href: '/speed-test' },
       { label: 'Speed Test Offer', labelHe: 'הצעת בדיקת מהירות', href: '/speed-test/offer' },
+      { label: 'Response Time Test', labelHe: 'בדיקת זמן תגובה', href: '/response-time-test' },
       { label: 'AI Readiness Scorecard', labelHe: 'כרטיס מוכנות ל-AI', href: '/ai-readiness-scorecard' },
       { label: 'Lead Response Scorecard', labelHe: 'כרטיס תגובה ללידים', href: '/lead-response-scorecard' },
       { label: 'AI Revenue Audit', labelHe: 'בדיקת הכנסות מ-AI', href: '/ai-revenue-audit' },
