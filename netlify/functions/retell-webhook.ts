@@ -104,6 +104,105 @@ async function triggerOutcomeEvaluation(call: any, agentId: string, userId: stri
   });
 }
 
+// ─── Response-time proof widget (Task 9) ────────────────────────────────────
+// Independent of the missed-call/outcome pipelines above — correlates a
+// call_ended event against response_time_demos by call_id, computes answer
+// latency, and emails the report. No-ops for every call that isn't one of
+// these demo calls (the DB lookup simply finds nothing).
+
+async function sendResponseTimeReportEmail(to: string, latencyMs: number): Promise<void> {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error('BREVO_API_KEY not configured');
+
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org';
+  const fromName = process.env.BREVO_FROM_NAME || 'Boltcall';
+  const seconds = (latencyMs / 1000).toFixed(1);
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb;color:#111827;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="540" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+        <tr><td style="background:#1d4ed8;padding:24px 32px;">
+          <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Boltcall</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Boltcall answered your test call in ${seconds}s</h1>
+          <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+            Most local businesses miss the call entirely or take 4+ minutes to call back.
+            The first business to respond usually wins the job — here's what instant response is worth to you.
+          </p>
+          <a href="https://boltcall.org/pricing" style="display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:15px;">
+            See Boltcall Plans →
+          </a>
+        </td></tr>
+        <tr><td style="padding:16px 32px;border-top:1px solid #e5e7eb;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;">You requested this test call at boltcall.org. © 2026 Boltcall</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      sender: { name: fromName, email: fromEmail },
+      to: [{ email: to }],
+      subject: `Boltcall answered your test call in ${seconds}s`,
+      htmlContent: html,
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(`Brevo error ${response.status}: ${data.message || 'unknown'}`);
+  }
+}
+
+async function correlateResponseTimeDemo(call: any): Promise<void> {
+  const callId = call.call_id;
+  if (!callId) return;
+
+  const supabase = getSupabase();
+  const { data: demo } = await supabase
+    .from('response_time_demos')
+    .select('id, email, dialed_at, status')
+    .eq('call_id', callId)
+    .maybeSingle();
+  if (!demo || demo.status !== 'dialed') return;
+
+  const answered = call.call_status === 'ended' && (call.duration_ms || 0) > 0;
+  if (!answered) {
+    await supabase.from('response_time_demos').update({ status: 'no_answer' }).eq('id', demo.id);
+    return;
+  }
+
+  const dialedAtMs = new Date(demo.dialed_at).getTime();
+  const answeredAtMs = typeof call.start_timestamp === 'number' ? call.start_timestamp : Date.now();
+  const latencyMs = Math.max(0, answeredAtMs - dialedAtMs);
+
+  await supabase
+    .from('response_time_demos')
+    .update({
+      status: 'answered',
+      answered_at: new Date(answeredAtMs).toISOString(),
+      latency_ms: latencyMs,
+    })
+    .eq('id', demo.id);
+
+  try {
+    await sendResponseTimeReportEmail(demo.email, latencyMs);
+    await supabase.from('response_time_demos').update({ status: 'report_sent' }).eq('id', demo.id);
+  } catch (err) {
+    console.error('[retell-webhook] Response-time report email failed:', err);
+  }
+}
+
 const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
@@ -154,6 +253,12 @@ const handler: Handler = async (event) => {
         body: JSON.stringify({ error: 'No call_id in payload' }),
       };
     }
+
+    // Fire-and-forget — no-ops for every call that isn't a response-time
+    // proof demo call (see correlateResponseTimeDemo above).
+    void correlateResponseTimeDemo(call).catch(err => {
+      console.error('[retell-webhook] Response-time correlation failed (non-blocking):', err);
+    });
 
     // Detect direction — Retell sets call_type to 'outbound_api' for API-initiated calls
     const isOutbound = call.call_type === 'outbound_api' || call.call_type === 'outbound_phone_call';
