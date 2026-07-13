@@ -324,7 +324,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
                   <tr className="bg-white">
                     <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Missed-lead rate</td>
                     <td className="border border-gray-200 px-4 py-3 text-gray-700">
-                      <span className="text-green-600 font-semibold">0% (never misses a call)</span>
+                      <span className="text-green-600 font-semibold">Answers every call, 24/7</span>
                     </td>
                     <td className="border border-gray-200 px-4 py-3 text-gray-700">
                       <span className="text-red-600 font-semibold">30–50% during peak hours</span>

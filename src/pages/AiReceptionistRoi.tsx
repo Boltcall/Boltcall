@@ -703,67 +703,6 @@ const AiReceptionistRoi: React.FC = () => {
         </section>
       )}
 
-      {/* ─── Testimonials Section ─────────────────────────────────────── */}
-      <section className="py-16 md:py-20 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-50px' }}
-            variants={staggerContainer}
-            className="text-center mb-12"
-          >
-            <motion.p variants={fadeInUp} className="text-sm font-medium text-[#2563EB] uppercase tracking-wider mb-3">
-              Real Results
-            </motion.p>
-            <motion.h3 variants={fadeInUp} className="text-2xl md:text-3xl font-bold text-[#0B1220]">
-              What business owners say after switching to AI
-            </motion.h3>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              {
-                quote: "We were missing 15–20 calls a week during busy season. After switching to Boltcall, every call gets answered and we've booked an extra $8,000 in jobs in the first month.",
-                name: "Derek M.",
-                role: "Plumbing & Drain, Ohio",
-                result: "+$8K/mo",
-              },
-              {
-                quote: "I thought a $897/month AI receptionist was expensive — until I realized I was losing $3,000+ per week in missed calls. The ROI calculator was an eye-opener.",
-                name: "Sandra L.",
-                role: "HVAC Company Owner, Arizona",
-                result: "23x ROI",
-              },
-              {
-                quote: "Patients calling after hours used to hit voicemail and call our competitor. Now they get booked automatically. Our no-show rate dropped by 40% too.",
-                name: "Dr. Kevin P.",
-                role: "Dental Practice, Florida",
-                result: "40% fewer no-shows",
-              },
-            ].map((item) => (
-              <motion.div
-                key={item.name}
-                variants={fadeInUp}
-                className="bg-white border-2 border-[#0B1220] rounded-2xl p-6 shadow-[4px_4px_0px_0px_#0B1220] flex flex-col"
-              >
-                <div className="flex-1">
-                  <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-                </div>
-                <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-[#0B1220]">{item.name}</p>
-                    <p className="text-xs text-gray-500">{item.role}</p>
-                  </div>
-                  <span className="text-xs font-bold text-[#2563EB] bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                    {item.result}
-                  </span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ─── How AI Captures Missed Revenue ───────────────────────────── */}
       <section className="py-16 md:py-20 bg-[#F8FAFF]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -988,26 +927,6 @@ const AiReceptionistRoi: React.FC = () => {
         </div>
       </section>
 
-      {/* Trust + Social Proof */}
-      <section className="py-10 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       <Footer />
     </div>
   );

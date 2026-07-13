@@ -6,7 +6,7 @@ import type { Session } from '@supabase/supabase-js';
  * user_metadata.tos_accepted_version doesn't match are re-prompted by
  * TosAcceptanceGate on their next authenticated session.
  */
-export const TOS_VERSION = '2026-07';
+export const TOS_VERSION = '2026-07-13';
 
 export const hasAcceptedCurrentTos = (
   meta: Record<string, unknown> | undefined

@@ -262,10 +262,6 @@ const FAQAIReceptionistSolar: React.FC = () => {
             >
               An AI receptionist for solar companies qualifies homeowner leads on the first ring, schedules site surveys based on rep availability and geography, answers questions about financing and incentives, and captures the 30-35% of qualified leads that call after hours. It costs $549ג€“$4997/month versus $35,000-$50,000/year for a dedicated appointment setter.
             </motion.div>
-            <blockquote className="border-l-4 border-blue-500 pl-6 my-8 bg-blue-50 rounded-r-xl py-4 pr-4">
-              <p className="text-lg text-gray-700 italic leading-relaxed">&ldquo;Solar installers that automate lead response and appointment booking see conversion rates 30&ndash;40% higher than those relying on manual follow-up alone.&rdquo;</p>
-              <footer className="mt-3 text-sm font-semibold text-gray-600">&mdash; Abigail Ross Hopper, President &amp; CEO, Solar Energy Industries Association (SEIA)</footer>
-            </blockquote>
           </div>
         </section>
 
@@ -368,11 +364,7 @@ const FAQAIReceptionistSolar: React.FC = () => {
               </div>
             </motion.div>
           </div>
-        
-          <blockquote className="border-l-4 border-blue-500 pl-6 my-8 bg-blue-50 rounded-r-xl py-4 pr-4">
-            <p className="text-lg text-gray-700 italic leading-relaxed">&ldquo;The solar sales cycle is long, but it starts with a single phone call. Installers who cannot answer that first call reliably are leaving thousands of dollars per panel on the table.&rdquo;</p>
-            <footer className="mt-3 text-sm font-semibold text-gray-600">&mdash; Bernadette Del Chiaro, Executive Director, California Solar &amp; Storage Association (CALSSA)</footer>
-          </blockquote></section>
+        </section>
 
         {/* Related Resources */}
         <section className="py-16 bg-gray-50">
@@ -530,26 +522,6 @@ const FAQAIReceptionistSolar: React.FC = () => {
       </div>
 
 
-      {/* Trust + Social Proof */}
-      <section className="py-10 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       <Footer />
     </>
   );

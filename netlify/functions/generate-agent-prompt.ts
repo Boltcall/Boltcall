@@ -352,8 +352,8 @@ const LOCALE: Record<string, LocaleStrings> = {
     ],
     fallback: 'Fallback',
     fallbackDefault: 'I want to make sure you get the right answer. Let me have someone from our team get back to you on that.',
-    defaultDisclosure: (name) => `Hi, thank you for calling ${name}. Just so you know, I'm an AI assistant here to help you.`,
-    defaultGreetingWithDisclosure: (name) => `Hi, thank you for calling ${name}. Just so you know, I'm an AI assistant here to help you. How can I help you today?`,
+    defaultDisclosure: (name) => `Hi, thank you for calling ${name}. This call may be recorded, and just so you know, I'm an AI assistant here to help you.`,
+    defaultGreetingWithDisclosure: (name) => `Hi, thank you for calling ${name}. This call may be recorded, and just so you know, I'm an AI assistant here to help you. How can I help you today?`,
     defaultGreeting: (name) => `Hi, thanks for calling ${name}! How can I help you today?`,
     outboundIdentity: (name) => `You are an AI assistant calling on behalf of ${name}.`,
     outboundDisclosure: (name) => `Hi, this is an AI assistant calling from ${name}.`,
@@ -458,8 +458,8 @@ const LOCALE: Record<string, LocaleStrings> = {
     ],
     fallback: 'Respaldo',
     fallbackDefault: 'Quiero asegurarme de darle la respuesta correcta. Permítame que alguien de nuestro equipo se comunique con usted.',
-    defaultDisclosure: (name) => `Hola, gracias por llamar a ${name}. Le informo que soy un asistente de inteligencia artificial y estoy aquí para ayudarle.`,
-    defaultGreetingWithDisclosure: (name) => `Hola, gracias por llamar a ${name}. Le informo que soy un asistente de inteligencia artificial. \u00bfEn qué puedo ayudarle hoy?`,
+    defaultDisclosure: (name) => `Hola, gracias por llamar a ${name}. Esta llamada puede ser grabada. Le informo que soy un asistente de inteligencia artificial y estoy aquí para ayudarle.`,
+    defaultGreetingWithDisclosure: (name) => `Hola, gracias por llamar a ${name}. Esta llamada puede ser grabada. Le informo que soy un asistente de inteligencia artificial. \u00bfEn qué puedo ayudarle hoy?`,
     defaultGreeting: (name) => `\u00a1Hola, gracias por llamar a ${name}! \u00bfEn qué puedo ayudarle hoy?`,
     outboundIdentity: (name) => `Eres un asistente de IA llamando en nombre de ${name}.`,
     outboundDisclosure: (name) => `Hola, le llama un asistente de inteligencia artificial de ${name}.`,
@@ -996,6 +996,8 @@ Ask: "Can you give me a quick sense of what brought you in today?" Then follow t
 - **Never quote fees** beyond the general structure (contingency for PI, free consultation for criminal).
 - **Never tell a caller they may have missed a statute of limitations.** Collect the date silently, let the attorney assess.
 - **Never discourage a caller.** Even if the situation sounds weak, always offer a consultation.
+- **Never state or imply that an attorney-client relationship exists or has been formed by this call.** You are intake only.
+- **If a caller asks whether they should take an action** (sign something, respond, appear, pay, agree to a settlement): always answer that only the attorney can advise on that, and offer to get them on the calendar.
 
 ## Common Objections — Handle Gracefully
 
@@ -3161,6 +3163,8 @@ Pregunta: "¿Puedes darme una idea de qué te trajo aquí hoy?" Luego sigue el f
 - **Nunca evaluar la fortaleza del caso.** Si preguntan "¿tengo un caso?": "No puedo hacer esa determinación — por eso ofrecemos una consulta gratuita."
 - **Nunca predecir resultados.** Nada de "probablemente ganarás."
 - **Nunca decir que puede haberse vencido un plazo.** Recopilar la fecha en silencio.
+- **Nunca afirmar ni sugerir que existe una relación abogado-cliente.** Tu rol es solo la recepción de información.
+- **Si preguntan si deben tomar una acción** (firmar algo, responder, comparecer, pagar, aceptar un acuerdo): siempre responder que solo el abogado puede asesorar sobre eso, y ofrecer agendar una cita.
 
 ## Objeciones Frecuentes
 
