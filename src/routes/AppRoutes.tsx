@@ -183,6 +183,7 @@ const HelpCenter = React.lazy(() => import('../pages/HelpCenter'));
 const Privacy = React.lazy(() => import('../pages/Privacy'));
 const Terms = React.lazy(() => import('../pages/Terms'));
 const DPA = React.lazy(() => import('../pages/DPA'));
+const LawFirmSecurityPage = React.lazy(() => import('../pages/LawFirmSecurityPage'));
 const Contact = React.lazy(() => import('../pages/Contact'));
 const BookCall = React.lazy(() => import('../pages/BookCall'));
 const About = React.lazy(() => import('../pages/About'));
@@ -919,6 +920,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/privacy-policy" element={<Privacy />} />
         <Route path="/terms-of-service" element={<Terms />} />
         <Route path="/dpa" element={<DPA />} />
+        <Route path="/law-firm-security" element={<LawFirmSecurityPage />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
