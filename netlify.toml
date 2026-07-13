@@ -196,6 +196,11 @@
 [functions."agency-cron-hourly-monitor"]
   schedule = "@hourly"
 
+# Customer incident notification (Legal Shield Phase 5) — every hour, emails
+# a customer when their agent has 3+ technical call failures in the last hour.
+[functions."customer-incident-notify"]
+  schedule = "@hourly"
+
 # Post-ship critic with auto-revert — every 15 minutes. The window-end check
 # is the gate; most ticks see 0–3 candidates.
 [functions."agency-post-ship-watcher"]

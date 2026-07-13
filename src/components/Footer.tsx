@@ -132,6 +132,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'Email: support@boltcall.org', labelHe: 'אימייל: support@boltcall.org', href: 'mailto:support@boltcall.org' },
       { label: 'Privacy Policy', labelHe: 'מדיניות פרטיות', href: '/privacy-policy' },
       { label: 'Terms of Service', labelHe: 'תנאי שימוש', href: '/terms-of-service' },
+      { label: 'Data Processing Agreement', labelHe: 'הסכם עיבוד נתונים', href: '/dpa' },
     ],
   };
 
@@ -357,6 +358,10 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
 
         {/* Bottom Footer */}
         <div className={`border-t ${borderClass} py-6`}>
+          <p className={`${mutedTextClass} text-xs text-center md:text-left mb-4`}>
+            Results vary by business and are not guaranteed. Service subject to our{' '}
+            <Link to="/terms-of-service" className={`${hoverTextClass} underline transition-colors`}>Terms of Service</Link>.
+          </p>
           <div className={`flex flex-col md:flex-row justify-between items-center gap-4 ${isRtl ? 'md:flex-row-reverse' : ''}`}>
             <motion.div
               className={`${mutedTextClass} text-sm`}

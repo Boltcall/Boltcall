@@ -105,7 +105,6 @@ const VoicemailVsBoltcall: React.FC = () => {
               { href: '#quick-comparison', label: 'Quick Comparison' },
               { href: '#why-boltcall-wins', label: 'Why Boltcall Wins' },
               { href: '#expert-insights', label: 'Expert Insights' },
-              { href: '#testimonials', label: 'What Businesses Say' },
             ].map(({ href, label }) => (
               <a
                 key={href}
@@ -241,65 +240,15 @@ const VoicemailVsBoltcall: React.FC = () => {
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
             <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-            Expert Insights
+            Why Voicemail Loses Leads
           </h2>
-          <div className="space-y-6">
-            <blockquote className="border-l-4 border-blue-600 pl-5 py-1">
-              <p className="text-gray-700 leading-relaxed italic mb-3">
-                "Leads that go to voicemail are effectively lost — 80% of callers who reach voicemail never leave a message, and 90% of those who do never call back."
-              </p>
-              <footer className="text-sm text-gray-500">
-                <span className="font-semibold text-gray-800">Dr. James Oldroyd</span>
-                <span className="mx-1">&mdash;</span>
-                MIT Sloan School of Management
-              </footer>
-            </blockquote>
-
-            <blockquote className="border-l-4 border-blue-600 pl-5 py-1">
-              <p className="text-gray-700 leading-relaxed italic mb-3">
-                "Voicemail was designed for the 1980s. Today's customers expect an immediate, intelligent response — not a beep and a delay."
-              </p>
-              <footer className="text-sm text-gray-500">
-                <span className="font-semibold text-gray-800">Sarah Chen</span>
-                <span className="mx-1">&mdash;</span>
-                Local Business Insider
-              </footer>
-            </blockquote>
-
-            <blockquote className="border-l-4 border-blue-600 pl-5 py-1">
-              <p className="text-gray-700 leading-relaxed italic mb-3">
-                "Businesses using AI answering instead of voicemail recover an average of $47,000 in previously lost annual revenue."
-              </p>
-              <footer className="text-sm text-gray-500">
-                <span className="font-semibold text-gray-800">Boltcall Research</span>
-                <span className="mx-1">&mdash;</span>
-                2025 AI Receptionist Impact Study
-              </footer>
-            </blockquote>
+          <div className="space-y-4 text-gray-700 leading-relaxed">
+            <p>Leads that go to voicemail are often effectively lost — most callers who reach voicemail never leave a message, and most who do never get a callback in time to still be interested.</p>
+            <p>Voicemail was designed for a slower era. Today's callers expect an immediate, intelligent response — not a beep and a delay before someone calls them back.</p>
+            <p>An AI receptionist answers live instead of routing to voicemail, which is the core reason businesses switch.</p>
           </div>
         </motion.section>
       </article>
-
-      {/* Social Proof */}
-      <section id="testimonials" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">What Businesses Say After Ditching Voicemail</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Join 500+ businesses using Boltcall to capture more leads and grow revenue.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { quote: "We used to rely on voicemail for after-hours calls. Half of those people never called back. Boltcall answers live and books them on the spot.", name: "Karen M.", role: "Plumbing Company Owner, Ohio" },
-            { quote: "Voicemail is a dead end. Customers don't leave messages anymore — they just call the next person on Google. Boltcall made us the business that always picks up.", name: "Diego R.", role: "HVAC Business Owner, Texas" },
-            { quote: "I thought voicemail was fine until I did the math. We were losing 12+ leads per week to no-answer. Boltcall captured all of them in the first month.", name: "Susan T.", role: "Dental Office Owner, Georgia" },
-          ].map((item) => (
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">{item.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="bg-gray-50 border-t border-gray-100 py-8">
@@ -314,27 +263,6 @@ const VoicemailVsBoltcall: React.FC = () => {
       </section>
 
       <FinalCTA {...COMPARISON_CTA} />
-
-      {/* Trust + Social Proof */}
-      <section className="py-10 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       <Footer />
     </div>
   );

@@ -14,6 +14,8 @@ const AuthProvider = React.lazy(() =>
 // DashboardProviders is lazy — keeps SubscriptionContext+TokenContext (and their
 // transitive Supabase deps) out of the critical-path bundle on marketing pages.
 const DashboardProviders = React.lazy(() => import('../components/DashboardProviders'));
+// Lazy for the same reason — imports supabase directly.
+const TosAcceptanceGate = React.lazy(() => import('../components/auth/TosAcceptanceGate'));
 import ProtectedRoute from '../components/ProtectedRoute';
 // PlanGate is lazy — breaks the PlanGate→SubscriptionContext→stripe.ts→supabase
 // static import chain so supabase never lands in the critical-path bundle.
@@ -930,6 +932,7 @@ const AppRoutes: React.FC = () => {
       <AuthProvider>
         <Router>
           <NavigationWrapper />
+          <TosAcceptanceGate />
         </Router>
       </AuthProvider>
     </Suspense>

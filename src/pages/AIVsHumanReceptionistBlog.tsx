@@ -650,7 +650,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
               <tbody>
                 {[
                   ['Hours available', '168 hrs/week (24/7)', '40 hrs/week (business hours)'],
-                  ['Call answer rate', '99%+ (never misses)', '55–75% (hold times, breaks, busy)'],
+                  ['Call answer rate', 'Answers every call, 24/7', '55–75% (hold times, breaks, busy)'],
                   ['Average answer time', 'Under 3 seconds', '4–6 rings (10–25 seconds)'],
                   ['Monthly cost', '$549-897', '$3,200 – $4,500+ (salary + benefits)'],
                   ['Annual cost', '$948 – $2,148', '$38,400 – $54,000+'],

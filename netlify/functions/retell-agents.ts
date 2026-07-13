@@ -31,9 +31,22 @@ function buildAgentPrompt(businessName: string, country?: string): string {
   const basePrompt = `You are a friendly, professional AI receptionist for ${businessName}. Help callers with scheduling, answering questions, and providing information about the business. Be concise and helpful.`;
   const needsDisclosure = !country || ['us','ca','gb','uk','au','nz','il','ie','de','fr','es','it','nl','be','at','ch','se','no','dk','fi','pt','pl','cz','gr','ro','hu','bg','hr','sk','si','lt','lv','ee','lu','mt','cy','is','li'].includes(country.toLowerCase());
   if (needsDisclosure) {
-    return `IMPORTANT: At the very beginning of every call, you MUST introduce yourself by saying: "Hi, thank you for calling ${businessName}. Just so you know, I'm an AI assistant here to help you." Then proceed naturally with the conversation.\n\n${basePrompt}`;
+    return `IMPORTANT: At the very beginning of every call, you MUST introduce yourself by saying: "Hi, thank you for calling ${businessName}. This call may be recorded, and just so you know, I'm an AI assistant here to help you." Then proceed naturally with the conversation.\n\n${basePrompt}`;
   }
   return basePrompt;
+}
+
+// Customers can override the agent's begin_message via body.begin_message.
+// Terms of Service ties AI/recording disclosure compliance to the customer,
+// but a stripped disclosure is still a Boltcall product risk — so any
+// customer-supplied greeting missing an AI or recording notice gets one
+// appended rather than silently accepted as-is.
+function ensureDisclosure(beginMessage: string, businessName?: string): string {
+  const hasAiNotice = /\bAI\b|artificial intelligence|inteligencia artificial|asistente de IA|בינה מלאכותית/i.test(beginMessage);
+  const hasRecordingNotice = /record|grabad|מוקלט/i.test(beginMessage);
+  if (hasAiNotice && hasRecordingNotice) return beginMessage;
+  const name = businessName || 'us';
+  return `${beginMessage.trim()} This call may be recorded, and I'm an AI assistant here to help you at ${name}.`;
 }
 
 // Generate professional prompt via internal HTTP call to the generate-agent-prompt function
@@ -51,7 +64,7 @@ async function generateProfessionalPrompt(promptConfig: any): Promise<{ prompt: 
     // Fallback: return a basic prompt so agent creation doesn't fail
     return {
       prompt: buildAgentPrompt(promptConfig.businessProfile?.businessName || 'this business', promptConfig.businessProfile?.country),
-      beginMessage: `Hi, thanks for calling ${promptConfig.businessProfile?.businessName || 'us'}! How can I help you today?`,
+      beginMessage: `Hi, thank you for calling ${promptConfig.businessProfile?.businessName || 'us'}. This call may be recorded, and just so you know, I'm an AI assistant here to help you. How can I help you today?`,
     };
   }
 
@@ -713,7 +726,7 @@ const handler: Handler = async (event) => {
           beginMessage = generated.beginMessage;
         } else if (body.general_prompt) {
           generalPrompt = body.general_prompt;
-          beginMessage = body.begin_message;
+          beginMessage = body.begin_message ? ensureDisclosure(body.begin_message, body.business_name) : body.begin_message;
         } else {
           generalPrompt = buildAgentPrompt(body.business_name, body.country);
         }

@@ -591,27 +591,6 @@ const SEOAuditPDF: React.FC = () => {
 
         </section>
 
-  
-      {/* Trust + Social Proof */}
-      <section className="py-10 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       <Footer />
 
       </div>
@@ -1235,48 +1214,6 @@ const SEOAuditPDF: React.FC = () => {
           </table>
         </div>
       </section>
-
-      {/* Social Proof */}
-
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-
-        <p className="text-gray-500 text-center mb-8 text-sm">Join 500+ businesses using Boltcall to capture more leads and grow revenue.</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-          {[
-
-            { quote: "The SEO & AEO report showed me exactly why my site wasn't showing up in AI search results. After following the action plan, we started appearing in Google's AI Overviews within 6 weeks.", name: "Lisa M.", role: "Roofing Company Owner, Ohio" },
-
-            { quote: "I had no idea AEO was even a thing. The PDF explained it clearly and gave me step-by-step fixes. My web developer loved how specific the recommendations were.", name: "Carlos R.", role: "HVAC Business Owner, Texas" },
-
-            { quote: "I've paid for SEO audits that gave me less than this free report. The structured data recommendations alone were worth it — we're now getting rich results on Google.", name: "Janet K.", role: "Dental Practice Manager, Georgia" },
-
-          ].map((item) => (
-
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-
-              <div>
-
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-
-                <p className="text-xs text-gray-500">{item.role}</p>
-
-              </div>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </section>
-
-
 
       {/* Trust Signals */}
 

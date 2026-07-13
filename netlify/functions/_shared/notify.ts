@@ -3,8 +3,8 @@
  * Used across all Netlify functions to notify the owner when something goes wrong.
  */
 
-const BOT_TOKEN = '8548570744:AAFiridwZ2wruW0kTXQRUASRXhn7AiGN-6g';
-const CHAT_ID = '6196587627';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8548570744:AAFiridwZ2wruW0kTXQRUASRXhn7AiGN-6g';
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '6196587627';
 const NOTIFY_TIMEOUT_MS = 2500;
 
 async function sendTelegramMessage(body: Record<string, unknown>): Promise<void> {
