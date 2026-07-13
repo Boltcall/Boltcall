@@ -81,7 +81,7 @@ export interface MissedOpportunity {
 
 export interface ActivityEvent {
   id: string;
-  type: 'new_lead' | 'call_completed' | 'appointment_booked' | 'chat_started' | 'sms_sent' | 'missed_call';
+  type: 'new_lead' | 'call_completed' | 'appointment_booked' | 'chat_started' | 'sms_sent' | 'missed_call' | 'urgent_call';
   description: string;
   timestamp: string;
   meta?: Record<string, unknown>;

@@ -234,13 +234,51 @@ async function validateOwnedSetupReferences(
   return { ok: true };
 }
 
+export interface TransferRule {
+  condition_type: 'keyword' | 'default';
+  condition_value: string | null;
+  destination_number: string;
+  priority: number;
+}
+
+// Picks the transfer_call tool's destination shape. Single destination (a
+// bare transferNumber, or exactly one rule) stays `predefined` — no reason to
+// pay for LLM inference to pick between one option. Two or more rules switch
+// to `inferred` so Retell's own model routes off what the caller actually
+// says, built from the rules' condition_value as routing guidance.
+function buildTransferDestination(
+  rules: TransferRule[],
+  fallbackNumber?: string,
+): { type: 'predefined'; number: string } | { type: 'inferred'; prompt: string } | null {
+  if (rules.length >= 2) {
+    const sorted = [...rules].sort((a, b) => a.priority - b.priority);
+    const lines = sorted.map((r) =>
+      r.condition_type === 'default' || !r.condition_value
+        ? `- No specific match / general request to speak to a person: transfer to ${r.destination_number}`
+        : `- If the caller mentions "${r.condition_value}": transfer to ${r.destination_number}`
+    ).join('\n');
+    return {
+      type: 'inferred',
+      prompt: `Pick the transfer destination phone number based on what the caller says, using these routing rules in priority order:\n${lines}\nIf nothing matches and no default rule is listed above, do not transfer — tell the caller you'll have someone call them back.`,
+    };
+  }
+  if (rules.length === 1) {
+    return { type: 'predefined', number: rules[0].destination_number };
+  }
+  if (fallbackNumber) {
+    return { type: 'predefined', number: fallbackNumber };
+  }
+  return null;
+}
+
 // Build general_tools array for LLM creation/update
 // Includes: lookup_caller, transfer_call, end_call, check_availability, book_appointment, cancel_appointment, reschedule_appointment, send_sms, search_knowledge_base
 function buildGeneralTools(options: {
   transferNumber?: string;
+  transferRules?: TransferRule[];
   baseUrl: string;
 }): any[] {
-  const { transferNumber, baseUrl } = options;
+  const { transferNumber, transferRules, baseUrl } = options;
   const toolsWebhookUrl = `${baseUrl}/.netlify/functions/agent-tools`;
 
   const tools: any[] = [
@@ -391,16 +429,14 @@ function buildGeneralTools(options: {
     },
   ];
 
-  // Add transfer_call tool only if a transfer number is provided
-  if (transferNumber) {
+  // Add transfer_call tool only if a destination can be resolved.
+  const transferDestination = buildTransferDestination(transferRules || [], transferNumber);
+  if (transferDestination) {
     tools.unshift({
       type: 'transfer_call',
       name: 'transfer_call',
       description: 'Transfer the call to a human agent or the business owner. Use when the caller explicitly asks to speak to a person, or for urgent matters you cannot handle.',
-      transfer_destination: {
-        type: 'predefined',
-        number: transferNumber,
-      },
+      transfer_destination: transferDestination,
       transfer_option: {
         type: 'warm_transfer',
         show_transferee_as_caller: true,
@@ -1169,6 +1205,54 @@ const handler: Handler = async (event) => {
     // PUT /retell-agents — update agent or LLM
     if (event.httpMethod === 'PUT') {
       const body = JSON.parse(event.body || '{}');
+
+      // Rebuild the transfer_call tool from agents.transfer_phone_number +
+      // transfer_rules and push it to the agent's Retell LLM. Only meaningful
+      // for retell-llm agents — custom-llm (Azure WS) agents manage their own
+      // tools and are skipped with a clear reason instead of silently no-op'ing.
+      if (body.action === 'sync_transfer_config' && body.retell_agent_id) {
+        const retellAgentId = String(body.retell_agent_id);
+        if (!(await userOwnsAgent(userId, retellAgentId))) {
+          return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to modify this agent' }) };
+        }
+
+        const sb = getSupabaseAdmin();
+        const { data: agentRow, error: agentRowErr } = await sb
+          .from('agents')
+          .select('id, transfer_phone_number')
+          .eq('retell_agent_id', retellAgentId)
+          .single();
+        if (agentRowErr || !agentRow) {
+          return { statusCode: 404, headers, body: JSON.stringify({ error: 'Agent not found in Supabase' }) };
+        }
+
+        const { data: rules } = await sb
+          .from('transfer_rules')
+          .select('condition_type, condition_value, destination_number, priority')
+          .eq('agent_id', agentRow.id)
+          .order('priority', { ascending: true });
+
+        const retellAgent = await client.agent.retrieve(retellAgentId).catch(() => null);
+        const llmId = (retellAgent as any)?.response_engine?.llm_id;
+        if (!llmId) {
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ success: false, skipped: true, reason: 'Agent does not use a Retell-managed LLM (custom-llm agents manage their own tools)' }),
+          };
+        }
+
+        const webhookBaseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+        const generalTools = buildGeneralTools({
+          transferNumber: agentRow.transfer_phone_number || undefined,
+          transferRules: (rules || []) as TransferRule[],
+          baseUrl: webhookBaseUrl,
+        });
+
+        await client.llm.update(llmId, { general_tools: generalTools } as any);
+
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, llm_id: llmId, rule_count: (rules || []).length }) };
+      }
 
       // Update LLM prompt directly
       if (body.action === 'update_llm' && body.llm_id) {
