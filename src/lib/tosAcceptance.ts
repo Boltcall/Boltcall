@@ -37,12 +37,12 @@ async function writeAuditRow(session: Session, source: string): Promise<boolean>
 }
 
 /**
- * User clicked "I agree" while a session exists (re-accept gate, OAuth first
- * login). Stamps user_metadata and writes the audit row. If the audit row
- * fails, tos_logged_version stays unset so ensureTosAuditRow retries later —
- * the metadata stamp alone already records acceptance server-side.
+ * User checked "I agree" while a session exists (onboarding wizard, re-accept
+ * gate, OAuth first login). Stamps user_metadata and writes the audit row.
  */
-export async function recordTosAcceptance(source: 'login_gate' | 'oauth'): Promise<void> {
+export async function recordTosAcceptance(
+  source: 'login_gate' | 'oauth' | 'signup_wizard'
+): Promise<void> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return;
   const logged = await writeAuditRow(session, source);

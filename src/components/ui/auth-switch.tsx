@@ -18,9 +18,6 @@ const loginSchema = z.object({
 const signupSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  acceptTerms: z.boolean().refine((v) => v, {
-    message: "You must accept the Terms of Service to create an account",
-  }),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -115,7 +112,7 @@ export default function AuthSwitch({
   const loginForm = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
   const signupForm = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { email: prefillEmail ?? "", password: "", acceptTerms: false },
+    defaultValues: { email: prefillEmail ?? "", password: "" },
   });
 
   // Re-apply prefill if it arrives async (e.g., parent state updates)
@@ -246,17 +243,6 @@ export default function AuthSwitch({
     try { setIsLoading(true); setError(""); savePendingAuthRedirect(redirectTo); await signInWithFacebook(); }
     catch (err) { if (err instanceof Error && err.message === "OAuth redirect initiated") return; setError("Facebook login failed."); }
     finally { setIsLoading(false); }
-  };
-
-  // Signup-mode OAuth must go through the same clickwrap as email signup.
-  const requireTermsThen = (handler: () => Promise<void>) => () => {
-    if (!signupForm.getValues("acceptTerms")) {
-      signupForm.setError("acceptTerms", {
-        message: "Please accept the Terms of Service to continue",
-      });
-      return;
-    }
-    void handler();
   };
 
   const submitButton = (text: string, loadingText: string) => (
@@ -514,28 +500,13 @@ export default function AuthSwitch({
                       <p className="text-red-500 text-xs text-center">{error}</p>
                     </div>
                   )}
-                  <label className="flex items-start gap-2 px-2 text-xs text-gray-500 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      {...signupForm.register("acceptTerms")}
-                      className="mt-0.5 accent-blue-600"
-                    />
-                    <span>
-                      I agree to the{" "}
-                      <Link to="/terms-of-service" target="_blank" className="text-blue-600 underline">
-                        Terms of Service
-                      </Link>{" "}
-                      and{" "}
-                      <Link to="/privacy-policy" target="_blank" className="text-blue-600 underline">
-                        Privacy Policy
-                      </Link>
-                    </span>
-                  </label>
-                  {signupForm.formState.errors.acceptTerms && (
-                    <p className="ml-4 text-xs text-red-500 -mt-2">
-                      {signupForm.formState.errors.acceptTerms.message}
-                    </p>
-                  )}
+                  <p className="px-2 text-xs text-gray-400">
+                    By signing up you'll be asked to accept our{" "}
+                    <Link to="/terms-of-service" target="_blank" className="underline">
+                      Terms of Service
+                    </Link>{" "}
+                    during setup.
+                  </p>
                   <div className="pt-2">{submitButton("SIGN UP", "Creating account...")}</div>
                 </form>
                 <div className="mt-5">
@@ -546,7 +517,7 @@ export default function AuthSwitch({
                       { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
                       { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
                     ].map((s, i) => (
-                      <button key={i} type="button" onClick={requireTermsThen(s.handler)} disabled={isLoading}
+                      <button key={i} type="button" onClick={s.handler} disabled={isLoading}
                         className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
                         title={s.label}>
                         {s.icon}

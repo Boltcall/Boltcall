@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import { TOS_VERSION } from './tosAcceptance';
 
 export interface User {
   id: string;
@@ -81,13 +80,6 @@ export const signup = async (credentials: SignupCredentials): Promise<User> => {
         data: {
           name: credentials.name,
           company: credentials.company,
-          // Signup form cannot submit without the ToS checkbox, so reaching
-          // here implies acceptance. Stamped pre-session because the
-          // email-confirmation flow has no session to updateUser() with; the
-          // IP-bearing audit row is backfilled by ensureTosAuditRow() on the
-          // first authenticated session.
-          tos_accepted_version: TOS_VERSION,
-          tos_accepted_at: new Date().toISOString(),
         }
       }
     });
