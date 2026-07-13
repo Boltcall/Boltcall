@@ -31,7 +31,6 @@ import {
   Loader2,
   Moon,
   PhoneMissed,
-  PhoneCall,
   Play,
   Sparkles,
   Timer,
@@ -54,14 +53,12 @@ import {
 import { provisionAgentSetup } from '../../lib/setup/provisionAgentSetup';
 import { useWebsiteIntel, normalizeWebsite, logoCandidates, type WebsiteIntel } from './useWebsiteIntel';
 import { cn } from '../../lib/utils';
-import { FUNCTIONS_BASE } from '../../lib/api';
-import { authedFetch } from '../../lib/authedFetch';
 
 // ─── Types & constants ────────────────────────────────────────────────────
 
-type Scene = 'welcome' | 'website' | 'intel' | 'pain' | 'voice' | 'launch' | 'live';
+type Scene = 'welcome' | 'website' | 'intel' | 'pain' | 'voice' | 'launch';
 
-const SCENE_ORDER: Scene[] = ['welcome', 'website', 'intel', 'pain', 'voice', 'launch', 'live'];
+const SCENE_ORDER: Scene[] = ['welcome', 'website', 'intel', 'pain', 'voice', 'launch'];
 
 const DRAFT_KEY = 'boltcall_start_draft';
 
@@ -70,7 +67,7 @@ const RAIL_PHASES: Array<{ label: string; scenes: Scene[] }> = [
   { label: 'Business', scenes: ['welcome', 'website', 'intel'] },
   { label: 'Focus', scenes: ['pain'] },
   { label: 'Voice', scenes: ['voice'] },
-  { label: 'Launch', scenes: ['launch', 'live'] },
+  { label: 'Launch', scenes: ['launch'] },
 ];
 
 const PAIN_POINTS = [
@@ -160,7 +157,7 @@ function readDraft(): Draft {
     if (!raw) return EMPTY_DRAFT;
     const parsed = JSON.parse(raw) as Partial<Draft>;
     // Never resume into transient scenes.
-    const scene = parsed.scene === 'launch' || parsed.scene === 'live' || parsed.scene === 'welcome'
+    const scene = parsed.scene === 'launch' || parsed.scene === 'welcome'
       ? (parsed.businessName ? 'intel' : 'website')
       : (parsed.scene ?? 'welcome');
     return { ...EMPTY_DRAFT, ...parsed, scene };
@@ -294,7 +291,7 @@ const LogoTile: React.FC<{
 const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
   // Hide during cinematic scenes so nothing competes with the Boltcall logo
   // header (top-8) or the "welcome" title animation.
-  if (scene === 'welcome' || scene === 'live') return null;
+  if (scene === 'welcome') return null;
   const sceneIdx = SCENE_ORDER.indexOf(scene);
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-6 pt-24 sm:pt-28">
@@ -929,133 +926,6 @@ const LaunchScene: React.FC<{
   );
 };
 
-const LiveScene: React.FC<{
-  draft: Draft;
-  phoneNumber: string | null;
-  phoneError: string | null;
-  retryingPhone: boolean;
-  onRetryPhone: () => void;
-  onConnectCalendar: () => void;
-  onCall: () => void;
-  onDashboard: () => void;
-}> = ({ draft, phoneNumber, phoneError, retryingPhone, onRetryPhone, onConnectCalendar, onCall, onDashboard }) => {
-  const pain = PAIN_POINTS.find((p) => p.id === draft.pain);
-  return (
-    <SceneShell id="live" wide>
-      <div className="flex flex-col items-center text-center">
-        <motion.div
-          initial={{ scale: 0.6, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 160, damping: 16 }}
-        >
-          <LogoTile
-            logoUrl={draft.logoUrl}
-            fallbackUrl={draft.logoFallbackUrl}
-            name={draft.businessName}
-            size={88}
-            className="shadow-[0_0_100px_rgba(110,231,183,0.25)]"
-          />
-        </motion.div>
-
-        <Reveal delay={0.25}>
-          <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-400/10 px-4 py-1.5">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-300 opacity-60" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-300" />
-            </span>
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-200">Live now</span>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.35}>
-          <h2 className="mt-5 text-4xl font-black tracking-tight text-white sm:text-5xl">
-            {draft.businessName} answers in under 5 seconds.
-          </h2>
-        </Reveal>
-        <Reveal delay={0.5}>
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-white/60">
-            Two agents are deployed and on duty: a receptionist for every inbound call, and a
-            speed-to-lead agent that chases every new lead the moment it lands.
-          </p>
-        </Reveal>
-
-        {pain && (
-          <Reveal delay={0.65}>
-            <div className="mt-8 w-full max-w-lg rounded-2xl border border-white/12 bg-white/[0.05] p-6 text-left">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
-                You said this was costing you the most
-              </p>
-              <div className="mt-2 flex items-start gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-zinc-950">
-                  <pain.icon className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className="text-base font-semibold text-white">
-                    {pain.title} — <span className="text-emerald-300">handled.</span>
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-white/60">{pain.fix}</p>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        )}
-
-        {/* Purchased number — the tangible proof the agent is reachable */}
-        {phoneNumber && (
-          <Reveal delay={0.75}>
-            <div className="mt-6 w-full max-w-lg rounded-2xl border border-emerald-300/20 bg-emerald-400/[0.06] p-5 text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/70">
-                Your business line
-              </p>
-              <a
-                href={`tel:${phoneNumber.replace(/[^+\d]/g, '')}`}
-                className="mt-1 block text-2xl font-bold tracking-tight text-white hover:text-emerald-200 transition-colors"
-              >
-                {phoneNumber}
-              </a>
-              <p className="mt-1 text-xs text-white/45">Call it right now — your agent picks up.</p>
-            </div>
-          </Reveal>
-        )}
-        {phoneError && (
-          <Reveal delay={0.75}>
-            <div className="mt-6 w-full max-w-lg rounded-2xl border border-amber-300/25 bg-amber-400/[0.08] p-5 text-left">
-              <p className="text-sm font-semibold text-amber-200">Phone number pending</p>
-              <p className="mt-1 text-xs leading-relaxed text-amber-200/70">{phoneError}</p>
-              <GhostButton onClick={onRetryPhone} className="mt-3 h-9 px-4 text-xs" disabled={retryingPhone}>
-                {retryingPhone ? 'Retrying…' : 'Retry now'}
-              </GhostButton>
-            </div>
-          </Reveal>
-        )}
-
-        <Reveal delay={0.85} className="mt-9 flex flex-col items-center gap-4 sm:flex-row">
-          <PrimaryButton onClick={onCall}>
-            <PhoneCall className="h-4 w-4" />
-            Hear your agent live
-          </PrimaryButton>
-          <GhostButton onClick={onDashboard}>
-            Enter dashboard
-            <ArrowRight className="h-4 w-4" />
-          </GhostButton>
-        </Reveal>
-        <Reveal delay={1}>
-          <p className="mt-5 text-xs text-white/35">
-            Don&rsquo;t just take our word for it — call it like a customer would.
-          </p>
-        </Reveal>
-        <Reveal delay={1.1}>
-          <button
-            onClick={onConnectCalendar}
-            className="mt-6 text-xs font-medium text-white/50 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white/80"
-          >
-            Connect Google Calendar so your agent can book jobs →
-          </button>
-        </Reveal>
-      </div>
-    </SceneShell>
-  );
-};
 
 // ─── Page ─────────────────────────────────────────────────────────────────
 
@@ -1071,9 +941,6 @@ const StartOnboarding: React.FC = () => {
   const [manualMode, setManualMode] = useState(false);
   const [launchStepIdx, setLaunchStepIdx] = useState(0);
   const [launchError, setLaunchError] = useState<string | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
-  const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [retryingPhone, setRetryingPhone] = useState(false);
   const launchStarted = useRef(false);
 
   const websiteIntel = useWebsiteIntel();
@@ -1190,13 +1057,14 @@ const StartOnboarding: React.FC = () => {
     const minimumShow = new Promise((r) => setTimeout(r, LAUNCH_STEPS.length * 1600));
 
     Promise.all([provisionAgentSetup(user.id, setup), minimumShow])
-      .then(([result]) => {
+      .then(() => {
         clearPendingAgentSetup();
         window.clearInterval(stepTimer);
-        setPhoneNumber(result.phone?.number ?? null);
-        setPhoneError(result.phone?.error ?? null);
         setLaunchStepIdx(LAUNCH_STEPS.length);
-        setTimeout(() => goTo('live'), 500);
+        setTimeout(() => {
+          sessionStorage.removeItem(DRAFT_KEY);
+          navigate('/setup/talk-to-agent');
+        }, 500);
       })
       .catch((error) => {
         window.clearInterval(stepTimer);
@@ -1205,7 +1073,7 @@ const StartOnboarding: React.FC = () => {
           error instanceof Error ? error.message : 'Something went wrong while deploying. Try again.',
         );
       });
-  }, [user, googleName, draft, goTo]);
+  }, [user, googleName, draft, navigate]);
 
   // Kick provisioning exactly once when entering the launch scene.
   useEffect(() => {
@@ -1213,48 +1081,6 @@ const StartOnboarding: React.FC = () => {
     launchStarted.current = true;
     runLaunch();
   }, [draft.scene, runLaunch]);
-
-  // Phone purchase retry — the launch itself already succeeded, only the
-  // number is pending. Never bounce the user back through provisioning.
-  const retryPhone = useCallback(async () => {
-    setRetryingPhone(true);
-    try {
-      const res = await authedFetch(`${FUNCTIONS_BASE}/twilio-numbers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'purchase', country_code: 'US' }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.phone_number) {
-        setPhoneNumber(data.phone_number);
-        setPhoneError(null);
-      } else {
-        setPhoneError(data.detail || data.error || `Phone purchase failed (${res.status})`);
-      }
-    } catch (error) {
-      setPhoneError(error instanceof Error ? error.message : 'Phone purchase failed');
-    } finally {
-      setRetryingPhone(false);
-    }
-  }, []);
-
-  // Optional calendar hookup — OAuth callback lands on /dashboard/integrations,
-  // which is fine: the live scene is the end of the flow anyway.
-  const connectCalendar = useCallback(async () => {
-    if (!user?.id) return;
-    try {
-      const res = await authedFetch(`${FUNCTIONS_BASE}/google-calendar-auth-start?user_id=${user.id}`);
-      const data = await res.json();
-      if (data.url) {
-        sessionStorage.removeItem(DRAFT_KEY);
-        window.location.href = data.url;
-      } else {
-        console.error('Calendar OAuth start failed:', data.error);
-      }
-    } catch (error) {
-      console.error('Calendar OAuth start failed:', error);
-    }
-  }, [user?.id]);
 
   if (isLoading) {
     return <div className="min-h-screen bg-[#050507]" />;
@@ -1362,25 +1188,6 @@ const StartOnboarding: React.FC = () => {
             stepIdx={launchStepIdx}
             error={launchError}
             onRetry={() => runLaunch()}
-          />
-        )}
-        {draft.scene === 'live' && (
-          <LiveScene
-            key="live"
-            draft={draft}
-            phoneNumber={phoneNumber}
-            phoneError={phoneError}
-            retryingPhone={retryingPhone}
-            onRetryPhone={retryPhone}
-            onConnectCalendar={connectCalendar}
-            onCall={() => {
-              sessionStorage.removeItem(DRAFT_KEY);
-              navigate('/setup/talk-to-agent');
-            }}
-            onDashboard={() => {
-              sessionStorage.removeItem(DRAFT_KEY);
-              navigate('/dashboard/?setupCompleted=true');
-            }}
           />
         )}
       </AnimatePresence>
