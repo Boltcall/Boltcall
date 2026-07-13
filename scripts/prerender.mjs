@@ -42,6 +42,7 @@ const ROUTES = [
   '/integrations/gohighlevel',
   '/ai-course',
   '/dpa',
+  '/law-firm-security',
   '/free-website',
   '/speed-test',
   '/response-time-test',
