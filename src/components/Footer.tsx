@@ -134,6 +134,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'Privacy Policy', labelHe: 'מדיניות פרטיות', href: '/privacy-policy' },
       { label: 'Terms of Service', labelHe: 'תנאי שימוש', href: '/terms-of-service' },
       { label: 'Data Processing Agreement', labelHe: 'הסכם עיבוד נתונים', href: '/dpa' },
+      { label: 'Security for Law Firms', labelHe: 'אבטחה למשרדי עורכי דין', href: '/law-firm-security' },
     ],
   };
 
