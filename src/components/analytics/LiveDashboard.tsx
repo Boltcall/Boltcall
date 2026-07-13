@@ -11,6 +11,7 @@ import {
   PhoneMissed,
   CheckCircle2,
   MessageCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import Card from '../ui/Card';
 import OverviewMetricCard from '../dashboard/OverviewMetricCard';
@@ -25,6 +26,7 @@ const EVENT_ICONS: Record<string, React.ElementType> = {
   chat_started: MessageCircle,
   sms_sent: Mail,
   missed_call: PhoneMissed,
+  urgent_call: AlertTriangle,
 };
 
 const EVENT_COLORS: Record<string, string> = {
@@ -34,7 +36,12 @@ const EVENT_COLORS: Record<string, string> = {
   chat_started: 'bg-cyan-100 text-cyan-600',
   sms_sent: 'bg-amber-100 text-amber-600',
   missed_call: 'bg-red-100 text-red-600',
+  urgent_call: 'bg-red-100 text-red-700',
 };
+
+// Calls scoring at or above this on the urgency_signal dimension surface as
+// a live dashboard alert (retell-call-scorer.ts writes this dim post-call).
+const URGENCY_ALERT_THRESHOLD = 0.7;
 
 function timeAgo(timestamp: string): string {
   const diff = Date.now() - new Date(timestamp).getTime();
@@ -125,6 +132,21 @@ const LiveDashboard: React.FC = () => {
             ...prev,
             activeChats: prev.activeChats + 1,
           }));
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'retell_call_scores', filter: 'dim=eq.urgency_signal' },
+        (payload) => {
+          const record = payload.new as any;
+          if ((record.score || 0) < URGENCY_ALERT_THRESHOLD) return;
+          const newEvent: ActivityEvent = {
+            id: `rt-urgent-${record.call_id}`,
+            type: 'urgent_call',
+            description: `High-urgency call detected — ${record.notes || 'review transcript'}`,
+            timestamp: record.scored_at || new Date().toISOString(),
+          };
+          setEvents(prev => [newEvent, ...prev].slice(0, 20));
         }
       )
       .subscribe();
