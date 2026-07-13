@@ -48,6 +48,8 @@ const ROUTES = [
   // page level. Don't list it in the sitemap.
   { path: "/speed-test",                                         priority: "0.8", changefreq: "weekly"  },
 
+  { path: "/response-time-test", priority: "0.8", changefreq: "weekly" },
+
   // Lead Magnets & Audits
   { path: "/lead-magnet",                                        priority: "0.8", changefreq: "weekly"  },
   { path: "/lead-magnet/claude-code-overnight-kit",              priority: "0.7", changefreq: "monthly" },

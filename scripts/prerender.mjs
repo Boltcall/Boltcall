@@ -44,6 +44,7 @@ const ROUTES = [
   '/dpa',
   '/free-website',
   '/speed-test',
+  '/response-time-test',
   '/giveaway',
   '/challenge',
   '/demo',

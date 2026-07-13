@@ -281,6 +281,7 @@ const SpeedTestLanding = React.lazy(() => import('../pages/speed-test/SpeedTestL
 const SpeedTestLogin = React.lazy(() => import('../pages/speed-test/SpeedTestLogin'));
 const SpeedTestReport = React.lazy(() => import('../pages/speed-test/SpeedTestReport'));
 const SpeedTestOffer = React.lazy(() => import('../pages/speed-test/SpeedTestOffer'));
+const ResponseTimeTest = React.lazy(() => import('../pages/ResponseTimeTest'));
 
 // ── Lazy loads — Blog pages ──────────────────────────────────────────────
 const BlogCenter = React.lazy(() => import('../pages/BlogCenter'));
@@ -707,6 +708,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/speed-test/login" element={<SpeedTestLogin />} />
         <Route path="/speed-test/report" element={<SpeedTestReport />} />
         <Route path="/speed-test/offer" element={<SpeedTestOffer />} />
+
+        {/* Response-time proof widget — distinct from the /speed-test Lighthouse checker above */}
+        <Route path="/response-time-test" element={<ResponseTimeTest />} />
         {/* Old hosted-button payment pages removed; checkout lives in the dashboard now. */}
         <Route path="/payment/pro" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
         <Route path="/payment/elite-starter" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
