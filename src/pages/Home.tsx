@@ -216,7 +216,7 @@ const Home: React.FC = () => {
           </section>
 
           {/* HowItWorks — first below-fold section, preload aggressively */}
-          <div id="how-it-works" className="relative mt-0 md:mt-0 md:top-[220px]">
+          <div id="how-it-works" className="relative">
             <LazySection rootMargin="500px" minHeight="600px">
               <Suspense fallback={<div className="min-h-[600px]" />}>
                 <HowItWorks />
@@ -225,7 +225,7 @@ const Home: React.FC = () => {
           </div>
 
           {/* StickyScrollSection — "Why Businesses Choose BoltCall", visible on all breakpoints */}
-          <div className="relative z-[1] md:top-[400px]" style={{ minHeight: '400px' }}>
+          <div className="relative z-[1]">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="h-[400px] w-full" />}>
                 <StickyScrollSection />
@@ -233,7 +233,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:mt-[600px]">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="500px">
               <Suspense fallback={<div className="min-h-[500px]" />}>
                 <FreeSetup />
@@ -241,7 +241,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] md:mt-24">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>
                 <IntegrationHero />
@@ -249,7 +249,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] md:mt-24">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="600px">
               <Suspense fallback={<div className="min-h-[600px]" />}>
                 <Pricing />
@@ -257,7 +257,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] bg-white -mb-16 md:-mb-16">
+          <div className="relative bg-white -mb-16">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>
                 <FAQ />
@@ -265,7 +265,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] bg-white">
+          <div className="relative bg-white">
             <LazySection rootMargin="400px" minHeight="300px">
               <Suspense fallback={<div className="min-h-[300px]" />}>
                 <FinalCTA />
@@ -273,7 +273,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px]">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>
                 <Footer />
