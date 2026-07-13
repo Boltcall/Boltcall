@@ -333,29 +333,44 @@ const handler: Handler = async (event) => {
 
     const config = (featureRow?.missed_call_config || {}) as Record<string, any>;
 
-    // Step 3: Create a lead for inbound missed calls. Outbound leads already exist from lead-webhook.
+    // Step 3: Link to an existing lead for inbound missed calls, or create one.
+    // Previously inserted a fresh `leads` row on every missed call with no
+    // dedup — a caller who called twice without booking spawned two rows.
     let lead: { id: string } | null = null;
     if (!isOutbound) {
-      const { data: newLead, error: leadError } = await supabase
+      const { data: existingMissedLead } = await supabase
         .from('leads')
-        .insert({
-          first_name: null,
-          last_name: null,
-          phone: callerPhone,
-          source: 'missed_call',
-          status: 'pending',
-          user_id: userId,
-          raw_data: call,
-        })
         .select('id')
-        .single();
-      if (leadError) {
-        console.error('[retell-webhook] Failed to create lead:', leadError);
-        await notifyError('retell-webhook: Lead creation failed', leadError, {
-          callerPhone, userId, callId: call.call_id, callStatus: call.call_status,
-        });
+        .eq('phone', callerPhone)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingMissedLead) {
+        lead = existingMissedLead;
       } else {
-        lead = newLead;
+        const { data: newLead, error: leadError } = await supabase
+          .from('leads')
+          .insert({
+            first_name: null,
+            last_name: null,
+            phone: callerPhone,
+            source: 'missed_call',
+            status: 'pending',
+            user_id: userId,
+            raw_data: call,
+          })
+          .select('id')
+          .single();
+        if (leadError) {
+          console.error('[retell-webhook] Failed to create lead:', leadError);
+          await notifyError('retell-webhook: Lead creation failed', leadError, {
+            callerPhone, userId, callId: call.call_id, callStatus: call.call_status,
+          });
+        } else {
+          lead = newLead;
+        }
       }
     } else {
       const metadataLeadId = typeof call.metadata?.lead_id === 'string' ? call.metadata.lead_id : null;
