@@ -499,7 +499,12 @@ const SpeedToLeadPillar: React.FC = () => {
             {' '}or the{' '}
             <Link to="/ai-readiness-scorecard" className="text-blue-600 hover:underline">
               AI Readiness Scorecard
-            </Link>. If your inbound channel is search, run a free{' '}
+            </Link>. Want to see instant response in action?{' '}
+            <Link to="/response-time-test" className="text-blue-600 hover:underline">
+              Request a live test call
+            </Link>
+            {' '}and get emailed exactly how many seconds it took Boltcall to answer.
+            If your inbound channel is search, run a free{' '}
             <Link to="/seo-audit" className="text-blue-600 hover:underline">
               SEO audit
             </Link>
