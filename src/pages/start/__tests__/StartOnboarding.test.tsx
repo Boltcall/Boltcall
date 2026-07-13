@@ -103,7 +103,7 @@ describe('StartOnboarding', () => {
     await act(async () => { await Promise.resolve(); });
     expect(screen.getByText(/Welcome to Boltcall Noam/i)).toBeInTheDocument();
 
-    await act(async () => { vi.advanceTimersByTime(3000); });
+    await act(async () => { vi.advanceTimersByTime(4500); });
     vi.useRealTimers();
 
     expect(
@@ -112,7 +112,9 @@ describe('StartOnboarding', () => {
     expect(screen.getByLabelText('Business website')).toBeInTheDocument();
   });
 
-  it('walks website → intel → pain → voice and launches with extracted data', async () => {
+  // 20s budget: the welcome scene alone holds 4s of real time before the
+  // flow becomes interactive.
+  it('walks website → intel → pain → voice and launches with extracted data', { timeout: 20000 }, async () => {
     // Scrape + extract respond instantly so the intel scene resolves.
     mocks.authedFetch.mockImplementation(async (url: string) => {
       if (String(url).includes('scrape-url')) {

@@ -41,7 +41,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
+import GlowHorizonFM from '../../components/ui/glow-horizon';
+import { AnimatedTitleFM } from '../../components/ui/glow-horizon-utils/animated-title-fm';
 import {
   INDUSTRY_OPTIONS,
   TONE_OPTIONS,
@@ -332,60 +333,28 @@ const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
 
 // ─── Scenes ───────────────────────────────────────────────────────────────
 
-// Welcome scene mirrors /setup's cinematic entrance: gradient beam falls from
-// top, WELCOME TO BOLTCALL {NAME} fades in with blur/letter-spacing, holds,
-// then fades out as the next scene takes over. Avatar sits above the title.
+// Welcome scene: pairs with the GlowHorizon beam falling from the top of the
+// page. WELCOME TO BOLTCALL {NAME} rises in via AnimatedTitleFM; SceneShell's
+// exit animation fades it out when the flow advances. Avatar sits above.
 const WelcomeScene: React.FC<{ firstName: string | null; avatarUrl: string | null }> = ({ firstName, avatarUrl }) => {
-  const welcomeText = firstName ? `Welcome to Boltcall ${firstName}` : 'Welcome to Boltcall';
+  const welcomeText = firstName
+    ? `WELCOME TO BOLTCALL ${firstName.toUpperCase()}`
+    : 'WELCOME TO BOLTCALL';
   return (
-    <SceneShell id="welcome">
-      <style>{`
-        @keyframes startWelcomeIn {
-          0% {
-            opacity: 0;
-            transform: translateY(18px) scale(0.96);
-            filter: blur(14px);
-            letter-spacing: 0.18em;
-          }
-          42% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            filter: blur(0);
-            letter-spacing: 0.11em;
-          }
-          78% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            filter: blur(0);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-10px) scale(0.985);
-            filter: blur(8px);
-          }
-        }
-        @keyframes startWelcomeAvatarIn {
-          0% { opacity: 0; transform: translateY(-8px) scale(0.92); filter: blur(10px); }
-          60% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-          100% { opacity: 0; transform: translateY(-6px) scale(0.98); filter: blur(6px); }
-        }
-      `}</style>
+    <SceneShell id="welcome" wide>
       <div className="flex flex-col items-center text-center">
         {avatarUrl && (
-          <img
+          <motion.img
             src={avatarUrl}
             alt=""
             referrerPolicy="no-referrer"
             className="mb-7 h-16 w-16 rounded-full border-2 border-white/25 object-cover shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
-            style={{ animation: 'startWelcomeAvatarIn 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
+            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           />
         )}
-        <h1
-          className="text-3xl font-black uppercase tracking-[0.1em] text-white sm:text-5xl lg:text-6xl"
-          style={{ animation: 'startWelcomeIn 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
-        >
-          {welcomeText}
-        </h1>
+        <AnimatedTitleFM open title={welcomeText} />
       </div>
     </SceneShell>
   );
@@ -1142,7 +1111,9 @@ const StartOnboarding: React.FC = () => {
   // Welcome auto-advances — the user did nothing yet, so ask nothing yet.
   useEffect(() => {
     if (draft.scene !== 'welcome' || isLoading || !isAuthenticated) return;
-    const t = window.setTimeout(() => goTo('website'), 2800);
+    // Hold long enough for the GlowHorizon beam (2s + 1.2s white-arc delay)
+    // and the title to fully land before advancing.
+    const t = window.setTimeout(() => goTo('website'), 4000);
     return () => window.clearTimeout(t);
   }, [draft.scene, isLoading, isAuthenticated, goTo]);
 
@@ -1294,7 +1265,34 @@ const StartOnboarding: React.FC = () => {
 
   return (
     <div className="dark relative isolate flex min-h-screen flex-col overflow-hidden bg-[#050507] text-white">
-      <SetupGradientBackground logoVariant="white" />
+      {/* Background: radial field + GlowHorizon beam falling from the top
+          (same recipe as GlowHorizonDemoPage), with the white Boltcall
+          wordmark pinned above it. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.16) 0%, rgba(73,34,229,0.22) 26%, rgba(8,8,14,0.96) 62%, #050507 100%)',
+          }}
+        />
+        <GlowHorizonFM className="top-20 md:top-28" variant="top" />
+        <div className="absolute inset-x-0 top-8 flex justify-center px-6 sm:top-10">
+          <picture>
+            <source srcSet="/boltcall_full_logo.webp" type="image/webp" />
+            <img
+              src="/boltcall_full_logo.png"
+              alt="Boltcall"
+              className="h-9 w-auto opacity-95 brightness-0 invert sm:h-10"
+              width={160}
+              height={52}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+            />
+          </picture>
+        </div>
+      </div>
       <ProgressRail scene={draft.scene} />
       {/* Header slot reserves vertical space so tall scenes never grow up
           into the Boltcall logo + progress rail. */}
