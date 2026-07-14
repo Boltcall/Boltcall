@@ -48,6 +48,10 @@ interface CallFlowConfig {
     text?: string;
   };
   pronunciationGuide?: string;
+  // Pain the user picked in /start onboarding. Used to prepend a one-line
+  // "primary focus" block to the identity section so the agent knows what
+  // the customer most cares about solving. See PAIN_FOCUS_LINES.
+  painPoint?: 'missed_calls' | 'after_hours' | 'slow_followup' | 'front_desk';
 }
 
 interface KnowledgeBase {
@@ -166,6 +170,42 @@ const TONE_DESCRIPTORS: Record<string, Record<string, { personality: string; sty
     },
   },
 };
+
+// ─── Pain-Point Focus Lines ──────────────────────────────────────────────────
+// One-sentence "primary focus" prepended to the agent's identity block when
+// the /start flow captured a pain choice. Keeps the agent oriented toward the
+// specific problem the customer told us matters most — without derailing
+// tone, industry, or tool behavior. See CallFlowConfig.painPoint.
+type PainPointKey = NonNullable<CallFlowConfig['painPoint']>;
+
+const PAIN_FOCUS_LINES: Record<'en' | 'es' | 'he', Record<PainPointKey, string>> = {
+  en: {
+    missed_calls: 'Your #1 job: pick up fast on every ring and never let a caller reach voicemail.',
+    after_hours: 'Your #1 job: cover the after-hours line — evenings, nights, weekends — like the doors were never closed.',
+    slow_followup: 'Your #1 job: reach every new lead within the first minute, while their intent is still hot.',
+    front_desk: 'Your #1 job: keep the front desk clear — take overflow calls instantly so real customers never wait on hold.',
+  },
+  es: {
+    missed_calls: 'Tu prioridad #1: contesta rápido cada llamada y nunca dejes que nadie llegue al buzón de voz.',
+    after_hours: 'Tu prioridad #1: cubre la línea fuera de horario — noches, madrugadas, fines de semana — como si nunca cerráramos.',
+    slow_followup: 'Tu prioridad #1: contactar a cada nuevo lead en el primer minuto, cuando su interés aún está caliente.',
+    front_desk: 'Tu prioridad #1: mantener la recepción libre — toma las llamadas desbordadas al instante para que ningún cliente real espere en línea.',
+  },
+  he: {
+    missed_calls: 'המשימה #1 שלך: לענות מהר בכל צלצול ולוודא ששום מתקשר לא נופל לתא הקולי.',
+    after_hours: 'המשימה #1 שלך: לכסות את הקו מחוץ לשעות — ערבים, לילות וסופי שבוע — כאילו הדלת לא נסגרה.',
+    slow_followup: 'המשימה #1 שלך: להגיע לכל ליד חדש בתוך הדקה הראשונה, כשעדיין יש כוונת רכישה.',
+    front_desk: 'המשימה #1 שלך: לפנות את הדלפק — לענות מיד לכל שיחה עודפת כדי שאף לקוח אמיתי לא ימתין בקו.',
+  },
+};
+
+function painFocusBlock(cf: CallFlowConfig | undefined, lang: 'en' | 'es' | 'he'): string {
+  const p = cf?.painPoint;
+  if (!p) return '';
+  const line = PAIN_FOCUS_LINES[lang][p];
+  const header = lang === 'es' ? 'ENFOQUE PRINCIPAL' : lang === 'he' ? 'המיקוד המרכזי' : 'PRIMARY FOCUS';
+  return `## ${header}\n${line}\n\n`;
+}
 
 // ─── Localization Strings ────────────────────────────────────────────────────
 
@@ -4909,6 +4949,9 @@ ${serveLine}
 
 `;
 
+  // ── Primary Focus (from /start pain choice) ──
+  prompt += painFocusBlock(cf, lang);
+
   // ── AI Disclosure ──
   if (needsDisclosure) {
     const disclosureText = cf?.complianceDisclosure?.text || l.defaultDisclosure(bp.businessName);
@@ -5173,7 +5216,7 @@ function buildSpeedToLeadPrompt(req: PromptRequest): string {
     return `## Identidad
 ${l.outboundIdentity(bp.businessName)} Eres ${tone.personality}.
 
-${needsDisclosure ? `## ${l.aiDisclosureMandatory}
+${painFocusBlock(cf, lang)}${needsDisclosure ? `## ${l.aiDisclosureMandatory}
 ${l.aiDisclosureInstruction} "${l.outboundDisclosure(bp.businessName)}"
 NO omitas esto.
 
@@ -5219,7 +5262,7 @@ Sé breve y respetuoso/a de su tiempo. Acaban de llenar un formulario — no qui
   return `## Identity
 ${l.outboundIdentity(bp.businessName)} You are ${tone.personality}.
 
-${needsDisclosure ? `## AI Disclosure (MANDATORY)
+${painFocusBlock(cf, lang)}${needsDisclosure ? `## AI Disclosure (MANDATORY)
 At the very start of the call, you MUST say: "${l.outboundDisclosure(bp.businessName)}"
 Do NOT skip this.
 
