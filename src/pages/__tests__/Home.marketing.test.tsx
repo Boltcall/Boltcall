@@ -121,4 +121,15 @@ describe('Home marketing page', () => {
       screen.queryByText("Connect form fills, ad leads, CRM contacts, and spreadsheet rows to Boltcall's speed-to-lead workflow."),
     ).not.toBeInTheDocument();
   });
+
+  it('does not render the removed response-time proof link below the live-call form', () => {
+    render(
+      <MemoryRouter>
+        <Home />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText(/Want proof, not a demo\?/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Request a live test call to your own number/i })).not.toBeInTheDocument();
+  });
 });
