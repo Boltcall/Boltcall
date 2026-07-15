@@ -20,6 +20,50 @@ const DEMO_IP_MAX_ATTEMPTS = 5;
 const DEMO_PHONE_WINDOW_SECONDS = 60 * 60;
 const DEMO_PHONE_MAX_ATTEMPTS = 3;
 
+const DEMO_PROFILES: Record<string, {
+  businessName: string;
+  niche: string;
+  location: string;
+  services: string;
+}> = {
+  'law-firm': {
+    businessName: 'Harrison & Cole Law',
+    niche: 'law firm',
+    location: 'Austin, Texas',
+    services: 'personal injury consultations, family law, estate planning, and case evaluations',
+  },
+  roofers: {
+    businessName: 'Apex Roofing Co.',
+    niche: 'roofing company',
+    location: 'Austin, Texas',
+    services: 'roof inspections, storm damage repair, roof replacement, and emergency tarping',
+  },
+  hvac: {
+    businessName: 'Comfort First HVAC',
+    niche: 'HVAC company',
+    location: 'Austin, Texas',
+    services: 'AC repair and replacement, heating service, tune-ups, and emergency no-cooling calls',
+  },
+  plumbers: {
+    businessName: 'Precision Plumbing',
+    niche: 'plumbing company',
+    location: 'Austin, Texas',
+    services: 'emergency leak repair, drain cleaning, water heaters, and fixture repairs',
+  },
+  dental: {
+    businessName: 'Bright Smile Dental',
+    niche: 'dental practice',
+    location: 'Austin, Texas',
+    services: 'new patient exams, cleanings, emergency dental visits, and cosmetic dentistry consultations',
+  },
+  'med-spa': {
+    businessName: 'Luma Med Spa',
+    niche: 'medical spa',
+    location: 'Austin, Texas',
+    services: 'Botox and fillers, laser treatments, facials, body contouring, and skincare consultations',
+  },
+};
+
 function clean(value: unknown, maxLength: number): string {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
 }
@@ -100,8 +144,9 @@ const handler: Handler = async (event) => {
   const industry = clean(body.industry, 40).toLowerCase();
   const name = clean(body.name, 120);
   const phone = normalizePhone(body.phone);
+  const demoProfile = DEMO_PROFILES[industry];
 
-  if (!INDUSTRIES.has(industry)) {
+  if (!INDUSTRIES.has(industry) || !demoProfile) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Choose a valid industry' }) };
   }
   if (!NAME_RE.test(name)) {
@@ -183,6 +228,10 @@ const handler: Handler = async (event) => {
       retell_llm_dynamic_variables: {
         customer_name: name,
         demo_industry: industry,
+        business_name: demoProfile.businessName,
+        niche: demoProfile.niche,
+        location: demoProfile.location,
+        services_list: demoProfile.services,
       },
       metadata: {
         source: 'homepage_demo',
