@@ -113,7 +113,7 @@ describe('homepage-demo-call', () => {
       'law-firm': 'agent-law',
       roofers: 'agent-roof',
     });
-    delete process.env.RETELL_DEMO_AGENT_ID;
+    process.env.RETELL_DEMO_AGENT_ID = 'agent-default';
   });
 
   it('uses the mapped agent for the selected industry', async () => {
@@ -131,6 +131,11 @@ describe('homepage-demo-call', () => {
       from_number: '+15550001111',
       to_number: '+15551234567',
       agent_id: 'agent-law',
+      retell_llm_dynamic_variables: expect.objectContaining({
+        business_name: 'Harrison & Cole Law',
+        niche: 'law firm',
+        location: 'Austin, Texas',
+      }),
       metadata: expect.objectContaining({
         source: 'homepage_demo',
         industry: 'law-firm',
@@ -183,6 +188,31 @@ describe('homepage-demo-call', () => {
     expect(response.statusCode).toBe(200);
     expect(retellCreatePhoneCall).toHaveBeenCalledWith(expect.objectContaining({
       from_number: '+15550002222',
+    }));
+  });
+
+  it.each([
+    ['roofers', 'Apex Roofing Co.', 'roofing company'],
+    ['hvac', 'Comfort First HVAC', 'HVAC company'],
+    ['plumbers', 'Precision Plumbing', 'plumbing company'],
+    ['dental', 'Bright Smile Dental', 'dental practice'],
+    ['med-spa', 'Luma Med Spa', 'medical spa'],
+  ])('uses the %s receptionist profile', async (industry, businessName, niche) => {
+    const response = await handler(
+      makeEvent({
+        industry,
+        name: 'Noam Yakoby',
+        phone: '+15551234567',
+      }),
+      {} as any,
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(retellCreatePhoneCall).toHaveBeenCalledWith(expect.objectContaining({
+      retell_llm_dynamic_variables: expect.objectContaining({
+        business_name: businessName,
+        niche,
+      }),
     }));
   });
 });
