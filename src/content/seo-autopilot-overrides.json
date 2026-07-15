@@ -7,9 +7,42 @@
       "Boltcall is built for local service businesses that need to answer inbound demand before it goes cold. The practical test is whether the system can consistently turn a new inquiry into a qualified conversation or appointment without adding work for the team."
     ],
     "links": [
-      { "label": "Book a speed-to-lead audit", "href": "/book-a-call/" },
-      { "label": "Run the business audit", "href": "/business-audit/" },
-      { "label": "Compare AI receptionist options", "href": "/comparisons/" }
+      {
+        "label": "Book a speed-to-lead audit",
+        "href": "/book-a-call/"
+      },
+      {
+        "label": "Run the business audit",
+        "href": "/business-audit/"
+      },
+      {
+        "label": "Compare AI receptionist options",
+        "href": "/comparisons/"
+      }
+    ],
+    "updated_at": "2026-07-15",
+    "source": "seo-aeo-autopilot"
+  },
+  "/blog/speed-to-lead-local-business": {
+    "intro": "GSC high-impression page should help a local service business answer, qualify, and book a new lead before the opportunity goes cold. Boltcall is an AI speed-to-lead system that handles the first response across calls, forms, missed calls, and after-hours demand, then moves the buyer toward a booked next step.",
+    "answer_title": "What buyers need to know about GSC high-impression page",
+    "answer_paragraphs": [
+      "The useful comparison is not simply whether a tool can answer a call. It is whether the system responds immediately, captures the job context, qualifies the lead, and creates a clear booking or handoff.",
+      "For Boltcall, the primary conversion path is a speed-to-lead audit through /book-a-call/. Related decision pages include /business-audit/ and /seo-aeo-audit/."
+    ],
+    "links": [
+      {
+        "label": "Book a speed-to-lead audit",
+        "href": "/book-a-call/"
+      },
+      {
+        "label": "Run the business audit",
+        "href": "/business-audit/"
+      },
+      {
+        "label": "Compare AI receptionist options",
+        "href": "/comparisons/"
+      }
     ],
     "updated_at": "2026-07-15",
     "source": "seo-aeo-autopilot"
