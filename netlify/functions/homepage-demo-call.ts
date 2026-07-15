@@ -52,6 +52,18 @@ function parseAgentMap(value: string | undefined): Record<string, string> {
   }
 }
 
+async function resolveDemoFromNumber(client: Retell): Promise<string> {
+  try {
+    const { items = [] } = await client.phoneNumber.list();
+    const retellNumbers = items.filter((item) => item.phone_number_type === 'retell-twilio');
+    const demoNumber = retellNumbers.find((item) => /demo/i.test(item.nickname || ''));
+
+    return demoNumber?.phone_number || retellNumbers[0]?.phone_number || '';
+  } catch {
+    return '';
+  }
+}
+
 const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
     getRequestOrigin(event.headers as Record<string, string>),
@@ -68,7 +80,7 @@ const handler: Handler = async (event) => {
   }
 
   const retellApiKey = process.env.RETELL_API_KEY;
-  const fromNumber = clean(
+  let fromNumber = clean(
     process.env.RETELL_DEMO_FROM_NUMBER || process.env.RETELL_PHONE_NUMBER,
     30,
   );
@@ -78,14 +90,6 @@ const handler: Handler = async (event) => {
   if (!retellApiKey) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Retell API key not configured' }) };
   }
-  if (!fromNumber) {
-    return {
-      statusCode: 503,
-      headers,
-      body: JSON.stringify({ error: 'RETELL_DEMO_FROM_NUMBER is not configured' }),
-    };
-  }
-
   let body: Record<string, unknown>;
   try {
     body = JSON.parse(event.body || '{}');
@@ -113,6 +117,18 @@ const handler: Handler = async (event) => {
       statusCode: 503,
       headers,
       body: JSON.stringify({ error: `No demo agent configured for ${industry}` }),
+    };
+  }
+
+  const client = new Retell({ apiKey: retellApiKey });
+  if (!fromNumber) {
+    fromNumber = await resolveDemoFromNumber(client);
+  }
+  if (!fromNumber) {
+    return {
+      statusCode: 503,
+      headers,
+      body: JSON.stringify({ error: 'Demo calls are temporarily unavailable' }),
     };
   }
 
@@ -160,7 +176,6 @@ const handler: Handler = async (event) => {
   }
 
   try {
-    const client = new Retell({ apiKey: retellApiKey });
     const call = await client.call.createPhoneCall({
       from_number: fromNumber,
       to_number: phone,

@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const retellCreatePhoneCall = vi.fn();
+const retellListPhoneNumbers = vi.fn();
 
 vi.mock('retell-sdk', () => ({
   default: class MockRetell {
     call = {
       createPhoneCall: retellCreatePhoneCall,
+    };
+    phoneNumber = {
+      list: retellListPhoneNumbers,
     };
   },
 }));
@@ -101,6 +105,8 @@ describe('homepage-demo-call', () => {
     nextId = 1;
     retellCreatePhoneCall.mockReset();
     retellCreatePhoneCall.mockResolvedValue({ call_id: 'call-123' });
+    retellListPhoneNumbers.mockReset();
+    retellListPhoneNumbers.mockResolvedValue({ items: [] });
     process.env.RETELL_API_KEY = 'retell-key';
     process.env.RETELL_DEMO_FROM_NUMBER = '+15550001111';
     process.env.RETELL_DEMO_AGENT_MAP = JSON.stringify({
@@ -155,5 +161,28 @@ describe('homepage-demo-call', () => {
       rateLimitMapKey('homepage_demo_phone', hashRateLimitKey(['+15551234567'])),
     );
     expect(phoneRow?.attempts).toBe(3);
+  });
+
+  it('uses a Retell demo line when no caller number environment variable is set', async () => {
+    delete process.env.RETELL_DEMO_FROM_NUMBER;
+    retellListPhoneNumbers.mockResolvedValue({
+      items: [
+        { phone_number: '+15550002222', phone_number_type: 'retell-twilio', nickname: 'Demo line' },
+      ],
+    });
+
+    const response = await handler(
+      makeEvent({
+        industry: 'law-firm',
+        name: 'Noam Yakoby',
+        phone: '+15551234567',
+      }),
+      {} as any,
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(retellCreatePhoneCall).toHaveBeenCalledWith(expect.objectContaining({
+      from_number: '+15550002222',
+    }));
   });
 });
