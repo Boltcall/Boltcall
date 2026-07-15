@@ -13,6 +13,8 @@ import { useTableOfContents } from '../hooks/useTableOfContents';
 import { updateMetaDescription } from '../lib/utils';
 import { createArticleSchema, createBreadcrumbSchema, createFAQSchema, injectSchemas } from '../lib/schema';
 import { getAbsoluteBlogPreviewImage, updateBlogPreviewMeta } from '../lib/blogPreviewImages';
+import seoAutopilotOverrides from '../content/seo-autopilot-overrides.json';
+import { applySeoAutopilotOverride, type SeoAutopilotOverride } from '../lib/seoAutopilotOverride';
 
 type BlogIntent = 'how-to' | 'comparison' | 'buyer' | 'industry' | 'cost' | 'stats' | 'faq' | 'explainer';
 
@@ -24,6 +26,7 @@ interface FaqItem {
 interface BlogSection {
   title: string;
   paragraphs?: string[];
+  links?: Array<{ label: string; href: string }>;
   bullets?: string[];
   ordered?: Array<{
     title: string;
@@ -719,7 +722,7 @@ function buildArticle(pathname: string): BlogArticle {
   const description = `${title}: a practical Boltcall guide for ${profile.audience} that want faster lead response, fewer missed opportunities, and more booked jobs.`;
   const intro = `For ${profile.audience}, this comes down to one moment: what happens immediately after ${profile.buyer} reaches out. That moment decides whether the lead becomes ${profile.bookedOutcome} or quietly moves to a competitor.`;
 
-  return {
+  const article = {
     path,
     title,
     description,
@@ -735,6 +738,7 @@ function buildArticle(pathname: string): BlogArticle {
       'That is where Boltcall is built to help: instant response, clean qualification, and a direct path from new inquiry to booked next step.',
     ],
   };
+  return applySeoAutopilotOverride(article, (seoAutopilotOverrides as Record<string, SeoAutopilotOverride>)[path]);
 }
 
 function slugify(text: string) {
@@ -792,6 +796,15 @@ function SectionBody({ section }: { section: BlogSection }) {
           {paragraph}
         </p>
       ))}
+      {section.links && (
+        <p className="flex flex-wrap gap-x-5 gap-y-2 text-base font-semibold">
+          {section.links.map((link) => (
+            <a key={link.href} href={link.href} className="text-blue-700 underline decoration-blue-200 underline-offset-4 hover:text-blue-900">
+              {link.label}
+            </a>
+          ))}
+        </p>
+      )}
       {section.ordered && (
         <ol className="list-decimal pl-6 space-y-4 text-lg leading-8 text-gray-700">
           {section.ordered.map((item) => (
