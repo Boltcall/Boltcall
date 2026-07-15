@@ -29,6 +29,18 @@ const DEMO_INDUSTRIES: DemoIndustry[] = [
   { id: "med-spa", label: "Med Spa" },
 ];
 
+function getRequestErrorMessage(status: number | undefined) {
+  if (status === 400) {
+    return "Please check your details and use a phone number with its country code.";
+  }
+
+  if (status === 429) {
+    return "You've requested a few calls recently. Please try again in an hour.";
+  }
+
+  return "We're unable to place your call right now. Please try again in a few minutes.";
+}
+
 function DemoField({
   label,
   children,
@@ -70,30 +82,27 @@ const BentoCard = () => {
         body: JSON.stringify({ industry, name, phone }),
       });
 
-      const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(
-          typeof payload?.error === "string"
-            ? payload.error
-            : "Could not start the demo call.",
-        );
+        throw new Error(getRequestErrorMessage(response.status));
       }
+
+      const payload = await response.json().catch(() => ({}));
 
       setRequestState("success");
       setMessage(`Calling ${payload.phone || phone} now. ${activeIndustry.label} demo selected.`);
     } catch (error) {
       setRequestState("error");
       setMessage(
-        error instanceof Error ? error.message : "Could not start the demo call.",
+        error instanceof Error ? error.message : getRequestErrorMessage(undefined),
       );
     }
   }
 
   return (
     <section className="mx-auto w-full max-w-6xl">
-      <div className="overflow-hidden rounded-[32px] border border-white/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,247,252,0.94))] shadow-[0_28px_90px_rgba(10,24,54,0.18)]">
+      <div className="overflow-hidden rounded-[32px] border border-[#d8dce7] bg-white shadow-[0_28px_90px_rgba(10,24,54,0.18)]">
         <div className="grid gap-0 lg:grid-cols-[minmax(250px,320px)_1fr]">
-          <div className="border-b border-[#d8dce7] bg-[#f6f8fc] px-6 py-8 sm:px-8 lg:border-b-0 lg:border-r">
+          <div className="border-b border-[#d8dce7] px-6 py-8 sm:px-8 lg:border-b-0 lg:border-r">
             <div className="mx-auto flex max-w-[240px] flex-col items-center text-center sm:max-w-[280px]">
               <SiriOrb
                 size="min(220px, 56vw)"
@@ -197,13 +206,15 @@ const BentoCard = () => {
                   <ArrowRight className="h-4 w-4" />
                 </button>
 
-                {message ? (
-                  <p
-                    className={cn(
-                      "mt-3 max-w-[420px] text-sm leading-6",
-                      requestState === "error" ? "text-[#b42318]" : "text-[#51607b]",
-                    )}
+                {message ? requestState === "error" ? (
+                  <div
+                    role="alert"
+                    className="mt-4 max-w-[460px] rounded-xl border border-[#f1d0cb] bg-[#fff8f7] px-4 py-3 text-sm leading-6 text-[#6b2720]"
                   >
+                    {message}
+                  </div>
+                ) : (
+                  <p className="mt-3 max-w-[420px] text-sm leading-6 text-[#51607b]">
                     {message}
                   </p>
                 ) : null}

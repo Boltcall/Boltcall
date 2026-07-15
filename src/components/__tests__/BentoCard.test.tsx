@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/components/ui/input', () => ({
   Input: ({ label, value, onChange, type = 'text', required = false }: any) => (
@@ -20,6 +20,10 @@ vi.mock('@/components/ui/siri-orb', () => ({
 import BentoCard from '../ui/bento-card';
 
 describe('BentoCard', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('renders one clean live-call form without the old preview chrome', () => {
     render(<BentoCard />);
 
@@ -35,5 +39,24 @@ describe('BentoCard', () => {
       screen.queryByText(/One number\. Multiple demo agents\. We route the call by industry\./i),
     ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Get a call/i })).toBeInTheDocument();
+  });
+
+  it('shows a polished fallback instead of a backend configuration error', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: 'RETELL_DEMO_FROM_NUMBER is not configured' }),
+    }));
+
+    render(<BentoCard />);
+
+    fireEvent.change(screen.getByLabelText('Your name'), { target: { value: 'Noam Yakoby' } });
+    fireEvent.change(screen.getByLabelText('+15551234567'), { target: { value: '+15551234567' } });
+    fireEvent.submit(screen.getByRole('button', { name: /Get a call/i }).closest('form')!);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      "We're unable to place your call right now. Please try again in a few minutes.",
+    );
+    expect(screen.queryByText('RETELL_DEMO_FROM_NUMBER is not configured')).not.toBeInTheDocument();
   });
 });
