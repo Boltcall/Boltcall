@@ -78,8 +78,12 @@ function toModernResponse(result: HandlerResponse) {
     }
   }
 
+  const status = result.statusCode ?? 200;
+  // Response() throws if a null-body status (204/205/304) is given any body,
+  // including an empty string — legacy handlers return { statusCode: 204, body: '' }.
+  const nullBodyStatus = status === 204 || status === 205 || status === 304 || status === 101;
   const body =
-    result.body == null
+    nullBodyStatus || result.body == null
       ? null
       : result.isBase64Encoded
         ? Uint8Array.from(Buffer.from(result.body, 'base64'))
@@ -87,7 +91,7 @@ function toModernResponse(result: HandlerResponse) {
 
   return new Response(body, {
     headers,
-    status: result.statusCode ?? 200,
+    status,
   });
 }
 
