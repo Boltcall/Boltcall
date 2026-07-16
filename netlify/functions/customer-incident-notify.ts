@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { sendBrevoEmail } from './send-email';
 import { wrapCronWithAlert } from './_shared/agency-cron-alert';
+import { shouldNotifyUser } from './_shared/notification-prefs';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
@@ -62,6 +63,11 @@ const inner: Handler = async () => {
     const { data: userData, error: userErr } = await supabase.auth.admin.getUserById(workspaceId);
     const email = userData?.user?.email;
     if (userErr || !email) continue;
+
+    if (!(await shouldNotifyUser(workspaceId, 'systemAlerts'))) {
+      console.log(`[customer-incident-notify] Skipping — systemAlerts disabled for ${workspaceId}`);
+      continue;
+    }
 
     const result = await sendBrevoEmail({
       to: email,

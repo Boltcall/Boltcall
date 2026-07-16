@@ -44,9 +44,9 @@ describe('Sidebar', () => {
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
   });
 
-  it('should show the section heading "Main"', () => {
+  it('should show the section heading "Home"', () => {
     renderSidebar({ isOpen: true });
-    expect(screen.getByText('Main')).toBeInTheDocument();
+    expect(screen.getByText('Home')).toBeInTheDocument();
   });
 
   it('should render mobile overlay when open', () => {

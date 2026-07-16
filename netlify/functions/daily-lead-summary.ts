@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { shouldNotifyUser } from './_shared/notification-prefs';
 
 /**
  * daily-lead-summary
@@ -180,6 +181,11 @@ const handler: Handler = async (event) => {
     let failed = 0;
 
     for (const summary of summaries) {
+      if (!(await shouldNotifyUser(summary.userId, 'weeklyDigest'))) {
+        console.log(`[daily-lead-summary] Skipping — weeklyDigest disabled for ${summary.userId}`);
+        continue;
+      }
+
       const subject = summary.pending > 0
         ? `${summary.callsHandled} handled, ${summary.pending} still waiting — your Boltcall summary`
         : `Your agent handled ${summary.callsHandled} lead${summary.callsHandled !== 1 ? 's' : ''} — Boltcall summary`;
