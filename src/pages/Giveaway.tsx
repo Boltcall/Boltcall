@@ -18,8 +18,8 @@ const GiveawayPage: React.FC = () => {
   const endDate = GIVEAWAY_ENDS_AT;
 
   useEffect(() => {
-    document.title = 'The Never Miss a Lead Giveaway | Boltcall';
-    updateMetaDescription('Win a full AI audit of your business, a free branded Smart Website, and a complete speed-to-lead setup with AI receptionist and SMS follow-up. Enter now.');
+    document.title = 'The Boltcall Launch Giveaway | Boltcall';
+    updateMetaDescription('Boltcall is live. To celebrate, win a full AI audit of your business, a free branded Smart Website, and a complete speed-to-lead setup with AI receptionist and SMS follow-up.');
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';
     bcScript.id = 'breadcrumb-jsonld';
@@ -61,7 +61,7 @@ const GiveawayPage: React.FC = () => {
     return `${baseUrl}/giveaway?ref=${userId}`;
   };
   const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://boltcall.org/giveaway';
-  const shareText = encodeURIComponent("I'm entering Boltcall's giveaway — if either of us wins, we both win! Join here:");
+  const shareText = encodeURIComponent("Boltcall just launched and they're giving away a full AI setup — if either of us wins, we both win! Join here:");
   const encodedUrl = encodeURIComponent(shareUrl);
   const twitterHref = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodedUrl}`;
   const facebookHref = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
@@ -87,7 +87,7 @@ const GiveawayPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400 rounded-full -ml-[8px]">
-                  The Never Miss a Lead Giveaway
+                  The Boltcall Launch Giveaway
                 </span>
                 <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-tight">
                   <span className="text-blue-500">AI Audit</span> <span className="text-white">+</span> <span className="text-blue-500">Smart Website</span>
@@ -335,9 +335,10 @@ const GiveawayPage: React.FC = () => {
 
       {/* Why Enter section */}
       <section className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Why Enter the Never Miss a Lead Giveaway?</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Why Enter the Boltcall Launch Giveaway?</h2>
         <p className="text-gray-600 mb-4 leading-relaxed">
-          One local business owner wins the full Boltcall treatment: a complete AI audit of their business,
+          Boltcall is officially live, and we're celebrating the launch by giving one local business owner
+          the full Boltcall treatment: a complete AI audit of their business,
           a free branded Smart Website, and the entire speed-to-lead system set up for them — AI receptionist,
           SMS lead follow-up, and automated appointment booking.
         </p>
