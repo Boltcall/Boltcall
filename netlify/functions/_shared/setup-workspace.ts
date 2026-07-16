@@ -10,7 +10,31 @@ function errorMessage(error: unknown): string {
   return typeof maybeMessage === 'string' ? maybeMessage : '';
 }
 
+function errorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object') return undefined;
+  const code = 'code' in error ? error.code : undefined;
+  return typeof code === 'string' ? code : undefined;
+}
+
+// asError: Supabase/PostgREST rejects with a plain error object, not an Error
+// instance. Throwing it raw crashes the Lambda runtime's serializer (renders
+// as an opaque "[object Object]" and surfaces to the client as a bare 502
+// with no diagnosable message) — always wrap before throwing.
+function asError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  const message = errorMessage(error) || 'Unknown workspace query error';
+  const err = new Error(message);
+  Object.assign(err, { cause: error });
+  return err;
+}
+
+// 42703 = Postgres undefined_column — the version-independent signal.
+// PostgREST's message wording for a bad filter column ("failed to parse
+// filter", table-qualified names, etc.) doesn't reliably match a fixed
+// string, so the code is checked first and the message patterns kept only
+// as a fallback for older/differently-worded PostgREST responses.
 function isMissingColumnError(error: unknown, column: string): boolean {
+  if (errorCode(error) === '42703') return true;
   const message = errorMessage(error).toLowerCase();
   if (!message) return false;
   return (
@@ -44,7 +68,7 @@ async function selectWorkspaceByColumn<T>(
     if (isMissingColumnError(error, column)) {
       return null;
     }
-    throw error;
+    throw asError(error);
   }
 
   return (data as T | null) ?? null;
@@ -85,7 +109,7 @@ async function insertWorkspaceByColumn<T>(
     if (isMissingColumnError(error, column) || isDuplicateError(error)) {
       return null;
     }
-    throw error;
+    throw asError(error);
   }
 
   return (data as T | null) ?? null;
