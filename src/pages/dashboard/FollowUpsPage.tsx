@@ -20,11 +20,14 @@ import {
   UserPlus,
   XCircle,
   ArrowLeft,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import FeatureOnboarding from '../../components/dashboard/FeatureOnboarding';
 import { PopButton } from '../../components/ui/pop-button';
 import {
@@ -189,9 +192,11 @@ const FollowUpsPage: React.FC = () => {
 const FollowUpsContent: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const handleError = useErrorHandler();
 
   const [sequences, setSequences] = useState<Sequence[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -215,6 +220,7 @@ const FollowUpsContent: React.FC = () => {
   const fetchSequences = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setFetchError(null);
     try {
       const { data: seqData, error: seqErr } = await supabase
         .from('followup_sequences')
@@ -262,12 +268,12 @@ const FollowUpsContent: React.FC = () => {
         }))
       );
     } catch (err) {
-      console.error('Error fetching sequences:', err);
-      showToast({ variant: 'error', message: 'Failed to load sequences.' });
+      handleError('follow-ups: fetch sequences', err, { toast: false, metadata: { userId: user.id } });
+      setFetchError('Unable to load your follow-up sequences.');
     } finally {
       setLoading(false);
     }
-  }, [user, showToast]);
+  }, [user, handleError]);
 
   useEffect(() => {
     fetchSequences();
@@ -290,7 +296,10 @@ const FollowUpsContent: React.FC = () => {
       setSequences((prev) =>
         prev.map((s) => (s.id === seq.id ? { ...s, is_active: !newVal } : s))
       );
-      showToast({ variant: 'error', message: 'Failed to update sequence.' });
+      handleError('follow-ups: toggle active', error, {
+        message: 'Failed to update the sequence. Please try again.',
+        metadata: { sequenceId: seq.id },
+      });
     } else {
       showToast({
         variant: 'success',
@@ -311,7 +320,10 @@ const FollowUpsContent: React.FC = () => {
     const { error } = await supabase.from('followup_sequences').delete().eq('id', id);
     setDeletingId(null);
     if (error) {
-      showToast({ variant: 'error', message: 'Failed to delete sequence.' });
+      handleError('follow-ups: delete sequence', error, {
+        message: 'Failed to delete the sequence. Please try again.',
+        metadata: { sequenceId: id },
+      });
     } else {
       setSequences((prev) => prev.filter((s) => s.id !== id));
       if (selectedSequence?.id === id) setSelectedSequence(null);
@@ -336,13 +348,16 @@ const FollowUpsContent: React.FC = () => {
           .order('enrolled_at', { ascending: false });
         if (error) throw error;
         setEnrollments(data ?? []);
-      } catch {
-        showToast({ variant: 'error', message: 'Failed to load enrollments.' });
+      } catch (err) {
+        handleError('follow-ups: fetch enrollments', err, {
+          message: 'Failed to load enrollments.',
+          metadata: { sequenceId: seqId },
+        });
       } finally {
         setEnrollmentsLoading(false);
       }
     },
-    [user, showToast]
+    [user, handleError]
   );
 
   const openEnrollments = (seq: Sequence) => {
@@ -356,7 +371,10 @@ const FollowUpsContent: React.FC = () => {
       .update({ status: 'cancelled', completed_at: new Date().toISOString() })
       .eq('id', enrollment.id);
     if (error) {
-      showToast({ variant: 'error', message: 'Failed to cancel enrollment.' });
+      handleError('follow-ups: cancel enrollment', error, {
+        message: 'Failed to cancel the enrollment. Please try again.',
+        metadata: { enrollmentId: enrollment.id },
+      });
     } else {
       setEnrollments((prev) =>
         prev.map((e) =>
@@ -475,8 +493,27 @@ const FollowUpsContent: React.FC = () => {
       {/* Loading */}
       {loading && <PageSkeleton />}
 
+      {/* Fetch error */}
+      {!loading && fetchError && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-xl border border-gray-200 shadow-sm"
+        >
+          <div className="text-center py-16 px-6">
+            <AlertCircle className="w-10 h-10 mx-auto mb-3 text-red-500" />
+            <p className="text-lg font-medium text-gray-700 mb-2">Unable to load sequences</p>
+            <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">{fetchError}</p>
+            <PopButton color="blue" onClick={fetchSequences} className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </PopButton>
+          </div>
+        </motion.div>
+      )}
+
       {/* Empty state */}
-      {!loading && sequences.length === 0 && (
+      {!loading && !fetchError && sequences.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -508,7 +545,7 @@ const FollowUpsContent: React.FC = () => {
       )}
 
       {/* Sequence cards */}
-      {!loading && sequences.length > 0 && (
+      {!loading && !fetchError && sequences.length > 0 && (
         <div className="grid gap-4">
           {sequences.map((seq, idx) => (
             <motion.div
@@ -685,6 +722,7 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
   onSaved,
   showToast,
 }) => {
+  const handleError = useErrorHandler();
   const isEdit = !!sequence;
   const tpl = templateType ? TEMPLATE_DEFAULTS[templateType] : null;
 
@@ -713,12 +751,15 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
         .eq('sequence_id', sequence.id)
         .order('step_order', { ascending: true });
       if (error) {
-        showToast({ variant: 'error', message: 'Failed to load steps.' });
+        handleError('follow-ups: load sequence steps', error, {
+          message: 'Failed to load steps.',
+          metadata: { sequenceId: sequence.id },
+        });
       }
       setSteps(data && data.length > 0 ? data : [defaultStep(1)]);
       setLoadingSteps(false);
     })();
-  }, [sequence, showToast]);
+  }, [sequence, handleError]);
 
   const applyPreset = (nextPreset: FollowupPresetId, nextTrigger = trigger) => {
     setPreset(nextPreset);
@@ -844,8 +885,10 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
       });
       onSaved();
     } catch (err: any) {
-      console.error('Save error:', err);
-      showToast({ variant: 'error', message: err.message || 'Failed to save sequence.' });
+      handleError('follow-ups: save sequence', err, {
+        message: err?.message || 'Failed to save sequence.',
+        metadata: { sequenceId: sequence?.id },
+      });
     } finally {
       setSaving(false);
     }
@@ -1385,6 +1428,7 @@ const EnrollModal: React.FC<EnrollModalProps> = ({
   onEnrolled,
   showToast,
 }) => {
+  const handleError = useErrorHandler();
   const [contactName, setContactName] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactEmail, setContactEmail] = useState('');
@@ -1417,8 +1461,10 @@ const EnrollModal: React.FC<EnrollModalProps> = ({
       showToast({ variant: 'success', message: 'Contact enrolled.' });
       onEnrolled();
     } catch (err: any) {
-      console.error('Enroll error:', err);
-      showToast({ variant: 'error', message: err.message || 'Failed to enroll contact.' });
+      handleError('follow-ups: enroll contact', err, {
+        message: err?.message || 'Failed to enroll contact.',
+        metadata: { sequenceId },
+      });
     } finally {
       setSaving(false);
     }

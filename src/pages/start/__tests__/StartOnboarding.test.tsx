@@ -107,7 +107,7 @@ describe('StartOnboarding', () => {
     vi.useRealTimers();
 
     expect(
-      screen.getByText(/Where does your business live online/i),
+      screen.getByText(/Your website\?/i),
     ).toBeInTheDocument();
     expect(screen.getByLabelText('Business website')).toBeInTheDocument();
   });
@@ -148,20 +148,20 @@ describe('StartOnboarding', () => {
     );
 
     // Skip welcome auto-advance (~2.8s).
-    await screen.findByText(/Where does your business live online/i, {}, { timeout: 8000 });
+    await screen.findByText(/Your website\?/i, {}, { timeout: 8000 });
 
     await user.type(screen.getByLabelText('Business website'), 'smithdental.com');
     await user.click(screen.getByLabelText('Continue'));
 
     // Intel resolves with extracted profile.
     await screen.findByDisplayValue('Smith Dental', {}, { timeout: 5000 });
-    expect(screen.getByDisplayValue('Teeth cleaning')).toBeInTheDocument();
+    expect(screen.getByText('Teeth cleaning')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Looks right/i }));
     expect(screen.getByText(/What.s costing you the most/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /After-hours silence/i }));
-    await screen.findByText(/Meet your new first responder/i, {}, { timeout: 3000 });
+    await screen.findByText(/Pick a voice/i, {}, { timeout: 3000 });
 
     await user.click(screen.getByRole('button', { name: /Build my agent/i }));
     await screen.findByText(/Building Smith Dental/i);

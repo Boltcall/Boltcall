@@ -7,6 +7,9 @@ import {
 } from '../lib/setup/onboarding';
 import { provisionAgentSetup } from '../lib/setup/provisionAgentSetup';
 import { SetupGradientBackground } from '../components/setup/SetupGradientBackground';
+import { supabase } from '../lib/supabase';
+import { useToast } from '../contexts/ToastContext';
+import { reportHandledError } from '../lib/errorReporting';
 
 const TOTAL_SEGMENTS = 20;
 const TOTAL_DURATION_MS = 10000;
@@ -33,6 +36,7 @@ const LOADING_STEPS = [
 const SetupLoading: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(LOADING_STEPS[0].text);
   const [fadeOut, setFadeOut] = useState(false);
@@ -40,6 +44,8 @@ const SetupLoading: React.FC = () => {
     null,
   );
   const [provisioningDone, setProvisioningDone] = useState(false);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [redirectTo, setRedirectTo] = useState<string>('/setup/talk-to-agent');
   const [minDurationMet, setMinDurationMet] = useState(false);
   const wordLoaderRef = useRef<HTMLDivElement>(null);
   const wordLoaderStopped = useRef(false);
@@ -191,13 +197,50 @@ const SetupLoading: React.FC = () => {
     if (!user?.id) return;
     const pendingSetup = readPendingAgentSetup();
     if (!pendingSetup) {
-      setProvisioningDone(true);
+      // Dead-end guard: no pending setup means the user landed here without
+      // completing the wizard. If they already have an inbound agent
+      // (returning after a completed run), forwarding to talk-to-agent is
+      // fine. If not, bounce them back to /setup with a nudge rather than
+      // stranding them at talk-to-agent's confusing "no agent" error.
+      const userId = user.id;
+      void (async () => {
+        try {
+          const { data: agents } = await supabase
+            .from('agents')
+            .select('id')
+            .eq('user_id', userId)
+            .or('agent_type.eq.inbound,agent_type.eq.ai_receptionist')
+            .limit(1);
+          if (!agents?.length) {
+            setRedirectTo('/setup');
+            showToast({
+              variant: 'default',
+              title: 'Finish setup first',
+              message: "Let's finish setting up your agent first.",
+            });
+          }
+        } catch (error) {
+          // Guard is best-effort: on lookup failure keep the previous
+          // behavior (forward to talk-to-agent) instead of stranding the
+          // user on the loading screen.
+          reportHandledError('SetupLoading: agent lookup failed', error, { userId });
+        }
+        setProvisioningDone(true);
+      })();
       return;
     }
     setProvisioningError(null);
     void provisionAgentSetup(user.id, pendingSetup)
-      .then(() => {
+      .then((result) => {
         clearPendingAgentSetup();
+        if (result?.phone?.error) {
+          setPhoneError(result.phone.error);
+          reportHandledError(
+            'SetupLoading: phone purchase failed',
+            new Error(result.phone.error),
+            { userId: user.id },
+          );
+        }
         setProvisioningDone(true);
       })
       .catch((error) => {
@@ -226,11 +269,21 @@ const SetupLoading: React.FC = () => {
     setTimeout(() => {
       wordLoaderStopped.current = true;
       setFadeOut(true);
+      if (phoneError) {
+        // Degraded state: agents are live, only the number is missing.
+        showToast({
+          variant: 'warning',
+          title: "We couldn't reserve your phone number",
+          message:
+            'Your AI agents are ready. Add a number from the dashboard when you have a moment.',
+          duration: 8000,
+        });
+      }
       setTimeout(() => {
-        navigate('/setup/talk-to-agent', { replace: true });
+        navigate(redirectTo, { replace: true });
       }, 800);
     }, 600);
-  }, [minDurationMet, navigate, provisioningDone, provisioningError]);
+  }, [minDurationMet, navigate, provisioningDone, provisioningError, phoneError, redirectTo, showToast]);
 
   return (
     <>

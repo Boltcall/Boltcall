@@ -54,6 +54,9 @@ vi.mock('../../../components/ui/modal-shell', () => ({
 }));
 
 import CallHistoryPage from '../CallHistoryPage';
+import { ToastProvider } from '../../../contexts/ToastContext';
+
+const renderPage = () => render(<CallHistoryPage />, { wrapper: ToastProvider });
 
 describe('CallHistoryPage', () => {
   beforeEach(() => {
@@ -63,7 +66,7 @@ describe('CallHistoryPage', () => {
   });
 
   it('waits for auth to settle before fetching call history', async () => {
-    const { rerender } = render(<CallHistoryPage />);
+    const { rerender } = renderPage();
 
     expect(getRetellCallHistoryMock).not.toHaveBeenCalled();
 
@@ -80,7 +83,7 @@ describe('CallHistoryPage', () => {
   });
 
   it('shows the loading skeleton while auth is still settling', () => {
-    render(<CallHistoryPage />);
+    renderPage();
 
     expect(screen.getByText('Loading skeleton')).toBeInTheDocument();
     expect(getRetellCallHistoryMock).not.toHaveBeenCalled();
@@ -92,7 +95,7 @@ describe('CallHistoryPage', () => {
       isLoading: false,
     };
 
-    render(<CallHistoryPage />);
+    renderPage();
 
     await waitFor(() => {
       expect(getRetellCallHistoryMock).toHaveBeenCalledTimes(1);

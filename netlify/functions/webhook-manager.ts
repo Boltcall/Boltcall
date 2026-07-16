@@ -388,7 +388,13 @@ const handler: Handler = async (event) => {
           data: payload,
         };
 
-        const result = await sendWebhook(webhook.url, fullPayload, webhook.secret);
+        let result = await sendWebhook(webhook.url, fullPayload, webhook.secret);
+
+        // Retry once on network error or 5xx before giving up
+        if (!result.success && (result.statusCode === 0 || result.statusCode >= 500)) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          result = await sendWebhook(webhook.url, fullPayload, webhook.secret);
+        }
 
         // Log event
         await supabase.from('webhook_events').insert({
@@ -401,6 +407,16 @@ const handler: Handler = async (event) => {
           success: result.success,
           duration_ms: result.durationMs,
         });
+
+        if (!result.success) {
+          let targetHost = 'unknown';
+          try { targetHost = new URL(webhook.url).host; } catch {}
+          await notifyError(
+            'webhook-manager: fire delivery failed after retry',
+            new Error(result.body || 'delivery failed'),
+            { userId, triggerEvent, webhookId: webhook.id, targetHost }
+          );
+        }
 
         results.push({ webhookId: webhook.id, ...result });
       }

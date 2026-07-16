@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useId } from 'react';
-import { User, Search } from 'lucide-react';
+import { User, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
 import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
+import Card from '../../components/ui/Card';
 
 export interface Lead {
   id: string;
@@ -153,11 +154,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   previewLeads,
 }) => {
   const { user } = useAuth();
-  const { showToast } = useToast();
+  const handleError = useErrorHandler();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [backendLeads, setBackendLeads] = useState<BackendLeadCard[]>([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
   const [isLoadingBackendLeads, setIsLoadingBackendLeads] = useState(true);
+  const [leadsError, setLeadsError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
@@ -165,24 +167,10 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const [chartRange, setChartRange] = useState<'7' | '30'>('7');
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; date: string; value: string } | null>(null);
   const chartRef = useRef<SVGSVGElement>(null);
-  const showToastRef = useRef(showToast);
   const resolvedPreviewLeads = previewLeads ?? EMPTY_PREVIEW_LEADS;
   const chartId = useId().replace(/:/g, '');
   const areaGradientId = `lead-performance-area-${chartId}`;
   const clipPathId = `lead-performance-clip-${chartId}`;
-
-  useEffect(() => {
-    showToastRef.current = showToast;
-  }, [showToast]);
-
-  const showLeadsErrorToast = useCallback(() => {
-    showToastRef.current({
-      title: 'Error',
-      message: 'Failed to fetch leads',
-      variant: 'error',
-      duration: 3000,
-    });
-  }, []);
 
   const fetchLeads = useCallback(async () => {
     if (previewMode) {
@@ -210,6 +198,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
     }
 
     setIsLoadingLeads(true);
+    setLeadsError(null);
     try {
       const { data, error } = await supabase
         .from('leads')
@@ -218,9 +207,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching leads:', error);
-        showLeadsErrorToast();
+        handleError('speed-to-lead: fetch leads', error, {
+          toast: false,
+          metadata: { userId: user.id },
+        });
         setLeads([]);
+        setLeadsError('Unable to load your leads.');
         return;
       }
 
@@ -240,13 +232,16 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         setLeads([]);
       }
     } catch (error) {
-      console.error('Error fetching leads:', error);
-      showLeadsErrorToast();
+      handleError('speed-to-lead: fetch leads', error, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
       setLeads([]);
+      setLeadsError('Unable to load your leads.');
     } finally {
       setIsLoadingLeads(false);
     }
-  }, [previewMode, resolvedPreviewLeads, user?.id]);
+  }, [previewMode, resolvedPreviewLeads, user?.id, handleError]);
 
   useEffect(() => {
     void fetchLeads();
@@ -275,7 +270,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       const payload = (await res.json()) as BackendLeadsResponse;
       setBackendLeads(payload.leads);
     } catch (error) {
-      console.error('Error fetching backend leads:', error);
+      // Enrichment endpoint failed — fall back to the raw Supabase leads
+      // (already fetched by fetchLeads) so the table still renders.
+      handleError('speed-to-lead: fetch enriched leads', error, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
       setBackendLeads(
         leads.map((lead) => ({
           id: lead.id,
@@ -290,7 +290,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
     } finally {
       setIsLoadingBackendLeads(false);
     }
-  }, [leads, previewMode, sourceFilter, statusFilter, user?.id]);
+  }, [leads, previewMode, sourceFilter, statusFilter, user?.id, handleError]);
 
   useEffect(() => {
     void fetchBackendLeads();
@@ -466,6 +466,25 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       transition: { delay: i * 0.1, duration: 0.4, ease: 'easeOut' as const },
     }),
   };
+
+  if (leadsError && !isLoadingLeads && leads.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-8 max-w-md text-center">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load leads</h3>
+          <p className="text-sm text-gray-500 mb-4">{leadsError}</p>
+          <button
+            onClick={fetchLeads}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 px-1 md:px-0">

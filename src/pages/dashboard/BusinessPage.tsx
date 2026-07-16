@@ -4,10 +4,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { supabase } from '../../lib/supabase';
 import { UnsavedChanges } from '../../components/ui/unsaved-changes';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 const BusinessPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const handleError = useErrorHandler();
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -84,11 +86,14 @@ const BusinessPage: React.FC = () => {
           }
         }
       } catch (err) {
-        console.error('Error fetching business data:', err);
+        handleError('business: fetch profile', err, {
+          message: 'Could not load your business profile. Please refresh and try again.',
+          metadata: { userId: user.id },
+        });
       }
     };
     fetchData();
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));

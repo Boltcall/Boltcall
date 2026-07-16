@@ -36,6 +36,16 @@ vi.mock('react-router-dom', async () => {
 });
 
 import SetupLoading from '../SetupLoading';
+import { ToastProvider } from '../../contexts/ToastContext';
+
+const renderPage = () =>
+  render(
+    <ToastProvider>
+      <MemoryRouter initialEntries={['/setup/loading']}>
+        <SetupLoading />
+      </MemoryRouter>
+    </ToastProvider>,
+  );
 
 describe('SetupLoading', () => {
   beforeEach(() => {
@@ -59,11 +69,7 @@ describe('SetupLoading', () => {
   });
 
   it('starts provisioning the saved setup while the loading screen is shown', async () => {
-    render(
-      <MemoryRouter initialEntries={['/setup/loading']}>
-        <SetupLoading />
-      </MemoryRouter>,
-    );
+    renderPage();
 
     await waitFor(() =>
       expect(mocks.provisionAgentSetup).toHaveBeenCalledWith('user-1', {
@@ -83,11 +89,7 @@ describe('SetupLoading', () => {
   it('only fades the foreground content before navigating away', async () => {
     vi.useFakeTimers();
     try {
-      const { container } = render(
-        <MemoryRouter initialEntries={['/setup/loading']}>
-          <SetupLoading />
-        </MemoryRouter>,
-      );
+      const { container } = renderPage();
 
       await act(async () => {
         await vi.advanceTimersByTimeAsync(10600);
@@ -103,11 +105,7 @@ describe('SetupLoading', () => {
   });
 
   it('keeps loading bar segments white after they fill', () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={['/setup/loading']}>
-        <SetupLoading />
-      </MemoryRouter>,
-    );
+    const { container } = renderPage();
 
     const styles = Array.from(container.querySelectorAll('style'))
       .map((style) => style.textContent || '')

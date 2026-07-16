@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KnowledgeBaseSkeleton } from '../../components/ui/loading-skeleton';
-import { X, FileText, Edit, Trash2, Save, Upload, Globe, PenTool, Plus, ChevronDown, ChevronRight, FolderOpen, Building2, Pencil, ArrowLeft } from 'lucide-react';
+import { X, FileText, Edit, Trash2, Save, Upload, Globe, PenTool, Plus, ChevronDown, ChevronRight, FolderOpen, Building2, Pencil, ArrowLeft, AlertCircle, RefreshCw } from 'lucide-react';
 import ModalShell from '../../components/ui/modal-shell';
 
 import { FileUpload } from '@/components/ui/file-upload';
 import CardTableWithPanel from '../../components/ui/CardTableWithPanel';
+import Card from '../../components/ui/Card';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useTokens } from '../../contexts/TokenContext';
 import { CheckCircle2, Circle, Sparkles, ArrowRight } from 'lucide-react';
 import { PopButton } from '../../components/ui/pop-button';
@@ -71,6 +73,7 @@ function getPolicyPlaceholder(_industry: string): string {
 const KnowledgeBasePage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const handleError = useErrorHandler();
   const { claimReward } = useTokens();
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState<'url' | 'file' | 'blank' | null>(null);
@@ -104,6 +107,7 @@ const KnowledgeBasePage: React.FC = () => {
   // Document management state
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [docsError, setDocsError] = useState<string | null>(null);
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
   const [editingDocumentContent, setEditingDocumentContent] = useState('');
   const [showDocumentEditor, setShowDocumentEditor] = useState(false);
@@ -132,9 +136,9 @@ const KnowledgeBasePage: React.FC = () => {
         setFolders(data.folders || []);
       }
     } catch (err) {
-      console.error('Error fetching folders:', err);
+      handleError('knowledge-base: fetch folders', err, { toast: false, metadata: { userId: user.id } });
     }
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim() || !user?.id) return;
@@ -373,6 +377,7 @@ const KnowledgeBasePage: React.FC = () => {
 
     try {
       setIsLoading(true);
+      setDocsError(null);
       let query = supabase
         .from('knowledge_base')
         .select('*')
@@ -385,7 +390,8 @@ const KnowledgeBasePage: React.FC = () => {
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching documents:', error);
+        handleError('knowledge-base: fetch documents', error, { toast: false, metadata: { userId: user.id } });
+        setDocsError('Unable to load your knowledge base.');
         return;
       }
 
@@ -400,7 +406,8 @@ const KnowledgeBasePage: React.FC = () => {
 
       setDocuments(transformedDocuments);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      handleError('knowledge-base: fetch documents', error, { toast: false, metadata: { userId: user.id } });
+      setDocsError('Unable to load your knowledge base.');
     } finally {
       setIsLoading(false);
     }
@@ -453,7 +460,7 @@ const KnowledgeBasePage: React.FC = () => {
         ],
       });
     } catch (error) {
-      console.error('Error fetching KB completeness:', error);
+      handleError('knowledge-base: fetch completeness', error, { toast: false, metadata: { userId: user.id } });
     }
   };
 
@@ -513,7 +520,7 @@ const KnowledgeBasePage: React.FC = () => {
 
       console.log('KB synced to Retell successfully');
     } catch (error) {
-      console.error('Failed to sync KB to Retell:', error);
+      handleError('knowledge-base: sync to retell', error, { toast: false, metadata: { userId: user.id } });
     }
   };
 
@@ -673,13 +680,15 @@ const KnowledgeBasePage: React.FC = () => {
             const scraped = await res.json();
             content = scraped.content || `Imported from: ${doc.url}`;
             title = scraped.title || doc.name;
-          } catch {
+          } catch (err) {
+            handleError('knowledge-base: scrape url in batch', err, { toast: false, metadata: { url: doc.url } });
             content = `Failed to scrape. URL: ${doc.url}`;
           }
         } else if (doc.type === 'file' && doc.file) {
           try {
             content = await doc.file.text();
-          } catch {
+          } catch (err) {
+            handleError('knowledge-base: read file in batch', err, { toast: false, metadata: { fileName: doc.file.name } });
             content = `Failed to read file: ${doc.file.name}`;
           }
         }
@@ -1041,7 +1050,11 @@ const KnowledgeBasePage: React.FC = () => {
       handleClosePopup();
       handleEditDocument(newDoc);
     } catch (error) {
-      console.error('Error creating document:', error);
+      handleError('knowledge-base: create blank document', error, {
+        title: 'Could not create document',
+        message: 'Failed to create the document. Please try again.',
+        metadata: { userId: user?.id },
+      });
     }
   };
 
@@ -1097,13 +1110,17 @@ const KnowledgeBasePage: React.FC = () => {
           .eq('user_id', user.id);
 
         if (error) {
-          console.error('Error saving document:', error);
+          handleError('knowledge-base: save document', error, {
+            title: 'Could not save changes',
+            message: 'Your document changes were not saved. Please try again.',
+            metadata: { userId: user.id, documentId: editingDocumentId },
+          });
           return;
         }
 
-        setDocuments(documents.map(doc => 
-          doc.id === editingDocumentId 
-            ? { ...doc, content: editingDocumentContent, updatedAt: new Date() } 
+        setDocuments(documents.map(doc =>
+          doc.id === editingDocumentId
+            ? { ...doc, content: editingDocumentContent, updatedAt: new Date() }
             : doc
         ));
         setEditingDocumentId(null);
@@ -1111,7 +1128,11 @@ const KnowledgeBasePage: React.FC = () => {
         setShowDocumentEditor(false);
         syncToRetell();
       } catch (error) {
-        console.error('Error saving document:', error);
+        handleError('knowledge-base: save document', error, {
+          title: 'Could not save changes',
+          message: 'Your document changes were not saved. Please try again.',
+          metadata: { userId: user.id, documentId: editingDocumentId },
+        });
       }
     }
   };
@@ -1127,14 +1148,22 @@ const KnowledgeBasePage: React.FC = () => {
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error deleting document:', error);
+        handleError('knowledge-base: delete document', error, {
+          title: 'Could not delete document',
+          message: 'Failed to delete the document. Please try again.',
+          metadata: { userId: user.id, documentId: id },
+        });
         return;
       }
 
       setDocuments(documents.filter(doc => doc.id !== id));
       syncToRetell();
     } catch (error) {
-      console.error('Error deleting document:', error);
+      handleError('knowledge-base: delete document', error, {
+        title: 'Could not delete document',
+        message: 'Failed to delete the document. Please try again.',
+        metadata: { userId: user.id, documentId: id },
+      });
     }
   };
 
@@ -1170,6 +1199,25 @@ const KnowledgeBasePage: React.FC = () => {
 
   if (isLoading) {
     return <KnowledgeBaseSkeleton />;
+  }
+
+  if (docsError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-8 max-w-md text-center">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load knowledge base</h3>
+          <p className="text-sm text-gray-500 mb-4">{docsError}</p>
+          <button
+            onClick={fetchDocuments}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+        </Card>
+      </div>
+    );
   }
 
   // Folder picker JSX used inside popup modals

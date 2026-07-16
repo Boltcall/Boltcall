@@ -6,11 +6,13 @@ import { PopButton } from '../../components/ui/pop-button';
 import { PageSkeleton } from '../../components/ui/loading-skeleton';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 const WEBHOOK_URL = 'https://boltcall.org/.netlify/functions/appointment-handler';
 
 const CalcomPage: React.FC = () => {
   const { user } = useAuth();
+  const handleError = useErrorHandler();
   const [loading, setLoading] = useState(true);
   const [calConnected, setCalConnected] = useState(false);
   const [webhookId, setWebhookId] = useState<string | null>(null);
@@ -31,11 +33,14 @@ const CalcomPage: React.FC = () => {
           setWebhookId(cfg.cal_webhook_id || null);
         }
       } catch (err) {
-        console.error('CalcomPage load error:', err);
+        handleError('calcom: load connection status', err, {
+          message: 'Could not load your Cal.com connection status.',
+          metadata: { userId: user.id },
+        });
       }
       setLoading(false);
     })();
-  }, [user]);
+  }, [user, handleError]);
 
   if (loading) {
     return <PageSkeleton />;

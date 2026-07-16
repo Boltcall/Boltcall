@@ -3,11 +3,16 @@
  * Used across all Netlify functions to notify the owner when something goes wrong.
  */
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8548570744:AAFiridwZ2wruW0kTXQRUASRXhn7AiGN-6g';
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '6196587627';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const NOTIFY_TIMEOUT_MS = 2500;
 
 async function sendTelegramMessage(body: Record<string, unknown>): Promise<void> {
+  if (!BOT_TOKEN || !CHAT_ID) {
+    console.warn('Telegram notification skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set');
+    return;
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), NOTIFY_TIMEOUT_MS);
 

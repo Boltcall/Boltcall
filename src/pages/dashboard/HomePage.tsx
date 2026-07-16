@@ -72,7 +72,7 @@ const SetupRing: React.FC<{ pct: number }> = ({ pct }) => {
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
-  const { liveStats, businessName, setBusinessName, fetchLiveData, fetchError, loading: dashboardLoading } = useDashboardStore();
+  const { liveStats, callbackStats, businessName, setBusinessName, fetchLiveData, fetchError, loading: dashboardLoading } = useDashboardStore();
   const progress = useSetupProgress();
   const [agentName, setAgentName] = useState<string>('Your AI');
   const suggestion = useFeatureTriggers(agentName);
@@ -137,7 +137,14 @@ const HomePage: React.FC = () => {
 
   const now = new Date();
   const firstName = (user?.name || 'there').split(' ')[0];
-  const handled = liveStats?.retell?.successful_calls_today ?? 0;
+  // dashboard-stats (liveStats) is admin-only and returns null for regular
+  // clients — falling back to a hardcoded 0 would always claim "no calls"
+  // even when the AI has been busy. Fall back to the callback-derived count
+  // the store already fetches so the greeting reflects real activity.
+  const handled =
+    liveStats?.retell?.successful_calls_today ??
+    (callbackStats as { completed?: number } | null)?.completed ??
+    0;
   // Business name comes from dashboardStore (mirrored from settings/general) —
   // may be empty on very first login until Setup persists it, so keep the
   // fallback in buildGreeting. Trim to avoid rendering a stray comma or space.

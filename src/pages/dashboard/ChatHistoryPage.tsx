@@ -10,12 +10,15 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  RefreshCw,
   MessageCircle
 } from 'lucide-react';
 import { getRetellCallHistory, type RetellCall } from '../../lib/retell';
 import { supabase } from '../../lib/supabase';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 const ChatHistoryPage: React.FC = () => {
+  const handleError = useErrorHandler();
   const [chats, setChats] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +48,7 @@ const ChatHistoryPage: React.FC = () => {
       const agentIds = agents?.map(agent => agent.retell_agent_id).filter(Boolean) || [];
       return agentIds;
     } catch (error) {
-      console.error('Error fetching user agents:', error);
+      handleError('chat-history: fetch user agents', error, { toast: false });
       return [];
     }
   };
@@ -90,7 +93,7 @@ const ChatHistoryPage: React.FC = () => {
       
       setChats(chatCalls);
     } catch (error) {
-      console.error('Error fetching chat history:', error);
+      handleError('chat-history: fetch chat history', error, { toast: false });
       setError('Failed to fetch chat history. Please try again.');
     } finally {
       setLoading(false);
@@ -280,9 +283,18 @@ const ChatHistoryPage: React.FC = () => {
         {loading ? (
           <ChatHistorySkeleton />
         ) : error ? (
-          <div className="flex items-center justify-center py-12">
-            <AlertCircle className="w-8 h-8 text-red-600" />
-            <span className="ml-3 text-red-600">{error}</span>
+          <div className="flex flex-col items-center justify-center gap-3 py-12">
+            <div className="flex items-center">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+              <span className="ml-3 text-red-600">{error}</span>
+            </div>
+            <button
+              onClick={fetchChatHistory}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blueDark transition-colors text-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
           </div>
         ) : filteredChats.length === 0 ? (
           <div className="flex items-center justify-center py-12">

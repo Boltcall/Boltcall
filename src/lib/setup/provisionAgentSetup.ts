@@ -3,6 +3,7 @@ import { createAgentAndKnowledgeBase } from '../webhooks';
 import { LocationService } from '../locations';
 import { FUNCTIONS_BASE } from '../api';
 import { supabase } from '../supabase';
+import { reportHandledError } from '../errorReporting';
 import type { PendingAgentSetup } from './onboarding';
 
 // Namespace the "current location" cache by userId so a second account in
@@ -73,10 +74,14 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
             duration_min: Number.isFinite(s.duration) ? s.duration : null,
           }))
         );
-        if (svcErr) console.warn('Could not persist services catalog:', svcErr);
+        if (svcErr) {
+          console.warn('Could not persist services catalog:', svcErr);
+          reportHandledError('provisionAgentSetup: services insert', svcErr, { userId });
+        }
       }
     } catch (error) {
       console.warn('Could not persist services catalog:', error);
+      reportHandledError('provisionAgentSetup: services insert', error, { userId });
     }
   }
 
@@ -113,6 +118,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
       localStorage.setItem(locationKey, locationId);
     } catch (error) {
       console.warn('Could not create primary location:', error);
+      reportHandledError('provisionAgentSetup: location create', error, { userId });
     }
   }
 
@@ -216,6 +222,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
       });
     } catch (error) {
       console.warn('Could not save workspace logo:', error);
+      reportHandledError('provisionAgentSetup: logo upload', error, { userId });
     }
   }
   const launchRes = await fetch(`${FUNCTIONS_BASE}/setup-launch`, {
