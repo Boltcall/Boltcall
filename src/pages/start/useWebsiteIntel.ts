@@ -14,6 +14,7 @@
 import { useRef, useState } from 'react';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
+import { reportHandledError } from '../../lib/errorReporting';
 import type { PendingAgentSetup } from '../../lib/setup/onboarding';
 
 export interface WebsiteIntel {
@@ -112,6 +113,7 @@ export function deriveBusinessName(title: string, domain: string): string {
 export function useWebsiteIntel() {
   const [status, setStatus] = useState<IntelStatus>('idle');
   const [intel, setIntel] = useState<WebsiteIntel | null>(null);
+  const [degraded, setDegraded] = useState(false);
   const runId = useRef(0);
 
   async function run(rawUrl: string, userId: string) {
@@ -123,6 +125,7 @@ export function useWebsiteIntel() {
 
     const id = ++runId.current;
     setStatus('scanning');
+    setDegraded(false);
 
     const logos = logoCandidates(normalized.domain);
     const base: WebsiteIntel = {
@@ -142,6 +145,14 @@ export function useWebsiteIntel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: normalized.url }),
       });
+      if (!scrapeRes.ok) {
+        setDegraded(true);
+        reportHandledError(
+          'useWebsiteIntel: scrape-url non-ok',
+          new Error(`scrape-url ${scrapeRes.status}`),
+          { userId, url: normalized.url, status: scrapeRes.status },
+        );
+      }
       const scraped = scrapeRes.ok ? await scrapeRes.json() : {};
       const content: string = scraped.markdown || scraped.content || '';
       const title: string = scraped.title || '';
@@ -168,9 +179,21 @@ export function useWebsiteIntel() {
             const extracted = await extractRes.json();
             if (Array.isArray(extracted.services)) enriched.services = extracted.services.slice(0, 8);
             if (Array.isArray(extracted.faqs)) enriched.faqs = extracted.faqs.slice(0, 6);
+          } else {
+            setDegraded(true);
+            reportHandledError(
+              'useWebsiteIntel: ai-extract-kb non-ok',
+              new Error(`ai-extract-kb ${extractRes.status}`),
+              { userId, url: normalized.url, status: extractRes.status },
+            );
           }
-        } catch {
+        } catch (err) {
           // Extraction is a bonus — name/logo/industry still land.
+          setDegraded(true);
+          reportHandledError('useWebsiteIntel: ai-extract-kb threw', err, {
+            userId,
+            url: normalized.url,
+          });
         }
       }
 
@@ -178,14 +201,19 @@ export function useWebsiteIntel() {
       setIntel(enriched);
       setStatus('done');
       return enriched;
-    } catch {
+    } catch (err) {
       if (runId.current !== id) return null;
       // Even a total scrape failure still gives logo + name-from-domain.
+      setDegraded(true);
+      reportHandledError('useWebsiteIntel: scrape threw', err, {
+        userId,
+        url: normalized.url,
+      });
       setIntel(base);
       setStatus('done');
       return base;
     }
   }
 
-  return { status, intel, run };
+  return { status, intel, degraded, run };
 }

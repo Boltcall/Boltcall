@@ -26,7 +26,7 @@ type Decision = { id: string; summary: string; created_at: string };
 // pausable, with a visible account of what it knows and what it did.
 const YourAiOverview: React.FC = () => {
   const { user } = useAuth();
-  const { liveStats } = useDashboardStore();
+  const { liveStats, callbackStats } = useDashboardStore();
   const [agent, setAgent] = useState<AgentRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingName, setEditingName] = useState(false);
@@ -73,7 +73,10 @@ const YourAiOverview: React.FC = () => {
   }, [user?.id]);
 
   const isLive = !agent?.status || agent.status === 'active';
-  const answeredToday = liveStats?.retell?.successful_calls_today ?? 0;
+  const answeredToday =
+    liveStats?.retell?.successful_calls_today ??
+    (callbackStats as { completed?: number } | null)?.completed ??
+    0;
 
   // Same persistence path as AgentDetailPage (direct agents update).
   // ponytail: Retell name sync skipped here — Personality tab does full sync.

@@ -23,7 +23,10 @@ const TodayGlanceCard: React.FC = () => {
       .catch((err) => console.error('Booked revenue fetch failed:', err));
   }, [user?.id]);
 
-  const handled = liveStats?.retell?.successful_calls_today ?? 0;
+  const handled =
+    liveStats?.retell?.successful_calls_today ??
+    (callbackStats as { completed?: number } | null)?.completed ??
+    0;
   const missed = liveStats?.retell?.missed_calls_today ?? 0;
   const pending = (callbackStats as { pending?: number } | null)?.pending ?? 0;
   const totalToday = (callbackStats as { total?: number } | null)?.total ?? 0;

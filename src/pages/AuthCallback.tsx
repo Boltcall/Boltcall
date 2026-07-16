@@ -7,6 +7,7 @@ import {
   clearPendingAgentSetup,
   readPendingAgentSetup,
 } from '../lib/setup/onboarding';
+import { reportHandledError } from '../lib/errorReporting';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +25,8 @@ const AuthCallback: React.FC = () => {
 
         if (error) {
           console.error('Auth callback error:', error);
-          navigate('/login');
+          reportHandledError('AuthCallback: getSession error', error);
+          navigate('/login?authError=callback');
           return;
         }
 
@@ -68,7 +70,8 @@ const AuthCallback: React.FC = () => {
         }
       } catch (error) {
         console.error('Error handling auth callback:', error);
-        navigate('/login');
+        reportHandledError('AuthCallback: unhandled', error);
+        navigate('/login?authError=callback');
       }
     };
 

@@ -91,6 +91,7 @@ vi.mock('../../../lib/supabase', () => ({
       getUser: () => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null }),
       getSession: () => Promise.resolve({ data: { session: { access_token: 'tok' } }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      updateUser: () => Promise.resolve({ data: { user: null }, error: null }),
     },
     channel: () => ({ on: () => ({ subscribe: vi.fn() }) }),
     // V2 surfaces occasionally call removeChannel — not in the V1 smoke mock.
@@ -428,6 +429,7 @@ describe('V2SetupChat — smoke', () => {
     fireEvent.change(screen.getByLabelText(/business website - optional/i), {
       target: { value: 'https://boltcall.org' },
     });
+    fireEvent.click(screen.getByLabelText(/I agree to the/i));
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     await act(async () => {
       vi.advanceTimersByTime(360);
@@ -478,6 +480,7 @@ describe('V2SetupChat — smoke', () => {
     fireEvent.change(screen.getByLabelText(/business website - optional/i), {
       target: { value: 'https://boltcall.org' },
     });
+    fireEvent.click(screen.getByLabelText(/I agree to the/i));
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     await act(async () => {
       vi.advanceTimersByTime(360);

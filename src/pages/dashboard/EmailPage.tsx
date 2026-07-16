@@ -21,6 +21,7 @@ import EmailThreadView from '../../components/email/EmailThreadView';
 import EmailDraftCard from '../../components/email/EmailDraftCard';
 import EmailSettingsPanel from '../../components/email/EmailSettingsPanel';
 import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 type Tab = 'inbox' | 'drafts' | 'threads' | 'settings';
 
@@ -40,6 +41,7 @@ function buildMiniSeries(value: number, direction: 'up' | 'down' = 'up') {
 
 const EmailPage: React.FC = () => {
   const { user } = useAuth();
+  const handleError = useErrorHandler();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>('inbox');
   const [accounts, setAccounts] = useState<EmailAccount[]>([]);
@@ -79,11 +81,14 @@ const EmailPage: React.FC = () => {
       setDrafts(draftsData);
       setStats(statsData);
     } catch (err) {
-      console.error('Failed to load email data:', err);
+      handleError('email: load data', err, {
+        message: 'Could not load your email data. Please refresh and try again.',
+        metadata: { userId: user.id },
+      });
     } finally {
       setLoading(false);
     }
-  }, [user?.id, threadFilter]);
+  }, [user?.id, threadFilter, handleError]);
 
   useEffect(() => {
     loadData();

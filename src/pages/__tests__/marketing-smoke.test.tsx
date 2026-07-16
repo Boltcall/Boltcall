@@ -147,11 +147,14 @@ import Terms from '../Terms';
 import NotFound from '../NotFound';
 import Login from '../Login';
 import Signup from '../Signup';
+import { ToastProvider } from '../../contexts/ToastContext';
 
 const renderInRouter = (Page: React.ComponentType) => {
   return render(
     <MemoryRouter>
-      <Page />
+      <ToastProvider>
+        <Page />
+      </ToastProvider>
     </MemoryRouter>
   );
 };

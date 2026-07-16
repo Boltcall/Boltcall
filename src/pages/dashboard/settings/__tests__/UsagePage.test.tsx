@@ -75,9 +75,10 @@ vi.mock('../../../../lib/plan-limits', async () => {
   return actual;
 });
 
-vi.mock('../../../../lib/tokens', () => ({
-  TOKEN_REWARDS: {},
-}));
+vi.mock('../../../../lib/tokens', async () => {
+  const actual = await vi.importActual<typeof import('../../../../lib/tokens')>('../../../../lib/tokens');
+  return actual;
+});
 
 vi.mock('recharts', () => ({
   AreaChart: ({ children }: any) => <div data-testid="area-chart">{children}</div>,

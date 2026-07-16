@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   MessageCircle, Send, Check, X, RefreshCw, Copy,
-  Loader2, Phone, ExternalLink, Eye, EyeOff,
+  Loader2, Phone, ExternalLink, Eye, EyeOff, AlertCircle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { InfiniteRibbon } from '@/components/ui/infinite-ribbon';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import Card from '../../components/ui/Card';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -126,18 +128,22 @@ const callWhatsAppFn = async (
 
 const WhatsappPage: React.FC = () => {
   const { user } = useAuth();
+  const handleError = useErrorHandler();
   const [activeTab, setActiveTab] = useState<TabKey>('connection');
   const [settings, setSettings] = useState<WhatsAppSettings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   // Conversations state
   const [threads, setThreads] = useState<WaThread[]>([]);
   const [threadsLoading, setThreadsLoading] = useState(false);
+  const [threadsError, setThreadsError] = useState<string | null>(null);
   const [selectedThread, setSelectedThread] = useState<string | null>(null);
   const [messages, setMessages] = useState<WaMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
   const [msgPage, setMsgPage] = useState(0);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -162,6 +168,7 @@ const WhatsappPage: React.FC = () => {
   const loadSettings = useCallback(async () => {
     if (!user?.id) return;
     setSettingsLoading(true);
+    setSettingsError(null);
     try {
       const res = await callWhatsAppFn('whatsapp-settings', {
         action: 'get',
@@ -172,13 +179,16 @@ const WhatsappPage: React.FC = () => {
         : { ...DEFAULT_SETTINGS };
       setSettings(s);
       setActiveTab(s.wa_phone_number_id ? 'settings' : 'connection');
-    } catch {
-      setSettings({ ...DEFAULT_SETTINGS });
-      setActiveTab('connection');
+    } catch (err) {
+      handleError('whatsapp: load settings', err, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
+      setSettingsError('Unable to load your WhatsApp settings.');
     } finally {
       setSettingsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   useEffect(() => {
     loadSettings();
@@ -189,6 +199,7 @@ const WhatsappPage: React.FC = () => {
   const loadThreads = useCallback(async () => {
     if (!user?.id) return;
     setThreadsLoading(true);
+    setThreadsError(null);
     try {
       const { data, error } = await supabase
         .from('whatsapp_conversations')
@@ -232,12 +243,17 @@ const WhatsappPage: React.FC = () => {
           new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
       );
       setThreads(out);
-    } catch {
+    } catch (err) {
+      handleError('whatsapp: load conversations', err, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
       setThreads([]);
+      setThreadsError('Unable to load your conversations.');
     } finally {
       setThreadsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   useEffect(() => {
     if (activeTab === 'conversations' && isConnected) loadThreads();
@@ -285,6 +301,7 @@ const WhatsappPage: React.FC = () => {
       if (!user?.id) return;
       setMessagesLoading(true);
       setMsgPage(0);
+      setMessagesError(null);
       try {
         const { data, error } = await supabase
           .from('whatsapp_conversations')
@@ -297,14 +314,19 @@ const WhatsappPage: React.FC = () => {
         const rows = (data || []) as WaMessage[];
         setHasMoreMessages(rows.length === MESSAGE_PAGE_SIZE);
         setMessages(rows.slice().reverse());
-      } catch {
+      } catch (err) {
+        handleError('whatsapp: load messages', err, {
+          toast: false,
+          metadata: { userId: user.id, threadId },
+        });
         setMessages([]);
         setHasMoreMessages(false);
+        setMessagesError('Unable to load this conversation.');
       } finally {
         setMessagesLoading(false);
       }
     },
-    [user?.id]
+    [user?.id, handleError]
   );
 
   const loadMoreMessages = useCallback(async () => {
@@ -325,12 +347,15 @@ const WhatsappPage: React.FC = () => {
       setHasMoreMessages(rows.length === MESSAGE_PAGE_SIZE);
       setMsgPage(nextPage);
       setMessages((prev) => [...rows.slice().reverse(), ...prev]);
-    } catch {
-      // ignore
+    } catch (err) {
+      handleError('whatsapp: load more messages', err, {
+        toast: false,
+        metadata: { userId: user.id, threadId: selectedThread },
+      });
     } finally {
       setLoadingMore(false);
     }
-  }, [user?.id, selectedThread, msgPage, loadingMore, hasMoreMessages]);
+  }, [user?.id, selectedThread, msgPage, loadingMore, hasMoreMessages, handleError]);
 
   useEffect(() => {
     if (selectedThread) loadMessages(selectedThread);
@@ -384,8 +409,12 @@ const WhatsappPage: React.FC = () => {
       });
       showToast('success', 'Settings saved');
       await loadSettings();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to save');
+    } catch (err) {
+      handleError('whatsapp: save settings', err, {
+        title: 'Could not save settings',
+        message: 'Your WhatsApp settings were not saved. Please try again.',
+        metadata: { userId: user.id },
+      });
     } finally {
       setSaving(false);
     }
@@ -401,8 +430,12 @@ const WhatsappPage: React.FC = () => {
       });
       showToast('success', 'Disconnected');
       await loadSettings();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to disconnect');
+    } catch (err) {
+      handleError('whatsapp: disconnect', err, {
+        title: 'Could not disconnect',
+        message: 'Failed to disconnect WhatsApp. Please try again.',
+        metadata: { userId: user.id },
+      });
     } finally {
       setSaving(false);
     }
@@ -426,8 +459,12 @@ const WhatsappPage: React.FC = () => {
       });
       showToast('success', 'WhatsApp connected');
       await loadSettings();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to connect');
+    } catch (err) {
+      handleError('whatsapp: connect', err, {
+        title: 'Could not connect WhatsApp',
+        message: 'Check your credentials and try again.',
+        metadata: { userId: user.id },
+      });
     } finally {
       setSaving(false);
     }
@@ -443,8 +480,12 @@ const WhatsappPage: React.FC = () => {
         testPhone,
       });
       showToast('success', 'Test message sent');
-    } catch (e: any) {
-      showToast('error', e?.message || 'Test failed');
+    } catch (err) {
+      handleError('whatsapp: test connection', err, {
+        title: 'Test message failed',
+        message: 'We could not send a test WhatsApp message. Check your connection settings.',
+        metadata: { userId: user.id, testPhone },
+      });
     } finally {
       setTesting(false);
     }
@@ -463,8 +504,12 @@ const WhatsappPage: React.FC = () => {
       });
       if (selectedThread) await loadMessages(selectedThread);
       await loadThreads();
-    } catch (e: any) {
-      showToast('error', e?.message || `Failed to ${action}`);
+    } catch (err) {
+      handleError('whatsapp: draft action', err, {
+        title: 'Action failed',
+        message: `Failed to ${action} the AI draft. Please try again.`,
+        metadata: { userId: user.id, messageId, action },
+      });
     }
   };
 
@@ -494,8 +539,12 @@ const WhatsappPage: React.FC = () => {
       setComposeText('');
       await loadMessages(selectedThread);
       await loadThreads();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to send');
+    } catch (err) {
+      handleError('whatsapp: send message', err, {
+        title: 'Message not sent',
+        message: 'Your WhatsApp message could not be sent. Please try again.',
+        metadata: { userId: user.id, threadId: selectedThread },
+      });
     } finally {
       setSending(false);
     }
@@ -546,6 +595,25 @@ const WhatsappPage: React.FC = () => {
             <div className="h-9 w-full bg-gray-100 rounded-lg" />
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (settingsError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-8 max-w-md text-center">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load WhatsApp</h3>
+          <p className="text-sm text-gray-500 mb-4">{settingsError}</p>
+          <button
+            onClick={loadSettings}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+        </Card>
       </div>
     );
   }
@@ -915,6 +983,18 @@ const WhatsappPage: React.FC = () => {
                   <div className="p-6 flex justify-center">
                     <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
                   </div>
+                ) : threadsError ? (
+                  <div className="p-6 text-center">
+                    <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-3">{threadsError}</p>
+                    <button
+                      onClick={loadThreads}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Retry
+                    </button>
+                  </div>
                 ) : filteredThreads.length === 0 ? (
                   <div className="p-6 text-center text-sm text-gray-500">
                     No conversations yet
@@ -1013,6 +1093,18 @@ const WhatsappPage: React.FC = () => {
                     {messagesLoading ? (
                       <div className="flex justify-center py-6">
                         <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                      </div>
+                    ) : messagesError ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-center">
+                        <AlertCircle className="w-8 h-8 text-red-400 mb-2" />
+                        <p className="text-sm text-gray-600 mb-3">{messagesError}</p>
+                        <button
+                          onClick={() => selectedThread && loadMessages(selectedThread)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Retry
+                        </button>
                       </div>
                     ) : (
                       messages.map((m) => {

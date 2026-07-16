@@ -13,6 +13,7 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  RefreshCw,
   Sparkles,
   Shield,
   Info
@@ -21,10 +22,12 @@ import {
 import { getRetellCallHistory, type RetellCall } from '../../lib/retell';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 
 const CallHistoryPage: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
+  const handleError = useErrorHandler();
   const [calls, setCalls] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +57,13 @@ const CallHistoryPage: React.FC = () => {
       const agentIds = agents?.map(agent => agent.retell_agent_id).filter(Boolean) || [];
       return agentIds;
     } catch (error) {
-      console.error('Error fetching user agents:', error);
+      handleError('call-history: fetch user agents', error, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
       return [];
     }
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   // Fetch call history from Retell AI
   const fetchCallHistory = useCallback(async () => {
@@ -98,12 +104,15 @@ const CallHistoryPage: React.FC = () => {
       const response = await getRetellCallHistory(params);
       setCalls(response.calls);
     } catch (error) {
-      console.error('Error fetching call history:', error);
+      handleError('call-history: fetch call history', error, {
+        toast: false,
+        metadata: { userId: user?.id },
+      });
       setError('Failed to fetch call history. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [dateRange.end, dateRange.start, directionFilter, fetchUserAgents, statusFilter]);
+  }, [dateRange.end, dateRange.start, directionFilter, fetchUserAgents, statusFilter, handleError, user?.id]);
 
   useEffect(() => {
     if (isAuthLoading) return;
@@ -296,9 +305,18 @@ const CallHistoryPage: React.FC = () => {
         {loading ? (
           <CallHistorySkeleton />
         ) : error ? (
-          <div className="flex items-center justify-center py-12">
-            <AlertCircle className="w-8 h-8 text-red-600" />
-            <span className="ml-3 text-red-600">{error}</span>
+          <div className="flex flex-col items-center justify-center gap-3 py-12">
+            <div className="flex items-center">
+              <AlertCircle className="w-8 h-8 text-red-600" />
+              <span className="ml-3 text-red-600">{error}</span>
+            </div>
+            <button
+              onClick={fetchCallHistory}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blueDark transition-colors text-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry
+            </button>
           </div>
         ) : filteredCalls.length === 0 ? (
           <div className="flex items-center justify-center py-12">

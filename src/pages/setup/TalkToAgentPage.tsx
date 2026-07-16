@@ -9,6 +9,7 @@ import { authedFetch } from '../../lib/authedFetch';
 import { useAuth } from '../../contexts/AuthContext';
 import SiriOrb from '../../components/ui/siri-orb';
 import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
+import { reportHandledError } from '../../lib/errorReporting';
 
 type Phase = 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
 
@@ -18,6 +19,7 @@ const TalkToAgentPage: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('provisioning');
   const [agentName, setAgentName] = useState('your agent');
   const [errorMessage, setErrorMessage] = useState('');
+  const [noAgent, setNoAgent] = useState(false);
   const [callSeconds, setCallSeconds] = useState(0);
 
   const clientRef = useRef<RetellWebClient | null>(null);
@@ -51,6 +53,7 @@ const TalkToAgentPage: React.FC = () => {
 
     setPhase('provisioning');
     setErrorMessage('');
+    setNoAgent(false);
 
     try {
       // Find the inbound agent for this user — most recent
@@ -66,7 +69,18 @@ const TalkToAgentPage: React.FC = () => {
       if (agentErr) throw new Error(agentErr.message);
       const agent = agents?.[0];
       if (!agent?.retell_agent_id) {
-        throw new Error('Your agent is still being prepared. Please try again in a moment.');
+        // Setup never completed. Distinguish from a transient call error
+        // so the user gets a "back to setup" primary button instead of
+        // being stranded in an empty dashboard via the skip link.
+        setNoAgent(true);
+        setPhase('error');
+        setErrorMessage("Your setup didn't finish, so there's no agent to meet yet.");
+        reportHandledError(
+          'TalkToAgentPage: no inbound agent',
+          new Error('No inbound agent for user'),
+          { userId: user.id },
+        );
+        return;
       }
 
       if (agent.name) setAgentName(agent.name);
@@ -290,7 +304,7 @@ const TalkToAgentPage: React.FC = () => {
             </motion.button>
           )}
 
-          {phase === 'error' && (
+          {phase === 'error' && !noAgent && (
             <div className="flex flex-col items-center gap-3">
               <button
                 type="button"
@@ -301,9 +315,23 @@ const TalkToAgentPage: React.FC = () => {
               </button>
             </div>
           )}
+
+          {phase === 'error' && noAgent && (
+            <div className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/setup', { replace: true })}
+                className="flex items-center gap-2 px-8 py-3 rounded-full bg-blue-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-colors"
+              >
+                Back to setup
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Skip link — always available except in ended state (uses enter dashboard) */}
+        {/* Skip link — always available except in ended state (uses enter dashboard).
+            In the no-agent case, keep it as a low-emphasis secondary. */}
         {phase !== 'ended' && (
           <motion.button
             type="button"

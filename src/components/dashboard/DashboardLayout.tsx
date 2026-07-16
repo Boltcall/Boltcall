@@ -26,7 +26,6 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { ToastProvider } from '../../contexts/ToastContext';
 import { addLogEntry, logUserAction } from '../../lib/logging';
 import { supabase } from '../../lib/supabase';
 import { LocationSwitcher } from './LocationSwitcher';
@@ -437,7 +436,7 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <ToastProvider>
+    <>
       <div className="h-screen flex transition-colors duration-300 gap-0 md:gap-4 bg-gray-100 dark:bg-[#0a0a0c]">
       <div className="flex flex-1 overflow-hidden gap-0 md:gap-4">
          {/* Left Panel - Navigation with Logo at Top */}
@@ -1017,7 +1016,7 @@ const DashboardLayout: React.FC = () => {
           </div>
         </div>
       </div>
-    </ToastProvider>
+    </>
   );
 };
 

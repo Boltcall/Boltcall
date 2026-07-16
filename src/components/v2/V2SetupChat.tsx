@@ -14,6 +14,7 @@ import { savePendingAgentSetup, INDUSTRY_OPTIONS as INDUSTRY_SOURCE_OPTIONS, typ
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
 import { recordTosAcceptance } from '../../lib/tosAcceptance';
+import { reportHandledError } from '../../lib/errorReporting';
 
 interface ChatMessage {
   id: string;
@@ -263,10 +264,22 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
           } else {
             seedOpening();
           }
+        } else if (res.status === 401) {
+          // Session expired during hydration — don't silently seed a fresh
+          // wizard the user can't submit. Bounce to /login with a note.
+          setError('Your session expired. Please sign in again and continue.');
+          navigate('/login');
+          return;
         } else {
+          reportHandledError(
+            'V2SetupChat: hydrate non-ok',
+            new Error(`saas-v2-setup-state ${res.status}`),
+            { status: res.status },
+          );
           seedOpening();
         }
-      } catch {
+      } catch (err) {
+        reportHandledError('V2SetupChat: hydrate threw', err);
         seedOpening();
       } finally {
         if (!cancelled) setHasHydrated(true);

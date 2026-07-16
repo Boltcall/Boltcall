@@ -2,13 +2,13 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useUsageStore } from '../stores/usageStore';
+import { useToast } from '../contexts/ToastContext';
 import type { ResourceType, PlanTier } from '../lib/plan-limits';
 import {
   getUsagePercentage,
   isApproachingLimit,
   isPooledUsageResource,
 } from '../lib/plan-limits';
-import { toast as sonnerToast } from 'sonner';
 
 /**
  * Main usage tracking hook.
@@ -18,6 +18,7 @@ import { toast as sonnerToast } from 'sonner';
 export function useUsageTracking() {
   const { user } = useAuth();
   const { planLevel } = useSubscription();
+  const { showToast } = useToast();
   const {
     usage,
     trend,
@@ -73,8 +74,10 @@ export function useUsageTracking() {
       if (isApproachingLimit(effectivePlan, resource, current)) {
         const pct = getUsagePercentage(effectivePlan, resource, current);
         const resourceInfo = getResourceUsage(resource);
-        sonnerToast.warning(`${resourceInfo.limit === -1 ? '' : `${Math.round(pct)}% used`}`, {
-          description: `You've used ${current} of ${resourceInfo.limit === -1 ? 'unlimited' : resourceInfo.limit} ${resource.replace(/_/g, ' ')}. Consider upgrading your plan.`,
+        showToast({
+          title: resourceInfo.limit === -1 ? undefined : `${Math.round(pct)}% used`,
+          message: `You've used ${current} of ${resourceInfo.limit === -1 ? 'unlimited' : resourceInfo.limit} ${resource.replace(/_/g, ' ')}. Consider upgrading your plan.`,
+          variant: 'warning',
           duration: 6000,
         });
         markWarningShown(resource);
@@ -82,7 +85,7 @@ export function useUsageTracking() {
     }
 
     hasCheckedWarnings.current = true;
-  }, [isLoading, usage, effectivePlan, warningShownFor, markWarningShown, getResourceUsage]);
+  }, [isLoading, usage, effectivePlan, warningShownFor, markWarningShown, getResourceUsage, showToast]);
 
   const trackUsage = useCallback(
     async (resource: ResourceType, amount = 1): Promise<boolean> => {

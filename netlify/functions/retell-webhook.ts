@@ -101,6 +101,7 @@ async function triggerOutcomeEvaluation(call: any, agentId: string, userId: stri
     }),
   }).catch(err => {
     console.error('[retell-webhook] Outcome evaluation trigger failed (non-blocking):', err);
+    notifyError('retell-webhook: outcome-eval', err, { callId: call.call_id, userId: userId || undefined });
   });
 }
 
@@ -258,6 +259,7 @@ const handler: Handler = async (event) => {
     // proof demo call (see correlateResponseTimeDemo above).
     void correlateResponseTimeDemo(call).catch(err => {
       console.error('[retell-webhook] Response-time correlation failed (non-blocking):', err);
+      notifyError('retell-webhook: response-time-report', err, { callId: call.call_id });
     });
 
     // Detect direction — Retell sets call_type to 'outbound_api' for API-initiated calls
@@ -363,7 +365,10 @@ const handler: Handler = async (event) => {
                   notes: call.call_analysis?.call_summary || null,
                 },
               }),
-            }).catch(err => console.error('[retell-webhook] Completed call CRM sync failed:', err));
+            }).catch(err => {
+              console.error('[retell-webhook] Completed call CRM sync failed:', err);
+              notifyError('retell-webhook: crm-sync', err, { callId: call.call_id, userId: agentOwner.user_id });
+            });
           }
 
           // ── Outcome evaluation: record win or trigger self-heal ──────────
@@ -384,6 +389,7 @@ const handler: Handler = async (event) => {
           body: JSON.stringify({ call }),
         }).catch(err => {
           console.error('[retell-webhook] Call scorer trigger failed (non-blocking):', err);
+          notifyError('retell-webhook: call-scorer', err, { callId: call.call_id, userId: agentOwner?.user_id });
         });
       }
 

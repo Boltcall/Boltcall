@@ -42,6 +42,7 @@ import GlowHorizonFM from '../../components/ui/glow-horizon';
 import { AnimatedTitleFM } from '../../components/ui/glow-horizon-utils/animated-title-fm';
 import {
   VOICE_OPTIONS,
+  INDUSTRY_OPTIONS,
   savePendingAgentSetup,
   clearPendingAgentSetup,
   type PendingAgentSetup,
@@ -428,10 +429,11 @@ const IntelScene: React.FC<{
   draft: Draft;
   loading: boolean;
   manual: boolean;
+  degraded: boolean;
   onPatch: (patch: Partial<Draft>) => void;
   onConfirm: () => void;
   onChangeWebsite: () => void;
-}> = ({ draft, loading, manual, onPatch, onConfirm, onChangeWebsite }) => {
+}> = ({ draft, loading, manual, degraded, onPatch, onConfirm, onChangeWebsite }) => {
   const [lineIdx, setLineIdx] = useState(0);
 
   useEffect(() => {
@@ -504,6 +506,38 @@ const IntelScene: React.FC<{
           />
         </div>
       </Reveal>
+
+      <Reveal delay={0.18}>
+        <div className="mt-4">
+          <label
+            htmlFor="start-industry"
+            className="mb-1.5 block text-xs font-medium uppercase tracking-[0.14em] text-white/45"
+          >
+            Industry
+          </label>
+          <select
+            id="start-industry"
+            value={draft.industry}
+            onChange={(e) => onPatch({ industry: e.target.value as PendingAgentSetup['industry'] })}
+            aria-label="Industry"
+            className="w-full rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-white/50 focus:bg-white/[0.09]"
+          >
+            {INDUSTRY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-[#0b0b12] text-white">
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Reveal>
+
+      {degraded && !manual && (
+        <Reveal delay={0.2}>
+          <p className="mt-4 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs leading-relaxed text-white/70">
+            We couldn&rsquo;t read your website. You can still continue. Your agent will use your answers instead.
+          </p>
+        </Reveal>
+      )}
 
       {draft.services.length > 0 && (
         <Reveal delay={0.22}>
@@ -952,6 +986,7 @@ const StartOnboarding: React.FC = () => {
             draft={draft}
             loading={!draft.intelDone && websiteIntel.status === 'scanning'}
             manual={manualMode}
+            degraded={websiteIntel.degraded}
             onPatch={patch}
             onConfirm={() => goTo('pain')}
             onChangeWebsite={() => {
