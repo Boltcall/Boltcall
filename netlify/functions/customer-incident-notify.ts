@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { sendBrevoEmail } from './send-email';
 import { wrapCronWithAlert } from './_shared/agency-cron-alert';
+import { withLegacyHandler } from './_shared/runtime-compat';
 
 /**
  * Customer-facing incident notification (Legal Shield Phase 5).
@@ -92,5 +93,7 @@ const inner: Handler = async () => {
   };
 };
 
+const handler = wrapCronWithAlert('customer-incident-notify', inner);
+
 export const testHandler = inner;
-export const handler = wrapCronWithAlert('customer-incident-notify', inner);
+export default withLegacyHandler(handler);
