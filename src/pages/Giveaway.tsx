@@ -6,21 +6,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GiveawayMultiStepForm } from '@/components/ui/giveaway-multistep-form';
 import AnimatedNumberCountdown from '@/components/ui/countdown-number';
 
+// 2026-07-27 14:00 Israel time (UTC+3)
+const GIVEAWAY_ENDS_AT = new Date('2026-07-27T11:00:00Z');
+
 const GiveawayPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [showSurvey, setShowSurvey] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Calculate end date (14 days from now)
-  const [endDate] = useState(() => {
-    const endsAt = new Date();
-    endsAt.setDate(endsAt.getDate() + 14);
-    return endsAt;
-  });
+  // Fixed giveaway deadline — same instant for every visitor (11 days from 2026-07-16)
+  const endDate = GIVEAWAY_ENDS_AT;
 
   useEffect(() => {
-    document.title = 'Win Free AI Receptionist Services - Giveaway | Boltcall';
-    updateMetaDescription('Win 3 months free AI receptionist plus smart website package. Enter our giveaway now - limited time offer. Join today.');
+    document.title = 'The Never Miss a Lead Giveaway | Boltcall';
+    updateMetaDescription('Win a full AI audit of your business, a free branded Smart Website, and a complete speed-to-lead setup with AI receptionist and SMS follow-up. Enter now.');
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';
     bcScript.id = 'breadcrumb-jsonld';
@@ -61,7 +60,7 @@ const GiveawayPage: React.FC = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://boltcall.org';
     return `${baseUrl}/giveaway?ref=${userId}`;
   };
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://boltcall.com/giveaway';
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://boltcall.org/giveaway';
   const shareText = encodeURIComponent("I'm entering Boltcall's giveaway — if either of us wins, we both win! Join here:");
   const encodedUrl = encodeURIComponent(shareUrl);
   const twitterHref = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodedUrl}`;
@@ -88,40 +87,40 @@ const GiveawayPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400 rounded-full -ml-[8px]">
-                  Limited Time Offer
+                  The Never Miss a Lead Giveaway
                 </span>
                 <h1 className="text-2xl md:text-3xl font-extrabold text-white leading-tight">
-                  <span className="text-white">3 Months</span> <span className="text-blue-500">Pro Plan</span>
+                  <span className="text-blue-500">AI Audit</span> <span className="text-white">+</span> <span className="text-blue-500">Smart Website</span>
                   <br />
-                  <span className="text-white">+</span> <span className="text-blue-500">Smart Website</span>
+                  <span className="text-white">+</span> <span className="text-blue-500">Full Speed-to-Lead Setup</span>
                 </h1>
               </div>
 
               <p className="mt-10 text-white text-base md:text-lg leading-6 max-w-md">
-                We're rewarding one lucky winner with <span className="text-blue-500">3 months</span> of our <span className="text-blue-500">Pro plan</span> plus a complete <span className="text-blue-500">Smart Website</span>.
+                One winner gets a full <span className="text-blue-500">AI audit</span> of their business, a free <span className="text-blue-500">branded Smart Website</span>, and a complete <span className="text-blue-500">speed-to-lead system</span> set up for them — AI receptionist, SMS follow-up, and more.
               </p>
 
               {/* Prize highlights */}
               <ul className="mt-6 space-y-3 text-white/90 text-sm">
                 <li className="flex items-start gap-3">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-brand-blue" strokeWidth={2.5} />
-                  <span>Enhance customer engagement with instant replies — never miss a lead</span>
+                  <span>Full AI audit of your business — see exactly where leads leak and what to automate</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-brand-blue" strokeWidth={2.5} />
-                  <span>Reach customers instantly via SMS to qualify leads faster</span>
+                  <span>Free branded Smart Website — designed, built, and launched for you</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-brand-blue" strokeWidth={2.5} />
-                  <span>Convert more website visitors with AI-powered form responses</span>
+                  <span>AI receptionist answering every call 24/7 — set up and configured for your business</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-brand-blue" strokeWidth={2.5} />
-                  <span>Save time with automated follow-ups that keep clients informed</span>
+                  <span>Instant SMS follow-up to every missed call and form lead</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-3.5 h-3.5 mt-0.5 text-brand-blue" strokeWidth={2.5} />
-                  <span>Improve service efficiency with AI receptionist — plus more revenue-boosting tools</span>
+                  <span>Full speed-to-lead system — booking, follow-ups, and every lead answered instantly</span>
                 </li>
               </ul>
             </div>
@@ -148,12 +147,16 @@ const GiveawayPage: React.FC = () => {
                     />
                   </div>
 
-                  <button
-                    onClick={() => setShowSurvey(true)}
-                    className="mt-8 inline-flex items-center justify-center px-6 py-3 bg-white text-brand-blue font-semibold rounded-md shadow hover:bg-gray-50 transition-colors"
-                  >
-                    Enter Giveaway
-                  </button>
+                  {Date.now() < endDate.getTime() ? (
+                    <button
+                      onClick={() => setShowSurvey(true)}
+                      className="mt-8 inline-flex items-center justify-center px-6 py-3 bg-white text-brand-blue font-semibold rounded-md shadow hover:bg-gray-50 transition-colors"
+                    >
+                      Enter Giveaway
+                    </button>
+                  ) : (
+                    <p className="mt-8 text-white font-semibold">This giveaway has ended. The winner is being notified by email.</p>
+                  )}
 
                   <div className="my-8 h-px w-40 bg-white/30 mx-auto" />
 
@@ -224,8 +227,7 @@ const GiveawayPage: React.FC = () => {
                               referralId: referralId
                             };
 
-                            // Call webhook
-                            const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/9b2699f0-f411-4a5d-911d-5d562fd0b828', {
+                            const response = await fetch('/.netlify/functions/giveaway-entry', {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/json',
@@ -233,70 +235,19 @@ const GiveawayPage: React.FC = () => {
                               body: JSON.stringify(payload),
                             });
 
-                            // Get response body first (can only read once)
-                            const responseText = await response.text();
+                            const responseData = await response.json().catch(() => null);
 
-                            // Check if response is ok
                             if (!response.ok) {
-                              console.error('Response error:', responseText);
-                              throw new Error(`Failed to submit form: ${response.status} ${response.statusText}`);
+                              throw new Error(responseData?.error || `Failed to submit form: ${response.status}`);
                             }
 
-                            // Try to get referral ID from response header (may be blocked by CORS)
-                            let referralIdFromHeader = null;
-                            try {
-                              referralIdFromHeader = response.headers.get('referal_id') || response.headers.get('referral_id');
-                            } catch (e) {
-                              // CORS may block header access
-                            }
-
-                            // Parse response body - handle UUID string directly
-                            let responseData = null;
-                            let finalReferralId = referralIdFromHeader;
-
-                            if (!finalReferralId && responseText) {
-                              const trimmedText = responseText.trim();
-
-                              // Check if response is a UUID string (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
-                              const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-                              if (uuidPattern.test(trimmedText)) {
-                                // Response is directly the UUID
-                                finalReferralId = trimmedText;
-                              } else {
-                                // Try to parse as JSON
-                                try {
-                                  responseData = JSON.parse(trimmedText);
-                                  // Try to extract ID from JSON object
-                                  finalReferralId = responseData?.id ||
-                                    responseData?.referal_id ||
-                                    responseData?.referral_id ||
-                                    responseData?.userId ||
-                                    responseData?.user_id;
-                                } catch (e) {
-                                  // If it's not JSON and not UUID, check if it's a plain number/string ID
-                                  if (trimmedText) {
-                                    finalReferralId = trimmedText;
-                                  } else {
-                                    // Response is empty or invalid
-                                  }
-                                }
-                              }
-                            }
-
-                            if (finalReferralId) {
-                              // Generate referral link using the ID: ref={finalReferralId}
-                              const link = generateReferralLink(String(finalReferralId));
-                              setReferralLink(link);
+                            if (responseData?.id) {
+                              setReferralLink(generateReferralLink(String(responseData.id)));
                               setIsSubmitted(true);
                             } else {
-                              console.error('No referral ID found in headers or body');
-                              console.error('Response status:', response.status);
-                              console.error('Response text:', responseText);
-                              console.error('Response data:', responseData);
-                              // Still show success but without referral link
+                              console.error('No referral ID in response:', responseData);
                               setReferralLink('');
                               setIsSubmitted(true);
-                              alert('Form submitted successfully, but no referral ID was returned. Please contact support.');
                             }
                           } catch (error) {
                             console.error('Error submitting form:', error);
@@ -370,30 +321,30 @@ const GiveawayPage: React.FC = () => {
 
       {/* Internal navigation links */}
       <div className="w-full max-w-4xl mx-auto px-4 pb-8">
-        <div className="flex flex-wrap gap-3 text-sm text-white/70 justify-center">
-          <span className="font-semibold text-white mr-1">Explore Boltcall:</span>
-          <Link to="/pricing" className="hover:text-white underline">Pricing</Link>
+        <div className="flex flex-wrap gap-3 text-sm text-gray-500 justify-center">
+          <span className="font-semibold text-gray-800 mr-1">Explore Boltcall:</span>
+          <Link to="/pricing" className="hover:text-gray-900 underline">Pricing</Link>
           <span>·</span>
-          <Link to="/features/ai-receptionist" className="hover:text-white underline">AI Receptionist</Link>
+          <Link to="/features/ai-receptionist" className="hover:text-gray-900 underline">AI Receptionist</Link>
           <span>·</span>
-          <Link to="/blog" className="hover:text-white underline">Blog</Link>
+          <Link to="/blog" className="hover:text-gray-900 underline">Blog</Link>
           <span>·</span>
-          <Link to="/challenge" className="hover:text-white underline">Break Our AI Challenge</Link>
+          <Link to="/challenge" className="hover:text-gray-900 underline">Break Our AI Challenge</Link>
         </div>
       </div>
 
       {/* Why Enter section */}
       <section className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Why Enter the Boltcall Giveaway?</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Why Enter the Never Miss a Lead Giveaway?</h2>
         <p className="text-gray-600 mb-4 leading-relaxed">
-          Every week, one local business owner wins free access to Boltcall's full AI receptionist platform — including 
-          AI-powered call answering, SMS lead follow-up, and automated appointment booking. This is the exact same 
-          system that's helping 500+ businesses capture more leads and grow revenue without hiring more staff.
+          One local business owner wins the full Boltcall treatment: a complete AI audit of their business,
+          a free branded Smart Website, and the entire speed-to-lead system set up for them — AI receptionist,
+          SMS lead follow-up, and automated appointment booking.
         </p>
         <p className="text-gray-600 leading-relaxed">
-          The AI receptionist answers 100% of calls 24/7, qualifies leads automatically, and sends follow-up texts 
-          to every missed caller. Winners get 30 days of full platform access, setup included. No contracts, 
-          no credit card required — just enter your email and you're in.
+          The AI receptionist answers 100% of calls 24/7, qualifies leads automatically, and sends follow-up texts
+          to every missed caller. Setup is done for you. No contracts, no credit card required — just enter
+          your details and you're in.
         </p>
       </section>
 
@@ -402,9 +353,9 @@ const GiveawayPage: React.FC = () => {
         <h2 className="text-lg font-bold text-gray-900 mb-4">Common Questions About the Giveaway</h2>
         <div className="space-y-4">
           {[
-            { q: 'Is there any catch?', a: 'No purchase required. No credit card. The winner gets 30 days of full Boltcall access, completely free — setup included.' },
-            { q: 'How are winners selected?', a: 'Winners are chosen at random from all valid entries each week. We notify winners by email within 48 hours of selection.' },
-            { q: 'What happens after the 30 days?', a: 'Nothing automatic. If you want to continue, we\'ll reach out with options. No subscription is auto-started.' },
+            { q: 'Is there any catch?', a: 'No purchase required. No credit card. The winner gets the AI audit, the branded Smart Website, and the full speed-to-lead setup completely free.' },
+            { q: 'How is the winner selected?', a: 'One winner is chosen at random from all valid entries after the countdown ends. We notify the winner by email within 48 hours of the draw.' },
+            { q: 'What happens after I win?', a: 'We build everything for you — the audit, the website, and the full setup. Nothing is auto-billed and no subscription is auto-started.' },
           ].map((item) => (
             <div key={item.q} className="py-3 border-b border-gray-100 last:border-0">
               <p className="font-semibold text-gray-800 mb-1">{item.q}</p>
