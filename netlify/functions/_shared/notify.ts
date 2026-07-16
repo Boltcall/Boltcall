@@ -6,7 +6,7 @@
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 // Chat id is not a secret (useless without the bot token); default kept in code
 // to stay under the AWS Lambda 4KB env limit.
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '6196587627';
+const CHAT_ID = process.env.TELEGRAM_CHAT_ID || '1617285176';
 const NOTIFY_TIMEOUT_MS = 2500;
 
 async function sendTelegramMessage(body: Record<string, unknown>): Promise<void> {
