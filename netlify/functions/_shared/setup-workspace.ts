@@ -88,6 +88,17 @@ export async function findWorkspaceForUser<T>(
   return await findWorkspace<T>(getServiceSupabase(), selectClause, userId);
 }
 
+// workspaces.slug is NOT NULL with a UNIQUE constraint (workspaces_slug_key)
+// but nothing in this table's tracked migrations adds it — schema drift.
+// src/lib/database.ts's createWorkspace() (the client-side onboarding path)
+// already generates one as `<slugified-name>-<timestamp36>-<random5>`; no
+// business name is available here, so this mirrors that shape without one.
+function generateWorkspaceSlug(userId: string): string {
+  const timestamp = Date.now().toString(36);
+  const randomString = Math.random().toString(36).slice(2, 7);
+  return `workspace-${userId.replace(/-/g, '').slice(0, 8)}-${timestamp}-${randomString}`;
+}
+
 async function insertWorkspaceByColumn<T>(
   supa: SupabaseLike,
   selectClause: string,
@@ -97,6 +108,7 @@ async function insertWorkspaceByColumn<T>(
   const payload = {
     [column]: userId,
     name: DEFAULT_WORKSPACE_NAME,
+    slug: generateWorkspaceSlug(userId),
   };
 
   const { data, error } = await supa
