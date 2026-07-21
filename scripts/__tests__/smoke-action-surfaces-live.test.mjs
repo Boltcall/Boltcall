@@ -24,8 +24,8 @@ describe('smoke-action-surfaces-live helpers', () => {
 
   it('derives the Supabase auth localStorage key from the project URL', () => {
     assert.equal(
-      getSupabaseAuthStorageKey('https://hbwogktdajorojljkjwg.supabase.co'),
-      'sb-hbwogktdajorojljkjwg-auth-token',
+      getSupabaseAuthStorageKey('https://puszjwovldwgitfpsnfm.supabase.co'),
+      'sb-puszjwovldwgitfpsnfm-auth-token',
     );
   });
 

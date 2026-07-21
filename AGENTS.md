@@ -109,7 +109,7 @@ Run `netlify env:list` to see all 42+. Currently set: `META_ACCESS_TOKEN`, `FOUN
 
 This belongs to ANOTHER agent session. **Do not commit, push, or stage anything in `Marketing/agentic-os`.** The AIOS deploy is blocked until that session ends cleanly via `Marketing\scripts\end-aios-session.ps1`.
 
-## Supabase production substrate (project `hbwogktdajorojljkjwg`)
+## Supabase production substrate (project `puszjwovldwgitfpsnfm`)
 
 - **Founder UUID:** `78a5f97e-8d11-4287-beeb-f26f3cebf57a` (noamyakoby6@gmail.com)
   - JWT stamped with `raw_app_meta_data.role='founder'`

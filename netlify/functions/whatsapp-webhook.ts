@@ -6,7 +6,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 import { isLocalDev } from './_shared/prod-detect';
 import { findOrCreateLead } from './_shared/lead-linking';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
 function getServiceClient() {
   return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY!, {

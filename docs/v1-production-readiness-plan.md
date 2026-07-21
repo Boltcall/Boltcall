@@ -38,7 +38,7 @@ Fix before anyone else signs up. Combined cost: one focused work day + half day 
   Fixed: PLAN_INFO now Starter $549, Pro $897, Ultimate $4997, Enterprise $997 (yearly = monthly × 9 for tiered plans, × 12 for Enterprise). Bulk-swept 62 marketing pages across 5 scripted passes + hand-fixes for competitor-compare files (Emitrr/SmithAi/LeadMagnetThankYou). Preserved competitor prices (GoodCall $249, Emitrr $49, Smith.ai $95, Lindy $49.99). Deleted dead `IsAiReceptionistWorthIt.tsx.broken`.
 
 - [x] **Supabase RLS disabled on 14 tables in the prod project** (ea94c0799)
-  Supabase project `hbwogktdajorojljkjwg`
+  Supabase project `puszjwovldwgitfpsnfm`
   Fixed: enabled RLS on 15 tables (advisor also flagged `outbound_leads`) via `supabase/migrations/20260705193000_enable_rls_p0_internal_ops_tables.sql`. No policies added — service_role bypasses RLS; no user path reads these. `approved_vertical_guardrails` view switched to `security_invoker=true`. Advisor `rls_disabled_in_public` count: 15 → 0.
 
 - [x] **Speed-test `/offer` form is a fake submit** (f9a8f0381)
