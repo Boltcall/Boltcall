@@ -242,7 +242,7 @@ netlify sites:delete --site-id 0329b208-cea2-4205-8e34-13cf7c1da39b --force
 
 ## How to verify things without breaking them
 
-- **Probe Supabase directly:** use Claude Code's Supabase MCP if available, or use the project URL `https://hbwogktdajorojljkjwg.supabase.co` with the service key from `netlify env:get SUPABASE_SERVICE_KEY --context production`.
+- **Probe Supabase directly:** use Claude Code's Supabase MCP if available, or use the project URL `https://puszjwovldwgitfpsnfm.supabase.co` with the service key from `netlify env:get SUPABASE_SERVICE_KEY --context production`.
 - **Probe Retell API:** `curl -X POST -H "Authorization: Bearer $(netlify env:get RETELL_API_KEY --context production | tail -1)" -H "Content-Type: application/json" -d '{"limit":1,"filter_criteria":{"channel":"voice"}}' https://api.retellai.com/v2/list-agents`
 - **Tail Netlify function logs:** Netlify dashboard → boltcall project → Logs → Functions.
 

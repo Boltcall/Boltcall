@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_SUPABASE_URL = 'https://hbwogktdajorojljkjwg.supabase.co';
+const DEFAULT_SUPABASE_URL = 'https://puszjwovldwgitfpsnfm.supabase.co';
 const DEFAULT_SITE_URL = 'sc-domain:boltcall.org';
 const DEFAULT_GA4_PROPERTY_ID = '527238136';
 const DEFAULT_CLARITY_PROJECT_ID = 'x4e3hjsgc7';

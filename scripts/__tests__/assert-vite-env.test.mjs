@@ -7,7 +7,7 @@ describe('assert-vite-env', () => {
   it('accepts real-looking Supabase browser env', () => {
     assert.deepEqual(
       validateClientEnv({
-        VITE_SUPABASE_URL: 'https://hbwogktdajorojljkjwg.supabase.co',
+        VITE_SUPABASE_URL: 'https://puszjwovldwgitfpsnfm.supabase.co',
         VITE_SUPABASE_ANON_KEY: 'test-anon-key',
       }),
       { ok: true, missing: [], placeholder: [] },
