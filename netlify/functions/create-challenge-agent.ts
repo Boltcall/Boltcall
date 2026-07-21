@@ -128,6 +128,21 @@ const handler: Handler = async (event) => {
 
   const client = new Retell({ apiKey: retellApiKey });
 
+  // Optional test hook: pass { "s2s_model": "gpt-realtime" } to spin up this
+  // challenge agent on an OpenAI Realtime speech-to-speech model instead of
+  // the default Retell-managed gpt-4o text LLM. Omit for existing behavior.
+  let s2sModel: string | undefined;
+  let voiceIdOverride: string | undefined;
+  try {
+    const parsedBody = event.body ? JSON.parse(event.body) : {};
+    if (parsedBody.s2s_model) {
+      s2sModel = String(parsedBody.s2s_model);
+      voiceIdOverride = parsedBody.voice_id ? String(parsedBody.voice_id) : 'openai-Alloy';
+    }
+  } catch {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+  }
+
   const BEGIN_MESSAGE =
     'Hey! You reached the Break Our AI challenge. I am Aria. Give me just one second to get ready for you.';
 
@@ -167,9 +182,9 @@ const handler: Handler = async (event) => {
       // The retell-llm-server reads system_prompt by retell_agent_id.
       responseEngine = { type: 'custom-llm', llm_websocket_url: wsUrl };
     } else {
-      // Fallback: Retell-managed LLM (gpt-4o).
+      // Fallback: Retell-managed LLM (gpt-4o), or gpt-realtime s2s model when testing.
       const llm = await client.llm.create({
-        model: 'gpt-4o',
+        ...(s2sModel ? { s2s_model: s2sModel } : { model: 'gpt-4o' }),
         general_prompt: prompt,
         begin_message: BEGIN_MESSAGE,
         general_tools: generalTools,
@@ -179,9 +194,9 @@ const handler: Handler = async (event) => {
     }
 
     const agent = await client.agent.create({
-      agent_name: 'Break Our AI - Challenge Agent',
+      agent_name: s2sModel ? 'Break Our AI - Challenge Agent (gpt-realtime test)' : 'Break Our AI - Challenge Agent',
       response_engine: responseEngine,
-      voice_id: '11labs-Willa',
+      voice_id: voiceIdOverride || '11labs-Willa',
       language: 'en-US',
       enable_backchannel: true,
       backchannel_words: ['yeah', 'uh-huh', 'mmhmm'],
@@ -241,6 +256,7 @@ const handler: Handler = async (event) => {
         agent_id: agent.agent_id,
         llm_id: llmId,
         brain: wsUrl ? 'azure-custom-llm' : 'retell-managed',
+        s2s_model: s2sModel || null,
         supported_modes: ['guard'],
         usage_note:
           'Pass retell_llm_dynamic_variables: { secret_word: "...", secret_clue: "..." } when starting each call.',
