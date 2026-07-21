@@ -90,6 +90,15 @@ const handler: Handler = async (event) => {
     (e) => console.error('[website-audit-lead] notify failed:', e),
   );
 
+  const modalUrl = process.env.WEBSITE_AUDIT_MODAL_URL;
+  if (modalUrl) {
+    fetch(modalUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyName, url, email }),
+    }).catch((e) => console.error('[website-audit-lead] report generation trigger failed:', e));
+  }
+
   return json(headers, 200, { ok: true });
 };
 
