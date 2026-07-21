@@ -241,6 +241,8 @@ const AIAuditPage = React.lazy(() => import('../pages/AIAuditPage'));
 const AIAuditThankYouPage = React.lazy(() => import('../pages/AIAuditThankYouPage'));
 const SEOAuditPDF = React.lazy(() => import('../pages/SEOAuditPDF'));
 const SEOAuditPDFThankYou = React.lazy(() => import('../pages/SEOAuditPDFThankYou'));
+const WebsiteAuditPDF = React.lazy(() => import('../pages/WebsiteAuditPDF'));
+const WebsiteAuditThankYou = React.lazy(() => import('../pages/WebsiteAuditThankYou'));
 const BusinessAuditPage = React.lazy(() => import('../pages/BusinessAuditPage'));
 const AuditPage = React.lazy(() => import('../pages/AuditPage'));
 const RankOnGoogleOfferPage = React.lazy(() => import('../pages/RankOnGoogleOfferPage'));
@@ -829,6 +831,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/ai-audit/thank-you" element={<AIAuditThankYouPage />} />
         <Route path="/seo-aeo-audit" element={<SEOAuditPDF />} />
         <Route path="/seo-aeo-audit/thank-you" element={<SEOAuditPDFThankYou />} />
+        <Route path="/website-audit" element={<WebsiteAuditPDF />} />
+        <Route path="/website-audit/thank-you" element={<WebsiteAuditThankYou />} />
         <Route path="/conversion-rate-optimizer" element={<ConversionRateOptimizer />} />
         <Route path="/ai-visibility-check" element={<AIVisibilityCheck />} />
         {/* Feature Pages */}
