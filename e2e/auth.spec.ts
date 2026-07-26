@@ -19,11 +19,12 @@ test.describe('Login page', () => {
     await expect(page.getByRole('button', { name: /login/i })).toBeVisible();
   });
 
-  test('shows social login options', async ({ page }) => {
-    await expect(page.getByText('Or continue with')).toBeVisible();
-    await expect(page.getByTitle('Google')).toBeVisible();
-    await expect(page.getByTitle('Microsoft')).toBeVisible();
-    await expect(page.getByTitle('Facebook')).toBeVisible();
+  test('OAuth section hidden by default (VITE_OAUTH_ENABLED unset)', async ({ page }) => {
+    // OAuth providers are gated behind VITE_OAUTH_ENABLED until Google/MS/FB
+    // are wired up in Supabase. Restore visibility assertions when the flag
+    // is flipped on.
+    await expect(page.getByText('Or continue with')).toHaveCount(0);
+    await expect(page.getByTitle('Google')).toHaveCount(0);
   });
 
   test('form validates empty fields on submit', async ({ page }) => {
@@ -76,8 +77,8 @@ test.describe('Signup page', () => {
     await expect(page.getByRole('button', { name: /sign up/i })).toBeVisible();
   });
 
-  test('shows social signup options', async ({ page }) => {
-    await expect(page.getByText('Or continue with')).toBeVisible();
+  test('OAuth section hidden by default on signup', async ({ page }) => {
+    await expect(page.getByText('Or continue with')).toHaveCount(0);
   });
 
   test('form validates empty fields on submit', async ({ page }) => {
