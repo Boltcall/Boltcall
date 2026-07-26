@@ -32,10 +32,7 @@ const GiveawayPage: React.FC = () => {
   const [surveyData, setSurveyData] = useState({
     name: '',
     email: '',
-    companyName: '',
-    website: '',
-    whyChoose: '',
-    referralSource: ''
+    industry: '',
   });
   const [allowNotifications, setAllowNotifications] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -220,9 +217,7 @@ const GiveawayPage: React.FC = () => {
                             const payload = {
                               name: surveyData.name,
                               email: surveyData.email,
-                              companyName: surveyData.companyName,
-                              website: surveyData.website,
-                              whyChoose: surveyData.whyChoose || surveyData['referralSource'],
+                              industry: surveyData.industry,
                               allowNotifications: allowNotifications,
                               referralId: referralId
                             };
