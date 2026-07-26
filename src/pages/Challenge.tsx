@@ -23,7 +23,7 @@ const Challenge: React.FC = () => {
       '@type': 'WebPage',
       name: 'Break Our AI Challenge',
       description:
-        'A weekly interactive challenge where callers try to trick Boltcall\'s AI receptionist into revealing a secret word. Tests AI security and social engineering resistance.',
+        'An interactive challenge where callers try to trick Boltcall\'s AI receptionist into revealing a secret word. Tests AI security and social engineering resistance. One attempt per email and IP.',
       url: 'https://boltcall.org/challenge',
       publisher: { '@type': 'Organization', name: 'Boltcall', url: 'https://boltcall.org' },
     };
@@ -37,7 +37,7 @@ const Challenge: React.FC = () => {
           name: 'What is the Break Our AI Challenge?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'A weekly contest where you talk to our AI receptionist in-browser and try to make it reveal a secret word.',
+            text: 'A live-voice contest where you talk to our AI receptionist in-browser and try to make it reveal a secret word. One attempt per email and IP.',
           },
         },
         {
@@ -129,7 +129,7 @@ const Challenge: React.FC = () => {
                 <div className="bg-gray-900 text-white p-10 md:p-12 flex flex-col justify-between">
                   <div>
                     <span className="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-400 rounded-full -ml-[8px]">
-                      Weekly Challenge
+                      Live Challenge
                     </span>
                     <h2 className="mt-3 text-2xl md:text-3xl font-extrabold text-white leading-tight">
                       <span className="text-white">Test the AI.</span>
@@ -304,7 +304,7 @@ const Challenge: React.FC = () => {
                 Want This AI Answering Your Calls?
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                The same AI that holds up against social engineers and prompt hackers every week can run your front desk 24/7. Set up in 5 minutes.
+                The same AI that holds up against social engineers and prompt hackers can run your front desk 24/7. Set up in 5 minutes.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
