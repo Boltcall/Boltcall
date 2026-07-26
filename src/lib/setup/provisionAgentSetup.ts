@@ -6,6 +6,77 @@ import { supabase } from '../supabase';
 import { reportHandledError } from '../errorReporting';
 import type { PendingAgentSetup } from './onboarding';
 
+// Sensible weekday hours for the after_hours pain default. Only written when
+// business_profiles.opening_hours is empty — never clobbers a picked value.
+// ponytail: default M-F 9-5 hours; per-day picker if support asks twice.
+const DEFAULT_MF_9_5 = {
+  monday:    { open: '09:00', close: '17:00', closed: false },
+  tuesday:   { open: '09:00', close: '17:00', closed: false },
+  wednesday: { open: '09:00', close: '17:00', closed: false },
+  thursday:  { open: '09:00', close: '17:00', closed: false },
+  friday:    { open: '09:00', close: '17:00', closed: false },
+  saturday:  { open: '09:00', close: '17:00', closed: true  },
+  sunday:    { open: '09:00', close: '17:00', closed: true  },
+};
+
+const DEFAULT_MISSED_CALL_TEMPLATE =
+  "Hi, sorry we missed you. Reply here and we'll get right back.";
+
+// Writes per-pain feature defaults so the picked pain gets a real DB
+// setting, not just an in-memory tag. Non-fatal: matches the existing
+// pattern used for services/locations/logo elsewhere in this file.
+//
+// slow_followup / front_desk fall through with no writes:
+// - slow_followup: speed_to_lead_enabled is already flipped true by
+//   setup-launch (netlify/functions/setup-launch.ts) at the tail of this
+//   provisioning flow; adding a duplicate write here would be dead code.
+// - front_desk: the transferNumber is already threaded into the inbound
+//   agent config a few lines below.
+async function applyPainDefaults(
+  userId: string,
+  workspaceId: string,
+  businessProfileId: string,
+  painPoint: string | undefined,
+): Promise<void> {
+  if (!painPoint) return;
+  try {
+    if (painPoint === 'missed_calls') {
+      const { error } = await supabase
+        .from('business_features')
+        .upsert(
+          {
+            user_id: userId,
+            workspace_id: workspaceId,
+            missed_call_textback_enabled: true,
+            missed_call_config: { template: DEFAULT_MISSED_CALL_TEMPLATE },
+          },
+          { onConflict: 'user_id' },
+        );
+      if (error) console.warn('applyPainDefaults(missed_calls) failed:', error);
+      return;
+    }
+    if (painPoint === 'after_hours') {
+      const { data: prof } = await supabase
+        .from('business_profiles')
+        .select('opening_hours')
+        .eq('id', businessProfileId)
+        .maybeSingle();
+      const current = (prof?.opening_hours ?? {}) as Record<string, unknown>;
+      if (Object.keys(current).length === 0) {
+        const { error } = await supabase
+          .from('business_profiles')
+          .update({ opening_hours: DEFAULT_MF_9_5 })
+          .eq('id', businessProfileId);
+        if (error) console.warn('applyPainDefaults(after_hours) failed:', error);
+      }
+      return;
+    }
+    // slow_followup, front_desk — covered elsewhere, see comment above.
+  } catch (error) {
+    console.warn(`applyPainDefaults(${painPoint}) threw:`, error);
+  }
+}
+
 // Namespace the "current location" cache by userId so a second account in
 // the same browser cannot inherit — or silently reuse — the first user's
 // location id (and end up not creating its own primary location).
@@ -122,6 +193,10 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     }
   }
 
+  // Pain-specific DB defaults BEFORE agent creation so the KB/prompt is
+  // built against the final feature-flag state.
+  await applyPainDefaults(userId, workspace.id, businessProfile.id, setup.painPoint);
+
   const commonAgentData = {
     businessName: setup.businessName,
     websiteUrl: setup.websiteUrl.trim(),
@@ -140,6 +215,10 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
       reschedule: '',
       deposit: '',
     },
+    // Pain choice reaches the prompt builder via callFlow so the agent's
+    // "primary focus" line is aligned with what the user actually cares
+    // about — see PAIN_FOCUS_LINES in generate-agent-prompt.ts.
+    callFlow: setup.painPoint ? { painPoint: setup.painPoint } : undefined,
   };
 
   let primaryResult: { kb_folder_id?: string } | undefined;

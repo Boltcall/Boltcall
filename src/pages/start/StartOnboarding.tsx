@@ -50,6 +50,8 @@ import {
 import { provisionAgentSetup } from '../../lib/setup/provisionAgentSetup';
 import { useWebsiteIntel, normalizeWebsite, logoCandidates, type WebsiteIntel } from './useWebsiteIntel';
 import { cn } from '../../lib/utils';
+import { PAIN_TO_STORE_KEY, isPainPoint } from '../../lib/setup/painMap';
+import { useSetupStore } from '../../stores/setupStore';
 
 // ─── Types & constants ────────────────────────────────────────────────────
 
@@ -103,14 +105,26 @@ type PainId = (typeof PAIN_POINTS)[number]['id'];
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 // Launch steps narrate the real provisioning promise. The final step holds
-// until the promise actually resolves.
-const LAUNCH_STEPS = [
-  'Creating your workspace',
-  'Loading your services and answers',
-  'Training your receptionist',
-  'Deploying your speed-to-lead agent',
-  'Bringing everything online',
-];
+// until the promise actually resolves. Step 4 swaps in per-pain copy so the
+// user sees us configuring THEIR pain, not a generic line.
+const PAIN_LAUNCH_LINE: Record<PainId, string> = {
+  missed_calls: 'Enabling missed-call text-back',
+  after_hours: 'Loading business hours',
+  slow_followup: 'Turning on speed-to-lead',
+  front_desk: 'Wiring call forwarding',
+};
+
+function launchStepsFor(pain: PainId | null): string[] {
+  return [
+    'Creating your workspace',
+    'Loading your services and answers',
+    'Training your receptionist',
+    pain ? PAIN_LAUNCH_LINE[pain] : 'Deploying your speed-to-lead agent',
+    'Bringing everything online',
+  ];
+}
+
+const LAUNCH_STEP_COUNT = 5;
 
 interface Draft {
   scene: Scene;
@@ -679,8 +693,33 @@ const VoiceScene: React.FC<{
         })}
       </div>
 
+      {draft.pain === 'front_desk' && (
+        <Reveal delay={0.35}>
+          <div className="mt-7 max-w-sm">
+            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+              Forward calls to
+            </label>
+            <input
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={draft.transferNumber}
+              onChange={(e) => onPatch({ transferNumber: e.target.value })}
+              placeholder="+1 555 123 4567"
+              aria-label="Transfer number"
+              required
+              className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.05] px-4 text-sm text-white placeholder-white/25 outline-none transition-colors focus:border-white/50"
+            />
+            <p className="mt-1.5 text-xs text-white/40">Overflow calls we can&rsquo;t handle route here.</p>
+          </div>
+        </Reveal>
+      )}
+
       <Reveal delay={0.4} className="mt-8">
-        <PrimaryButton onClick={onLaunch}>
+        <PrimaryButton
+          onClick={onLaunch}
+          disabled={draft.pain === 'front_desk' && !draft.transferNumber.trim()}
+        >
           Build my agent
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </PrimaryButton>
@@ -696,6 +735,7 @@ const LaunchScene: React.FC<{
   onRetry: () => void;
 }> = ({ draft, stepIdx, error, onRetry }) => {
   const pain = PAIN_POINTS.find((p) => p.id === draft.pain);
+  const steps = launchStepsFor(draft.pain);
   return (
     <SceneShell id="launch">
       <div className="flex flex-col items-center text-center">
@@ -722,7 +762,7 @@ const LaunchScene: React.FC<{
 
         {!error ? (
           <ul className="mt-10 w-full max-w-sm space-y-3 text-left">
-            {LAUNCH_STEPS.map((step, i) => {
+            {steps.map((step, i) => {
               const done = i < stepIdx;
               const current = i === stepIdx;
               return (
@@ -890,15 +930,25 @@ const StartOnboarding: React.FC = () => {
     // Narrate real work: advance one step every ~1.6s but hold the last step
     // until provisioning actually resolves.
     const stepTimer = window.setInterval(() => {
-      setLaunchStepIdx((i) => Math.min(i + 1, LAUNCH_STEPS.length - 1));
+      setLaunchStepIdx((i) => Math.min(i + 1, LAUNCH_STEP_COUNT - 1));
     }, 1600);
-    const minimumShow = new Promise((r) => setTimeout(r, LAUNCH_STEPS.length * 1600));
+    const minimumShow = new Promise((r) => setTimeout(r, LAUNCH_STEP_COUNT * 1600));
 
     Promise.all([provisionAgentSetup(user.id, setup), minimumShow])
       .then(() => {
         clearPendingAgentSetup();
         window.clearInterval(stepTimer);
-        setLaunchStepIdx(LAUNCH_STEPS.length);
+        setLaunchStepIdx(LAUNCH_STEP_COUNT);
+        // Bridge the /start pain choice onto the dashboard checklist. The
+        // checklist reads setupStore.survey.painPoints (a different name
+        // vocabulary) — PAIN_TO_STORE_KEY normalizes. Without this the
+        // personalized branch in useSetupProgress silently falls back to
+        // "all features" and the user never sees their picked pain first.
+        if (setup.painPoint && isPainPoint(setup.painPoint)) {
+          useSetupStore.getState().updateSurvey({
+            painPoints: [PAIN_TO_STORE_KEY[setup.painPoint]],
+          });
+        }
         setTimeout(() => {
           sessionStorage.removeItem(DRAFT_KEY);
           navigate('/setup/talk-to-agent');

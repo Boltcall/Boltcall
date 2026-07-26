@@ -28,7 +28,11 @@ export type SetupStep = {
   credits: number;
 };
 
-// Personalized tasks driven by survey.painPoints answered during setup
+// Personalized tasks driven by survey.painPoints answered during setup.
+// The /start flow bridges its own pain vocabulary onto these keys via
+// PAIN_TO_STORE_KEY (src/lib/setup/painMap.ts) — the raw /start values
+// (slow_followup, front_desk) are also accepted here as aliases so a
+// direct write never silently drops the personalization.
 export const PAIN_POINT_TASKS: Record<string, Omit<SetupStep, 'completed'>> = {
   missed_calls: {
     id: 'missed_calls',
@@ -85,6 +89,11 @@ export const PAIN_POINT_TASKS: Record<string, Omit<SetupStep, 'completed'>> = {
     credits: 3,
   },
 };
+
+// Aliases for /start's pain vocabulary. Same task template surfaced under
+// the raw /start key so a bridge miss doesn't silently drop personalization.
+PAIN_POINT_TASKS.slow_followup = PAIN_POINT_TASKS.slow_response;
+PAIN_POINT_TASKS.front_desk = PAIN_POINT_TASKS.manual_booking;
 
 // Always-shown core tasks (regardless of survey answers)
 export const CORE_TASKS: Omit<SetupStep, 'completed'>[] = [
