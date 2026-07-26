@@ -36,6 +36,12 @@ interface AuthSwitchProps {
   prefillEmail?: string;
 }
 
+// OAuth providers (Google/Microsoft/Facebook) are not enabled on the prod
+// Supabase project — clicking any button returns 400 "provider is not enabled".
+// Gate the buttons behind an env flag until the providers are wired up in
+// Supabase → Auth → Providers. Flip VITE_OAUTH_ENABLED=true after configuring.
+const OAUTH_ENABLED = import.meta.env.VITE_OAUTH_ENABLED === 'true';
+
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -447,22 +453,24 @@ export default function AuthSwitch({
                   )}
                   <div className="pt-2">{submitButton("LOGIN", "Signing in...")}</div>
                 </form>
-                <div className="mt-5">
-                  <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
-                  <div className="flex justify-center gap-3">
-                    {[
-                      { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
-                      { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
-                      { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
-                    ].map((s, i) => (
-                      <button key={i} type="button" onClick={s.handler} disabled={isLoading}
-                        className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
-                        title={s.label}>
-                        {s.icon}
-                      </button>
-                    ))}
+                {OAUTH_ENABLED && (
+                  <div className="mt-5">
+                    <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
+                    <div className="flex justify-center gap-3">
+                      {[
+                        { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
+                        { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
+                        { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
+                      ].map((s, i) => (
+                        <button key={i} type="button" onClick={s.handler} disabled={isLoading}
+                          className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
+                          title={s.label}>
+                          {s.icon}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </motion.div>
             ) : (
               <motion.div
@@ -509,22 +517,24 @@ export default function AuthSwitch({
                   </p>
                   <div className="pt-2">{submitButton("SIGN UP", "Creating account...")}</div>
                 </form>
-                <div className="mt-5">
-                  <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
-                  <div className="flex justify-center gap-3">
-                    {[
-                      { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
-                      { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
-                      { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
-                    ].map((s, i) => (
-                      <button key={i} type="button" onClick={s.handler} disabled={isLoading}
-                        className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
-                        title={s.label}>
-                        {s.icon}
-                      </button>
-                    ))}
+                {OAUTH_ENABLED && (
+                  <div className="mt-5">
+                    <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
+                    <div className="flex justify-center gap-3">
+                      {[
+                        { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
+                        { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
+                        { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
+                      ].map((s, i) => (
+                        <button key={i} type="button" onClick={s.handler} disabled={isLoading}
+                          className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
+                          title={s.label}>
+                          {s.icon}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
