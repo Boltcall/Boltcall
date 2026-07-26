@@ -167,6 +167,13 @@
   schedule = "30 6 * * *"
 [functions."weekly-seo-aeo-runner"]
   schedule = "45 6 * * 1"
+# Auto-deploy: 07:00 daily (after daily-seo-aeo-runner @ 06:30 commits new
+# content, before seo-coverage-monitor @ 07:12 audits live). Compares
+# origin/main HEAD sha to last-deployed commit_ref; if different, POSTs to
+# Netlify build API to trigger a deploy. Closes the loop for a repo with
+# no auto-deploy webhook. Requires NETLIFY_AUTH_TOKEN env var.
+[functions."content-deploy-trigger"]
+  schedule = "0 7 * * *"
 # Daily live audit: sitemap freshness + sample /blog/* canonicals.
 # Alerts via Telegram when new AEO content isn't reaching Google
 # (SPA shell served or sitemap stale).
