@@ -167,6 +167,11 @@
   schedule = "30 6 * * *"
 [functions."weekly-seo-aeo-runner"]
   schedule = "45 6 * * 1"
+# Daily live audit: sitemap freshness + sample /blog/* canonicals.
+# Alerts via Telegram when new AEO content isn't reaching Google
+# (SPA shell served or sitemap stale).
+[functions."seo-coverage-monitor"]
+  schedule = "12 7 * * *"
 
 # ─── Agency OS scheduled functions (Phase F — Layer 2 backbone) ─────────────
 # Backbone for the n8n workflows. n8n is the orchestration ergonomic; these
