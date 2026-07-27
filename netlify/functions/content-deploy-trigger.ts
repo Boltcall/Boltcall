@@ -32,15 +32,43 @@ async function githubMainSha(): Promise<string> {
   return data.sha;
 }
 
-async function netlifyLastDeployedSha(token: string): Promise<string | null> {
+interface NetlifyDeploy {
+  commit_ref: string | null;
+  context: string;
+  state: string;
+  published_at: string | null;
+  created_at: string;
+}
+
+async function netlifyRecentProdDeploys(token: string): Promise<NetlifyDeploy[]> {
   const res = await fetch(
-    `https://api.netlify.com/api/v1/sites/${SITE_ID}/deploys?per_page=5&state=ready`,
+    `https://api.netlify.com/api/v1/sites/${SITE_ID}/deploys?per_page=20`,
     { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(8000) },
   );
   if (!res.ok) throw new Error(`netlify deploys api ${res.status}`);
-  const deploys = (await res.json()) as Array<{ commit_ref: string | null; context: string }>;
-  const prod = deploys.find((d) => d.context === 'production' && d.commit_ref);
-  return prod?.commit_ref ?? null;
+  const deploys = (await res.json()) as NetlifyDeploy[];
+  return deploys.filter((d) => d.context === 'production');
+}
+
+function shouldSkipTrigger(deploys: NetlifyDeploy[], originSha: string): { skip: boolean; reason: string } {
+  // 1. Any recent production deploy already targeting origin's sha (any state) -> skip.
+  //    Covers git-triggered builds (commit_ref populated) whether ready, building, or uploading.
+  const targeting = deploys.find(
+    (d) => d.commit_ref && originSha.startsWith(d.commit_ref.slice(0, 8)),
+  );
+  if (targeting) {
+    return { skip: true, reason: `deploy ${targeting.state} for ${originSha.slice(0, 8)} already exists` };
+  }
+  // 2. Otherwise fall back to recency: if ANY deploy touched prod in the last 22h
+  //    (typical case: user did a manual `netlify deploy` from CLI, which leaves
+  //    commit_ref=null). Skip so we don't retrigger daily on top of it.
+  const RECENT_MS = 22 * 60 * 60 * 1000;
+  const latest = deploys[0];
+  const ts = latest?.published_at || latest?.created_at;
+  if (ts && Date.now() - new Date(ts).getTime() < RECENT_MS) {
+    return { skip: true, reason: `last deploy at ${ts} (<22h ago) — assuming it shipped current content` };
+  }
+  return { skip: false, reason: '' };
 }
 
 async function triggerNetlifyBuild(token: string): Promise<void> {
@@ -64,17 +92,18 @@ export const handler: Handler = async () => {
   }
 
   try {
-    const [originSha, deployedSha] = await Promise.all([
+    const [originSha, deploys] = await Promise.all([
       githubMainSha(),
-      netlifyLastDeployedSha(token),
+      netlifyRecentProdDeploys(token),
     ]);
 
-    if (deployedSha && originSha.startsWith(deployedSha.slice(0, 8))) {
-      return { statusCode: 200, body: `no new commits (deployed=${deployedSha.slice(0, 8)})` };
+    const decision = shouldSkipTrigger(deploys, originSha);
+    if (decision.skip) {
+      return { statusCode: 200, body: `skip: ${decision.reason}` };
     }
 
     await triggerNetlifyBuild(token);
-    const msg = `🚀 Auto-deploy triggered: origin/main=${originSha.slice(0, 8)} (was deployed=${deployedSha?.slice(0, 8) ?? 'none'})`;
+    const msg = `🚀 Auto-deploy triggered: origin/main=${originSha.slice(0, 8)}`;
     await notifyInfo(msg);
     return { statusCode: 200, body: msg };
   } catch (e: unknown) {
