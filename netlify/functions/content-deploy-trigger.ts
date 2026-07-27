@@ -50,23 +50,34 @@ async function netlifyRecentProdDeploys(token: string): Promise<NetlifyDeploy[]>
   return deploys.filter((d) => d.context === 'production');
 }
 
+const HEALTHY_STATES = new Set(['ready', 'building', 'uploading', 'processing', 'enqueued', 'new']);
+
 function shouldSkipTrigger(deploys: NetlifyDeploy[], originSha: string): { skip: boolean; reason: string } {
-  // 1. Any recent production deploy already targeting origin's sha (any state) -> skip.
-  //    Covers git-triggered builds (commit_ref populated) whether ready, building, or uploading.
+  // 1. Any HEALTHY deploy already targeting origin's sha -> skip.
+  //    A prior 'error' deploy for this sha means the last attempt FAILED; we
+  //    should NOT skip on that. Retriggering the same build would just fail
+  //    again (build code is the same), so also don't retry — just alert and
+  //    let the operator fix the build. That's what monitor/notifyError does.
   const targeting = deploys.find(
     (d) => d.commit_ref && originSha.startsWith(d.commit_ref.slice(0, 8)),
   );
-  if (targeting) {
+  if (targeting && HEALTHY_STATES.has(targeting.state)) {
     return { skip: true, reason: `deploy ${targeting.state} for ${originSha.slice(0, 8)} already exists` };
   }
-  // 2. Otherwise fall back to recency: if ANY deploy touched prod in the last 22h
-  //    (typical case: user did a manual `netlify deploy` from CLI, which leaves
-  //    commit_ref=null). Skip so we don't retrigger daily on top of it.
+  if (targeting && targeting.state === 'error') {
+    return {
+      skip: true,
+      reason: `last build for ${originSha.slice(0, 8)} errored — not retrying (would fail again). Fix build first.`,
+    };
+  }
+  // 2. Recency fallback: if ANY deploy touched prod in the last 22h with a
+  //    healthy state (typical case: user did a manual CLI `netlify deploy`,
+  //    which leaves commit_ref=null). Skip so we don't retrigger daily.
   const RECENT_MS = 22 * 60 * 60 * 1000;
-  const latest = deploys[0];
-  const ts = latest?.published_at || latest?.created_at;
+  const latestHealthy = deploys.find((d) => HEALTHY_STATES.has(d.state));
+  const ts = latestHealthy?.published_at || latestHealthy?.created_at;
   if (ts && Date.now() - new Date(ts).getTime() < RECENT_MS) {
-    return { skip: true, reason: `last deploy at ${ts} (<22h ago) — assuming it shipped current content` };
+    return { skip: true, reason: `last healthy deploy at ${ts} (<22h ago) — assuming it shipped current content` };
   }
   return { skip: false, reason: '' };
 }
