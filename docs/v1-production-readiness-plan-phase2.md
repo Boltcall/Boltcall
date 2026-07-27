@@ -5,6 +5,7 @@
 > dashboard pages (60+ pages), settings + billing wiring, and 91 previously-unaudited Netlify functions.
 > **Counts**: **9 P0 · 18 P1 · 14 P2**. Execution 2026-07-06: **8/9 P0 closed** + 5 P1 (billing correctness, retell LLM rollback, webhook fail-closed rolled up in the same commits). Last P0 (HIBP toggle) DESCOPED 2026-07-07 — Pro-plan-only feature (`402` on Free tier), founder chose not to upgrade. **All 9 P0 now resolved (8 closed + 1 descoped).**
 > Execution 2026-07-07: **remaining 13 P1 closed** (billing 4759bdc55 · dashboard data 4c066b8e9 · functions c51e5c0fd · teamStore+notifications ff27df667 · activity-log 0fec00440). **All 18 P1 now closed.** typecheck ✅ · 392 affected tests ✅ · vite build ✅. Merged cf23fbebc, deployed to boltcall.org. Remaining before "done": all 14 P2, and the live-verification list.
+> Execution 2026-07-26 (live-verify pass 1): **5 live-verify items closed + 1 launch blocker fixed**. Fresh audit against prod Supabase found all three OAuth providers (google/azure/facebook) returning `400 provider is not enabled` while `/login` shipped visible buttons — gated behind `VITE_OAUTH_ENABLED` (f5a736ab6, deploy `6a66436e839ef4664c9049cb`). Verified Confirm-email ON; anon-client RLS provisioning e2e 10/10 pass; Retell key smoke OK; KPI raw counts pulled (`retell_calls=0` flagged for sync check); stale-price grep clean; added `reset-password` + `auth-guard` Playwright specs (c0d344361, 13/13 pass against `https://boltcall.org`). See "2026-07-26 live-verify pass" below for detail. Six live-verify items still open — all require Noam's phone / inbox / staging / eyes.
 
 **How to use this file.** Same protocol as Phase 1: execute top-down, mark `[x]` with commit hash, append new findings, never delete items. Work in a worktree — root main checkout is read-only.
 
@@ -159,7 +160,27 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 - [x] `workspaces.user_id` unique? **NO** — only a regular index. Double-workspace race duplicates silently. Add partial unique index post-cleanup (check for existing dupes first): `CREATE UNIQUE INDEX ... ON workspaces(user_id)`.
 - [x] `workspaces.slug` NOT NULL? **YES** (+ unique). `ensureWorkspaceForUser` must always set slug — verified constraint exists; code path check remains part of provisioning e2e.
 - [x] Supabase security advisors: **0 ERROR**, 7 WARN, 142 INFO (rls_enabled_no_policy on internal/marketing tables — triaged in Phase 1).
-- [ ] Remaining from Phase 1 (still open): Confirm-email setting, OAuth redirect URIs, anon-client RLS provisioning e2e, create_full timing inside Netlify budget, live recovery-email flow, stale-price grep, Retell/Twilio failure timeout behavior, Playwright coverage map.
+
+### 2026-07-26 live-verify pass (5 items closed + 1 blocker fixed)
+
+- [x] **Stale-price grep** — swept `src/`. All remaining `$99` / `$179` / `$249` hits are competitor pricing (Lindy Pro $99.99, GoodCall $249) or market-range copy that names Boltcall's $549 — no stale Boltcall self-quotes. PASS.
+- [x] **Playwright coverage map + specs** (c0d344361) — 24 specs in `e2e/`. Added `e2e/reset-password.spec.ts` (no-session branch, AuthRedirectRecovery non-hijack, forgot flow with Supabase intercept) + `e2e/auth-guards.spec.ts` (7 protected routes redirect, P0.7 `?setupCompleted=true` bypass regression, `?redirect=` preserve). Ran against `https://boltcall.org` in a scratch worktree with `baseURL` override: **13/13 pass in 21.2s**.
+- [x] **Supabase Confirm-email setting** — verified ON. Anon `signUp` returned `{id, confirmation_sent_at, ...}` with no `session` / `access_token`; email link required before login. Matches Phase 1 P1 auth assumptions.
+- [x] **OAuth redirect URIs** — inferred via `/auth/v1/authorize` per provider. **Launch blocker found:** `google`, `azure`, `facebook` all returned `400 validation_failed / Unsupported provider: provider is not enabled`. UI shipped three OAuth buttons that were guaranteed to 400 on click. **Fixed** (f5a736ab6): gated both button rows in `src/components/ui/auth-switch.tsx` behind `import.meta.env.VITE_OAUTH_ENABLED === 'true'`, defaulting to hidden. `e2e/auth.spec.ts` two visibility tests flipped to `toHaveCount(0)` with a restore-comment. Deploy `6a66436e839ef4664c9049cb`. Flip `VITE_OAUTH_ENABLED=true` in Netlify env after wiring each provider in Supabase → Auth → Providers.
+- [x] **Anon-client RLS provisioning e2e** — admin API auto-confirmed a throwaway user, minted a JWT via `signInWithPassword`, ran INSERT + cross-tenant probes against `workspaces`/`business_profiles`/`locations`/`agents`, then deleted the user and verified cascade. **10/10 pass:** own-user INSERT allowed (201) on all four tables; INSERT with spoofed `user_id` blocked (403 `WITH CHECK`); cross-tenant SELECT returned 0 rows (`USING`); user delete cascaded to 0 residual rows on all four tables. Anon client + JWT + prod RLS is correctly scoped.
+- [x] **KPI raw counts** — pulled directly against `puszjwovldwgitfpsnfm`:
+  - `leads=16`, `callbacks=1`, `retell_calls=0` ← flagged, `appointments=0`, `business_profiles=14`, `workspaces=18`, `subscriptions=0`.
+  - `retell_calls=0` despite live agents + configured webhook (`https://boltcall.org/.netlify/functions/retell-webhook` on `Boltcall AI Receptionist` + Follow-Up Agent, scorer wires to the table in `netlify/functions/retell-call-scorer.ts:177`). Either nobody's called those agents, or scorer is failing silently. **Ship-blocker candidate** — verify with a real test call.
+- [x] **Retell API key smoke** — `GET /list-agents` HTTP 200, returns real production agents (Boltcall AI Receptionist, Follow-Up Agent, hebrew challenge test, plus per-vertical agents). Key valid.
+
+### Still open
+
+- [ ] `create_full` timing inside 10s Netlify sync budget — deferred: creates billable Retell agent + LLM per run, needs explicit go-ahead + guaranteed cleanup path.
+- [ ] Live recovery-email → `/reset-password` → login round-trip — needs a real inbox (Noam's, or a disposable-inbox service with explicit approval).
+- [ ] Retell / Twilio forced-offline error surfacing — needs staging isolation; too risky to force on prod.
+- [ ] Test call to a Boltcall Retell number (e.g. `+972 3 376 1315` or `+1 361 304 4585`) → confirm a row lands in `retell_calls` — needs Noam's phone; scorer is fire-and-forget from webhook so failures are silent.
+- [ ] Three consecutive fresh-user runs, zero founder intervention — human perception only.
+- [ ] KPI UI-vs-SQL spot-check on the live dashboard — needs Noam's login (service key gave the raw counts above).
 
 ---
 
