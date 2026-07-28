@@ -9,7 +9,7 @@ import {
   Workflow,
 } from 'lucide-react';
 
-type IntegrationId = 'zapier' | 'make' | 'hubspot' | 'gohighlevel';
+type IntegrationId = 'zapier' | 'make' | 'hubspot' | 'gohighlevel' | 'wix' | 'squarespace';
 
 type IntegrationPageData = {
   id: IntegrationId;
@@ -192,6 +192,107 @@ const integrations: IntegrationPageData[] = [
       {
         q: 'Is this the final marketplace app?',
         a: 'No. The same-day setup uses API key plus Location ID. The public marketplace app should use HighLevel OAuth.',
+      },
+    ],
+  },
+  {
+    id: 'wix',
+    name: 'Wix',
+    slug: 'wix',
+    category: 'Website Builder',
+    icon: 'https://static.wixstatic.com/media/da27dc_de81c6fd0a4d413cbaea547aeee0a1c8~mv2.png/v1/fill/w_32,h_32/da27dc_de81c6fd0a4d413cbaea547aeee0a1c8~mv2.png',
+    fallback: '#0C6EFC',
+    h1: 'Boltcall Wix Integration',
+    meta: 'Send Wix form submissions to Boltcall for instant speed-to-lead phone and SMS response — no plugin required.',
+    answer:
+      'The Boltcall Wix integration turns every Wix Forms submission into an instant response call or text. Wix Automations natively supports "Send via Webhook" HTTP requests, so no third-party app or plugin is needed. When a lead fills a Contact form, Wix Automations POSTs the form fields as JSON to Boltcall\'s lead-webhook endpoint, authenticated with a bc_ API key. Boltcall stores the lead, deduplicates against previous submissions, and starts the first-touch response the moment a phone number is present. This works on any paid Wix plan that includes Automations (Light and above).',
+    bestFor: ['Wix Contact Forms', 'Wix service booking forms', 'Wix multi-step lead capture', 'Any Wix Automations trigger'],
+    workflows: [
+      'Wix Contact form → Boltcall instant call',
+      'Wix booking form → Boltcall instant SMS',
+      'Wix subscribe form → Boltcall CRM sync',
+      'Wix Velo custom event → Boltcall lead capture',
+    ],
+    setup: [
+      'Create a Boltcall API key in Dashboard > Settings > API Keys and copy the bc_ token.',
+      'In Wix editor, open Automations > + New Automation > pick trigger "Form submitted".',
+      'Add action "Send via Webhook" and paste https://boltcall.org/.netlify/functions/lead-webhook as the URL.',
+      'Set Method = POST. Add header Authorization = Bearer bc_your_key. Content-Type = application/json.',
+      'In the JSON body, map form fields: {"name": "{{Form.name}}", "email": "{{Form.email}}", "phone": "{{Form.phone}}", "source": "wix_form", "external_id": "{{submissionId}}"}',
+      'Activate the automation. Submit a real test form and confirm the lead appears in Boltcall Dashboard > Leads.',
+    ],
+    acceptance: [
+      'Wix Automation shows 201 response from Boltcall webhook.',
+      'Test lead appears in Boltcall Dashboard > Leads within 5 seconds.',
+      'First-touch call fires when the workspace has an active phone number and agent.',
+      'Duplicate submissions with the same external_id return the same lead ID (no double-call).',
+    ],
+    faqs: [
+      {
+        q: 'Do I need a paid Wix plan?',
+        a: 'Yes. Wix Automations "Send via Webhook" requires at least the Wix Light plan. The Free plan does not include Automations. If you are on Free, use the Zapier bridge instead.',
+      },
+      {
+        q: 'Which fields should I map in the JSON body?',
+        a: 'At minimum, name and either email or phone. Boltcall also reads source, notes, external_id, idempotency_key, and any custom field into raw_data for later reference.',
+      },
+      {
+        q: 'How do I avoid duplicate leads if Wix retries the webhook?',
+        a: 'Map Wix\'s {{submissionId}} to external_id in the JSON body. Boltcall\'s idempotency check returns the existing lead instead of creating a duplicate.',
+      },
+      {
+        q: 'Can I trigger Boltcall from a Wix Velo custom event?',
+        a: 'Yes. Any Wix Automation trigger — including custom Velo triggers — can call the Send via Webhook action with the same JSON body.',
+      },
+    ],
+  },
+  {
+    id: 'squarespace',
+    name: 'Squarespace',
+    slug: 'squarespace',
+    category: 'Website Builder',
+    icon: 'https://images.squarespace-cdn.com/content/v1/523bce9ee4b02cb59ce3e94a/1379635238321-1PN9M3ZLA3W83ZKCX7NL/favicon.ico?format=100w',
+    fallback: '#000000',
+    h1: 'Boltcall Squarespace Integration',
+    meta: 'Send Squarespace form submissions to Boltcall for instant speed-to-lead response using Zapier or a small code injection.',
+    answer:
+      'Squarespace does not offer native webhooks for Form Block submissions — its built-in webhooks are Commerce-only. Boltcall supports two proven paths. Path A (recommended, no code): connect your Squarespace form to Zapier, then use the Zapier "Send Lead to Boltcall" action. Path B (Business plan and above, no third-party fees): inject a small script into Code Injection that intercepts form submits and POSTs to Boltcall\'s lead-webhook. Both routes deliver the same result — a lead lands in Boltcall in under two seconds and triggers the first-touch call or SMS.',
+    bestFor: ['Squarespace Personal/Business/Commerce plans', 'Squarespace Form Blocks', 'Newsletter Block signups', 'Cover Page contact forms'],
+    workflows: [
+      'Squarespace Form Block → Zapier → Boltcall instant response',
+      'Squarespace Form Block → Code Injection → Boltcall (Business plan+)',
+      'Squarespace booking widget → Boltcall speed-to-lead',
+      'Squarespace Commerce order → Zapier → Boltcall follow-up',
+    ],
+    setup: [
+      'Create a Boltcall API key in Dashboard > Settings > API Keys.',
+      'Path A (Zapier, easiest): create a Zap with trigger "New Form Submission in Squarespace" and action "Send Lead to Boltcall" — map name, email, phone, source=squarespace_form.',
+      'Path B (Code Injection, Business plan+): open Settings > Advanced > Code Injection > Footer.',
+      'Paste this script (replace bc_YOUR_KEY): <script>document.addEventListener("submit",async e=>{const f=e.target;if(!f.matches(".form-wrapper form"))return;e.preventDefault();const d=new FormData(f);const b={name:d.get("fname")+" "+d.get("lname"),email:d.get("email"),phone:d.get("phone"),source:"squarespace_form",external_id:crypto.randomUUID()};await fetch("https://boltcall.org/.netlify/functions/lead-webhook",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer bc_YOUR_KEY"},body:JSON.stringify(b)});f.submit();});</script>',
+      'Save and publish. Submit a real test form and verify the lead appears in Boltcall Dashboard > Leads.',
+    ],
+    acceptance: [
+      'Zapier task history shows 201 from lead-webhook (Path A).',
+      'Browser DevTools Network tab shows 201 lead-webhook POST on submit (Path B).',
+      'Test lead visible in Boltcall Dashboard > Leads within 5 seconds.',
+      'First-touch call fires when workspace has an active phone number and agent.',
+    ],
+    faqs: [
+      {
+        q: 'Why doesn\'t Squarespace have native webhooks for Form Blocks?',
+        a: 'Squarespace webhooks are limited to their Commerce API (orders, subscriptions, inventory). Form Block submissions ship data via Google Drive, Mailchimp, or Zapier — not raw webhooks. This is a Squarespace platform limitation, not a Boltcall limitation.',
+      },
+      {
+        q: 'Which path should I choose?',
+        a: 'If you already pay for Zapier or want zero code, use Path A. If you are on Squarespace Business or Commerce and want no third-party fees, use Path B (Code Injection).',
+      },
+      {
+        q: 'Does Path B work on the Squarespace Personal plan?',
+        a: 'No. Code Injection requires the Business plan or higher. Personal-plan users must use Path A (Zapier).',
+      },
+      {
+        q: 'Will the code injection break the native Squarespace success message?',
+        a: 'The snippet calls f.submit() after POSTing to Boltcall so Squarespace still stores the submission and shows the built-in success state. If you prefer, remove the f.submit() line and use only Boltcall storage.',
       },
     ],
   },
@@ -485,5 +586,7 @@ export const ZapierIntegrationPage = () => <IntegrationDetailPage item={byId.zap
 export const MakeIntegrationPage = () => <IntegrationDetailPage item={byId.make} />;
 export const HubSpotIntegrationPage = () => <IntegrationDetailPage item={byId.hubspot} />;
 export const GoHighLevelIntegrationPage = () => <IntegrationDetailPage item={byId.gohighlevel} />;
+export const WixIntegrationPage = () => <IntegrationDetailPage item={byId.wix} />;
+export const SquarespaceIntegrationPage = () => <IntegrationDetailPage item={byId.squarespace} />;
 
 export default IntegrationsHubPage;

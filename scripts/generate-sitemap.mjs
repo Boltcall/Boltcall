@@ -26,6 +26,8 @@ const ROUTES = [
   { path: "/integrations/make",                                   priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/hubspot",                                priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/gohighlevel",                            priority: "0.8", changefreq: "monthly" },
+  { path: "/integrations/wix",                                    priority: "0.8", changefreq: "monthly" },
+  { path: "/integrations/squarespace",                            priority: "0.8", changefreq: "monthly" },
   { path: "/ai-course",                                           priority: "0.8", changefreq: "monthly" },
   { path: "/privacy-policy",                                      priority: "0.5", changefreq: "yearly"  },
   { path: "/terms-of-service",                                    priority: "0.5", changefreq: "yearly"  },
