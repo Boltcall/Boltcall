@@ -22,6 +22,8 @@ const automationIntegrationLinks = [
   { label: 'Make guide', href: '/integrations/make' },
   { label: 'HubSpot guide', href: '/integrations/hubspot' },
   { label: 'GoHighLevel guide', href: '/integrations/gohighlevel' },
+  { label: 'Wix guide', href: '/integrations/wix' },
+  { label: 'Squarespace guide', href: '/integrations/squarespace' },
 ];
 
 const PricingPage: React.FC = () => {
