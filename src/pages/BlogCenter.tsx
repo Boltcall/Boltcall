@@ -7,6 +7,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import { getBlogPreviewImage } from '../lib/blogPreviewImages';
+import { listPublishedAeoArticles } from '../lib/aeoContent';
 
 import { AppleSpotlight } from '../components/ui/apple-spotlight';
 
@@ -902,6 +903,29 @@ const BlogCenter: React.FC = () => {
               >
                 <div className="font-semibold text-gray-900 text-sm mb-1">{item.label}</div>
                 <div className="text-xs text-gray-600">{item.tagline}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="border-t border-gray-200 pt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Answer Engine Guides</h2>
+          <p className="text-gray-600 text-sm mb-6">
+            Direct-answer guides optimized for AI Overviews, ChatGPT, and Perplexity. Every article answers one high-intent question.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {listPublishedAeoArticles().map((article) => (
+              <Link
+                key={article.slug}
+                to={article.route}
+                className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+              >
+                <div className="font-semibold text-gray-900 text-sm mb-1">{article.title}</div>
+                {article.targetQuery && (
+                  <div className="text-xs text-gray-600">Answers: {article.targetQuery}</div>
+                )}
               </Link>
             ))}
           </div>
