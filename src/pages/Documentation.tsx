@@ -388,6 +388,8 @@ const Documentation: React.FC = () => {
     { title: 'Make Integration', href: '/integrations/make' },
     { title: 'HubSpot Integration', href: '/integrations/hubspot' },
     { title: 'GoHighLevel Integration', href: '/integrations/gohighlevel' },
+    { title: 'Wix Integration', href: '/integrations/wix' },
+    { title: 'Squarespace Integration', href: '/integrations/squarespace' },
   ];
 
   return (
