@@ -40,6 +40,8 @@ const ROUTES = [
   '/integrations/make',
   '/integrations/hubspot',
   '/integrations/gohighlevel',
+  '/integrations/wix',
+  '/integrations/squarespace',
   '/ai-course',
   '/dpa',
   '/law-firm-security',

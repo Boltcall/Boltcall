@@ -209,6 +209,12 @@ const HubSpotIntegrationPage = React.lazy(() =>
 const GoHighLevelIntegrationPage = React.lazy(() =>
   import('../pages/IntegrationPages').then(m => ({ default: m.GoHighLevelIntegrationPage }))
 );
+const WixIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.WixIntegrationPage }))
+);
+const SquarespaceIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.SquarespaceIntegrationPage }))
+);
 const NotFound = React.lazy(() => import('../pages/NotFound'));
 const AdminPanel = React.lazy(() => import('../pages/AdminPanel'));
 
@@ -743,6 +749,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/integrations/make" element={<MakeIntegrationPage />} />
         <Route path="/integrations/hubspot" element={<HubSpotIntegrationPage />} />
         <Route path="/integrations/gohighlevel" element={<GoHighLevelIntegrationPage />} />
+        <Route path="/integrations/wix" element={<WixIntegrationPage />} />
+        <Route path="/integrations/squarespace" element={<SquarespaceIntegrationPage />} />
         <Route element={<BlogSchemaWrapper />}>
         <Route path="/blog" element={<BlogCenter />} />
         <Route path="/newsletter" element={<Newsletter />} />
