@@ -226,7 +226,7 @@ const AnalyticsPage: React.FC = () => {
       {/* Deep Analytics banner */}
       <Link
         to="/dashboard/deep-analytics"
-        className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl hover:shadow-md transition-shadow group"
+        className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ease-out group"
       >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-brand-blue/10 rounded-lg">
@@ -244,14 +244,14 @@ const AnalyticsPage: React.FC = () => {
 
       {/* Header with date range picker and refresh */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-[#17171b] rounded-lg p-1 overflow-x-auto scrollbar-hide">
           {(['7d', '30d', '90d'] as DateRange[]).map((r) => (
             <button
               key={r}
               onClick={() => { setDateRange(r); setShowCustomPicker(false); }}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 dateRange === r && !showCustomPicker
-                  ? 'bg-white text-text-main shadow-sm'
+                  ? 'bg-white dark:bg-[#111114] text-text-main shadow-sm'
                   : 'text-text-muted hover:text-text-main'
               }`}
             >
@@ -262,7 +262,7 @@ const AnalyticsPage: React.FC = () => {
             onClick={() => setShowCustomPicker(!showCustomPicker)}
             className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors inline-flex items-center gap-1 ${
               dateRange === 'custom'
-                ? 'bg-white text-text-main shadow-sm'
+                ? 'bg-white dark:bg-[#111114] text-text-main shadow-sm'
                 : 'text-text-muted hover:text-text-main'
             }`}
           >
@@ -298,7 +298,7 @@ const AnalyticsPage: React.FC = () => {
           <button
             onClick={loadData}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-border hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-border hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -308,7 +308,7 @@ const AnalyticsPage: React.FC = () => {
 
       {/* Error banner (when we have stale data but refresh failed) */}
       {error && stats && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-lg text-sm text-red-700 dark:text-red-300">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           Refresh failed: {error}. Showing last known data.
         </div>
@@ -398,7 +398,7 @@ const AnalyticsPage: React.FC = () => {
                 </p>
                 <p className="text-xs text-text-muted mt-1">Monthly Used</p>
                 {monthlyAllocation > 0 && (
-                  <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="mt-2 w-full bg-gray-200 dark:bg-[#17171b] rounded-full h-1.5">
                     <div
                       className="bg-brand-blue h-1.5 rounded-full transition-all"
                       style={{ width: `${Math.min(100, Math.round((tokensUsed / monthlyAllocation) * 100))}%` }}
@@ -566,7 +566,7 @@ const AnalyticsPage: React.FC = () => {
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-text-main">Latest Daily Snapshot</h3>
-              <span className="text-xs text-text-muted bg-gray-100 px-2 py-1 rounded">
+              <span className="text-xs text-text-muted bg-gray-100 dark:bg-[#17171b] px-2 py-1 rounded">
                 {sb.latest_metrics.date || 'Today'}
               </span>
             </div>

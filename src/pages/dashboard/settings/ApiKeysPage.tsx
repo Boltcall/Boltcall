@@ -82,10 +82,10 @@ const ApiKeysPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'revoked': return 'text-red-600 bg-red-100';
-      case 'expired': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'active': return 'text-green-600 dark:text-green-300 bg-green-100 dark:bg-green-500/15';
+      case 'revoked': return 'text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-500/15';
+      case 'expired': return 'text-yellow-600 dark:text-yellow-300 bg-yellow-100 dark:bg-yellow-500/15';
+      default: return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-[#17171b]';
     }
   };
 
@@ -139,8 +139,8 @@ const ApiKeysPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">API Keys</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage programmatic access to your workspace</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">API Keys</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage programmatic access to your workspace</p>
         </div>
         <PopButton color="blue" onClick={() => { resetForm(); setShowCreateModal(true); }}>
           <Plus className="w-4 h-4 mr-2" /> Create API Key
@@ -148,11 +148,11 @@ const ApiKeysPage: React.FC = () => {
       </div>
 
       {/* Security notice */}
-      <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-        <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-amber-800">
+      <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg">
+        <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-amber-800 dark:text-amber-200">
           <p className="font-medium">Keep your API keys secure</p>
-          <p className="mt-0.5 text-amber-700">
+          <p className="mt-0.5 text-amber-700 dark:text-amber-300">
             API keys grant programmatic access to your workspace. Never share them in public repositories or client-side code.
             Keys are shown only once at creation.
           </p>
@@ -161,11 +161,11 @@ const ApiKeysPage: React.FC = () => {
 
       {/* ─── Active Keys ──────────────────────────────────────── */}
       <div>
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">Active Keys ({activeKeys.length})</h2>
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Active Keys ({activeKeys.length})</h2>
         {activeKeys.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-            <Key className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm text-gray-500">No active API keys. Create one to get started.</p>
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg p-8 text-center">
+            <Key className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">No active API keys. Create one to get started.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -175,25 +175,25 @@ const ApiKeysPage: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+                className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg p-4 hover:shadow-sm dark:hover:shadow-black/30 transition-shadow duration-200 ease-out"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <Key className="w-5 h-5 text-gray-400" />
-                      <span className="font-semibold text-gray-900">{key.name}</span>
+                      <Key className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                      <span className="font-semibold text-gray-900 dark:text-white">{key.name}</span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(key.status)}`}>
                         {key.status}
                       </span>
                     </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 md:gap-4 text-sm text-gray-500">
+                    <div className="mt-2 flex flex-wrap items-center gap-2 md:gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <code className="bg-gray-100 px-2 py-0.5 rounded text-xs font-mono truncate max-w-[160px] sm:max-w-none inline-block align-middle">
+                        <code className="bg-gray-100 dark:bg-[#17171b] dark:text-gray-300 px-2 py-0.5 rounded text-xs font-mono truncate max-w-[160px] sm:max-w-none inline-block align-middle">
                           {key.key_prefix}{'*'.repeat(24)}
                         </code>
                         <button
                           onClick={() => copyToClipboard(key.key_prefix + '...', key.id)}
-                          className="p-1.5 hover:bg-gray-100 rounded flex-shrink-0"
+                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-[#17171b] rounded flex-shrink-0 transition-colors duration-200 ease-out"
                           title="Copy prefix"
                         >
                           {copiedKeyId === key.id ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -205,22 +205,22 @@ const ApiKeysPage: React.FC = () => {
                       </span>
                       <span>Last used: {formatLastUsed(key.last_used_at)}</span>
                       {key.expires_at && (
-                        <span className="text-amber-600">
+                        <span className="text-amber-600 dark:text-amber-400">
                           Expires {formatDate(key.expires_at)}
                         </span>
                       )}
                     </div>
                     {/* Usage stats */}
                     <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-4">
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                         <BarChart3 className="w-3.5 h-3.5" />
                         <span>24h: {key.usage_24h || 0}</span>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-300 dark:text-gray-600">|</span>
                         <span>7d: {key.usage_7d || 0}</span>
-                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-300 dark:text-gray-600">|</span>
                         <span>30d: {key.usage_30d || 0}</span>
                       </div>
-                      <span className="text-xs text-gray-400">Rate limit: {key.rate_limit || 60} req/min</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">Rate limit: {key.rate_limit || 60} req/min</span>
                     </div>
                     {/* Permissions */}
                     {(key.permissions || []).length > 0 && (
@@ -229,7 +229,7 @@ const ApiKeysPage: React.FC = () => {
                           <span
                             key={idx}
                             className={`px-2 py-0.5 rounded text-xs font-medium ${
-                              p.permission === 'write' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                              p.permission === 'write' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300' : 'bg-gray-100 text-gray-600 dark:bg-[#17171b] dark:text-gray-400'
                             }`}
                           >
                             {p.resource}:{p.permission}
@@ -240,10 +240,10 @@ const ApiKeysPage: React.FC = () => {
                   </div>
                   <button
                     onClick={() => { setSelectedKey(key); setShowRevokeModal(true); }}
-                    className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors duration-200 ease-out"
                     title="Revoke key"
                   >
-                    <Trash2 className="w-4 h-4 text-red-400" />
+                    <Trash2 className="w-4 h-4 text-red-400 dark:text-red-500" />
                   </button>
                 </div>
               </motion.div>
@@ -255,17 +255,17 @@ const ApiKeysPage: React.FC = () => {
       {/* ─── Revoked/Expired Keys ─────────────────────────────── */}
       {revokedKeys.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold text-gray-500 mb-3">Revoked / Expired ({revokedKeys.length})</h2>
+          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">Revoked / Expired ({revokedKeys.length})</h2>
           <div className="space-y-2">
             {revokedKeys.map((key) => (
-              <div key={key.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3 opacity-60">
+              <div key={key.id} className="bg-gray-50 dark:bg-[#17171b] border border-gray-200 dark:border-[#1e1e24] rounded-lg p-3 opacity-60">
                 <div className="flex items-center gap-3">
-                  <Key className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-600 line-through">{key.name}</span>
+                  <Key className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 line-through">{key.name}</span>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(key.status)}`}>
                     {key.status}
                   </span>
-                  <span className="text-xs text-gray-400 ml-auto">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
                     {key.revoked_at ? `Revoked ${formatDate(key.revoked_at)}` : `Expired ${formatDate(key.expires_at)}`}
                   </span>
                 </div>
@@ -297,21 +297,21 @@ const ApiKeysPage: React.FC = () => {
       >
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Key Name *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Key Name *</label>
             <input
               type="text"
               value={keyName}
               onChange={(e) => setKeyName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               placeholder="e.g. Production Backend, CRM Integration"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Expiration</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiration</label>
             <select
               value={keyExpiryDays}
               onChange={(e) => setKeyExpiryDays(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-[#17171b] dark:text-white"
             >
               {EXPIRY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -334,9 +334,9 @@ const ApiKeysPage: React.FC = () => {
         }
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-800">
+          <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">
               Copy this key now. It will <strong>only be shown once</strong> and cannot be retrieved later.
             </p>
           </div>
@@ -346,7 +346,7 @@ const ApiKeysPage: React.FC = () => {
             </code>
             <button
               onClick={() => copyToClipboard(newKey, 'new-key')}
-              className="absolute top-2 right-2 p-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
+              className="absolute top-2 right-2 p-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors duration-200 ease-out"
             >
               {copiedKeyId === 'new-key' ? (
                 <Check className="w-4 h-4 text-green-400" />
@@ -371,12 +371,12 @@ const ApiKeysPage: React.FC = () => {
         }
       >
         <div className="space-y-3">
-          <p className="text-sm text-gray-600">
-            Are you sure you want to revoke <span className="font-medium text-gray-900">{selectedKey?.name}</span>?
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Are you sure you want to revoke <span className="font-medium text-gray-900 dark:text-white">{selectedKey?.name}</span>?
           </p>
-          <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800">
+          <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800 dark:text-red-200">
               Any application using this key will immediately lose access. This action cannot be undone.
             </p>
           </div>

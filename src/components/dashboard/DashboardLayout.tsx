@@ -361,7 +361,7 @@ const DashboardLayout: React.FC = () => {
   // Helper function to render navigation items
   const renderNavItem = (item: any, isActive: boolean, extraClassName = '') => {
     const isCollapsedView = sidebarCollapsed;
-    const sharedClassName = `relative flex items-center ${isCollapsedView ? 'justify-center' : 'gap-2 w-full'} px-2 py-2 rounded-lg text-xs font-medium transition-all duration-700 group ${extraClassName} ${
+    const sharedClassName = `relative flex items-center ${isCollapsedView ? 'justify-center' : 'gap-2 w-full'} px-2 py-2 rounded-lg text-xs font-medium transition-colors duration-200 ease-out group ${extraClassName} ${
       isActive
         ? isDarkMode
           ? 'bg-[#1a1a1f] text-white'
@@ -389,8 +389,8 @@ const DashboardLayout: React.FC = () => {
             }`}
             style={{
               transition: isActive
-                ? 'width 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-                : 'width 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                ? 'width 320ms cubic-bezier(0.16, 1, 0.3, 1)'
+                : 'width 260ms cubic-bezier(0.4, 0, 0.2, 1)'
             }} />
           </span>
         )}
@@ -604,7 +604,7 @@ const DashboardLayout: React.FC = () => {
            tabIndex={0}
          >
            {/* Top Bar - Page Header */}
-           <div className="sticky top-0 z-10 flex-shrink-0 transition-colors duration-300 bg-white/80 backdrop-blur-sm">
+           <div className="sticky top-0 z-10 flex-shrink-0 transition-colors duration-300 bg-white/80 dark:bg-[#0e0e11]/80 backdrop-blur-md border-b border-gray-100/60 dark:border-[#1e1e24]/60">
              <div className="flex items-center justify-between h-14 md:h-16 px-3 md:px-6">
                {/* Left side - Mobile menu button and Page Name */}
                <div className="flex items-center gap-2 md:gap-3 min-w-0">
@@ -686,7 +686,7 @@ const DashboardLayout: React.FC = () => {
                   <div className="relative" data-user-menu>
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-white text-xs font-semibold hover:bg-gray-700 transition-colors"
+                      className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center text-white text-xs font-semibold ring-1 ring-black/5 dark:ring-white/10 hover:ring-blue-500/40 hover:scale-105 active:scale-95 transition-all duration-200 ease-out"
                       title={user?.name || 'User'}
                     >
                       {(user?.name || 'U').charAt(0).toUpperCase()}
@@ -695,11 +695,11 @@ const DashboardLayout: React.FC = () => {
                     <AnimatePresence>
                     {showUserMenu && (
                       <motion.div
-                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                        initial={{ opacity: 0, y: -8, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="absolute right-0 top-full mt-2 w-64 rounded-xl shadow-xl border border-gray-200 bg-white z-50 overflow-hidden"
+                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute ltr:right-0 rtl:left-0 top-full mt-2 w-64 rounded-xl shadow-xl border border-gray-200 dark:border-[#2a2a30] bg-white dark:bg-[#141418] z-50 overflow-hidden"
                       >
                         {/* Profile Header */}
                         <div className="px-4 py-4 flex items-center gap-3 border-b border-gray-100">
@@ -849,9 +849,9 @@ const DashboardLayout: React.FC = () => {
              <CalendarConnectBanner className="mb-4" />
              <motion.div
                key={location.pathname.startsWith('/dashboard/settings/') ? '/dashboard/settings' : location.pathname}
-               initial={{ opacity: 0, y: 12 }}
+               initial={{ opacity: 0, y: 8 }}
                animate={{ opacity: 1, y: 0 }}
-               transition={{ duration: 0.3, ease: 'easeOut' }}
+               transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
              >
                <Outlet />
              </motion.div>

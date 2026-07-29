@@ -402,7 +402,7 @@ const PhoneNumbersPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] shadow-sm">
           {/* Custom Header with Dropdown */}
           <div className="p-3 md:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -410,14 +410,14 @@ const PhoneNumbersPage: React.FC = () => {
                 {/* Search Input */}
                 <div className="relative flex-1 max-w-xs">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
                   <input
                     type="text"
                     placeholder="Search phone numbers..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -440,27 +440,27 @@ const PhoneNumbersPage: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute right-0 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                        className="absolute right-0 mt-2 w-full bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg shadow-lg z-10"
                       >
                         <div className="py-1">
                           <button
                             onClick={handleBuyNewNumber}
-                            className="w-full px-2 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                            className="w-full px-2 py-2 text-left hover:bg-gray-50 dark:hover:bg-[#17171b] flex items-center gap-2 transition-colors duration-200 ease-out"
                           >
                             <Phone className="w-3 h-3 text-blue-600 flex-shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <div className="text-xs font-medium text-gray-900 truncate">Buy new number</div>
-                              <div className="text-xs text-gray-500 truncate">Purchase from Twilio</div>
+                              <div className="text-xs font-medium text-gray-900 dark:text-white truncate">Buy new number</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">Purchase from Twilio</div>
                             </div>
                           </button>
                           <button
                             onClick={handleConnectSip}
-                            className="w-full px-2 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                            className="w-full px-2 py-2 text-left hover:bg-gray-50 dark:hover:bg-[#17171b] flex items-center gap-2 transition-colors duration-200 ease-out"
                           >
                             <Settings className="w-3 h-3 text-green-600 flex-shrink-0" />
                             <div className="min-w-0 flex-1">
-                              <div className="text-xs font-medium text-gray-900 truncate">Connect yours</div>
-                              <div className="text-xs text-gray-500 truncate">Use your existing number</div>
+                              <div className="text-xs font-medium text-gray-900 dark:text-white truncate">Connect yours</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">Use your existing number</div>
                             </div>
                           </button>
                         </div>
@@ -487,30 +487,30 @@ const PhoneNumbersPage: React.FC = () => {
             <div className="flex items-center gap-6">
               {/* Phone Number */}
               <div className="flex items-center gap-3 flex-1">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center">
                   <PhoneCall className="w-4 h-4 text-green-600" />
                 </div>
-                <div className="font-medium text-gray-900">{phone.number}</div>
+                <div className="font-medium text-gray-900 dark:text-white">{phone.number}</div>
               </div>
-              
+
               {/* Location */}
-              <div className="text-sm text-gray-900 flex-1">
+              <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
                 {phone.location}
               </div>
-              
+
               {/* Assigned To */}
-              <div className="text-sm text-gray-900 flex-1">
+              <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
                 {phone.assignedTo}
               </div>
-              
+
               {/* Assigned Agent ID */}
-              <div className="text-sm text-gray-900 flex-1">
+              <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
                 {phone.assignedAgentId ? (
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
                     {phone.assignedAgentId}
                   </span>
                 ) : (
-                  <span className="text-gray-400 text-xs">Not assigned</span>
+                  <span className="text-gray-400 dark:text-gray-500 text-xs">Not assigned</span>
                 )}
               </div>
               
@@ -526,13 +526,13 @@ const PhoneNumbersPage: React.FC = () => {
               </div>
               
               {/* Created Date */}
-              <div className="text-sm text-gray-500 flex-1">
+              <div className="text-sm text-gray-500 dark:text-gray-400 flex-1">
                 {phone.createdAt}
               </div>
-              
+
               {/* Action Icons */}
               <div className="flex items-center gap-2">
-                <button className="text-gray-600 hover:text-gray-800">
+                <button className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200 ease-out">
                   <MoreHorizontal className="w-4 h-4" />
                 </button>
               </div>
@@ -614,23 +614,23 @@ const PhoneNumbersPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                className="border border-gray-200 dark:border-[#1e1e24] rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ease-out"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-950/30 rounded-full flex items-center justify-center flex-shrink-0">
                       <Phone className="w-5 h-5 text-blue-600" />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-gray-900 truncate">{number.phone_number}</div>
-                      <div className="text-sm text-gray-600 truncate">
+                      <div className="font-semibold text-gray-900 dark:text-white truncate">{number.phone_number}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 truncate">
                         {[number.locality, number.region].filter(Boolean).join(', ') || 'N/A'}
                         {number.friendly_name ? ` \u2022 ${number.friendly_name}` : ''}
                       </div>
                     </div>
                   </div>
                   <div className="text-left sm:text-right flex items-center gap-3 sm:block">
-                    <div className="font-semibold text-gray-900">{number.monthly_cost}/mo</div>
+                    <div className="font-semibold text-gray-900 dark:text-white">{number.monthly_cost}/mo</div>
                     <PopButton color="blue" size="sm"
                       onClick={() => handlePurchaseNumber(number)}
                       disabled={purchasingNumber === number.phone_number}

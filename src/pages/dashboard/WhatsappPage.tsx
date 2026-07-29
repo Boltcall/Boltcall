@@ -682,7 +682,7 @@ const WhatsappPage: React.FC = () => {
           <MessageCircle className="w-5 h-5 text-green-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             WhatsApp
             {isConnected && <span className="w-2 h-2 rounded-full bg-green-500" title="Connected" />}
           </h1>
@@ -741,7 +741,7 @@ const WhatsappPage: React.FC = () => {
           )}
 
           {/* Enable / Disable */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Enable WhatsApp</p>
               <p className="text-xs text-gray-500 mt-0.5">Turn WhatsApp on or off for your workspace.</p>
@@ -753,7 +753,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* AI Auto-Reply */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">AI Auto-Reply</p>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -767,7 +767,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Qualify Leads */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Qualify Leads</p>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -781,7 +781,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Booking */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Booking</p>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -795,7 +795,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Response Tone */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-3">
             <div>
               <p className="text-sm font-medium text-gray-900">Response Tone</p>
               <p className="text-xs text-gray-500 mt-0.5">How the AI sounds when replying to leads.</p>
@@ -818,7 +818,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Business Hours */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-3">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-900">Business Hours Only</p>
@@ -870,7 +870,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Max AI messages */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-2">
             <p className="text-sm font-medium text-gray-900">Max AI Messages per Conversation</p>
             <p className="text-xs text-gray-500">
               After this many AI replies, new messages won't be auto-answered. Set between 1–20.
@@ -891,7 +891,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Greeting Template */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-2">
             <p className="text-sm font-medium text-gray-900">
               Greeting Message{' '}
               <span className="text-gray-400 font-normal text-xs">(optional)</span>
@@ -909,7 +909,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Out-of-Hours Message */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-2">
             <p className="text-sm font-medium text-gray-900">
               Out-of-Hours Message{' '}
               <span className="text-gray-400 font-normal text-xs">(optional)</span>
@@ -954,7 +954,7 @@ const WhatsappPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden min-h-[70vh]">
+          <div className="flex bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl overflow-hidden min-h-[70vh]">
             {/* Left: thread list */}
             <div className="w-80 border-r border-gray-200 flex flex-col">
               <div className="p-4 border-b border-gray-200">
@@ -1204,7 +1204,7 @@ const WhatsappPage: React.FC = () => {
           {!isConnected ? (
             <>
               {/* Credentials form */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+              <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-6 space-y-5">
                 <div>
                   <h2 className="text-base font-semibold text-gray-900">Connect WhatsApp Business API</h2>
                   <p className="text-sm text-gray-500 mt-1">
@@ -1337,7 +1337,7 @@ const WhatsappPage: React.FC = () => {
           ) : (
             <>
               {/* Connected status */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+              <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-6 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                     <Check className="w-4 h-4 text-green-600" />
@@ -1404,7 +1404,7 @@ const WhatsappPage: React.FC = () => {
               </div>
 
               {/* Test connection */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-3">
+              <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-6 space-y-3">
                 <h3 className="text-sm font-semibold text-gray-900">Test Connection</h3>
                 <p className="text-xs text-gray-500">Send a test WhatsApp message to verify your setup.</p>
                 <div className="flex gap-2">
@@ -1442,8 +1442,8 @@ const Toggle: React.FC<{ value: boolean; onChange: (v: boolean) => void }> = ({
   <button
     type="button"
     onClick={() => onChange(!value)}
-    className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
-      value ? 'bg-green-600' : 'bg-gray-300'
+    className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ease-out ${
+      value ? 'bg-green-600' : 'bg-gray-300 dark:bg-[#2a2a30]'
     }`}
     aria-pressed={value}
   >

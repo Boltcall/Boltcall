@@ -147,8 +147,8 @@ const WorkspacePage: React.FC = () => {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Workspace Settings</h1>
-        <p className="text-sm text-gray-500 mt-1">Configure your workspace identity and defaults</p>
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Workspace Settings</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Configure your workspace identity and defaults</p>
       </div>
 
       {/* Workspace Identity */}
@@ -156,32 +156,32 @@ const WorkspacePage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white rounded-lg border border-gray-200 p-4 md:p-6"
+        className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-4 md:p-6"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-blue-600" />
+          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-500/15 rounded-lg flex items-center justify-center">
+            <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900">Workspace Identity</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">Workspace Identity</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Workspace Name *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Workspace Name *</label>
             <input
               type="text"
               value={name}
               onChange={(e) => { setName(e.target.value); setIsDirty(true); }}
               disabled={!isAdmin}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-[#0e0e11] disabled:cursor-not-allowed"
               placeholder="My Workspace"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <div className="flex items-center gap-1.5">
-                <Globe className="w-4 h-4 text-gray-400" />
+                <Globe className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 Default Language
               </div>
             </label>
@@ -189,7 +189,7 @@ const WorkspacePage: React.FC = () => {
               value={language}
               onChange={(e) => { setLanguage(e.target.value); setIsDirty(true); }}
               disabled={!isAdmin}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-[#0e0e11]"
             >
               {LANGUAGES.map((lang) => (
                 <option key={lang.code} value={lang.code}>{lang.name}</option>
@@ -198,9 +198,9 @@ const WorkspacePage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-gray-400" />
+                <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 Default Timezone
               </div>
             </label>
@@ -208,7 +208,7 @@ const WorkspacePage: React.FC = () => {
               value={timezone}
               onChange={(e) => { setTimezone(e.target.value); setIsDirty(true); }}
               disabled={!isAdmin}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-[#0e0e11]"
             >
               {TIMEZONES.map((tz) => (
                 <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
@@ -217,9 +217,9 @@ const WorkspacePage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <div className="flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-gray-400" />
+                <Shield className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 Data Retention (days)
               </div>
             </label>
@@ -227,7 +227,7 @@ const WorkspacePage: React.FC = () => {
               value={retentionDays}
               onChange={(e) => { setRetentionDays(Number(e.target.value)); setIsDirty(true); }}
               disabled={!isAdmin}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-[#0e0e11]"
             >
               <option value={30}>30 days</option>
               <option value={60}>60 days</option>
@@ -246,24 +246,24 @@ const WorkspacePage: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white rounded-lg border border-red-200 p-4 md:p-6"
+          className="bg-white dark:bg-[#111114] rounded-lg border border-red-200 dark:border-red-500/30 p-4 md:p-6"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
+            <div className="w-10 h-10 bg-red-100 dark:bg-red-500/15 rounded-lg flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <h2 className="text-lg md:text-xl font-semibold text-gray-900">Danger Zone</h2>
-              <p className="text-sm text-gray-500 mt-0.5">Irreversible and destructive actions</p>
+              <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">Danger Zone</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Irreversible and destructive actions</p>
             </div>
           </div>
 
-          <div className="space-y-4 divide-y divide-red-100">
+          <div className="space-y-4 divide-y divide-red-100 dark:divide-red-500/20">
             {/* Transfer Ownership */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 first:pt-0">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Transfer Ownership</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Transfer workspace ownership to another admin</p>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Transfer Ownership</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Transfer workspace ownership to another admin</p>
               </div>
               <PopButton onClick={() => setShowTransferModal(true)}>
                 <ArrowRightLeft className="w-4 h-4 mr-2" />
@@ -274,8 +274,8 @@ const WorkspacePage: React.FC = () => {
             {/* Delete Workspace */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Delete Workspace</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Permanently delete this workspace and all its data</p>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Delete Workspace</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Permanently delete this workspace and all its data</p>
               </div>
               <PopButton color="red" onClick={() => setShowDeleteModal(true)}>
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -305,19 +305,19 @@ const WorkspacePage: React.FC = () => {
         }
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-amber-800">
+          <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">
               This will make the selected member the new owner. You will be downgraded to Admin.
               This action cannot be undone.
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">New Owner</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Owner</label>
             <select
               value={transferTarget}
               onChange={(e) => setTransferTarget(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select a member...</option>
               {nonOwnerMembers.map((m) => (
@@ -328,14 +328,14 @@ const WorkspacePage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Type <span className="font-semibold">TRANSFER</span> to confirm
             </label>
             <input
               type="text"
               value={transferConfirm}
               onChange={(e) => setTransferConfirm(e.target.value)}
-              className="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-red-300 dark:border-red-500/40 dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               placeholder="TRANSFER"
             />
           </div>

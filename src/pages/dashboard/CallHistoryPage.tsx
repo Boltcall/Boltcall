@@ -244,7 +244,7 @@ const CallHistoryPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border p-4">
+      <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border dark:border-[#1e1e24] p-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Search */}
           <div className="relative">
@@ -254,7 +254,7 @@ const CallHistoryPage: React.FC = () => {
               placeholder="Search calls..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-[#1e1e24] dark:bg-[#17171b] dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -262,7 +262,7 @@ const CallHistoryPage: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+            className="px-3 py-2 border border-gray-300 dark:border-[#1e1e24] dark:bg-[#17171b] dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
           >
             <option value="all" className="text-black">All Status</option>
             <option value="ended" className="text-black">Ended</option>
@@ -275,7 +275,7 @@ const CallHistoryPage: React.FC = () => {
           <select
             value={directionFilter}
             onChange={(e) => setDirectionFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+            className="px-3 py-2 border border-gray-300 dark:border-[#1e1e24] dark:bg-[#17171b] dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
           >
             <option value="all" className="text-black">All Directions</option>
             <option value="inbound" className="text-black">Inbound</option>
@@ -287,7 +287,7 @@ const CallHistoryPage: React.FC = () => {
             type="date"
             value={dateRange.start}
             onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-[#1e1e24] dark:bg-[#17171b] dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
 
           {/* End Date */}
@@ -295,13 +295,13 @@ const CallHistoryPage: React.FC = () => {
             type="date"
             value={dateRange.end}
             onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-[#1e1e24] dark:bg-[#17171b] dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Calls Table */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border dark:border-[#1e1e24] overflow-hidden">
         {loading ? (
           <CallHistorySkeleton />
         ) : error ? (
@@ -312,7 +312,7 @@ const CallHistoryPage: React.FC = () => {
             </div>
             <button
               onClick={fetchCallHistory}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blueDark transition-colors text-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-lg hover:bg-brand-blueDark transition-colors duration-200 ease-out text-sm"
             >
               <RefreshCw className="w-4 h-4" />
               Retry
@@ -321,12 +321,12 @@ const CallHistoryPage: React.FC = () => {
         ) : filteredCalls.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <Phone className="w-8 h-8 text-gray-400" />
-            <span className="ml-3 text-gray-600">No calls found</span>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">No calls found</span>
           </div>
         ) : (
           <>
             {/* Mobile Card View */}
-            <div className="md:hidden divide-y divide-gray-200">
+            <div className="md:hidden divide-y divide-gray-200 dark:divide-[#1e1e24]">
               {filteredCalls.map((call) => (
                 <motion.div
                   key={call.call_id}
@@ -336,7 +336,7 @@ const CallHistoryPage: React.FC = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gray-100 rounded-lg">
+                      <div className="p-2 bg-gray-100 dark:bg-[#17171b] rounded-lg">
                         {call.direction === 'inbound' ? (
                           <PhoneIncoming className="w-4 h-4 text-green-600" />
                         ) : (
@@ -344,10 +344,10 @@ const CallHistoryPage: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">
                           {call.call_id.slice(0, 8)}...
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-500">
                           {formatDate(call.start_timestamp)}
                         </p>
                       </div>
@@ -358,7 +358,7 @@ const CallHistoryPage: React.FC = () => {
                           setSelectedCall(call);
                           setShowDetailsModal(true);
                         }}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors duration-200 ease-out"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -367,7 +367,7 @@ const CallHistoryPage: React.FC = () => {
                           href={call.recording_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                          className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/40 rounded-lg transition-colors duration-200 ease-out"
                         >
                           <Play className="w-4 h-4" />
                         </a>
@@ -379,7 +379,7 @@ const CallHistoryPage: React.FC = () => {
                       {getStatusIcon(call.call_status)}
                       {call.call_status}
                     </span>
-                    <span className="text-sm text-gray-600 flex items-center gap-1">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {formatDuration(call.duration_ms)}
                     </span>
@@ -391,42 +391,42 @@ const CallHistoryPage: React.FC = () => {
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-[#17171b]">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Call Details
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Agent
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Duration
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Sentiment
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Quality
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-[#111114] divide-y divide-gray-200 dark:divide-[#1e1e24]">
                   {filteredCalls.map((call) => (
                     <motion.tr
                       key={call.call_id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="hover:bg-gray-50"
+                      className="hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gray-100 rounded-lg">
+                          <div className="p-2 bg-gray-100 dark:bg-[#17171b] rounded-lg">
                             {call.direction === 'inbound' ? (
                               <PhoneIncoming className="w-4 h-4 text-green-600" />
                             ) : (
@@ -444,8 +444,8 @@ const CallHistoryPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <p className="text-sm font-medium text-gray-900">{call.agent_name}</p>
-                        <p className="text-xs text-gray-500">{call.call_type}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{call.agent_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">{call.call_type}</p>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(call.call_status)}`}>
@@ -453,7 +453,7 @@ const CallHistoryPage: React.FC = () => {
                           {call.call_status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {formatDuration(call.duration_ms)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -468,7 +468,7 @@ const CallHistoryPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="group relative flex items-center gap-2">
                           <span className={`w-3 h-3 rounded-full ${getQualityDotColor(getCallQuality(call))}`} />
-                          <span className="text-xs text-gray-500">{getQualityLabel(getCallQuality(call))}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-500">{getQualityLabel(getCallQuality(call))}</span>
                           {call.call_analysis?.call_summary && (
                             <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 w-64">
                               <div className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg">
@@ -485,7 +485,7 @@ const CallHistoryPage: React.FC = () => {
                               setSelectedCall(call);
                               setShowDetailsModal(true);
                             }}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400 transition-colors duration-200 ease-out"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -494,7 +494,7 @@ const CallHistoryPage: React.FC = () => {
                               href={call.recording_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-green-600 hover:text-green-900"
+                              className="text-green-600 hover:text-green-900 dark:hover:text-green-400 transition-colors duration-200 ease-out"
                             >
                               <Play className="w-4 h-4" />
                             </a>
@@ -522,33 +522,33 @@ const CallHistoryPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Call Information */}
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-900">Call Information</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white">Call Information</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Call ID:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Call ID:</span>
                     <span className="font-mono">{selectedCall.call_id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Agent:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Agent:</span>
                     <span>{selectedCall.agent_name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Status:</span>
                     <span className={`px-2 py-1 rounded text-xs ${getStatusColor(selectedCall.call_status)}`}>
                       {selectedCall.call_status}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Duration:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Duration:</span>
                     <span>{formatDuration(selectedCall.duration_ms)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Start Time:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Start Time:</span>
                     <span>{formatDate(selectedCall.start_timestamp)}</span>
                   </div>
                   {selectedCall.end_timestamp && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">End Time:</span>
+                      <span className="text-gray-600 dark:text-gray-400">End Time:</span>
                       <span>{formatDate(selectedCall.end_timestamp)}</span>
                     </div>
                   )}
@@ -558,12 +558,12 @@ const CallHistoryPage: React.FC = () => {
               {/* Call Analysis */}
               {selectedCall.call_analysis && (
                 <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900">Call Analysis</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Call Analysis</h4>
                   <div className="space-y-3 text-sm">
                     {/* Sentiment Badge */}
                     {selectedCall.call_analysis.user_sentiment && (
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Sentiment:</span>
+                        <span className="text-gray-600 dark:text-gray-400">Sentiment:</span>
                         <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getSentimentColor(selectedCall.call_analysis.user_sentiment)}`}>
                           {selectedCall.call_analysis.user_sentiment === 'Positive' && <CheckCircle className="w-3 h-3" />}
                           {selectedCall.call_analysis.user_sentiment === 'Negative' && <XCircle className="w-3 h-3" />}
@@ -575,7 +575,7 @@ const CallHistoryPage: React.FC = () => {
 
                     {/* Successful Badge */}
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Successful:</span>
+                      <span className="text-gray-600 dark:text-gray-400">Successful:</span>
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
                         selectedCall.call_analysis.call_successful
                           ? 'text-green-700 bg-green-100'
@@ -599,7 +599,7 @@ const CallHistoryPage: React.FC = () => {
                       return (
                         <div className="mt-2">
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-gray-600 flex items-center gap-1">
+                            <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1">
                               <Shield className="w-3.5 h-3.5" />
                               Call Quality Score
                             </span>
@@ -608,9 +608,9 @@ const CallHistoryPage: React.FC = () => {
                             </span>
                           </div>
                           {quality !== 'unknown' && (
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="w-full bg-gray-200 dark:bg-[#1e1e24] rounded-full h-2">
                               <div
-                                className={`h-2 rounded-full ${bgMap[quality]} transition-all duration-500`}
+                                className={`h-2 rounded-full ${bgMap[quality]} transition-all duration-200 ease-out`}
                                 style={{ width: `${score}%` }}
                               />
                             </div>
@@ -626,12 +626,12 @@ const CallHistoryPage: React.FC = () => {
             {/* Post-Call Analysis Summary */}
             {selectedCall.call_analysis?.call_summary && (
               <div className="mt-6">
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-5">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border border-purple-200 dark:border-purple-900 rounded-lg p-5">
                   <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                    <h4 className="font-semibold text-gray-900">AI Call Summary</h4>
+                    <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <h4 className="font-semibold text-gray-900 dark:text-white">AI Call Summary</h4>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                     {selectedCall.call_analysis.call_summary}
                   </p>
                 </div>
@@ -647,17 +647,17 @@ const CallHistoryPage: React.FC = () => {
               return (
                 <div className="mt-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <Info className="w-5 h-5 text-blue-600" />
-                    <h4 className="font-semibold text-gray-900">Additional Analysis</h4>
+                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <h4 className="font-semibold text-gray-900 dark:text-white">Additional Analysis</h4>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {customKeys.map(key => {
                       const value = selectedCall.call_analysis![key];
                       const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                       return (
-                        <div key={key} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-                          <p className="text-sm text-gray-900">
+                        <div key={key} className="bg-gray-50 dark:bg-[#17171b] border border-gray-200 dark:border-[#1e1e24] rounded-lg p-3">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">{label}</p>
+                          <p className="text-sm text-gray-900 dark:text-gray-100">
                             {typeof value === 'boolean' ? (
                               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                                 value ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
@@ -682,9 +682,9 @@ const CallHistoryPage: React.FC = () => {
             {/* Transcript */}
             {selectedCall.transcript && (
               <div className="mt-6">
-                <h4 className="font-medium text-gray-900 mb-3">Transcript</h4>
-                <div className="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
-                  <pre className="text-sm text-gray-700 whitespace-pre-wrap">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">Transcript</h4>
+                <div className="bg-gray-50 dark:bg-[#17171b] rounded-lg p-4 max-h-60 overflow-y-auto">
+                  <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                     {selectedCall.transcript}
                   </pre>
                 </div>
@@ -694,7 +694,7 @@ const CallHistoryPage: React.FC = () => {
             {/* Recording */}
             {selectedCall.recording_url && (
               <div className="mt-6">
-                <h4 className="font-medium text-gray-900 mb-3">Recording</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">Recording</h4>
                 <audio controls className="w-full">
                   <source src={selectedCall.recording_url} type="audio/wav" />
                   Your browser does not support the audio element.

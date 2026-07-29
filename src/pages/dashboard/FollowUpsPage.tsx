@@ -432,8 +432,8 @@ const FollowUpsContent: React.FC = () => {
             <RotateCw className="w-4 h-4 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Follow-Up Sequences</h2>
-            <p className="text-sm text-gray-600">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Follow-Up Sequences</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Automate SMS and email follow-ups for your leads
             </p>
           </div>
@@ -451,7 +451,7 @@ const FollowUpsContent: React.FC = () => {
               <ChevronDown className="w-3 h-3" />
             </PopButton>
             {templateDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-50 py-1">
+              <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl shadow-lg z-50 py-1">
                 {[
                   { type: 'missed_call' as const, label: 'Missed Call', icon: '📞' },
                   { type: 'website_no_answer' as const, label: 'Website Form', icon: '🌐' },
@@ -465,7 +465,7 @@ const FollowUpsContent: React.FC = () => {
                       setModalOpen(true);
                       setTemplateDropdownOpen(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#17171b] flex items-center gap-2 transition-colors duration-200 ease-out"
                   >
                     <span>{icon}</span>
                     {label}
@@ -498,12 +498,12 @@ const FollowUpsContent: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm"
+          className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm"
         >
           <div className="text-center py-16 px-6">
             <AlertCircle className="w-10 h-10 mx-auto mb-3 text-red-500" />
-            <p className="text-lg font-medium text-gray-700 mb-2">Unable to load sequences</p>
-            <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">{fetchError}</p>
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">Unable to load sequences</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 max-w-md mx-auto mb-6">{fetchError}</p>
             <PopButton color="blue" onClick={fetchSequences} className="gap-2">
               <RefreshCw className="w-4 h-4" />
               Retry
@@ -517,14 +517,14 @@ const FollowUpsContent: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm"
+          className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm"
         >
           <div className="text-center py-16 px-6">
-            <RotateCw className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium text-gray-700 mb-2">
+            <RotateCw className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">
               No follow-up sequences yet
             </p>
-            <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
+            <p className="text-sm text-gray-500 dark:text-gray-500 max-w-md mx-auto mb-6">
               Create your first sequence to automatically follow up with leads via
               SMS or email after missed calls, completed appointments, or new lead
               events.
@@ -553,18 +553,18 @@ const FollowUpsContent: React.FC = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ease-out cursor-pointer"
               onClick={() => openEnrollments(seq)}
             >
               <div className="p-4 sm:p-5 flex items-center justify-between gap-2">
                 {/* Left side */}
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <RotateCw className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <RotateCw className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-gray-900 truncate">
+                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                         {seq.name}
                       </h3>
                       <span
@@ -575,7 +575,7 @@ const FollowUpsContent: React.FC = () => {
                         {TRIGGER_OPTIONS.find((t) => t.value === seq.trigger_event)?.label}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
                       <span>{seq.step_count ?? 0} step{seq.step_count !== 1 ? 's' : ''}</span>
                       <span className="flex items-center gap-1">
                         <Users className="w-3.5 h-3.5" />
@@ -593,8 +593,8 @@ const FollowUpsContent: React.FC = () => {
                   {/* Active toggle */}
                   <button
                     onClick={() => toggleActive(seq)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      seq.is_active ? 'bg-blue-600' : 'bg-gray-300'
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-out ${
+                      seq.is_active ? 'bg-blue-600' : 'bg-gray-300 dark:bg-[#2a2a30]'
                     }`}
                     title={seq.is_active ? 'Active — click to pause' : 'Paused — click to activate'}
                   >
@@ -612,7 +612,7 @@ const FollowUpsContent: React.FC = () => {
                       setTemplateType(null);
                       setModalOpen(true);
                     }}
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200 ease-out"
                     title="Edit sequence"
                   >
                     <Pencil className="w-4 h-4" />
@@ -626,7 +626,7 @@ const FollowUpsContent: React.FC = () => {
                       }
                     }}
                     disabled={deletingId === seq.id}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 ease-out disabled:opacity-50"
                     title="Delete sequence"
                   >
                     {deletingId === seq.id ? (
@@ -914,17 +914,17 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
         className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-10 px-4"
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-200"
+          className="bg-white dark:bg-[#111114] rounded-2xl shadow-2xl w-full max-w-3xl border border-gray-200 dark:border-[#1e1e24]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#17171b]">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               {isEdit ? 'Edit Sequence' : 'Create Sequence'}
             </h3>
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-200 dark:hover:bg-[#17171b] rounded-lg transition-colors duration-200 ease-out"
             >
               <X className="w-5 h-5" />
             </button>
@@ -933,7 +933,7 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
           <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Sequence Name
               </label>
               <input
@@ -941,20 +941,20 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Missed Call Follow-Up"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#1e1e24] bg-white dark:bg-[#0e0e11] text-gray-900 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
 
             {/* Trigger */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Trigger Event
               </label>
               <div className="relative">
                 <select
                   value={trigger}
                   onChange={(e) => handleTriggerChange(e.target.value as Sequence['trigger_event'])}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[#1e1e24] rounded-lg text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white dark:bg-[#0e0e11]"
                 >
                   {TRIGGER_OPTIONS.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -1068,7 +1068,7 @@ const SequenceModal: React.FC<SequenceModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-[#17171b]">
             <PopButton
               onClick={onClose}
               size="sm"
@@ -1122,12 +1122,12 @@ const StepEditor: React.FC<StepEditorProps> = ({
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl p-4 bg-gray-50 relative">
+    <div className="border border-gray-200 dark:border-[#1e1e24] rounded-xl p-4 bg-gray-50 dark:bg-[#17171b] relative">
       {/* Step header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <GripVertical className="w-4 h-4 text-gray-300" />
-          <span className="text-sm font-semibold text-gray-700">Step {index + 1}</span>
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Step {index + 1}</span>
         </div>
         {canRemove && (
           <button
@@ -1143,7 +1143,7 @@ const StepEditor: React.FC<StepEditorProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         {/* Channel */}
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Channel</label>
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Channel</label>
           <div className="flex gap-2">
             <button
               onClick={() => onChange({ channel: 'sms' })}
@@ -1183,7 +1183,7 @@ const StepEditor: React.FC<StepEditorProps> = ({
 
         {/* Delay */}
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
             Wait before sending
           </label>
           <div className="flex gap-2">
@@ -1214,7 +1214,7 @@ const StepEditor: React.FC<StepEditorProps> = ({
       {/* Subject (email only) */}
       {step.channel === 'email' && (
         <div className="mb-3">
-          <label className="block text-xs font-medium text-gray-500 mb-1">
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
             Subject Line
           </label>
           <input
@@ -1237,7 +1237,7 @@ const StepEditor: React.FC<StepEditorProps> = ({
         </div>
       ) : (
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
             Message Template
           </label>
           <textarea
@@ -1295,12 +1295,12 @@ const EnrollmentsPanel: React.FC<EnrollmentsPanelProps> = ({
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={onBack}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-200 dark:hover:bg-[#17171b] rounded-lg transition-colors duration-200 ease-out flex-shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="min-w-0">
-            <h2 className="text-xl font-semibold text-gray-900 truncate">{sequence.name}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white truncate">{sequence.name}</h2>
             <div className="flex items-center gap-2 mt-0.5">
               <span
                 className={`px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -1309,7 +1309,7 @@ const EnrollmentsPanel: React.FC<EnrollmentsPanelProps> = ({
               >
                 {TRIGGER_OPTIONS.find((t) => t.value === sequence.trigger_event)?.label}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
                 {enrollments.length} enrollment{enrollments.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -1334,12 +1334,12 @@ const EnrollmentsPanel: React.FC<EnrollmentsPanelProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm"
+          className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm"
         >
           <div className="text-center py-16 px-6">
-            <Users className="w-14 h-14 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium text-gray-700 mb-2">No enrollments yet</p>
-            <p className="text-sm text-gray-500 max-w-md mx-auto">
+            <Users className="w-14 h-14 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+            <p className="text-lg font-medium text-gray-700 dark:text-gray-200 mb-2">No enrollments yet</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 max-w-md mx-auto">
               Contacts will appear here when they are enrolled in this sequence — either
               automatically via the trigger or manually by you.
             </p>
@@ -1349,33 +1349,33 @@ const EnrollmentsPanel: React.FC<EnrollmentsPanelProps> = ({
 
       {/* Enrollment list */}
       {!loading && enrollments.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm overflow-x-auto">
           <table className="w-full text-sm min-w-[600px]">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Contact</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Phone / Email</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Step</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Status</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Enrolled</th>
-                <th className="text-right px-5 py-3 font-medium text-gray-500"></th>
+              <tr className="border-b border-gray-100 dark:border-[#17171b] bg-gray-50 dark:bg-[#17171b]">
+                <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Contact</th>
+                <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Phone / Email</th>
+                <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Step</th>
+                <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
+                <th className="text-left px-5 py-3 font-medium text-gray-500 dark:text-gray-400">Enrolled</th>
+                <th className="text-right px-5 py-3 font-medium text-gray-500 dark:text-gray-400"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-[#17171b]">
               {enrollments.map((en) => (
                 <motion.tr
                   key={en.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="hover:bg-gray-50"
+                  className="hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out"
                 >
-                  <td className="px-5 py-3 font-medium text-gray-900">
+                  <td className="px-5 py-3 font-medium text-gray-900 dark:text-white">
                     {en.contact_name || '—'}
                   </td>
-                  <td className="px-5 py-3 text-gray-600">
+                  <td className="px-5 py-3 text-gray-600 dark:text-gray-400">
                     {en.contact_phone || en.contact_email || '—'}
                   </td>
-                  <td className="px-5 py-3 text-gray-600">{en.current_step}</td>
+                  <td className="px-5 py-3 text-gray-600 dark:text-gray-400">{en.current_step}</td>
                   <td className="px-5 py-3">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -1385,14 +1385,14 @@ const EnrollmentsPanel: React.FC<EnrollmentsPanelProps> = ({
                       {en.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-gray-500">
+                  <td className="px-5 py-3 text-gray-500 dark:text-gray-500">
                     {new Date(en.enrolled_at).toLocaleDateString()}
                   </td>
                   <td className="px-5 py-3 text-right">
                     {en.status === 'active' && (
                       <button
                         onClick={() => onCancel(en)}
-                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 ease-out"
                         title="Cancel enrollment"
                       >
                         <XCircle className="w-4 h-4" />
@@ -1487,15 +1487,15 @@ const EnrollModal: React.FC<EnrollModalProps> = ({
         className="fixed inset-0 z-50 flex items-center justify-center px-4"
       >
         <div
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-gray-200"
+          className="bg-white dark:bg-[#111114] rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-[#1e1e24]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900">Manual Enroll</h3>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#17171b]">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Manual Enroll</h3>
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:text-gray-200 dark:hover:bg-[#17171b] rounded-lg transition-colors duration-200 ease-out"
             >
               <X className="w-5 h-5" />
             </button>
@@ -1503,7 +1503,7 @@ const EnrollModal: React.FC<EnrollModalProps> = ({
 
           <div className="px-6 py-5 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Contact Name *
               </label>
               <input
@@ -1511,11 +1511,11 @@ const EnrollModal: React.FC<EnrollModalProps> = ({
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="John Smith"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#1e1e24] bg-white dark:bg-[#0e0e11] text-gray-900 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Phone Number
               </label>
               <input
@@ -1523,11 +1523,11 @@ const EnrollModal: React.FC<EnrollModalProps> = ({
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
                 placeholder="+1 555 123 4567"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#1e1e24] bg-white dark:bg-[#0e0e11] text-gray-900 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email Address
               </label>
               <input
@@ -1535,13 +1535,13 @@ const EnrollModal: React.FC<EnrollModalProps> = ({
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 placeholder="john@example.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#1e1e24] bg-white dark:bg-[#0e0e11] text-gray-900 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-[#17171b]">
             <PopButton
               onClick={onClose}
               size="sm"

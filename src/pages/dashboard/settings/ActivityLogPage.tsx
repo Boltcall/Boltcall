@@ -144,8 +144,8 @@ const ActivityLogPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Activity Log</h1>
-          <p className="text-sm text-gray-500 mt-1">Track all actions across your workspace</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Activity Log</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Track all actions across your workspace</p>
         </div>
         <div className="flex items-center gap-2">
           <PopButton onClick={handleExportCSV}>
@@ -165,13 +165,13 @@ const ActivityLogPage: React.FC = () => {
 
       {/* Search bar */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
           placeholder="Search activity logs..."
-          className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-9 pr-3 py-2.5 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
 
@@ -181,15 +181,15 @@ const ActivityLogPage: React.FC = () => {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="bg-white border border-gray-200 rounded-lg p-4"
+          className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg p-4"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">User</label>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">User</label>
               <select
                 value={filterUser}
                 onChange={(e) => { setFilterUser(e.target.value); setPage(0); }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All users</option>
                 {members.map((m) => (
@@ -200,11 +200,11 @@ const ActivityLogPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Action Type</label>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Action Type</label>
               <select
                 value={filterAction}
                 onChange={(e) => { setFilterAction(e.target.value); setPage(0); }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">All actions</option>
                 {ALL_ACTIONS.map((a) => (
@@ -213,27 +213,27 @@ const ActivityLogPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">From Date</label>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">From Date</label>
               <input
                 type="date"
                 value={filterDateFrom}
                 onChange={(e) => { setFilterDateFrom(e.target.value); setPage(0); }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">To Date</label>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">To Date</label>
               <input
                 type="date"
                 value={filterDateTo}
                 onChange={(e) => { setFilterDateTo(e.target.value); setPage(0); }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
           {hasActiveFilters && (
             <div className="mt-3 flex justify-end">
-              <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+              <button onClick={clearFilters} className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors duration-200 ease-out">
                 Clear all filters
               </button>
             </div>
@@ -242,28 +242,28 @@ const ActivityLogPage: React.FC = () => {
       )}
 
       {/* ─── Activity List ──────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg overflow-hidden">
         {activityLogsLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
           </div>
         ) : activityLogsError ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-            <p className="text-sm text-red-600">Couldn't load activity. {activityLogsError}</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-red-600 dark:text-red-400">Couldn't load activity. {activityLogsError}</p>
             <button
               onClick={loadLogs}
-              className="mt-3 rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+              className="mt-3 rounded-md border border-gray-300 dark:border-[#2a2a30] px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out"
             >
               Retry
             </button>
           </div>
         ) : activityLogs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+          <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500">
             <Clock className="w-10 h-10 mb-3" />
             <p className="text-sm">No activity logged yet</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-[#17171b]">
             {activityLogs.map((log, i) => {
               const colorCls = ACTIVITY_ACTION_COLORS[log.action as ActivityAction] || 'text-gray-600 bg-gray-50';
               const icon = ACTION_ICONS[log.action as ActivityAction] || <Settings className="w-4 h-4" />;
@@ -275,25 +275,25 @@ const ActivityLogPage: React.FC = () => {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.02 }}
-                  className="flex items-start gap-3 sm:gap-4 px-3 sm:px-5 py-3.5 hover:bg-gray-50 transition-colors"
+                  className="flex items-start gap-3 sm:gap-4 px-3 sm:px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out"
                 >
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${colorCls}`}>
                     {icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {log.user_name || log.user_email?.split('@')[0] || 'System'}
                       </span>
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${colorCls}`}>
                         {label}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-0.5">{log.details}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{log.details}</p>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-gray-400">{formatTimestamp(log.created_at)}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{formatTimestamp(log.created_at)}</span>
                       {log.ip_address && (
-                        <span className="text-xs text-gray-400">IP: {log.ip_address}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">IP: {log.ip_address}</span>
                       )}
                     </div>
                   </div>
@@ -305,25 +305,25 @@ const ActivityLogPage: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 sm:px-5 py-3 border-t border-gray-200 bg-gray-50">
-            <span className="text-xs sm:text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-3 sm:px-5 py-3 border-t border-gray-200 dark:border-[#1e1e24] bg-gray-50 dark:bg-[#17171b]">
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, activityLogsTotalCount)} of {activityLogsTotalCount}
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="p-1.5 hover:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-1.5 hover:bg-gray-200 dark:hover:bg-[#1e1e24] rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200 ease-out"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 Page {page + 1} of {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
-                className="p-1.5 hover:bg-gray-200 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-1.5 hover:bg-gray-200 dark:hover:bg-[#1e1e24] rounded disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200 ease-out"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

@@ -223,16 +223,16 @@ const PlanBillingPage: React.FC = () => {
   return (
     <div className="space-y-4 md:space-y-6 px-1 md:px-0">
       {/* Secondary Tabs — like Instantly's "Email Outreach / Credits / CRM" row */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-[#1e1e24]">
         <nav className="-mb-px flex gap-4 md:gap-6">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`pb-3 text-sm font-medium transition-colors ${
+              className={`pb-3 text-sm font-medium transition-colors duration-200 ease-out ${
                 activeTab === tab.id
-                  ? 'text-gray-900 border-b-2 border-gray-900'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {tab.label}
@@ -245,24 +245,24 @@ const PlanBillingPage: React.FC = () => {
       {activeTab === 'plan' && (
         <div className="space-y-6">
           {changeError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-lg border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
               {changeError}
             </div>
           )}
           {/* Current Plan Card */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">{t('plan.currentPlan')}</h3>
-            <div className="border-t border-gray-100 pt-4 md:pt-5">
+          <div className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-4 md:p-6">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">{t('plan.currentPlan')}</h3>
+            <div className="border-t border-gray-100 dark:border-[#17171b] pt-4 md:pt-5">
               <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between md:gap-6">
                 {/* Plan name + price */}
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-gray-800 dark:bg-white/10 flex items-center justify-center">
                     <Zap className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-base font-semibold text-gray-900">{currentPlan.name}</p>
-                    <p className="text-gray-600 text-sm">
-                      <span className="font-semibold text-gray-900">
+                    <p className="text-base font-semibold text-gray-900 dark:text-white">{currentPlan.name}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      <span className="font-semibold text-gray-900 dark:text-white">
                         ${currentInterval === 'yearly'
                           ? Math.round(currentPlan.price.yearly / 12)
                           : currentPlan.price.monthly}
@@ -275,32 +275,32 @@ const PlanBillingPage: React.FC = () => {
                 {/* Primary usage metric */}
                 <div className="w-full md:flex-1 md:min-w-[200px] md:max-w-xs">
                   <div className="flex items-baseline justify-between mb-1.5">
-                    <span className="text-sm text-gray-700">{t('plan.aiConversations')}</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('plan.aiConversations')}</span>
                     <span className="text-sm">
-                      <span className={usageOver90 ? 'text-red-600 font-semibold' : 'text-blue-600 font-semibold'}>
+                      <span className={usageOver90 ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-blue-600 dark:text-blue-400 font-semibold'}>
                         {usageUsed.toLocaleString()}
                       </span>
                       {' / '}
-                      <span className={usageOver90 ? 'text-red-600 font-semibold' : 'text-blue-600 font-semibold'}>
+                      <span className={usageOver90 ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-blue-600 dark:text-blue-400 font-semibold'}>
                         {usageLimit.toLocaleString()}
                       </span>
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="w-full bg-gray-200 dark:bg-[#17171b] rounded-full h-1.5">
                     <div
-                      className={`h-1.5 rounded-full transition-all ${
+                      className={`h-1.5 rounded-full transition-all duration-200 ease-out ${
                         usageOver90 ? 'bg-red-500' : 'bg-blue-500'
                       }`}
                       style={{ width: `${usagePct}%` }}
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {t('plan.addCapacity')}
                   </p>
                 </div>
 
                 {/* Billing cycle */}
-                <div className="text-left md:text-right text-sm text-gray-600">
+                <div className="text-left md:text-right text-sm text-gray-600 dark:text-gray-400">
                   <p>Billed {currentInterval === 'yearly' ? 'Annually' : 'Monthly'}</p>
                   {subscription?.current_period_end && (
                     <p>Renews {formatDate(subscription.current_period_end)}</p>
@@ -330,7 +330,7 @@ const PlanBillingPage: React.FC = () => {
                 >
                   Switch to annual
                 </PopButton>
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800">
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 dark:bg-amber-500/15 text-amber-800 dark:text-amber-300">
                   Save 20%
                 </span>
               </div>
@@ -338,7 +338,7 @@ const PlanBillingPage: React.FC = () => {
 
             {/* Manage Subscription (portal: update payment, cancel, etc.) */}
             {subscription && (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-3">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#17171b] flex items-center gap-3">
                 <PopButton
                   color="default"
                   size="sm"
@@ -371,7 +371,7 @@ const PlanBillingPage: React.FC = () => {
                     </span>
                   )}
                 </PopButton>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   Update payment method, cancel, or change plan
                 </span>
               </div>
@@ -381,8 +381,8 @@ const PlanBillingPage: React.FC = () => {
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Live PayPal test payment</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Live PayPal test payment</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       Creates a real $2.00 PayPal order, returns here, captures it, and logs it in Boltcall.
                     </p>
                   </div>
@@ -422,10 +422,10 @@ const PlanBillingPage: React.FC = () => {
                   <p
                     className={`mt-3 text-xs ${
                       paypalTestStatus.type === 'success'
-                        ? 'text-green-700'
+                        ? 'text-green-700 dark:text-green-400'
                         : paypalTestStatus.type === 'error'
-                        ? 'text-red-700'
-                        : 'text-gray-600'
+                        ? 'text-red-700 dark:text-red-400'
+                        : 'text-gray-600 dark:text-gray-400'
                     }`}
                   >
                     {paypalTestStatus.message}
@@ -436,9 +436,9 @@ const PlanBillingPage: React.FC = () => {
           </div>
 
           {/* Usage Overview */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Plan Usage</h3>
-            <div className="border-t border-gray-100 pt-5 space-y-5">
+          <div className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-4 md:p-6">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Plan Usage</h3>
+            <div className="border-t border-gray-100 dark:border-[#17171b] pt-5 space-y-5">
               {usageItems.map((item) => {
                 const pct = item.limit > 0 ? Math.min((item.used / item.limit) * 100, 100) : item.used > 0 ? 100 : 0;
                 const isHigh = pct >= 90;
@@ -447,12 +447,12 @@ const PlanBillingPage: React.FC = () => {
                 return (
                   <div key={item.label}>
                     <div className="flex items-baseline justify-between mb-1.5">
-                      <span className="text-sm text-gray-700">{item.label}</span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{item.label}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {item.used.toLocaleString()} / {item.limit.toLocaleString()}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div className="w-full bg-gray-200 dark:bg-[#17171b] rounded-full h-1.5">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
@@ -469,9 +469,9 @@ const PlanBillingPage: React.FC = () => {
           </div>
 
           {/* Available Plans */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Available Plans</h3>
-            <div className="border-t border-gray-100 pt-5">
+          <div className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-4 md:p-6">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Available Plans</h3>
+            <div className="border-t border-gray-100 dark:border-[#17171b] pt-5">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {(['starter', 'pro', 'ultimate'] as PlanLevel[]).map((level) => {
                   const plan = planDetails[level];
@@ -481,10 +481,10 @@ const PlanBillingPage: React.FC = () => {
                   return (
                     <div
                       key={level}
-                      className={`relative rounded-lg border p-5 ${
+                      className={`relative rounded-lg border p-5 transition-colors duration-200 ease-out ${
                         isCurrent
-                          ? 'border-blue-500 bg-blue-50/40'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-500/10'
+                          : 'border-gray-200 dark:border-[#1e1e24] hover:border-gray-300 dark:hover:border-[#2a2a30]'
                       }`}
                     >
                       {isPopular && !isCurrent && (
@@ -498,19 +498,19 @@ const PlanBillingPage: React.FC = () => {
                         </span>
                       )}
 
-                      <p className="text-sm font-semibold text-gray-900 mt-1">{plan.name}</p>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white mt-1">{plan.name}</p>
                       <p className="mt-2">
-                        <span className="text-2xl font-bold text-gray-900">
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white">
                           ${currentInterval === 'yearly' ? Math.round(plan.price.yearly / 12) : plan.price.monthly}
                         </span>
-                        <span className="text-gray-500 text-sm"> /mo</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm"> /mo</span>
                       </p>
 
                       {/* Token Allocation */}
                       {TOKEN_PLANS[level as keyof typeof TOKEN_PLANS] && (
-                        <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
+                        <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                           <Coins className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="font-semibold text-gray-900">
+                          <span className="font-semibold text-gray-900 dark:text-white">
                             {TOKEN_PLANS[level as keyof typeof TOKEN_PLANS].monthlyTokens.toLocaleString()}
                           </span>
                           {' '}tokens/mo
@@ -547,45 +547,45 @@ const PlanBillingPage: React.FC = () => {
 
       {/* ── Payment & Invoices Tab ── */}
       {activeTab === 'invoices' && (
-        <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Billing History</h3>
+        <div className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-3 md:p-6">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Billing History</h3>
 
           {invoices.length === 0 ? (
-            <div className="text-center py-12 border-t border-gray-100">
-              <CreditCard className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm">No invoices yet</p>
-              <p className="text-xs text-gray-400 mt-1">
+            <div className="text-center py-12 border-t border-gray-100 dark:border-[#17171b]">
+              <CreditCard className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No invoices yet</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Invoices will appear here after your first payment
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto border-t border-gray-100">
+            <div className="overflow-x-auto border-t border-gray-100 dark:border-[#17171b]">
               <table className="w-full min-w-[480px]">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <tr className="border-b border-gray-200 dark:border-[#1e1e24]">
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {invoices.map((invoice) => (
-                    <tr key={invoice.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                      <td className="py-3 px-4 text-sm text-gray-600">
+                    <tr key={invoice.id} className="border-b border-gray-50 dark:border-[#17171b] hover:bg-gray-50/50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out">
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                         {formatDate(invoice.created_at)}
                       </td>
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white">
                         {formatAmount(invoice.amount_paid, invoice.currency)}
                       </td>
                       <td className="py-3 px-4">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                             invoice.status === 'paid'
-                              ? 'bg-green-50 text-green-700'
+                              ? 'bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300'
                               : invoice.status === 'open'
-                              ? 'bg-amber-50 text-amber-700'
-                              : 'bg-gray-100 text-gray-600'
+                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+                              : 'bg-gray-100 text-gray-600 dark:bg-[#17171b] dark:text-gray-400'
                           }`}
                         >
                           {invoice.status === 'paid' && <CheckCircle className="w-3 h-3" />}
@@ -599,7 +599,7 @@ const PlanBillingPage: React.FC = () => {
                               href={invoice.invoice_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-700 text-xs flex items-center gap-1"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs flex items-center gap-1 transition-colors duration-200 ease-out"
                             >
                               <ExternalLink className="w-3 h-3" />
                               View
@@ -610,7 +610,7 @@ const PlanBillingPage: React.FC = () => {
                               href={invoice.invoice_pdf}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-700 text-xs flex items-center gap-1"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs flex items-center gap-1 transition-colors duration-200 ease-out"
                             >
                               <Download className="w-3 h-3" />
                               PDF
