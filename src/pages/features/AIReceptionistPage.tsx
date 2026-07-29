@@ -365,6 +365,21 @@ const AIReceptionistPage: React.FC = () => {
                   </Link>
                   .
                 </p>
+                <p className="text-gray-600 leading-relaxed mt-3">
+                  Vertical-specific category pages:{' '}
+                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/dentist-answering-service">
+                    dentist answering service
+                  </Link>
+                  ,{' '}
+                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/lawyer-answering-service">
+                    lawyer answering service
+                  </Link>
+                  , and{' '}
+                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/medspa-answering-service">
+                    med spa answering service
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
           </motion.div>

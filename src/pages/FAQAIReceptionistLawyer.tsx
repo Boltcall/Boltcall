@@ -513,6 +513,17 @@ const FAQAIReceptionistLawyer: React.FC = () => {
           </div>
         </div>
       </section>
+      <section className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-sm text-gray-600">
+            Ready to see the category page?{' '}
+            <Link to="/industries/lawyer-answering-service" className="font-semibold text-blue-700 hover:underline">
+              Lawyer answering service
+            </Link>{' '}
+            covers the full buyer view.
+          </p>
+        </div>
+      </section>
       <Footer />
     </>
   );
