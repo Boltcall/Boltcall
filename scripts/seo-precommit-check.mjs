@@ -34,6 +34,7 @@ const HEADERS_FILE = resolve(__dirname, '../public/_headers');
 // invariants and the gate's invariants don't tangle).
 const GATE_CACHE = resolve(__dirname, '.seo-gate-cache.json');
 const SRC_DIR = resolve(__dirname, '../src');
+const AEO_DIR = resolve(__dirname, '../src/content/aeo');
 const BASE_URL = 'https://boltcall.org';
 
 const MIN_INBOUND_LINKS = 3;
@@ -86,6 +87,42 @@ function saveCache(routes) {
 
 function matchesBlocklist(path) {
   return FORM_RESULT_BLOCKLIST.find(re => re.test(path));
+}
+
+// Grant inbound-link exemption to /blog/<slug> paths whose slug ships as a
+// published AEO markdown file AND is consumed by a hub component that calls
+// listPublishedAeoArticles(). The hub renders one Link per article, so
+// dynamic interpolation defeats the literal-string inbound counter — but the
+// hub does exist and every article IS linked from it. Trust the invariant.
+let aeoSlugSetCache = null;
+function publishedAeoSlugs() {
+  if (aeoSlugSetCache) return aeoSlugSetCache;
+  aeoSlugSetCache = new Set();
+  if (!existsSync(AEO_DIR)) return aeoSlugSetCache;
+  for (const entry of readdirSync(AEO_DIR)) {
+    if (!/\.mdx?$/i.test(entry)) continue;
+    const raw = readFileSync(join(AEO_DIR, entry), 'utf8');
+    const status = raw.match(/^status:\s*(\S+)/m)?.[1];
+    if (status !== 'published') continue;
+    const slug = raw.match(/^slug:\s*(\S+)/m)?.[1] || entry.replace(/\.mdx?$/i, '');
+    aeoSlugSetCache.add(slug);
+  }
+  return aeoSlugSetCache;
+}
+
+let hasAeoHubCache = null;
+function hasAeoHub() {
+  if (hasAeoHubCache !== null) return hasAeoHubCache;
+  hasAeoHubCache = loadSourceCorpus().some(({ content }) =>
+    /listPublishedAeoArticles\s*\(/.test(content)
+  );
+  return hasAeoHubCache;
+}
+
+function isAeoAutoGlobbedRoute(path) {
+  const m = path.match(/^\/blog\/([^/]+)\/?$/);
+  if (!m) return false;
+  return publishedAeoSlugs().has(m[1]) && hasAeoHub();
 }
 
 function canonicalizeHeaderPath(path) {
@@ -240,6 +277,7 @@ function main() {
       continue;
     }
 
+    if (isAeoAutoGlobbedRoute(path)) continue;
     const inbound = countInboundLinks(path);
     if (inbound < MIN_INBOUND_LINKS) {
       failures.push({

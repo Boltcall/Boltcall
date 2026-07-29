@@ -2,6 +2,17 @@
   publish = "dist"
   command = "npm run build:prerender"
 
+# Security headers — applied to every route. Keep in sync with any CSP
+# expectations added by future integrations (Retell embed, PostHog, Stripe).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "camera=(), microphone=(self), geolocation=(), payment=(self), fullscreen=(self)"
+
 # Service worker must not be cached by browser/CDN
 [[headers]]
   for = "/sw.js"
@@ -131,6 +142,11 @@
 [functions."agent-self-heal"]
   timeout = 300
 
+# create_full chains up to 11 sequential external calls (scrape, LLM prompt-gen,
+# Retell agent/LLM create, Cekura register+evaluators, Supabase writes) — can exceed default cap.
+[functions."retell-agents"]
+  timeout = 300
+
 # Run message dispatcher every 5 minutes to process due scheduled_messages
 [functions."message-dispatcher"]
   schedule = "*/5 * * * *"
@@ -146,6 +162,23 @@
 # Send daily lead summary email to all active users at 07:00 UTC (10 AM Israel / 3 AM EST)
 [functions."daily-lead-summary"]
   schedule = "0 7 * * *"
+
+[functions."daily-seo-aeo-runner"]
+  schedule = "30 6 * * *"
+[functions."weekly-seo-aeo-runner"]
+  schedule = "45 6 * * 1"
+# Auto-deploy: 07:00 daily (after daily-seo-aeo-runner @ 06:30 commits new
+# content, before seo-coverage-monitor @ 07:12 audits live). Compares
+# origin/main HEAD sha to last-deployed commit_ref; if different, POSTs to
+# Netlify build API to trigger a deploy. Closes the loop for a repo with
+# no auto-deploy webhook. Requires NETLIFY_AUTH_TOKEN env var.
+[functions."content-deploy-trigger"]
+  schedule = "0 7 * * *"
+# Daily live audit: sitemap freshness + sample /blog/* canonicals.
+# Alerts via Telegram when new AEO content isn't reaching Google
+# (SPA shell served or sitemap stale).
+[functions."seo-coverage-monitor"]
+  schedule = "12 7 * * *"
 
 # ─── Agency OS scheduled functions (Phase F — Layer 2 backbone) ─────────────
 # Backbone for the n8n workflows. n8n is the orchestration ergonomic; these
@@ -175,6 +208,11 @@
 [functions."agency-cron-hourly-monitor"]
   schedule = "@hourly"
 
+# Customer incident notification (Legal Shield Phase 5) — every hour, emails
+# a customer when their agent has 3+ technical call failures in the last hour.
+[functions."customer-incident-notify"]
+  schedule = "@hourly"
+
 # Post-ship critic with auto-revert — every 15 minutes. The window-end check
 # is the gate; most ticks see 0–3 candidates.
 [functions."agency-post-ship-watcher"]
@@ -189,6 +227,17 @@
 # NEVER edits BENCHMARK.md directly (human review required).
 [functions."agency-cron-benchmark-curation"]
   schedule = "0 4 * * 0"
+
+# Objection miner — Mondays 08:00 UTC. Clusters last week's lost-call
+# objections per workspace and files one prompt fix into the approval queue.
+[functions."objection-miner"]
+  schedule = "0 8 * * 1"
+
+# Shadow monitor — every 4h. Evaluates shadowing prompt versions and
+# auto-promotes/reverts. Was documented as "every 4h" but never scheduled;
+# without this the shadow FSM silently never resolves.
+[functions."retell-shadow-monitor"]
+  schedule = "0 */4 * * *"
 
 # Netlify handles /.netlify/functions/* routing automatically — no redirect needed
 
