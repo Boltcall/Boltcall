@@ -74,6 +74,9 @@ const ROUTES = [
   { path: "/industries/hvac-answering-service",                  priority: "0.9", changefreq: "monthly" },
   { path: "/industries/plumbing-answering-service",              priority: "0.9", changefreq: "monthly" },
   { path: "/industries/contractor-answering-service",            priority: "0.9", changefreq: "monthly" },
+  { path: "/industries/dentist-answering-service",               priority: "0.9", changefreq: "monthly" },
+  { path: "/industries/lawyer-answering-service",                priority: "0.9", changefreq: "monthly" },
+  { path: "/industries/medspa-answering-service",                priority: "0.9", changefreq: "monthly" },
   // /voice-agent-setup is a private multi-step wizard creating billable
   // Retell + Twilio resources — noindex'd at the page level, not for SEO.
   { path: "/solar",                                               priority: "0.9", changefreq: "monthly" },

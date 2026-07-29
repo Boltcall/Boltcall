@@ -259,6 +259,9 @@ const FunnelOptimiser = React.lazy(() => import('../pages/FunnelOptimiser'));
 const HVACAnsweringServicePage = React.lazy(() => import('../pages/HVACAnsweringServicePage'));
 const PlumbingAnsweringServicePage = React.lazy(() => import('../pages/PlumbingAnsweringServicePage'));
 const ContractorAnsweringServicePage = React.lazy(() => import('../pages/ContractorAnsweringServicePage'));
+const DentistAnsweringServicePage = React.lazy(() => import('../pages/DentistAnsweringServicePage'));
+const LawyerAnsweringServicePage = React.lazy(() => import('../pages/LawyerAnsweringServicePage'));
+const MedSpaAnsweringServicePage = React.lazy(() => import('../pages/MedSpaAnsweringServicePage'));
 const SolarIndustryHub = React.lazy(() => import('../pages/SolarIndustryHub'));
 const SolarSpeedToLeadPlaybook = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybook'));
 const SolarSpeedToLeadPlaybookThankYou = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybookThankYou'));
@@ -876,6 +879,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/industries/hvac-answering-service" element={<HVACAnsweringServicePage />} />
         <Route path="/industries/plumbing-answering-service" element={<PlumbingAnsweringServicePage />} />
         <Route path="/industries/contractor-answering-service" element={<ContractorAnsweringServicePage />} />
+        <Route path="/industries/dentist-answering-service" element={<DentistAnsweringServicePage />} />
+        <Route path="/industries/lawyer-answering-service" element={<LawyerAnsweringServicePage />} />
+        <Route path="/industries/medspa-answering-service" element={<MedSpaAnsweringServicePage />} />
         {/* Solar Industry Hub */}
         <Route path="/solar" element={<SolarIndustryHub />} />
         {/* Solar Speed-to-Lead Playbook */}
