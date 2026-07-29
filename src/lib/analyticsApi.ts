@@ -628,6 +628,90 @@ export async function fetchLiveCounters(userId?: string): Promise<LiveCounters> 
 }
 
 /* ------------------------------------------------------------------ */
+/*  Unique-caller-answered metric (Cody Schneider CPMR analog)         */
+/* ------------------------------------------------------------------ */
+
+// Cody Schneider (2026-04-14, gy9hUWJvYMQ) argued that CPM lies: a campaign
+// that hits the same 100 people 5x each looks the same as one that hits 500
+// unique people once. He rebuilt his ads on CPMR (cost per thousand reached),
+// warehouse-computed. Same trap applies to Boltcall's dashboards: 500 answered
+// calls to 100 unique numbers is worse than 300 answered to 300 unique.
+//
+// Returns the raw answered-call count, the distinct caller count over the
+// window, and the ratio. Tenants with ratio < 2 have unique-lead flow;
+// tenants with ratio ≥ 5 are answering the same numbers repeatedly and
+// probably don't have a lead-gen problem, they have a routing problem.
+
+export interface UniqueCallerMetrics {
+  totalAnswered: number;
+  uniqueCallers: number;
+  answersPerUnique: number;   // totalAnswered / uniqueCallers, or 0 when no callers
+  windowDays: number;
+  startDate: string;
+  endDate: string;
+}
+
+export async function fetchUniqueCallerMetrics(filters: AnalyticsFilters): Promise<UniqueCallerMetrics> {
+  const { dateRange } = filters;
+  let query = supabase
+    .from('callbacks')
+    .select('caller_number, status')
+    .in('status', ['answered', 'completed', 'booked'])
+    .gte('created_at', dateRange.start)
+    .lte('created_at', dateRange.end + 'T23:59:59');
+  if (filters.userId) query = query.eq('user_id', filters.userId);
+
+  const { data } = await query;
+  const rows = data || [];
+  const totalAnswered = rows.length;
+  const unique = new Set<string>();
+  for (const r of rows) {
+    const raw = String((r as any).caller_number || '').replace(/\D/g, '');
+    if (raw.length >= 7) unique.add(raw);
+  }
+  const uniqueCallers = unique.size;
+  const answersPerUnique = uniqueCallers > 0
+    ? Math.round((totalAnswered / uniqueCallers) * 100) / 100
+    : 0;
+
+  return {
+    totalAnswered,
+    uniqueCallers,
+    answersPerUnique,
+    windowDays: getDaysInRange(dateRange.start, dateRange.end),
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+  };
+}
+
+// Pure computation extract for unit testing — same math as
+// fetchUniqueCallerMetrics but takes rows as input so we can test without a
+// live Supabase client.
+export function computeUniqueCallerMetrics(
+  rows: Array<{ caller_number?: string | null }>,
+  dateRange: DateRangeFilter,
+): UniqueCallerMetrics {
+  const totalAnswered = rows.length;
+  const unique = new Set<string>();
+  for (const r of rows) {
+    const raw = String(r.caller_number || '').replace(/\D/g, '');
+    if (raw.length >= 7) unique.add(raw);
+  }
+  const uniqueCallers = unique.size;
+  const answersPerUnique = uniqueCallers > 0
+    ? Math.round((totalAnswered / uniqueCallers) * 100) / 100
+    : 0;
+  return {
+    totalAnswered,
+    uniqueCallers,
+    answersPerUnique,
+    windowDays: getDaysInRange(dateRange.start, dateRange.end),
+    startDate: dateRange.start,
+    endDate: dateRange.end,
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /*  Funnel Drilldown — get actual records for a funnel stage           */
 /* ------------------------------------------------------------------ */
 
