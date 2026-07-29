@@ -4,7 +4,7 @@ Tags: lead capture, contact form, crm, sms, speed to lead, instant response, lea
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.2
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,8 +30,9 @@ Every form submission on your site flows into Boltcall the moment it's sent. You
 1. Install and activate the plugin.
 2. Go to **Settings → Boltcall**.
 3. Paste your Boltcall User ID (find it in your Boltcall dashboard → Instant Lead Reply → Web Form).
-4. Click **Send Test Lead** to verify.
-5. Every form submission on your site now flows into Boltcall automatically.
+4. Paste your Boltcall API key (create one in your Boltcall dashboard → Settings → API Keys — starts with `bc_`).
+5. Click **Send Test Lead** to verify.
+6. Every form submission on your site now flows into Boltcall automatically.
 
 = Requirements =
 
@@ -78,6 +79,11 @@ Use the generic embed. Add `data-boltcall` to any `<form>` tag, or enable auto-c
 3. Built-in test button verifies the connection.
 
 == Changelog ==
+
+= 1.1.0 =
+* Required: API key (`bc_...`) sent as `Authorization: Bearer` on every lead — matches the hardened webhook auth on boltcall.org.
+* Field-name normalization: common form-plugin field names (`your-email`, `contact_phone`, `full_name`, ...) map to the canonical `email` / `phone` / `name` the webhook expects.
+* Fixes Contact Form 7, WPForms, Ninja Forms, and Fluent Forms submissions being rejected with "email or phone required".
 
 = 1.0.0 =
 * Initial release.
