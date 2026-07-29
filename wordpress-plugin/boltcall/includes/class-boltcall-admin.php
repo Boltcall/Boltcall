@@ -32,6 +32,7 @@ class Boltcall_Admin {
 
 	public function register_settings() {
 		register_setting( self::SETTINGS_GROUP, 'boltcall_user_id', array( 'sanitize_callback' => array( $this, 'sanitize_user_id' ) ) );
+		register_setting( self::SETTINGS_GROUP, 'boltcall_api_key', array( 'sanitize_callback' => array( $this, 'sanitize_api_key' ) ) );
 		register_setting( self::SETTINGS_GROUP, 'boltcall_enabled', array( 'sanitize_callback' => array( $this, 'sanitize_toggle' ) ) );
 		register_setting( self::SETTINGS_GROUP, 'boltcall_auto_capture', array( 'sanitize_callback' => array( $this, 'sanitize_toggle' ) ) );
 		register_setting( self::SETTINGS_GROUP, 'boltcall_form_selector', array( 'sanitize_callback' => 'sanitize_text_field' ) );
@@ -46,6 +47,16 @@ class Boltcall_Admin {
 		}
 		add_settings_error( 'boltcall_user_id', 'invalid_uuid', __( 'Boltcall User ID must be a valid UUID. Copy it from your Boltcall dashboard → Instant Lead Reply → Web Form.', 'boltcall' ) );
 		return '';
+	}
+
+	public function sanitize_api_key( $val ) {
+		$val = trim( (string) $val );
+		if ( '' === $val ) return '';
+		if ( 0 !== strpos( $val, 'bc_' ) ) {
+			add_settings_error( 'boltcall_api_key', 'invalid_key', __( 'Boltcall API key must start with bc_. Copy it from your Boltcall dashboard → Settings → API Keys.', 'boltcall' ) );
+			return '';
+		}
+		return $val;
 	}
 
 	public function sanitize_toggle( $val ) {
@@ -106,6 +117,7 @@ class Boltcall_Admin {
 			return;
 		}
 		$user_id       = (string) get_option( 'boltcall_user_id', '' );
+		$api_key       = (string) get_option( 'boltcall_api_key', '' );
 		$enabled       = '1' === get_option( 'boltcall_enabled', '1' );
 		$auto          = '1' === get_option( 'boltcall_auto_capture', '0' );
 		$selector      = (string) get_option( 'boltcall_form_selector', 'form[data-boltcall]' );
@@ -164,6 +176,15 @@ class Boltcall_Admin {
 											esc_url( BOLTCALL_API_BASE . '/dashboard/instant-lead-reply' )
 										);
 										?>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="boltcall_api_key"><?php esc_html_e( 'API Key', 'boltcall' ); ?></label></th>
+								<td>
+									<input type="text" id="boltcall_api_key" name="boltcall_api_key" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text code" placeholder="bc_..." autocomplete="off" />
+									<p class="description">
+										<?php esc_html_e( 'Required. Create a key in the Boltcall dashboard → Settings → API Keys. Sent as an Authorization: Bearer header on every lead.', 'boltcall' ); ?>
 									</p>
 								</td>
 							</tr>
