@@ -161,12 +161,12 @@ const NotificationPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Notification types — one global toggle per event */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">Notify me about</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Pick which events send a notification. Delivery is controlled by the channels below.</p>
+      <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-[#17171b]">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Notify me about</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pick which events send a notification. Delivery is controlled by the channels below.</p>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-[#17171b]">
           {notificationTypes.map((type) => {
             const TypeIcon = type.icon;
             return (
@@ -175,7 +175,7 @@ const NotificationPage: React.FC = () => {
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${type.color}`}>
                     <TypeIcon className="w-4 h-4" />
                   </div>
-                  <p className="text-sm font-medium text-gray-900">{type.title}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{type.title}</p>
                 </div>
                 <PremiumToggle checked={settings.types[type.key]} onChange={(v) => toggleType(type.key, v)} />
               </div>
@@ -185,8 +185,8 @@ const NotificationPage: React.FC = () => {
       </div>
 
       {/* Delivery channels — on/off enables */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
+      <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-[#17171b]">
           <h2 className="text-sm font-semibold text-gray-900">Delivery Channels</h2>
           <p className="text-xs text-gray-500 mt-0.5">Where enabled notifications are sent</p>
         </div>
@@ -200,8 +200,8 @@ const NotificationPage: React.FC = () => {
                     <ChIcon className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{ch.name}</p>
-                    <p className="text-xs text-gray-500">{ch.description}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{ch.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{ch.description}</p>
                   </div>
                 </div>
                 <PremiumToggle checked={settings.channels[ch.key]} onChange={(v) => toggleChannel(ch.key, v)} />
@@ -212,37 +212,37 @@ const NotificationPage: React.FC = () => {
       </div>
 
       {/* Quiet Hours */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
+      <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-[#17171b]">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-purple-500" />
-            <h2 className="text-sm font-semibold text-gray-900">Quiet Hours</h2>
+            <Clock className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Quiet Hours</h2>
           </div>
-          <p className="text-xs text-gray-500 mt-0.5">Pause notifications during specified hours</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pause notifications during specified hours</p>
         </div>
         <div className="px-6 py-4 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-900">Enable Quiet Hours</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">Enable Quiet Hours</p>
             <PremiumToggle checked={settings.quietHours.enabled} onChange={(v) => setQuietHours({ enabled: v })} />
           </div>
           {settings.quietHours.enabled && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">Start Time</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">Start Time</label>
                 <input
                   type="time"
                   value={settings.quietHours.start}
                   onChange={(e) => setQuietHours({ start: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1.5">End Time</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">End Time</label>
                 <input
                   type="time"
                   value={settings.quietHours.end}
                   onChange={(e) => setQuietHours({ end: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>

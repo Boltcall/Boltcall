@@ -191,7 +191,7 @@ const StatCard: React.FC<{
   icon: React.FC<{ className?: string }>;
   accent?: string;
 }> = ({ title, value, icon: Icon, accent = '#2563EB' }) => (
-  <Card className="p-5 bg-white">
+  <Card className="p-5 bg-white dark:bg-[#111114]">
     <div className="flex items-center gap-3 mb-3">
       <div
         className="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -199,9 +199,9 @@ const StatCard: React.FC<{
       >
         {React.createElement(Icon as any, { className: 'w-5 h-5', color: accent })}
       </div>
-      <span className="text-sm font-medium text-gray-500">{title}</span>
+      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</span>
     </div>
-    <p className="text-3xl font-bold text-gray-900">{fmtNum(value)}</p>
+    <p className="text-3xl font-bold text-gray-900 dark:text-white">{fmtNum(value)}</p>
   </Card>
 );
 
@@ -212,7 +212,7 @@ const TrendIndicator: React.FC<{
 }> = ({ current, previous }) => {
   if (previous === 0 && current === 0) {
     return (
-      <span className="flex items-center text-xs text-gray-400">
+      <span className="flex items-center text-xs text-gray-400 dark:text-gray-500">
         <Minus className="w-3 h-3 mr-0.5" />
         --
       </span>
@@ -243,13 +243,13 @@ const ProgressBar: React.FC<{
   const pct = max === 0 ? 0 : Math.round((value / max) * 100);
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+      <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
         <span>Drip completed</span>
         <span className="font-medium">{pct}%</span>
       </div>
-      <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-gray-100 dark:bg-[#17171b] rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full transition-all duration-200 ease-out"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
@@ -268,7 +268,7 @@ const NicheCard: React.FC<{
   const completed = data?.drip_completed_count ?? 0;
 
   return (
-    <Card className="p-5 bg-white hover:shadow-md transition-shadow">
+    <Card className="p-5 bg-white dark:bg-[#111114] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ease-out">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -279,10 +279,10 @@ const NicheCard: React.FC<{
             {React.createElement(Icon as any, { className: 'w-5 h-5', color: config.color })}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
               {config.label}
             </h3>
-            <p className="text-xs text-gray-400">Lead Magnet</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Lead Magnet</p>
           </div>
         </div>
         <TrendIndicator
@@ -293,8 +293,8 @@ const NicheCard: React.FC<{
       </div>
 
       {/* Big number */}
-      <p className="text-4xl font-bold text-gray-900 mb-1">{fmtNum(total)}</p>
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-4xl font-bold text-gray-900 dark:text-white mb-1">{fmtNum(total)}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
         {fmtNum(week)} this week
       </p>
 
@@ -349,11 +349,11 @@ const DripFunnel: React.FC<{ rows: PerformanceRow[] }> = ({ rows }) => {
   const maxCount = Math.max(...stages.map((s) => s.count), 1);
 
   return (
-    <Card className="p-6 bg-white">
-      <h3 className="text-base font-semibold text-gray-900 mb-1">
+    <Card className="p-6 bg-white dark:bg-[#111114]">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
         7-Day Drip Funnel
       </h3>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
         Conversion through the nurture sequence across all niches
       </p>
 
@@ -379,7 +379,7 @@ const DripFunnel: React.FC<{ rows: PerformanceRow[] }> = ({ rows }) => {
 
               {/* Bar */}
               <div
-                className="w-full rounded-t-md transition-all duration-500"
+                className="w-full rounded-t-md transition-all duration-200 ease-out"
                 style={{
                   height: `${height}px`,
                   backgroundColor: '#2563EB',
@@ -388,12 +388,12 @@ const DripFunnel: React.FC<{ rows: PerformanceRow[] }> = ({ rows }) => {
               />
 
               {/* Count */}
-              <p className="text-xs font-semibold text-gray-900 mt-2">
+              <p className="text-xs font-semibold text-gray-900 dark:text-white mt-2">
                 {fmtNum(stage.count)}
               </p>
 
               {/* Day label */}
-              <p className="text-[10px] text-gray-400 mt-0.5">
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
                 Day {stage.day}
               </p>
             </div>
@@ -409,21 +409,21 @@ const DripFunnel: React.FC<{ rows: PerformanceRow[] }> = ({ rows }) => {
 /* ------------------------------------------------------------------ */
 
 const LeadsTable: React.FC<{ leads: LeadRow[] }> = ({ leads }) => (
-  <Card className="bg-white overflow-hidden">
-    <div className="p-5 border-b border-gray-100">
-      <h3 className="text-base font-semibold text-gray-900">Recent Leads</h3>
-      <p className="text-sm text-gray-500">Last 50 captured leads</p>
+  <Card className="bg-white dark:bg-[#111114] overflow-hidden">
+    <div className="p-5 border-b border-gray-100 dark:border-[#17171b]">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white">Recent Leads</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400">Last 50 captured leads</p>
     </div>
 
     <div className="overflow-x-auto max-h-[480px] overflow-y-auto">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 sticky top-0 z-10">
+        <thead className="bg-gray-50 dark:bg-[#17171b] sticky top-0 z-10">
           <tr>
             {['Name', 'Email', 'Business', 'Niche', 'Source', 'Drip Day', 'Date'].map(
               (h) => (
                 <th
                   key={h}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
                 >
                   {h}
                 </th>
@@ -431,44 +431,44 @@ const LeadsTable: React.FC<{ leads: LeadRow[] }> = ({ leads }) => (
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-gray-50 dark:divide-[#17171b]">
           {leads.map((lead) => (
             <tr
               key={lead.id}
-              className="hover:bg-gray-50/50 transition-colors"
+              className="hover:bg-gray-50/50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out"
             >
-              <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+              <td className="px-4 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                 {lead.name || '--'}
               </td>
               <td className="px-4 py-3 whitespace-nowrap">
                 <a
                   href={`mailto:${lead.email}`}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   {lead.email}
                 </a>
               </td>
-              <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+              <td className="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                 {lead.business_name || '--'}
               </td>
               <td className="px-4 py-3 whitespace-nowrap">
                 <NicheBadge niche={lead.niche} />
               </td>
-              <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+              <td className="px-4 py-3 text-gray-500 dark:text-gray-500 whitespace-nowrap">
                 {lead.source || '--'}
               </td>
               <td className="px-4 py-3 whitespace-nowrap">
                 {lead.drip_completed ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300">
                     Completed
                   </span>
                 ) : (
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     {lead.drip_day != null ? `Day ${lead.drip_day}` : '--'}
                   </span>
                 )}
               </td>
-              <td className="px-4 py-3 text-gray-400 whitespace-nowrap">
+              <td className="px-4 py-3 text-gray-400 dark:text-gray-500 whitespace-nowrap">
                 {relativeTime(lead.created_at)}
               </td>
             </tr>
@@ -477,7 +477,7 @@ const LeadsTable: React.FC<{ leads: LeadRow[] }> = ({ leads }) => (
             <tr>
               <td
                 colSpan={7}
-                className="px-4 py-12 text-center text-gray-400"
+                className="px-4 py-12 text-center text-gray-400 dark:text-gray-500"
               >
                 No leads captured yet.
               </td>
@@ -494,8 +494,8 @@ const LeadsTable: React.FC<{ leads: LeadRow[] }> = ({ leads }) => (
 /* ------------------------------------------------------------------ */
 
 const QuickLinks: React.FC = () => (
-  <Card className="p-5 bg-white">
-    <h3 className="text-base font-semibold text-gray-900 mb-4">
+  <Card className="p-5 bg-white dark:bg-[#111114]">
+    <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
       Calculator Quick Links
     </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -507,7 +507,7 @@ const QuickLinks: React.FC = () => (
             href={n.calcUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all group"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 dark:border-[#1e1e24] hover:border-gray-300 dark:hover:border-[#2a2a30] hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 ease-out group"
           >
             <div
               className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
@@ -515,10 +515,10 @@ const QuickLinks: React.FC = () => (
             >
               {React.createElement(Icon as any, { className: 'w-4 h-4', color: n.color })}
             </div>
-            <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
               View {n.label} Calculator
             </span>
-            <ExternalLink className="w-3.5 h-3.5 text-gray-300 ml-auto group-hover:text-gray-500" />
+            <ExternalLink className="w-3.5 h-3.5 text-gray-300 dark:text-gray-600 ml-auto group-hover:text-gray-500 dark:group-hover:text-gray-400" />
           </a>
         );
       })}
@@ -597,7 +597,7 @@ export default function LeadMagnetDashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center py-32 gap-4">
         <AlertCircle className="w-10 h-10 text-red-500" />
-        <p className="text-sm text-gray-600">{error}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{error}</p>
         <PopButton color="blue" onClick={() => loadData()}>
           Retry
         </PopButton>
@@ -611,10 +611,10 @@ export default function LeadMagnetDashboardPage() {
       {/* ============ Header ============ */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Lead Magnet Performance
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             Track all niche calculator lead magnets
           </p>
         </div>
@@ -622,7 +622,7 @@ export default function LeadMagnetDashboardPage() {
         <button
           onClick={() => loadData(true)}
           disabled={refreshing}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg hover:bg-gray-50 dark:hover:bg-[#17171b] disabled:opacity-50 transition-colors duration-200 ease-out self-start sm:self-auto"
         >
           <RefreshCw
             className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}

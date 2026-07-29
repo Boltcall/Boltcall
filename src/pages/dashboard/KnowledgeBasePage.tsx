@@ -1276,11 +1276,11 @@ const KnowledgeBasePage: React.FC = () => {
                 <ArrowLeft className="w-4 h-4" />
                 Folders
               </button>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-900 font-medium">{selectedFolder?.name}</span>
+              <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <span className="text-gray-900 dark:text-white font-medium">{selectedFolder?.name}</span>
             </>
           ) : (
-            <h2 className="text-lg font-bold text-gray-900">Knowledge Base</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Knowledge Base</h2>
           )}
         </div>
 
@@ -1329,12 +1329,12 @@ const KnowledgeBasePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+          className="bg-white dark:bg-[#111114] rounded-xl shadow-sm border border-gray-100 dark:border-[#17171b] overflow-hidden"
         >
           {/* Collapsed row — always visible */}
           <button
             onClick={() => setProgressExpanded(p => !p)}
-            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out text-left"
           >
             <div className="flex-1 min-w-0 flex items-center gap-3">
               <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">Setup Progress</span>
@@ -1385,24 +1385,24 @@ const KnowledgeBasePage: React.FC = () => {
           {folders.map((folder) => (
             <div
               key={folder.id}
-              className="group relative bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer"
+              className="group relative bg-white dark:bg-[#111114] rounded-xl shadow-sm border border-gray-100 dark:border-[#17171b] p-5 hover:shadow-md hover:-translate-y-0.5 hover:border-blue-200 transition-all duration-200 ease-out cursor-pointer"
               onClick={() => setSelectedFolderId(folder.id)}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${folder.is_default ? 'bg-amber-50' : 'bg-blue-50'}`}>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${folder.is_default ? 'bg-amber-50 dark:bg-amber-950/30' : 'bg-blue-50 dark:bg-blue-950/30'}`}>
                   {folder.is_default ? <Building2 className="w-5 h-5 text-amber-600" /> : <FolderOpen className="w-5 h-5 text-blue-600" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{folder.name}</div>
-                  <div className="text-xs text-gray-500">{folder.doc_count} {folder.doc_count === 1 ? 'document' : 'documents'}</div>
+                  <div className="font-medium text-gray-900 dark:text-white truncate">{folder.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{folder.doc_count} {folder.doc_count === 1 ? 'document' : 'documents'}</div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 transition-colors duration-200 ease-out" />
               </div>
               {/* Rename / Delete on hover */}
               {!folder.is_default && (
                 <div className="hidden group-hover:flex absolute top-2 right-2 items-center gap-1">
-                  <button onClick={(e) => { e.stopPropagation(); setRenamingFolderId(folder.id); setRenamingFolderName(folder.name); setShowCreateFolderModal(true); }} className="p-1 rounded hover:bg-gray-100"><Pencil className="w-3.5 h-3.5 text-gray-500" /></button>
-                  <button onClick={(e) => { e.stopPropagation(); if (confirm(`Delete "${folder.name}"? Documents will be moved to unassigned.`)) handleDeleteFolder(folder.id); }} className="p-1 rounded hover:bg-red-50"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setRenamingFolderId(folder.id); setRenamingFolderName(folder.name); setShowCreateFolderModal(true); }} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out"><Pencil className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); if (confirm(`Delete "${folder.name}"? Documents will be moved to unassigned.`)) handleDeleteFolder(folder.id); }} className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors duration-200 ease-out"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
                 </div>
               )}
             </div>
@@ -1410,25 +1410,25 @@ const KnowledgeBasePage: React.FC = () => {
           {/* Add New Folder placeholder — fills empty grid slots */}
           <button
             onClick={() => setShowNewFolderInline(true)}
-            className="group relative bg-white rounded-xl shadow-sm border border-dashed border-gray-200 p-5 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer flex items-center gap-3 text-left"
+            className="group relative bg-white dark:bg-[#111114] rounded-xl shadow-sm border border-dashed border-gray-200 dark:border-[#1e1e24] p-5 hover:border-blue-300 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all duration-200 ease-out cursor-pointer flex items-center gap-3 text-left"
           >
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-50 group-hover:bg-blue-100 transition-colors">
-              <Plus className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-[#17171b] group-hover:bg-blue-100 dark:group-hover:bg-blue-950/40 transition-colors duration-200 ease-out">
+              <Plus className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 transition-colors duration-200 ease-out" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-gray-400 group-hover:text-blue-600 transition-colors">New Folder</div>
-              <div className="text-xs text-gray-400">Organize your documents</div>
+              <div className="font-medium text-gray-400 dark:text-gray-500 group-hover:text-blue-600 transition-colors duration-200 ease-out">New Folder</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500">Organize your documents</div>
             </div>
           </button>
           {folders.length === 0 && (
-            <div className="col-span-full text-center py-12 text-gray-400 text-sm">No folders yet. Create one to organize your knowledge base.</div>
+            <div className="col-span-full text-center py-12 text-gray-400 dark:text-gray-500 text-sm">No folders yet. Create one to organize your knowledge base.</div>
           )}
         </div>
       )}
 
       {/* ─── DOCUMENTS TABLE (inside a folder) ─── */}
       {selectedFolderId && (
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg shadow-sm">
           {/* Search */}
           <div className="p-3 md:p-6">
             <div className="relative md:max-w-xs">

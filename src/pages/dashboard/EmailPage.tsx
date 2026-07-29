@@ -133,10 +133,10 @@ const EmailPage: React.FC = () => {
       )}
 
       {/* Tab Bar */}
-      <div className="bg-white border-b border-gray-200 flex-shrink-0 px-3 md:px-6 pt-4 pb-0 overflow-x-auto">
+      <div className="bg-white dark:bg-[#111114] border-b border-gray-200 dark:border-[#1e1e24] flex-shrink-0 px-3 md:px-6 pt-4 pb-0 overflow-x-auto">
         <div className="flex flex-col gap-1 mb-0 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3 sm:mr-6">
-            <h1 className="text-lg md:text-xl font-semibold text-gray-900">Email</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Email</h1>
             {stats && (
               <div className="flex items-center gap-2">
                 {stats.pendingDrafts > 0 && (
@@ -239,7 +239,7 @@ const EmailPage: React.FC = () => {
                 </div>
 
                 {/* Thread List */}
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
                   <EmailThreadList
                     threads={threads}
                     selectedThreadId={null}
@@ -274,7 +274,7 @@ const EmailPage: React.FC = () => {
 
             {activeTab === 'threads' && (
               <div className="max-w-4xl mx-auto p-4 md:p-6">
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
                   <EmailThreadList
                     threads={threads}
                     selectedThreadId={null}

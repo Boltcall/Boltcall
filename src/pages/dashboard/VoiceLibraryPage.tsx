@@ -14,16 +14,16 @@ const VoiceLibraryPage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex items-center gap-2 border-b border-gray-200"
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        className="flex items-center gap-2 border-b border-gray-200 dark:border-[#1e1e24]"
       >
         <button
           type="button"
           onClick={() => setTab('library')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors duration-200 ease-out ${
             tab === 'library'
               ? 'border-brand-blue text-brand-blue'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
           }`}
         >
           <Library className="w-4 h-4" />
@@ -32,10 +32,10 @@ const VoiceLibraryPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setTab('clone')}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors duration-200 ease-out ${
             tab === 'clone'
               ? 'border-brand-blue text-brand-blue'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
           }`}
         >
           <Mic className="w-4 h-4" />
@@ -45,10 +45,10 @@ const VoiceLibraryPage: React.FC = () => {
 
       <motion.div
         key={tab}
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="bg-white rounded-lg border border-gray-200"
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24]"
       >
         {tab === 'library' ? <VoiceLibrary /> : <VoiceClone />}
       </motion.div>

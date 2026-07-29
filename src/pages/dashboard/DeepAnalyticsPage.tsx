@@ -135,7 +135,7 @@ const DeepAnalyticsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">Deep Analytics</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-text-main dark:text-white">Deep Analytics</h1>
           <p className="text-sm text-text-muted mt-0.5">
             Conversion funnels, ROI metrics, and performance insights
           </p>
@@ -149,7 +149,7 @@ const DeepAnalyticsPage: React.FC = () => {
           <button
             onClick={data.refreshAll}
             disabled={isLoading}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-border hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-border hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
@@ -159,7 +159,7 @@ const DeepAnalyticsPage: React.FC = () => {
 
       {/* Error banner */}
       {data.error && (
-        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-lg text-sm text-red-700 dark:text-red-300">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {data.error}
         </div>
@@ -181,10 +181,10 @@ const DeepAnalyticsPage: React.FC = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors duration-200 ease-out whitespace-nowrap ${
                 isActive
                   ? 'border-brand-blue text-brand-blue'
-                  : 'border-transparent text-text-muted hover:text-text-main hover:border-gray-300'
+                  : 'border-transparent text-text-muted hover:text-text-main hover:border-gray-300 dark:hover:border-[#1e1e24]'
               }`}
             >
               <tab.icon className="w-4 h-4" />

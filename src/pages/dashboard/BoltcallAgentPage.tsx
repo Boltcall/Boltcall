@@ -99,7 +99,7 @@ function renderMarkdown(text: string): React.ReactNode[] {
     while ((m = re.exec(str)) !== null) {
       if (m.index > last) parts.push(str.slice(last, m.index));
       if (m[2] !== undefined) parts.push(<strong key={key++}>{m[2]}</strong>);
-      else if (m[3] !== undefined) parts.push(<code key={key++} className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">{m[3]}</code>);
+      else if (m[3] !== undefined) parts.push(<code key={key++} className="px-1 py-0.5 bg-gray-100 dark:bg-[#17171b] rounded text-xs font-mono">{m[3]}</code>);
       last = m.index + m[0].length;
     }
     if (last < str.length) parts.push(str.slice(last));
@@ -317,7 +317,7 @@ const BoltcallAgentPage: React.FC = () => {
   // ─── Toolbar (shared between centered card and bottom bar) ─────────────────
 
   const InputToolbar = (ref: React.RefObject<HTMLTextAreaElement | null>) => (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
+    <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-2xl shadow-sm">
       <input
         ref={fileInputRef}
         type="file"
@@ -335,7 +335,7 @@ const BoltcallAgentPage: React.FC = () => {
           onKeyDown={handleKeyDown}
           placeholder="What's broken?"
           rows={2}
-          className="w-full bg-transparent resize-none text-sm text-gray-700 placeholder-gray-400 outline-none leading-relaxed"
+          className="w-full bg-transparent resize-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 outline-none leading-relaxed"
           style={{ maxHeight: '120px' }}
           disabled={isLoading}
         />
@@ -369,7 +369,7 @@ const BoltcallAgentPage: React.FC = () => {
         <button
           type="button"
           onClick={handleAttachClick}
-          className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-md hover:bg-gray-50"
+          className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 ease-out rounded-md hover:bg-gray-50 dark:hover:bg-[#17171b]"
           aria-label="Attach file"
         >
           <Paperclip className="w-4 h-4" />
@@ -378,7 +378,7 @@ const BoltcallAgentPage: React.FC = () => {
         <button
           onClick={() => sendMessage()}
           disabled={!input.trim() || isLoading}
-          className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 flex items-center justify-center transition-colors flex-shrink-0"
+          className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 flex items-center justify-center transition-colors duration-200 ease-out flex-shrink-0"
           aria-label="Send"
         >
           <ArrowUp className="w-4 h-4 text-white" />
@@ -392,10 +392,10 @@ const BoltcallAgentPage: React.FC = () => {
   const EmptyState = (
     <div className="flex flex-col items-center justify-center flex-1 px-4 pt-12 pb-8 gap-6">
       <div className="text-center">
-        <h1 className="text-[2rem] font-bold text-gray-900 leading-tight mb-2">
+        <h1 className="text-[2rem] font-bold text-gray-900 dark:text-white leading-tight mb-2">
           {greeting} {firstName}.
         </h1>
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
           Want an update or have a question? Just chat below.
         </p>
       </div>
@@ -409,7 +409,7 @@ const BoltcallAgentPage: React.FC = () => {
           <button
             key={action.title}
             onClick={() => sendMessage(action.prompt)}
-            className="flex flex-col items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl text-center hover:border-blue-200 hover:shadow-sm transition-colors duration-150 cursor-pointer"
+            className="flex flex-col items-center gap-3 p-4 bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl text-center hover:border-blue-200 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ease-out cursor-pointer"
           >
             <span className="text-blue-500">{action.icon}</span>
             <span className="text-xs font-medium text-blue-700 leading-snug">{action.title}</span>
@@ -441,7 +441,7 @@ const BoltcallAgentPage: React.FC = () => {
               className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                 msg.role === 'user'
                   ? 'bg-blue-600 text-white rounded-br-md'
-                  : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                  : 'bg-gray-100 dark:bg-[#17171b] text-gray-900 dark:text-gray-100 rounded-bl-md'
               }`}
             >
               {msg.loading ? (
@@ -484,10 +484,10 @@ const BoltcallAgentPage: React.FC = () => {
   // ─── Bottom input bar (when messages exist) ────────────────────────────────
 
   const InputBar = (
-    <div className="flex-shrink-0 border-t border-gray-100 bg-white px-4 py-3">
+    <div className="flex-shrink-0 border-t border-gray-100 dark:border-[#17171b] bg-white dark:bg-[#0e0e11] px-4 py-3">
       <div className="max-w-2xl mx-auto">
         {InputToolbar(bottomTextareaRef)}
-        <p className="text-center text-xs text-gray-400 mt-2">
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-2">
           Bolt can update your agent, query leads, and change settings.
         </p>
       </div>

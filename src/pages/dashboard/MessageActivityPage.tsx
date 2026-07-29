@@ -107,12 +107,12 @@ const MessageActivityPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-brand-blue" />
-          <h2 className="text-lg font-semibold text-gray-900">Message Activity</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Message Activity</h2>
         </div>
         <button
           onClick={fetchMessages}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-[#1e1e24] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -130,29 +130,29 @@ const MessageActivityPage: React.FC = () => {
           <button
             key={stat.key}
             onClick={() => setStatusFilter(stat.key as StatusFilter)}
-            className={`rounded-xl border p-3 text-left transition-all ${
+            className={`rounded-xl border p-3 text-left transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md ${
               statusFilter === stat.key
-                ? 'border-brand-blue bg-blue-50 ring-1 ring-brand-blue'
-                : 'border-gray-200 hover:border-gray-300'
+                ? 'border-brand-blue bg-blue-50 dark:bg-blue-950/30 ring-1 ring-brand-blue'
+                : 'border-gray-200 dark:border-[#1e1e24] bg-white dark:bg-[#111114] hover:border-gray-300 dark:hover:border-[#2a2a32]'
             }`}
           >
-            <p className="text-xs text-gray-500">{stat.label}</p>
-            <p className={`text-xl font-bold ${stat.color}`}>{stat.count}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-500">{stat.label}</p>
+            <p className={`text-xl font-bold ${stat.color}${stat.key === 'all' ? ' dark:text-white' : ''}`}>{stat.count}</p>
           </button>
         ))}
       </div>
 
       {/* Type filter */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-gray-500 font-medium">Type:</span>
+        <span className="text-xs text-gray-500 dark:text-gray-500 font-medium">Type:</span>
         {(['all', 'reminder', 'review_request', 'missed_call_textback', 'followup'] as TypeFilter[]).map((t) => (
           <button
             key={t}
             onClick={() => setTypeFilter(t)}
-            className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
+            className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors duration-200 ease-out ${
               typeFilter === t
                 ? 'bg-brand-blue text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-[#17171b] text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#1e1e24]'
             }`}
           >
             {t === 'all' ? 'All' : typeConfig[t]?.label || t}
@@ -165,9 +165,9 @@ const MessageActivityPage: React.FC = () => {
         <PageSkeleton />
       ) : messages.length === 0 ? (
         <div className="text-center py-16">
-          <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">No messages found</p>
-          <p className="text-gray-400 text-sm mt-1">Automated messages will appear here when scheduled or sent.</p>
+          <Activity className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-500 dark:text-gray-400 font-medium">No messages found</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Automated messages will appear here when scheduled or sent.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -191,13 +191,13 @@ const MessageActivityPage: React.FC = () => {
               >
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : msg.id)}
-                  className={`w-full text-left rounded-xl border p-4 transition-all hover:shadow-sm ${
-                    isExpanded ? 'border-brand-blue bg-blue-50/30' : 'border-gray-200 bg-white'
+                  className={`w-full text-left rounded-xl border p-4 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 ${
+                    isExpanded ? 'border-brand-blue bg-blue-50/30 dark:bg-blue-950/20' : 'border-gray-200 dark:border-[#1e1e24] bg-white dark:bg-[#111114]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     {/* Channel icon */}
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${msg.channel === 'email' ? 'bg-purple-50' : 'bg-green-50'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${msg.channel === 'email' ? 'bg-purple-50 dark:bg-purple-950/30' : 'bg-green-50 dark:bg-green-950/30'}`}>
                       <ChannelIcon className={`w-4 h-4 ${msg.channel === 'email' ? 'text-purple-600' : 'text-green-600'}`} />
                     </div>
 
@@ -205,11 +205,11 @@ const MessageActivityPage: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <TypeIcon className={`w-3.5 h-3.5 ${tp.color} flex-shrink-0`} />
-                        <span className="text-sm font-medium text-gray-900 truncate">{tp.label}</span>
-                        <span className="text-xs text-gray-400">→</span>
-                        <span className="text-sm text-gray-600 truncate">{recipient || 'No recipient'}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{tp.label}</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">→</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400 truncate">{recipient || 'No recipient'}</span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{msg.message_body?.slice(0, 80)}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{msg.message_body?.slice(0, 80)}</p>
                     </div>
 
                     {/* Status + time */}
@@ -221,36 +221,36 @@ const MessageActivityPage: React.FC = () => {
                         <StatusIcon className="w-3 h-3" />
                         {st.label}
                       </span>
-                      <span className="text-xs text-gray-400 whitespace-nowrap">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">
                         {scheduledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{' '}
                         {scheduledDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                       </span>
-                      <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-4 h-4 text-gray-400 dark:text-gray-500 transition-transform duration-200 ease-out ${isExpanded ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
 
                   {/* Expanded details */}
                   {isExpanded && (
-                    <div className="mt-3 pt-3 border-t border-gray-200 space-y-2 text-sm" onClick={(e) => e.stopPropagation()}>
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-[#1e1e24] space-y-2 text-sm" onClick={(e) => e.stopPropagation()}>
                       {msg.subject && (
                         <div>
-                          <span className="text-gray-500 font-medium">Subject: </span>
-                          <span className="text-gray-900">{msg.subject}</span>
+                          <span className="text-gray-500 dark:text-gray-500 font-medium">Subject: </span>
+                          <span className="text-gray-900 dark:text-white">{msg.subject}</span>
                         </div>
                       )}
                       <div>
-                        <span className="text-gray-500 font-medium">Message: </span>
-                        <span className="text-gray-700">{msg.message_body}</span>
+                        <span className="text-gray-500 dark:text-gray-500 font-medium">Message: </span>
+                        <span className="text-gray-700 dark:text-gray-300">{msg.message_body}</span>
                       </div>
-                      <div className="flex gap-6 text-xs text-gray-400">
+                      <div className="flex gap-6 text-xs text-gray-400 dark:text-gray-500">
                         <span>Channel: {msg.channel.toUpperCase()}</span>
                         <span>Scheduled: {new Date(msg.scheduled_for).toLocaleString()}</span>
                         {msg.sent_at && <span>Sent: {new Date(msg.sent_at).toLocaleString()}</span>}
                       </div>
                       {msg.error && (
-                        <div className="flex items-start gap-2 mt-1 p-2 bg-red-50 rounded-lg">
-                          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                          <span className="text-xs text-red-700">{msg.error}</span>
+                        <div className="flex items-start gap-2 mt-1 p-2 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                          <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-xs text-red-700 dark:text-red-300">{msg.error}</span>
                         </div>
                       )}
                     </div>

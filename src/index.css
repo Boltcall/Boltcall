@@ -716,6 +716,107 @@ html::-webkit-scrollbar-thumb:hover {
     scroll-behavior: auto;
   }
 
+  /* ------------------------------------------------------------------
+     Dashboard motion system — "subtle luxury" defaults.
+     Tokens applied via body.dashboard-page so marketing pages are untouched.
+     ponytail: one global rule beats 40 per-page transition classes.
+     ------------------------------------------------------------------ */
+  body.dashboard-page {
+    --dx-fast:   150ms;
+    --dx-base:   220ms;
+    --dx-slow:   320ms;
+    --dx-slower: 480ms;
+
+    --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in:     cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Interactive-element defaults: buttons, links, form controls, cards,
+     and anything with an explicit tabindex/role. Property-scoped so we do
+     NOT trigger layout thrash on width/height (framer-motion owns those). */
+  body.dashboard-page :where(
+    button,
+    a,
+    [role="button"],
+    [role="tab"],
+    [role="menuitem"],
+    summary,
+    input:not([type="range"]):not([type="file"]),
+    select,
+    textarea,
+    label,
+    .card,
+    [class*="rounded-"][class*="border"],
+    [class*="rounded-"][class*="shadow"]
+  ) {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform, fill, stroke;
+    transition-duration: var(--dx-base);
+    transition-timing-function: var(--ease-out);
+  }
+
+  /* Slightly snappier for pressed/active feedback */
+  body.dashboard-page :where(button, a, [role="button"]):active {
+    transition-duration: var(--dx-fast);
+  }
+
+  /* Smoother focus ring on any focused element */
+  body.dashboard-page *:focus-visible {
+    outline: 2px solid rgb(59 130 246 / 0.65);
+    outline-offset: 2px;
+    transition:
+      outline-color var(--dx-fast) var(--ease-out),
+      box-shadow var(--dx-base) var(--ease-out);
+  }
+
+  /* Card hover lift — safe default for any bordered rounded surface that
+     already opts into hover via class="hover:*"; the transition is on the
+     card, the color change comes from Tailwind. */
+  body.dashboard-page [class*="hover:shadow"],
+  body.dashboard-page [class*="hover:-translate"] {
+    will-change: transform, box-shadow;
+  }
+
+  /* Sane defaults for details/summary and dialog fades */
+  body.dashboard-page dialog,
+  body.dashboard-page [role="dialog"] {
+    transition:
+      opacity var(--dx-base) var(--ease-out),
+      transform var(--dx-base) var(--ease-out);
+  }
+
+  /* Respect user motion preferences — override everything above */
+  @media (prefers-reduced-motion: reduce) {
+    body.dashboard-page,
+    body.dashboard-page * {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Page-transition helper for framer-motion overlays */
+  .dx-page-enter {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .dx-page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity var(--dx-slow, 320ms) var(--ease-out, ease-out),
+      transform var(--dx-slow, 320ms) var(--ease-out, ease-out);
+  }
+  .dx-page-exit-active {
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+      opacity var(--dx-fast, 150ms) var(--ease-in, ease-in),
+      transform var(--dx-fast, 150ms) var(--ease-in, ease-in);
+  }
+
   /* Enable smooth scrolling for homepage */
   body.smooth-scroll {
     scroll-behavior: smooth;

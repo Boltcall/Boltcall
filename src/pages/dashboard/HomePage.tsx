@@ -176,7 +176,7 @@ const HomePage: React.FC = () => {
           <button
             onClick={() => fetchLiveData()}
             disabled={dashboardLoading}
-            className="shrink-0 rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+            className="shrink-0 rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors duration-200 ease-out"
           >
             {dashboardLoading ? 'Retrying…' : 'Retry'}
           </button>
@@ -255,7 +255,7 @@ const HomePage: React.FC = () => {
           </div>
           <button
             onClick={() => { markMilestoneSeen(milestone.id); setMilestone(null); }}
-            className="flex-shrink-0 text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+            className="flex-shrink-0 text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors duration-200 ease-out"
             aria-label="Dismiss"
           >
             ✕

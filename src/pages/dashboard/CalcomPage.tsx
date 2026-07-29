@@ -79,8 +79,8 @@ const CalcomPage: React.FC = () => {
             decoding="async"
           />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Cal.com Integration</h1>
-            <p className="text-gray-600">Appointment booking webhook status</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Cal.com Integration</h1>
+            <p className="text-gray-600 dark:text-gray-400">Appointment booking webhook status</p>
           </div>
         </div>
 
@@ -89,12 +89,12 @@ const CalcomPage: React.FC = () => {
             className={`inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-full font-medium ${
               calConnected
                 ? 'bg-green-100 text-green-700'
-                : 'bg-gray-100 text-gray-600'
+                : 'bg-gray-100 dark:bg-[#17171b] text-gray-600 dark:text-gray-400'
             }`}
           >
             <span
               className={`w-2.5 h-2.5 rounded-full ${
-                calConnected ? 'bg-green-500' : 'bg-gray-400'
+                calConnected ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-600'
               }`}
             />
             {calConnected ? 'Connected' : 'Not Connected'}
@@ -118,28 +118,28 @@ const CalcomPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="bg-white rounded-xl border border-gray-200 shadow-sm p-6"
+        className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm p-6"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-            <Link2 className="w-4 h-4 text-purple-600" />
+          <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+            <Link2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">Webhook Status</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Webhook Status</h2>
         </div>
 
         <div className="space-y-4">
           {/* Connection status */}
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 border border-gray-200">
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-gray-50 dark:bg-[#17171b] border border-gray-200 dark:border-[#1e1e24]">
             {calConnected ? (
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
             ) : (
               <XCircle className="w-5 h-5 text-gray-400 flex-shrink-0" />
             )}
             <div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {calConnected ? 'Webhook Active' : 'Webhook Not Configured'}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {calConnected
                   ? 'Cal.com is sending booking events to your appointment handler.'
                   : 'Connect Cal.com from the Reminders page to activate appointment webhooks.'}
@@ -148,26 +148,26 @@ const CalcomPage: React.FC = () => {
           </div>
 
           {/* Webhook URL */}
-          <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-            <p className="text-sm font-medium text-gray-700 mb-1">Webhook Endpoint</p>
-            <code className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded break-all">
+          <div className="p-4 rounded-lg bg-gray-50 dark:bg-[#17171b] border border-gray-200 dark:border-[#1e1e24]">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Webhook Endpoint</p>
+            <code className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-[#0e0e11] px-2 py-1 rounded break-all">
               {WEBHOOK_URL}
             </code>
           </div>
 
           {/* Webhook ID */}
           {webhookId && (
-            <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-1">Webhook ID</p>
-              <code className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+            <div className="p-4 rounded-lg bg-gray-50 dark:bg-[#17171b] border border-gray-200 dark:border-[#1e1e24]">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Webhook ID</p>
+              <code className="text-xs text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-[#0e0e11] px-2 py-1 rounded">
                 {webhookId}
               </code>
             </div>
           )}
 
           {/* Events listened */}
-          <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
-            <p className="text-sm font-medium text-gray-700 mb-2">Listening for Events</p>
+          <div className="p-4 rounded-lg bg-gray-50 dark:bg-[#17171b] border border-gray-200 dark:border-[#1e1e24]">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Listening for Events</p>
             <div className="flex flex-wrap gap-2">
               {['BOOKING_CREATED', 'BOOKING_CANCELLED', 'BOOKING_RESCHEDULED'].map((evt) => (
                 <span
@@ -175,7 +175,7 @@ const CalcomPage: React.FC = () => {
                   className={`text-xs px-2 py-1 rounded-full ${
                     calConnected
                       ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-500'
+                      : 'bg-gray-100 dark:bg-[#0e0e11] text-gray-500 dark:text-gray-400'
                   }`}
                 >
                   {evt}
@@ -191,10 +191,10 @@ const CalcomPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="bg-blue-50 rounded-lg border border-blue-200 p-6"
+        className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/40 p-6"
       >
-        <h3 className="text-lg font-medium text-blue-900 mb-2">How It Works</h3>
-        <ul className="list-disc list-inside text-blue-800 space-y-1 text-sm">
+        <h3 className="text-lg font-medium text-blue-900 dark:text-blue-300 mb-2">How It Works</h3>
+        <ul className="list-disc list-inside text-blue-800 dark:text-blue-300/80 space-y-1 text-sm">
           <li>When a booking is created in Cal.com, we store it as an appointment</li>
           <li>If SMS reminders are enabled, a reminder is scheduled before the appointment</li>
           <li>If the Reputation Manager is enabled, a review request is scheduled after the appointment</li>

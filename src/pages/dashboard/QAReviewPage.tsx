@@ -235,14 +235,14 @@ export default function QAReviewPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Review Queue</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Review Queue</h1>
           <p className="text-sm text-gray-400 mt-1">
             Approve AI fixes, revert bad changes, or flag calls for follow-up
           </p>
         </div>
         <button
           onClick={loadReviews}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-sm transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-sm transition-colors duration-200 ease-out"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -255,7 +255,7 @@ export default function QAReviewPage() {
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out ${
               filter === tab.id
                 ? 'bg-indigo-600 text-white shadow'
                 : 'text-gray-400 hover:text-gray-200'
@@ -308,7 +308,7 @@ export default function QAReviewPage() {
                 >
                   {/* Row header */}
                   <div
-                    className="flex items-center gap-4 p-4 cursor-pointer hover:bg-white/5 transition-colors"
+                    className="flex items-center gap-4 p-4 cursor-pointer hover:bg-white/5 transition-colors duration-200 ease-out"
                     onClick={() => toggleExpand(review)}
                   >
                     {/* Type badge */}

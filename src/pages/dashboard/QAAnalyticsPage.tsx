@@ -281,12 +281,12 @@ export default function QAAnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">QA Analytics</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">QA Analytics</h1>
           <p className="text-sm text-gray-400 mt-1">Heal performance, friction trends, and agent health ג€” last 30 days</p>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-sm transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-sm transition-colors duration-200 ease-out"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh

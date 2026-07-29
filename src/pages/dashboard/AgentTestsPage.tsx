@@ -233,10 +233,10 @@ const AgentTestsPage: React.FC = () => {
       {loading ? (
         <PageSkeleton />
       ) : agents.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border p-12 text-center">
-          <Shield className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 font-medium">No agents to test</p>
-          <p className="text-gray-400 text-sm mt-1">Create a voice agent first.</p>
+        <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border border-gray-200 dark:border-[#1e1e24] p-12 text-center">
+          <Shield className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-600 dark:text-gray-400 font-medium">No agents to test</p>
+          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Create a voice agent first.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -246,20 +246,20 @@ const AgentTestsPage: React.FC = () => {
             const lastTest = agentHistory[0];
 
             return (
-              <div key={agent.id} className="bg-white rounded-lg shadow-sm border overflow-hidden">
+              <div key={agent.id} className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border border-gray-200 dark:border-[#1e1e24] overflow-hidden transition-shadow duration-200 ease-out hover:shadow-md">
                 {/* Agent Header */}
                 <div className="p-5 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-blue-50 rounded-lg">
+                    <div className="p-2.5 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                       <Shield className="w-5 h-5 text-brand-blue" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{agent.name}</h3>
-                      <div className="flex items-center gap-3 mt-0.5 text-sm text-gray-500">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{agent.name}</h3>
+                      <div className="flex items-center gap-3 mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                         {agent.agent_type && <span>{formatAgentType(agent.agent_type)}</span>}
                         {lastTest && (
                           <>
-                            <span className="text-gray-300">|</span>
+                            <span className="text-gray-300 dark:text-gray-600">|</span>
                             <span>Last test: {timeAgo(lastTest.created_at)}</span>
                             <span className={`font-medium ${getPassRateColor(lastTest.scenarios_passed, lastTest.scenarios_total)}`}>
                               {lastTest.scenarios_passed}/{lastTest.scenarios_total} passed
@@ -274,9 +274,9 @@ const AgentTestsPage: React.FC = () => {
                   <button
                     onClick={() => handleRunTest(agent)}
                     disabled={!!runningAgent}
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ease-out ${
                       runningAgent
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         : 'bg-brand-blue text-white hover:bg-blue-700'
                     }`}
                   >
@@ -297,12 +297,12 @@ const AgentTestsPage: React.FC = () => {
                 {/* Live progress */}
                 {isRunning && !testResult && (
                   <div className="px-5 pb-4">
-                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-lg p-4">
                       <div className="flex items-center gap-3">
                         <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                         <div>
-                          <p className="text-sm font-medium text-blue-900">Running stress-test scenarios...</p>
-                          <p className="text-xs text-blue-600 mt-0.5">
+                          <p className="text-sm font-medium text-blue-900 dark:text-blue-200">Running stress-test scenarios...</p>
+                          <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                             Testing price extraction, prompt injection, social engineering, emotional escalation, and more
                           </p>
                         </div>
@@ -313,14 +313,14 @@ const AgentTestsPage: React.FC = () => {
 
                 {/* Test Results */}
                 {testResult && testResult.agentId === agent.retell_agent_id && (
-                  <div className="border-t">
+                  <div className="border-t border-gray-200 dark:border-[#1e1e24]">
                     {/* Summary */}
-                    <div className="px-5 py-4 bg-gray-50 flex items-center justify-between">
+                    <div className="px-5 py-4 bg-gray-50 dark:bg-[#17171b] flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className={`text-2xl font-bold ${getPassRateColor(testResult.summary.passed, testResult.summary.total)}`}>
                           {testResult.summary.passed}/{testResult.summary.total}
                         </div>
-                        <div className="text-sm text-gray-600">scenarios passed</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">scenarios passed</div>
                       </div>
                       <div className="flex items-center gap-2">
                         {testResult.summary.failed > 0 && (
@@ -339,7 +339,7 @@ const AgentTestsPage: React.FC = () => {
                     </div>
 
                     {/* Scenario list */}
-                    <div className="divide-y">
+                    <div className="divide-y divide-gray-200 dark:divide-[#1e1e24]">
                       {testResult.results.map((scenario) => {
                         const passed = scenario.analysis?.call_successful === true;
                         const failed = scenario.analysis?.call_successful === false;
@@ -351,7 +351,7 @@ const AgentTestsPage: React.FC = () => {
                           <div key={scenario.scenarioId}>
                             <button
                               onClick={() => setExpandedScenario(isExpanded ? null : scenario.scenarioId)}
-                              className="w-full px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                              className="w-full px-5 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#17171b] transition-colors duration-200 ease-out"
                             >
                               <div className="flex items-center gap-3">
                                 {passed ? (
@@ -365,18 +365,18 @@ const AgentTestsPage: React.FC = () => {
                                   // Ran but no automated verdict available
                                   <AlertCircle className="w-5 h-5 text-yellow-500" />
                                 )}
-                                <span className="text-sm font-medium text-gray-900">{scenario.scenarioName}</span>
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">{scenario.scenarioName}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 {scenario.analysis?.user_sentiment && (
-                                  <span className="text-xs text-gray-500">
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
                                     Sentiment: {scenario.analysis.user_sentiment}
                                   </span>
                                 )}
                                 {isExpanded ? (
-                                  <ChevronUp className="w-4 h-4 text-gray-400" />
+                                  <ChevronUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                 ) : (
-                                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                                  <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                                 )}
                               </div>
                             </button>
@@ -400,26 +400,26 @@ const AgentTestsPage: React.FC = () => {
                                     </div>
 
                                     {/* Success criteria */}
-                                    <div className="text-xs text-gray-500">
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
                                       <strong>Expected:</strong> {scenario.successCriteria}
                                     </div>
 
                                     {/* Call summary */}
                                     {scenario.analysis?.call_summary && (
-                                      <div className={`text-sm p-3 rounded-lg ${passed ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                                      <div className={`text-sm p-3 rounded-lg ${passed ? 'bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300'}`}>
                                         {scenario.analysis.call_summary}
                                       </div>
                                     )}
 
                                     {/* BUG-A5: Explicit error when no transcript was captured */}
                                     {!hasTranscript ? (
-                                      <div className="bg-gray-100 rounded-lg p-3 text-sm text-gray-500">
+                                      <div className="bg-gray-100 dark:bg-[#17171b] rounded-lg p-3 text-sm text-gray-500 dark:text-gray-400">
                                         This scenario failed to generate a transcript. The agent connection may have timed out or the chat session could not be created. Check server logs for details.
                                       </div>
                                     ) : (
                                       /* Transcript */
-                                      <div className="bg-gray-50 rounded-lg p-3 max-h-64 overflow-y-auto">
-                                        <h5 className="text-xs font-semibold text-gray-400 uppercase mb-2">Transcript</h5>
+                                      <div className="bg-gray-50 dark:bg-[#17171b] rounded-lg p-3 max-h-64 overflow-y-auto">
+                                        <h5 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase mb-2">Transcript</h5>
                                         <div className="space-y-2">
                                           {scenario.conversation.map((msg, i) => (
                                             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -427,7 +427,7 @@ const AgentTestsPage: React.FC = () => {
                                                 msg.role === 'user'
                                                   ? 'bg-blue-600 text-white'
                                                   : msg.role === 'agent'
-                                                  ? 'bg-white text-gray-900 border'
+                                                  ? 'bg-white dark:bg-[#111114] text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-[#1e1e24]'
                                                   : 'bg-red-100 text-red-700'
                                               }`}>
                                                 <p className="text-xs font-medium opacity-70 mb-0.5">

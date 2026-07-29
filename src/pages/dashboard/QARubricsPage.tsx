@@ -191,7 +191,7 @@ const QARubricsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-zinc-900 dark:border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -201,16 +201,16 @@ const QARubricsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ClipboardList className="w-6 h-6 text-zinc-700" />
+          <ClipboardList className="w-6 h-6 text-zinc-700 dark:text-gray-300" />
           <div>
-            <h1 className="text-xl font-semibold text-zinc-900">QA Rubrics</h1>
-            <p className="text-sm text-zinc-500">Define scoring criteria for your agents' conversations</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white">QA Rubrics</h1>
+            <p className="text-sm text-zinc-500 dark:text-gray-400">Define scoring criteria for your agents' conversations</p>
           </div>
         </div>
         <button
           onClick={openCreate}
           disabled={!selectedAgentId}
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 disabled:opacity-40 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 dark:hover:bg-gray-200 disabled:opacity-40 transition-colors duration-200 ease-out"
         >
           <Plus className="w-4 h-4" />
           New Rubric
@@ -219,11 +219,11 @@ const QARubricsPage: React.FC = () => {
 
       {/* Agent selector */}
       <div className="flex items-center gap-3">
-        <label className="text-sm font-medium text-zinc-700">Agent:</label>
+        <label className="text-sm font-medium text-zinc-700 dark:text-gray-300">Agent:</label>
         <select
           value={selectedAgentId}
           onChange={e => setSelectedAgentId(e.target.value)}
-          className="border border-zinc-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+          className="border border-zinc-200 dark:border-[#1e1e24] rounded-lg px-3 py-2 text-sm bg-white dark:bg-[#111114] dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
         >
           {agents.map(a => (
             <option key={a.retell_agent_id} value={a.retell_agent_id}>{a.name}</option>
@@ -233,39 +233,39 @@ const QARubricsPage: React.FC = () => {
 
       {/* Rubric list */}
       {rubrics.length === 0 ? (
-        <div className="text-center py-16 bg-zinc-50 rounded-xl border border-zinc-100">
-          <ClipboardList className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
-          <p className="text-zinc-600 font-medium">No rubrics yet</p>
-          <p className="text-sm text-zinc-400 mt-1">Rubrics let the AI score conversations against your specific business rules</p>
-          <button onClick={openCreate} className="mt-4 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors">
+        <div className="text-center py-16 bg-zinc-50 dark:bg-[#17171b] rounded-xl border border-zinc-100 dark:border-[#1e1e24]">
+          <ClipboardList className="w-10 h-10 text-zinc-300 dark:text-gray-600 mx-auto mb-3" />
+          <p className="text-zinc-600 dark:text-gray-400 font-medium">No rubrics yet</p>
+          <p className="text-sm text-zinc-400 dark:text-gray-500 mt-1">Rubrics let the AI score conversations against your specific business rules</p>
+          <button onClick={openCreate} className="mt-4 px-4 py-2 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 dark:hover:bg-gray-200 transition-colors duration-200 ease-out">
             Create your first rubric
           </button>
         </div>
       ) : (
         <div className="space-y-3">
           {rubrics.map(rubric => (
-            <div key={rubric.id} className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
+            <div key={rubric.id} className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-[#1e1e24] rounded-xl overflow-hidden">
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <button
                     onClick={() => toggleActive(rubric)}
                     title={rubric.is_active ? 'Active — click to deactivate' : 'Inactive — click to activate'}
-                    className={`w-4 h-4 rounded-full flex-shrink-0 transition-colors ${rubric.is_active ? 'bg-green-500' : 'bg-zinc-300'}`}
+                    className={`w-4 h-4 rounded-full flex-shrink-0 transition-colors duration-200 ease-out ${rubric.is_active ? 'bg-green-500' : 'bg-zinc-300 dark:bg-[#17171b]'}`}
                   />
                   <div className="min-w-0">
-                    <p className="font-medium text-zinc-900 truncate">{rubric.name}</p>
-                    {rubric.description && <p className="text-xs text-zinc-500 truncate">{rubric.description}</p>}
+                    <p className="font-medium text-zinc-900 dark:text-white truncate">{rubric.name}</p>
+                    {rubric.description && <p className="text-xs text-zinc-500 dark:text-gray-500 truncate">{rubric.description}</p>}
                   </div>
-                  <span className="text-xs text-zinc-400 flex-shrink-0">{rubric.criteria.length} criteria</span>
+                  <span className="text-xs text-zinc-400 dark:text-gray-500 flex-shrink-0">{rubric.criteria.length} criteria</span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <button onClick={() => openEdit(rubric)} className="p-1.5 text-zinc-400 hover:text-zinc-700 transition-colors">
+                  <button onClick={() => openEdit(rubric)} className="p-1.5 text-zinc-400 dark:text-gray-500 hover:text-zinc-700 dark:hover:text-gray-200 transition-colors duration-200 ease-out">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(rubric.id)} className="p-1.5 text-zinc-400 hover:text-red-600 transition-colors">
+                  <button onClick={() => handleDelete(rubric.id)} className="p-1.5 text-zinc-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200 ease-out">
                     <Trash2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setExpandedRubric(expandedRubric === rubric.id ? null : rubric.id)} className="p-1.5 text-zinc-400 hover:text-zinc-700 transition-colors">
+                  <button onClick={() => setExpandedRubric(expandedRubric === rubric.id ? null : rubric.id)} className="p-1.5 text-zinc-400 dark:text-gray-500 hover:text-zinc-700 dark:hover:text-gray-200 transition-colors duration-200 ease-out">
                     {expandedRubric === rubric.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                 </div>
@@ -276,16 +276,16 @@ const QARubricsPage: React.FC = () => {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="border-t border-zinc-100 overflow-hidden"
+                    className="border-t border-zinc-100 dark:border-[#17171b] overflow-hidden"
                   >
                     <div className="p-4 space-y-2">
                       {rubric.criteria.map(c => (
                         <div key={c.id} className="flex items-start gap-3 text-sm">
-                          <CheckCircle className="w-4 h-4 text-zinc-400 mt-0.5 flex-shrink-0" />
+                          <CheckCircle className="w-4 h-4 text-zinc-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
                           <div>
-                            <span className="font-medium text-zinc-800">{c.label}</span>
-                            {c.description && <span className="text-zinc-500 ml-2">— {c.description}</span>}
-                            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded font-medium ${c.weight === 3 ? 'bg-red-100 text-red-700' : c.weight === 2 ? 'bg-yellow-100 text-yellow-700' : 'bg-zinc-100 text-zinc-600'}`}>
+                            <span className="font-medium text-zinc-800 dark:text-gray-100">{c.label}</span>
+                            {c.description && <span className="text-zinc-500 dark:text-gray-400 ml-2">— {c.description}</span>}
+                            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded font-medium ${c.weight === 3 ? 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300' : c.weight === 2 ? 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-300' : 'bg-zinc-100 dark:bg-[#17171b] text-zinc-600 dark:text-gray-400'}`}>
                               {WEIGHT_LABELS[c.weight]} weight
                             </span>
                           </div>
@@ -314,64 +314,64 @@ const QARubricsPage: React.FC = () => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-[#111114] rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between p-6 border-b border-zinc-100">
-                <h2 className="text-lg font-semibold text-zinc-900">{editingRubric ? 'Edit Rubric' : 'New Rubric'}</h2>
-                <button onClick={closeModal} className="p-1.5 text-zinc-400 hover:text-zinc-700 transition-colors">
+              <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-[#17171b]">
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">{editingRubric ? 'Edit Rubric' : 'New Rubric'}</h2>
+                <button onClick={closeModal} className="p-1.5 text-zinc-400 dark:text-gray-500 hover:text-zinc-700 dark:hover:text-gray-200 transition-colors duration-200 ease-out">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="p-6 space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 mb-1">Name *</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-gray-300 mb-1">Name *</label>
                   <input
                     value={formName}
                     onChange={e => setFormName(e.target.value)}
                     placeholder="e.g. Dental Booking Rubric"
-                    className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                    className="w-full border border-zinc-200 dark:border-[#1e1e24] bg-white dark:bg-[#0e0e11] dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-zinc-700 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-gray-300 mb-1">Description</label>
                   <input
                     value={formDescription}
                     onChange={e => setFormDescription(e.target.value)}
                     placeholder="Optional description"
-                    className="w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                    className="w-full border border-zinc-200 dark:border-[#1e1e24] bg-white dark:bg-[#0e0e11] dark:text-gray-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-zinc-700">Criteria</label>
-                    <button onClick={addCriterion} className="flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-900 transition-colors">
+                    <label className="text-sm font-medium text-zinc-700 dark:text-gray-300">Criteria</label>
+                    <button onClick={addCriterion} className="flex items-center gap-1 text-xs text-zinc-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white transition-colors duration-200 ease-out">
                       <Plus className="w-3.5 h-3.5" /> Add criterion
                     </button>
                   </div>
                   <div className="space-y-3">
                     {formCriteria.map((c, i) => (
-                      <div key={c.id} className="border border-zinc-200 rounded-lg p-3 space-y-2">
+                      <div key={c.id} className="border border-zinc-200 dark:border-[#1e1e24] rounded-lg p-3 space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-zinc-400 font-medium w-4">{i + 1}.</span>
+                          <span className="text-xs text-zinc-400 dark:text-gray-500 font-medium w-4">{i + 1}.</span>
                           <input
                             value={c.label}
                             onChange={e => updateCriterion(c.id, 'label', e.target.value)}
                             placeholder="Criterion label (e.g. Agent collected patient name)"
-                            className="flex-1 border border-zinc-200 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                            className="flex-1 border border-zinc-200 dark:border-[#1e1e24] bg-white dark:bg-[#0e0e11] dark:text-gray-100 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white"
                           />
                           <select
                             value={c.weight}
                             onChange={e => updateCriterion(c.id, 'weight', Number(e.target.value))}
-                            className="border border-zinc-200 rounded px-2 py-1.5 text-xs bg-white focus:outline-none"
+                            className="border border-zinc-200 dark:border-[#1e1e24] rounded px-2 py-1.5 text-xs bg-white dark:bg-[#111114] dark:text-gray-100 focus:outline-none"
                           >
                             <option value={1}>Low</option>
                             <option value={2}>Medium</option>
                             <option value={3}>High</option>
                           </select>
                           {formCriteria.length > 1 && (
-                            <button onClick={() => removeCriterion(c.id)} className="text-zinc-300 hover:text-red-500 transition-colors">
+                            <button onClick={() => removeCriterion(c.id)} className="text-zinc-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 ease-out">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           )}
@@ -380,7 +380,7 @@ const QARubricsPage: React.FC = () => {
                           value={c.description}
                           onChange={e => updateCriterion(c.id, 'description', e.target.value)}
                           placeholder="Description (optional) — helps the AI understand what to look for"
-                          className="w-full border border-zinc-100 rounded px-2 py-1.5 text-xs text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-900 bg-zinc-50"
+                          className="w-full border border-zinc-100 dark:border-[#17171b] rounded px-2 py-1.5 text-xs text-zinc-600 dark:text-gray-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white bg-zinc-50 dark:bg-[#17171b]"
                         />
                       </div>
                     ))}
@@ -388,12 +388,12 @@ const QARubricsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 p-6 border-t border-zinc-100">
-                <button onClick={closeModal} className="px-4 py-2 text-sm text-zinc-600 hover:text-zinc-900 transition-colors">Cancel</button>
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-zinc-100 dark:border-[#17171b]">
+                <button onClick={closeModal} className="px-4 py-2 text-sm text-zinc-600 dark:text-gray-400 hover:text-zinc-900 dark:hover:text-white transition-colors duration-200 ease-out">Cancel</button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-lg text-sm font-medium hover:bg-zinc-700 dark:hover:bg-gray-200 disabled:opacity-50 transition-colors duration-200 ease-out"
                 >
                   {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
                   {editingRubric ? 'Update' : 'Create'}

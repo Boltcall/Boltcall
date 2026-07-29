@@ -42,8 +42,8 @@ const InstantLeadReplyPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-2xl font-bold text-gray-900">Instant Lead Response</h1>
-        <p className="mt-1 text-gray-500">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Instant Lead Response</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           Choose where your leads come from. Every submission gets an instant reply — automatically.
         </p>
       </motion.div>
@@ -60,7 +60,7 @@ const InstantLeadReplyPage: React.FC = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 + i * 0.08 }}
-            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-all cursor-pointer group"
+            className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ease-out cursor-pointer group"
             onClick={() => navigate(card.route)}
           >
             <div className="flex items-start gap-4 mb-4">
