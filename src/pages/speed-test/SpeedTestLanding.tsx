@@ -55,7 +55,7 @@ const SpeedTestLanding: React.FC = () => {
       // Call webhook first
       setProgress(5);
       setProgressMessage('Running health check...');
-      const webhookResponse = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/fade2648-d939-4d3b-93aa-726ced02c1a3', {
+      const webhookResponse = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/fade2648-d939-4d3b-93aa-726ced02c1a3', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

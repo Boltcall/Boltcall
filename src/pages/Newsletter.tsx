@@ -57,7 +57,7 @@ const Newsletter: React.FC = () => {
     
     try {
       // Call webhook with email
-      const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/7212532d-a208-4970-b962-83df7a66501b', {
+      const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/7212532d-a208-4970-b962-83df7a66501b', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

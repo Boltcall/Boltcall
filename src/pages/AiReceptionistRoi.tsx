@@ -175,7 +175,7 @@ const AiReceptionistRoi: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      await fetch('https://n8n.srv974118.hstgr.cloud/webhook/lead-magnet', {
+      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

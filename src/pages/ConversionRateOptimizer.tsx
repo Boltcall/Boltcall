@@ -155,7 +155,7 @@ const ConversionRateOptimizer: React.FC = () => {
 
     try {
 
-      const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/3ee2df6f-7955-4f7d-b745-d03f1378b1dd', {
+      const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/3ee2df6f-7955-4f7d-b745-d03f1378b1dd', {
 
         method: 'POST',
 

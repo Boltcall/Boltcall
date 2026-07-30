@@ -254,7 +254,7 @@ const DentistChairCalculator: React.FC = () => {
         },
       };
 
-      const res = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      const res = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

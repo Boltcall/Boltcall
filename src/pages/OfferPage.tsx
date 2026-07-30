@@ -96,7 +96,7 @@ const OfferPage: React.FC = () => {
     
     try {
       // POST to n8n webhook
-      const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/1b1c7fe4-dec4-423d-bb3e-6ce0c66819aa', {
+      const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/1b1c7fe4-dec4-423d-bb3e-6ce0c66819aa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
