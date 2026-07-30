@@ -6,7 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 
-const WEBHOOK_URL = 'https://n8n.srv974118.hstgr.cloud/webhook/funnel-report';
+const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/funnel-report';
 
 const NICHE_OPTIONS = [
   'Plumbing', 'HVAC', 'Roofing', 'Electrical', 'Dental', 'Medical', 'Legal',

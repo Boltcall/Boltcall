@@ -214,7 +214,7 @@ const FreeWebsitePage: React.FC = () => {
                             };
 
                             // Call webhook
-                            const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/c4bc1f22-204e-40d1-be8d-fae0f36f3098', {
+                            const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/c4bc1f22-204e-40d1-be8d-fae0f36f3098', {
                               method: 'POST',
                               headers: {
                                 'Content-Type': 'application/json',

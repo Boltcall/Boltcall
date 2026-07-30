@@ -22,7 +22,7 @@ import GiveawayBar from '../components/GiveawayBar';
 
 
 
-const WEBHOOK_URL = 'https://n8n.srv974118.hstgr.cloud/webhook/lead-magnet-5min-playbook';
+const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/lead-magnet-5min-playbook';
 
 
 

@@ -72,7 +72,7 @@ const painPointOptions = [
 ];
 
 // ── Webhook URL (replace with your n8n webhook after creating it) ──
-const WEBHOOK_URL = 'https://n8n.srv974118.hstgr.cloud/webhook/ai-audit'; // n8n orchestration webhook
+const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/ai-audit'; // n8n orchestration webhook
 
 // ── Loading step messages ──
 const loadingSteps = [

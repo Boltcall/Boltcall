@@ -97,7 +97,7 @@ const Strike: React.FC = () => {
     
     // Call webhook
     try {
-      const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/d8434af6-5bff-47b0-9f85-c8609caddb7c', {
+      const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/d8434af6-5bff-47b0-9f85-c8609caddb7c', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
