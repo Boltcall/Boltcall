@@ -1,0 +1,32 @@
+{
+  "name": "Boltcall",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/typescript:2": {},
+    "ghcr.io/dhoeric/features/1password-cli:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+  "forwardPorts": [5173, 4173, 8888],
+  "portsAttributes": {
+    "5173": { "label": "Vite dev", "onAutoForward": "openBrowserOnce" },
+    "4173": { "label": "Vite preview" },
+    "8888": { "label": "Netlify dev" }
+  },
+  "postCreateCommand": "npm install && npm install -g netlify-cli",
+  "postAttachCommand": "git config --global pull.rebase false",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "1Password.op-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+  "remoteUser": "node"
+}
