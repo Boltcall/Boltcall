@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import AppRoutes from './routes/AppRoutes';
 import { ToastProvider } from './contexts/ToastContext';
 import EnsureImageTitles from './components/seo/EnsureImageTitles';
-import CookieBanner from './components/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useDirection } from './hooks/useDirection';
 import { useAttributionCapture } from './hooks/useAttributionCapture';
@@ -25,7 +24,6 @@ function App() {
         <Suspense fallback={null}>
           <PWAUpdatePrompt />
         </Suspense>
-        <CookieBanner />
       </ToastProvider>
     </ErrorBoundary>
   );
