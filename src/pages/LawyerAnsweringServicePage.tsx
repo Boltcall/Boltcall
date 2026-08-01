@@ -4,10 +4,14 @@ import {
   ArrowRight,
   CalendarCheck2,
   CheckCircle2,
+  Clock,
+  Gift,
   MessageSquare,
   Phone,
   Scale,
+  Shield,
   ShieldCheck,
+  TrendingDown,
 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -16,10 +20,37 @@ import AnswerBlock from '../components/seo/AnswerBlock';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import { updateMetaDescription } from '../lib/utils';
 
+// Pain stats — sourced from law-firm halo file (natlawreview, ClaireAI, Talkroute, Telewizard, Voxx).
+const PAIN_STATS = [
+  { number: '72%', label: 'of legal consumers hire the next firm if you take over 24 hours', source: 'natlawreview' },
+  { number: '35%', label: 'of law firm calls go unanswered during business hours', source: 'national responsiveness study' },
+  { number: '61%', label: 'of inbound legal calls arrive outside business hours', source: 'ClaireAI 2026 benchmark' },
+  { number: '85%', label: 'of legal callers who reach voicemail never call back', source: 'Telewizard' },
+];
+
 const HERO_POINTS = [
-  'Convert the intake call before the caller reaches the next firm on the search results.',
-  'Screen for case type, jurisdiction, and conflict basics on the first touch.',
-  'Cover after-hours, court time, and depositions without missing a live prospect.',
+  'Every intake call answered in under 60 seconds — even at 2am after a serious accident.',
+  'Case type, jurisdiction, incident date, and conflict basics captured on the first touch.',
+  'SMS confirmation and calendar hold sent while the caller is still choosing which firm to hire.',
+];
+
+// Bonus stack for the Godfather offer.
+const BONUSES = [
+  {
+    title: 'Free intake-script audit',
+    body: 'A 20-minute call where we grade your current intake flow against 8 conversion benchmarks (case-type screening, jurisdiction check, urgency route, callback promise) and rewrite the weakest 3 lines.',
+    value: '$500 value',
+  },
+  {
+    title: 'After-hours & court-day rollover',
+    body: 'We wire Boltcall to pick up whenever your line is busy, in court, or on a deposition — no extra config on your side, no missed cases when the paralegal is heads-down.',
+    value: '$600 value',
+  },
+  {
+    title: 'First 30 days of after-hours free',
+    body: 'Evenings, weekends, and holidays covered for the first month with zero after-hours upcharge. A single PI matter answered at 2am recovers the whole first year.',
+    value: '$400 value',
+  },
 ];
 
 const CAPABILITIES = [
@@ -158,16 +189,17 @@ export default function LawyerAnsweringServicePage() {
         <section className="border-b border-gray-100 bg-white">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                Industry Page
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                <Clock className="h-3.5 w-3.5" /> Speed-to-lead for law firms
               </p>
               <h1 className="max-w-4xl text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                Legal answering service that captures the retainer before the caller tries the next firm.
+                Answer every intake call in 60 seconds — even at 2am — or refund the month.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-                Boltcall helps law firms answer faster, screen new matters, capture the case details
-                that matter, and move callers toward a booked consultation before they call the next
-                firm on the search results.
+                72% of legal prospects hire whoever gets back to them first. 61% of your intake
+                calls arrive after hours. Boltcall picks up in under 60 seconds, screens case type
+                and jurisdiction, books the consult, and texts a confirmation. If your qualified
+                consult count doesn't rise inside 30 days, refund — you keep the recordings.
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -203,6 +235,34 @@ export default function LawyerAnsweringServicePage() {
               outcome="That means more booked consultations, cleaner intake, and higher retainer conversion from the same marketing spend."
               cta="Boltcall is built for that speed-to-lead workflow."
             />
+          </div>
+        </section>
+
+        {/* PAIN STATS — Sabri: flood light on the problem before the solution */}
+        <section className="border-b border-gray-100 bg-gray-900 text-white">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="max-w-3xl">
+              <p className="inline-flex items-center gap-2 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-red-300">
+                <TrendingDown className="h-3.5 w-3.5" /> The intake gap you already knew about
+              </p>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                Every unanswered PI call is $5,000–$50,000 walking to the firm that picked up.
+              </h2>
+            </div>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {PAIN_STATS.map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                  <p className="text-4xl font-bold tracking-tight text-red-300">{stat.number}</p>
+                  <p className="mt-3 text-sm leading-6 text-gray-100">{stat.label}</p>
+                  <p className="mt-3 text-xs uppercase tracking-wider text-gray-400">{stat.source}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-8 max-w-3xl text-base leading-7 text-gray-300">
+              The intake gap isn't a marketing problem. Your ads work — the calls arrive. They just
+              arrive at 8pm on a Friday, when your paralegal is home. By Monday, the prospect has
+              signed with the firm that answered at 8:04pm.
+            </p>
           </div>
         </section>
 
@@ -379,6 +439,85 @@ export default function LawyerAnsweringServicePage() {
                   <p className="mt-3 text-sm leading-7 text-gray-600">{faq.answer}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* GODFATHER OFFER — Sabri steps 10-15 */}
+        <section className="bg-blue-600 text-white">
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+            <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+              <div>
+                <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                  <Gift className="h-3.5 w-3.5" /> The 30-day guarantee
+                </p>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                  Answer every intake call in 60 seconds for 30 days — or refund the month and keep the recordings.
+                </h2>
+                <p className="mt-5 text-lg leading-8 text-blue-50">
+                  We install Boltcall on your existing intake line in an afternoon. If, at day 30,
+                  your qualified consult count is not measurably higher than the baseline, we
+                  refund the full month. You keep every call recording either way.
+                </p>
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                  <Link
+                    to="/book-a-call"
+                    className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                  >
+                    Claim the 30-day guarantee
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                  <Link
+                    to="/pricing"
+                    className="inline-flex items-center justify-center rounded-lg border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                  >
+                    See pricing first
+                  </Link>
+                </div>
+                <p className="mt-5 inline-flex items-center gap-2 text-sm text-blue-100">
+                  <Shield className="h-4 w-4" /> 5 firms onboarded per month. 2 spots left in the current window.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur">
+                <h3 className="text-lg font-semibold">You also get, on the house:</h3>
+                <ul className="mt-5 space-y-5">
+                  {BONUSES.map((bonus) => (
+                    <li key={bonus.title} className="rounded-xl bg-white/10 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-semibold text-white">{bonus.title}</p>
+                        <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white">
+                          {bonus.value}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-blue-50">{bonus.body}</p>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-6 text-sm text-blue-100">
+                  Total bundled value: <span className="font-semibold text-white">$1,500</span>.
+                  Included at zero extra cost this window.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PS — Sabri step 17 */}
+        <section className="border-t border-gray-200 bg-white">
+          <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="rounded-2xl border-l-4 border-blue-600 bg-blue-50/60 p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">
+                P.S. — Read this if you skimmed
+              </p>
+              <p className="mt-4 text-base leading-8 text-gray-800">
+                72% of legal prospects hire the first firm that calls them back. 61% of your intake
+                calls arrive after hours. 85% of the ones that hit voicemail never call again. A
+                single missed PI matter is $5,000 to $50,000. Boltcall installs in an afternoon,
+                answers under 60 seconds, and refunds the month if your qualified consult count
+                doesn't rise. Either the math works or you get your money back. There is no third
+                outcome.
+              </p>
             </div>
           </div>
         </section>
