@@ -21,6 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import SidebarV2 from './SidebarV2';
+import { primeV2SurfaceCache, resetV2SurfaceCache } from './v2Surface';
 
 const DashboardLayoutV2: React.FC = () => {
   const navigate = useNavigate();
@@ -56,9 +57,14 @@ const DashboardLayoutV2: React.FC = () => {
       if (!res.ok) {
         console.warn(`[V2] saas-v2-toggle returned ${res.status} on back-to-v1`);
       }
+      // Sync the local surface cache so ClassicDashboardGate doesn't bounce
+      // the user straight back into /v2 off the stale flag.
+      if (user?.id) primeV2SurfaceCache(user.id, false);
+      else resetV2SurfaceCache();
       navigate('/dashboard');
     } catch (err) {
       console.warn('[V2] back-to-v1 failed', err);
+      resetV2SurfaceCache();
       navigate('/dashboard');
     } finally {
       setBackToV1Pending(false);

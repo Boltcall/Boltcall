@@ -122,17 +122,12 @@
     "/giveaway",
     "/help-center",
     "/industries/contractor-answering-service",
-    "/industries/dentist-answering-service",
     "/industries/hvac-answering-service",
-    "/industries/lawyer-answering-service",
-    "/industries/medspa-answering-service",
     "/industries/plumbing-answering-service",
     "/integrations",
     "/integrations/gohighlevel",
     "/integrations/hubspot",
     "/integrations/make",
-    "/integrations/squarespace",
-    "/integrations/wix",
     "/integrations/zapier",
     "/law-firm-security",
     "/lead-magnet",
@@ -178,5 +173,5 @@
     "/tools/solar-sales-closer",
     "/tools/vet-clinic-revenue-calculator"
   ],
-  "updatedAt": "2026-07-29T14:31:07.224Z"
+  "updatedAt": "2026-07-26T15:52:15.610Z"
 }

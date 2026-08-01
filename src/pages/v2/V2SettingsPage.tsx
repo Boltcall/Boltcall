@@ -14,7 +14,6 @@ import {
   Phone,
   Clock,
   Mic,
-  ChevronRight,
 } from 'lucide-react';
 import { authedFetch } from '../../lib/authedFetch';
 
@@ -815,13 +814,10 @@ const V2SettingsPage: React.FC = () => {
             ))}
           </ul>
         )}
-        <a
-          href="/dashboard/settings/members"
-          className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
-        >
-          Manage members
-          <ChevronRight className="w-4 h-4" />
-        </a>
+        <p className="text-xs text-slate-500">
+          Inviting and removing members from this dashboard is coming soon —
+          ask Boltcall AI in Help if you need a member changed today.
+        </p>
       </SectionCard>
 
       {/* Danger zone */}

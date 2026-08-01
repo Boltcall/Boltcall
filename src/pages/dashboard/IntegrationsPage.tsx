@@ -1,5 +1,5 @@
 import React from 'react';
-import IntegrationHubTab from './integrations/IntegrationHubTab';
+import IntegrationHubTab from '../../components/integrations/IntegrationHubTab';
 
 const IntegrationsPage: React.FC = () => {
   return (

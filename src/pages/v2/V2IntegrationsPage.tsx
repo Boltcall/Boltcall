@@ -1,13 +1,14 @@
 /**
  * V2IntegrationsPage — /v2/integrations
  *
- * V2 Integrations surface. Two slabs:
+ * V2 Integrations surface. Three slabs:
  *   1. "Next moves" — AI-suggested 2-3 integrations the workspace should
- *      connect next, based on vertical + recent usage gaps. Each card has
- *      Connect / Dismiss (stubs — the actual connect flow remains in V1's
- *      IntegrationHubTab; this is the narrative-first nudge layer).
+ *      connect next, based on vertical + recent usage gaps.
  *   2. Catalog — all available integrations grouped by category. Connected
  *      ones show a "Connected" pill + Manage; available ones show Connect.
+ *   3. Embedded connect panel — Connect/Manage open the shared
+ *      IntegrationHubTab (components/integrations) inline, inside the V2
+ *      shell. V2 users never navigate into the V1 dashboard.
  *
  * Server endpoints:
  *   GET /.netlify/functions/saas-v2-integrations         → catalog + state
@@ -23,7 +24,7 @@
  * suggestions card only. The catalog itself always renders — connecting an
  * integration is useful from day zero.
  */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Plug,
   Check,
@@ -44,6 +45,14 @@ import {
   CardTitle,
 } from '../../components/ui/card-shadcn';
 import { Button } from '../../components/ui/button-shadcn';
+
+// Shared connect/manage flows (OAuth, API keys, webhooks) — lives in the
+// neutral components/integrations tree and renders inside the V2 shell, so
+// connecting never drops the user into V1 chrome. Lazy: only loads when the
+// user actually opens the connect panel.
+const IntegrationHubTab = React.lazy(
+  () => import('../../components/integrations/IntegrationHubTab'),
+);
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -211,18 +220,25 @@ const V2IntegrationsPage: React.FC = () => {
     return (suggestions ?? []).filter((s) => !dismissed.has(s.integration_id));
   }, [suggestions, dismissed]);
 
-  // ── Stub click handlers ──────────────────────────────────────────────────
-  // The actual connect flow lives in V1's IntegrationHubTab. From V2 we open
-  // it in a new tab so the user keeps their V2 context. Future iterations
-  // will inline the OAuth/api-key forms here.
-  const handleConnect = (row: { id: string; connect_href?: string }) => {
-    const href = row.connect_href || `/dashboard/integrations#${row.id}`;
-    window.open(href, '_blank', 'noopener,noreferrer');
+  // ── Connect / manage — embedded hub panel ────────────────────────────────
+  // The full connect flows (OAuth, API keys, webhooks) render right here in
+  // the V2 shell via the shared IntegrationHubTab — never in the V1 dashboard.
+  const [hubOpen, setHubOpen] = useState(false);
+  const hubRef = useRef<HTMLDivElement>(null);
+
+  const openHub = useCallback(() => {
+    setHubOpen(true);
+    window.setTimeout(() => {
+      hubRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }, []);
+
+  const handleConnect = (_row: { id: string; connect_href?: string }) => {
+    openHub();
   };
 
-  const handleManage = (row: { id: string; manage_href?: string }) => {
-    const href = row.manage_href || `/dashboard/integrations#${row.id}`;
-    window.open(href, '_blank', 'noopener,noreferrer');
+  const handleManage = (_row: { id: string; manage_href?: string }) => {
+    openHub();
   };
 
   const handleDismiss = (integration_id: string) => {
@@ -424,6 +440,45 @@ const V2IntegrationsPage: React.FC = () => {
             </div>
           );
         })}
+      </section>
+
+      {/* ── Embedded connect & manage panel ──────────────────────────────── */}
+      <section ref={hubRef} className="flex flex-col gap-3 scroll-mt-6">
+        {hubOpen ? (
+          <>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-main">
+                Connect &amp; manage
+              </h2>
+              <button
+                type="button"
+                onClick={() => setHubOpen(false)}
+                className="text-xs text-zinc-500 hover:text-zinc-900"
+              >
+                Hide
+              </button>
+            </div>
+            <Suspense
+              fallback={
+                <div className="flex items-center gap-2 text-sm text-zinc-500 py-6 justify-center">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Loading connect flows…
+                </div>
+              }
+            >
+              <IntegrationHubTab />
+            </Suspense>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={openHub}
+            className="inline-flex items-center gap-2 self-start text-sm font-medium text-zinc-700 hover:text-zinc-900"
+          >
+            <Plug className="w-4 h-4" />
+            Open connect &amp; manage panel
+          </button>
+        )}
       </section>
     </div>
   );

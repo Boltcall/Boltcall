@@ -10,14 +10,15 @@
  *   2. Stress-test panel: 6 hardcoded scenarios with per-scenario Run buttons.
  *      Results show pass/fail + AI verdict (red border on fail).
  *   3. Suggested-edits drawer trigger button. Right-side Drawer lists 3-5
- *      Sonnet-suggested improvements with severity pills and a stubbed Apply
- *      button per suggestion.
+ *      Sonnet-suggested improvements with severity pills; Apply writes the
+ *      edit to the live prompt via saas-v2-agent-apply-edit.
  *   4. Raw Retell prompt — collapsed by default behind "Show raw prompt".
  *
  * All data flows through JWT-scoped Netlify functions:
  *   GET  /.netlify/functions/saas-v2-agent-summary
  *   POST /.netlify/functions/saas-v2-agent-stress-test  body: { scenario_id }
  *   GET  /.netlify/functions/saas-v2-agent-suggest-edits
+ *   POST /.netlify/functions/saas-v2-agent-apply-edit    body: { title, body }
  *
  * Cold-start guard: when summary.cold_start === true (no prompt configured),
  * we render a single "Set up your agent first" placeholder for the whole page.
@@ -221,6 +222,12 @@ const V2AgentPage: React.FC = () => {
   const [appliedSuggestions, setAppliedSuggestions] = useState<Set<number>>(
     new Set(),
   );
+  const [applyingSuggestions, setApplyingSuggestions] = useState<Set<number>>(
+    new Set(),
+  );
+  const [applyErrors, setApplyErrors] = useState<
+    Partial<Record<number, string>>
+  >({});
   const [verticalGuardrails, setVerticalGuardrails] =
     useState<VerticalGuardrailsResponse | null>(null);
   const [guardrailsLoading, setGuardrailsLoading] = useState(true);
@@ -329,8 +336,50 @@ const V2AgentPage: React.FC = () => {
   const reloadSuggestions = useCallback(async () => {
     setSuggestions(null);
     setAppliedSuggestions(new Set());
+    setApplyErrors({});
     await openDrawer();
   }, [openDrawer]);
+
+  // ── Apply one suggestion to the live prompt ──────────────────────────
+  const applySuggestion = useCallback(
+    async (index: number, s: Suggestion) => {
+      setApplyingSuggestions((prev) => new Set(prev).add(index));
+      setApplyErrors((prev) => ({ ...prev, [index]: undefined }));
+      try {
+        const res = await authedFetch(
+          `${FUNCTIONS_BASE}/saas-v2-agent-apply-edit`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: s.title, body: s.body }),
+          },
+        );
+        const json = (await res.json().catch(() => ({}))) as { error?: string };
+        if (!res.ok) {
+          throw new Error(json.error || `apply failed (${res.status})`);
+        }
+        setAppliedSuggestions((prev) => {
+          const next = new Set(prev);
+          next.add(index);
+          return next;
+        });
+        // Refresh the summary so the raw prompt shows the new OWNER EDIT section.
+        void loadSummary();
+      } catch (err) {
+        setApplyErrors((prev) => ({
+          ...prev,
+          [index]: err instanceof Error ? err.message : 'Apply failed',
+        }));
+      } finally {
+        setApplyingSuggestions((prev) => {
+          const next = new Set(prev);
+          next.delete(index);
+          return next;
+        });
+      }
+    },
+    [loadSummary],
+  );
 
   // ── Derived ──────────────────────────────────────────────────────────
   const passCount = useMemo(
@@ -767,6 +816,7 @@ const V2AgentPage: React.FC = () => {
                     <ul className="space-y-3">
                       {suggestions.suggestions.map((s, i) => {
                         const applied = appliedSuggestions.has(i);
+                        const applying = applyingSuggestions.has(i);
                         return (
                           <li
                             key={i}
@@ -790,30 +840,34 @@ const V2AgentPage: React.FC = () => {
                             </p>
                             <button
                               type="button"
-                              onClick={() =>
-                                setAppliedSuggestions((prev) => {
-                                  const next = new Set(prev);
-                                  next.add(i);
-                                  return next;
-                                })
-                              }
-                              disabled={applied}
+                              onClick={() => void applySuggestion(i, s)}
+                              disabled={applied || applying}
                               className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 disabled:opacity-60 disabled:cursor-default"
                               title={
                                 applied
-                                  ? 'Marked as applied (write-back coming soon)'
-                                  : 'Apply suggestion (stub — does not write back yet)'
+                                  ? 'Applied to your live agent prompt'
+                                  : 'Apply this edit to your live agent prompt'
                               }
                             >
                               {applied ? (
                                 <>
                                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                  Marked
+                                  Applied
+                                </>
+                              ) : applying ? (
+                                <>
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                  Applying…
                                 </>
                               ) : (
                                 'Apply'
                               )}
                             </button>
+                            {applyErrors[i] && (
+                              <p className="mt-1.5 text-xs text-rose-700">
+                                {applyErrors[i]}
+                              </p>
+                            )}
                           </li>
                         );
                       })}

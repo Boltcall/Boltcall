@@ -7,9 +7,8 @@ import { supabase } from '../../lib/supabase';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { authedFetch } from '../../lib/authedFetch';
 import { useAuth } from '../../contexts/AuthContext';
-import SiriOrb from '../../components/ui/siri-orb';
+import { VoicePoweredOrb } from '../../components/ui/voice-powered-orb';
 import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
-import { reportHandledError } from '../../lib/errorReporting';
 
 type Phase = 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
 
@@ -19,8 +18,8 @@ const TalkToAgentPage: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('provisioning');
   const [agentName, setAgentName] = useState('your agent');
   const [errorMessage, setErrorMessage] = useState('');
-  const [noAgent, setNoAgent] = useState(false);
   const [callSeconds, setCallSeconds] = useState(0);
+  const [isLive, setIsLive] = useState(false);
 
   const clientRef = useRef<RetellWebClient | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -53,7 +52,6 @@ const TalkToAgentPage: React.FC = () => {
 
     setPhase('provisioning');
     setErrorMessage('');
-    setNoAgent(false);
 
     try {
       // Find the inbound agent for this user — most recent
@@ -69,18 +67,7 @@ const TalkToAgentPage: React.FC = () => {
       if (agentErr) throw new Error(agentErr.message);
       const agent = agents?.[0];
       if (!agent?.retell_agent_id) {
-        // Setup never completed. Distinguish from a transient call error
-        // so the user gets a "back to setup" primary button instead of
-        // being stranded in an empty dashboard via the skip link.
-        setNoAgent(true);
-        setPhase('error');
-        setErrorMessage("Your setup didn't finish, so there's no agent to meet yet.");
-        reportHandledError(
-          'TalkToAgentPage: no inbound agent',
-          new Error('No inbound agent for user'),
-          { userId: user.id },
-        );
-        return;
+        throw new Error('Your agent is still being prepared. Please try again in a moment.');
       }
 
       if (agent.name) setAgentName(agent.name);
@@ -120,6 +107,7 @@ const TalkToAgentPage: React.FC = () => {
 
       client.on('call_started', () => {
         setPhase('live');
+        setIsLive(true);
         startedAtRef.current = Date.now();
         timerRef.current = setInterval(() => {
           setCallSeconds(Math.floor((Date.now() - startedAtRef.current) / 1000));
@@ -128,12 +116,14 @@ const TalkToAgentPage: React.FC = () => {
 
       client.on('call_ended', () => {
         cleanup();
+        setIsLive(false);
         setPhase('ended');
       });
 
       client.on('error', (err: unknown) => {
         console.error('Retell call error:', err);
         cleanup();
+        setIsLive(false);
         setPhase('error');
         setErrorMessage('Something went wrong during the call.');
       });
@@ -162,7 +152,7 @@ const TalkToAgentPage: React.FC = () => {
 
   const handleEnterDashboard = () => {
     cleanup();
-    navigate('/dashboard/?setupCompleted=true', { replace: true });
+    navigate('/v2?setupCompleted=true', { replace: true });
   };
 
   const formatTime = (s: number) =>
@@ -176,29 +166,8 @@ const TalkToAgentPage: React.FC = () => {
     error: errorMessage || 'Something went wrong.',
   };
 
-  const orbAnimationDuration =
-    phase === 'live' ? 7 : phase === 'connecting' ? 11 : phase === 'ended' ? 16 : 13;
-  const orbColors =
-    phase === 'ended'
-      ? {
-          c1: 'oklch(78% 0.04 250)',
-          c2: 'oklch(82% 0.03 220)',
-          c3: 'oklch(52% 0.06 260)',
-        }
-      : phase === 'error'
-        ? {
-            c1: 'oklch(74% 0.19 18)',
-            c2: 'oklch(79% 0.14 10)',
-            c3: 'oklch(58% 0.18 8)',
-          }
-        : {
-            c1: 'oklch(76% 0.16 320)',
-            c2: 'oklch(84% 0.12 215)',
-            c3: 'oklch(62% 0.2 275)',
-          };
-
   return (
-    <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center justify-center overflow-hidden bg-[#050507]">
+    <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center justify-center overflow-hidden bg-white">
       <SetupGradientBackground />
 
       <div className="relative z-10 flex flex-col items-center px-6 text-center">
@@ -213,17 +182,17 @@ const TalkToAgentPage: React.FC = () => {
             className="mb-8"
           >
             {phase === 'live' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                 Meet {agentName}.
               </h1>
             )}
             {phase !== 'live' && phase !== 'ended' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                 Your agent is almost ready
               </h1>
             )}
             {phase === 'ended' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                 That's your agent.
               </h1>
             )}
@@ -232,11 +201,9 @@ const TalkToAgentPage: React.FC = () => {
 
         {/* Orb */}
         <div className="w-[300px] h-[300px]">
-          <SiriOrb
-            size="300px"
-            animationDuration={orbAnimationDuration}
-            colors={orbColors}
-            className="drop-shadow-[0_28px_90px_rgba(109,40,217,0.22)]"
+          <VoicePoweredOrb
+            enableVoiceControl={isLive}
+            className="rounded-full overflow-hidden"
           />
         </div>
 
@@ -247,7 +214,7 @@ const TalkToAgentPage: React.FC = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-6 flex items-center gap-2 text-sm font-medium text-white/75"
+              className="mt-6 flex items-center gap-2 text-sm font-medium text-slate-600"
             >
               <span className="inline-block w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
               <span>Live</span>
@@ -265,7 +232,7 @@ const TalkToAgentPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-6 max-w-md text-sm text-white/68"
+              className="mt-6 text-sm text-slate-500 max-w-md"
             >
               {captionByPhase[phase]}
             </motion.p>
@@ -304,7 +271,7 @@ const TalkToAgentPage: React.FC = () => {
             </motion.button>
           )}
 
-          {phase === 'error' && !noAgent && (
+          {phase === 'error' && (
             <div className="flex flex-col items-center gap-3">
               <button
                 type="button"
@@ -315,23 +282,9 @@ const TalkToAgentPage: React.FC = () => {
               </button>
             </div>
           )}
-
-          {phase === 'error' && noAgent && (
-            <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                onClick={() => navigate('/setup', { replace: true })}
-                className="flex items-center gap-2 px-8 py-3 rounded-full bg-blue-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-colors"
-              >
-                Back to setup
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Skip link — always available except in ended state (uses enter dashboard).
-            In the no-agent case, keep it as a low-emphasis secondary. */}
+        {/* Skip link — always available except in ended state (uses enter dashboard) */}
         {phase !== 'ended' && (
           <motion.button
             type="button"
@@ -339,7 +292,7 @@ const TalkToAgentPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-8 text-sm text-white/50 underline-offset-4 transition-colors hover:text-white/80 hover:underline"
+            className="mt-8 text-sm text-slate-400 hover:text-slate-600 underline-offset-4 hover:underline transition-colors"
           >
             Skip &amp; enter dashboard →
           </motion.button>

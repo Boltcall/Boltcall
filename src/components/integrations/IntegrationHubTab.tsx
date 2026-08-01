@@ -11,10 +11,10 @@ import {
   ExternalLink,
   Plus,
 } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useToast } from '../../../contexts/ToastContext';
-import { PageSkeleton } from '../../../components/ui/loading-skeleton';
-import { authedFetch } from '../../../lib/authedFetch';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
+import { PageSkeleton } from '../ui/loading-skeleton';
+import { authedFetch } from '../../lib/authedFetch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -49,7 +49,7 @@ interface SavedIntegration {
 // Integration definitions
 // ---------------------------------------------------------------------------
 
-import { FUNCTIONS_BASE } from '../../../lib/api';
+import { FUNCTIONS_BASE } from '../../lib/api';
 
 const integrations: Integration[] = [
   {

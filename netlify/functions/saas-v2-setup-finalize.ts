@@ -3,7 +3,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
  * V2 conversational setup wizard — finalize / deploy endpoint.
  *
  * POST { conversation_id, confirm: true } → { agent_id, kb_entries_created,
- *   voice_id, redirect_to: '/v2/' }
+ *   voice_id, redirect_to: '/v2' }
  *
  * Reads the drafted artifacts from workspaces.v2_setup_state, then:
  *   1. Upserts the business_profile row for this workspace.
@@ -11,10 +11,8 @@ import { withLegacyHandler } from './_shared/runtime-compat';
  *      sharing kb_folder_id between them (mirrors V1 Setup.tsx behavior).
  *   3. Calls setup-launch to flip workspace.setup_completed=true and
  *      agents.is_active=true.
- *   4. Best-effort purchases a phone number via twilio-numbers action=purchase
- *      (non-fatal — failure is reported back as `phone_error`, not thrown).
- *   5. Marks workspaces.v2_setup_status='completed', clears v2_setup_state.
- *   6. Emits saas_v2_setup_completed.
+ *   4. Marks workspaces.v2_setup_status='completed', clears v2_setup_state.
+ *   5. Emits saas_v2_setup_completed.
  *
  * Auth: bearer JWT → workspace_id resolved server-side. NEVER trusts body.
  */
@@ -452,7 +450,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       body: JSON.stringify({
         error: 'Inbound agent creation failed',
         details: inboundResult.error,
-        recovery: 'Retry or switch to V1 setup at /setup',
+        recovery: 'Retry, or use the classic setup at /setup/classic',
       }),
     };
   }
@@ -474,7 +472,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       body: JSON.stringify({
         error: 'Speed-to-lead agent creation failed',
         details: stlResult.error,
-        recovery: 'Retry or switch to V1 setup at /setup',
+        recovery: 'Retry, or use the classic setup at /setup/classic',
       }),
     };
   }
@@ -501,7 +499,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
         body: JSON.stringify({
           error: 'Setup activation failed',
           details: details || `setup-launch ${launchRes.status}`,
-          recovery: 'Retry or switch to V1 setup at /setup',
+          recovery: 'Retry, or use the classic setup at /setup/classic',
         }),
       };
     }
@@ -519,31 +517,9 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       body: JSON.stringify({
         error: 'Setup activation failed',
         details: e instanceof Error ? e.message : 'Unknown setup-launch error',
-        recovery: 'Retry or switch to V1 setup at /setup',
+        recovery: 'Retry, or use the classic setup at /setup/classic',
       }),
     };
-  }
-
-  // ── Purchase a phone number (best-effort — agents work without it, but a
-  // client can't receive calls without a number). Mirrors provisionAgentSetup.ts,
-  // which does the same purchase client-side for the other onboarding path and
-  // treats failure as non-fatal. Never throws — a failed purchase must not
-  // block setup completion; it surfaces as `phone_error` in the response.
-  let phoneError: string | undefined;
-  try {
-    const phoneRes = await fetch(`${base}/.netlify/functions/twilio-numbers`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ action: 'purchase', country_code: country }),
-    });
-    if (!phoneRes.ok) {
-      const details = await phoneRes.text().catch(() => '');
-      phoneError = `twilio-numbers ${phoneRes.status}: ${details.slice(0, 200)}`;
-      console.error('[finalize] phone number purchase failed:', phoneError);
-    }
-  } catch (e) {
-    phoneError = e instanceof Error ? e.message : 'Unknown phone purchase error';
-    console.error('[finalize] phone number purchase threw:', e);
   }
 
   // ── Mark workspace as v2-completed ──────────────────────────────────────
@@ -574,7 +550,6 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
     retell_agent_id_speed_to_lead: stlResult.agent_id,
     total_turns: (state?.conversation as unknown[] | undefined)?.length || 0,
     total_duration_seconds: durationSec,
-    phone_error: phoneError || null,
   }).catch(() => {});
 
   const kbEntries = buildKbTexts().length;
@@ -590,8 +565,7 @@ ${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h])
       kb_entries_created: kbEntries,
       voice_id: voiceId,
       duration_seconds: durationSec,
-      redirect_to: '/dashboard',
-      ...(phoneError ? { phone_error: phoneError } : {}),
+      redirect_to: '/v2',
     }),
   };
 };

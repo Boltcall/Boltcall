@@ -132,6 +132,18 @@ const handler: Handler = async (event) => {
       };
     }
 
+    // Flip the workspace into the V2 AI-native dashboard. Separate best-effort
+    // update: environments that haven't run the v2_opt_in migration must not
+    // fail the whole launch over a missing column.
+    const { error: v2Error } = await supabase
+      .from('workspaces')
+      .update({ v2_enabled: true, updated_at: now })
+      .eq('id', workspaceId);
+
+    if (v2Error) {
+      console.error('V2 enable on launch failed (non-fatal):', v2Error);
+    }
+
     // Touch business_profiles for the authenticated user. Non-fatal if it fails —
     // workspace.setup_completed is the canonical signal the dashboard reads.
     const { error: bpError } = await supabase
