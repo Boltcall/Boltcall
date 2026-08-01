@@ -59,6 +59,7 @@ const ROUTES = [
   '/lead-magnet/claude-code-overnight-kit',
   '/lead-magnet/ai-receptionist-buyers-guide',
   '/lead-magnet/speed-to-lead-stack',
+  '/lead-magnet/intake-agent-playbook',
   '/after-hours-lead-rescue',
   '/automatic-reviews-agent',
   '/reminders-agent',
