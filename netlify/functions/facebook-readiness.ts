@@ -70,9 +70,9 @@ const handler: Handler = async (event) => {
   const auth = requireInternalSecret(event);
   if (!auth.ok) return json(auth.statusCode || 403, { error: auth.error || 'Forbidden' });
 
-  const appId = process.env.FB_APP_ID || '';
-  const appSecret = process.env.FB_APP_SECRET || '';
-  const webhookVerifyToken = process.env.FB_WEBHOOK_VERIFY_TOKEN || '';
+  const appId = process.env.FB_APP_ID || process.env.FACEBOOK_APP_ID || '';
+  const appSecret = process.env.FB_APP_SECRET || process.env.FACEBOOK_APP_SECRET || '';
+  const webhookVerifyToken = process.env.FB_WEBHOOK_VERIFY_TOKEN || process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN || '';
 
   if (!appId || !appSecret || !webhookVerifyToken) {
     return json(500, {

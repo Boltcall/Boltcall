@@ -39,12 +39,12 @@ const handler: Handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const clientId = process.env.FB_APP_ID;
+  const clientId = process.env.FB_APP_ID || process.env.FACEBOOK_APP_ID;
   if (!clientId) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'FB_APP_ID not configured' }),
+      body: JSON.stringify({ error: 'FB_APP_ID/FACEBOOK_APP_ID not configured' }),
     };
   }
 
