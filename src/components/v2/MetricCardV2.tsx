@@ -22,6 +22,9 @@ interface MetricCardV2Props {
   className?: string;
   compact?: boolean;
   caption?: string;
+  // Accepted for API compatibility with V2HomePage; not visually rendered here
+  // (chartData already holds the [prior, current] pair).
+  comparisonValue?: number;
 }
 
 const MetricCardV2: React.FC<MetricCardV2Props> = ({
@@ -49,26 +52,12 @@ const MetricCardV2: React.FC<MetricCardV2Props> = ({
         ? 'bg-rose-50 text-red-600 ring-1 ring-rose-200/80'
         : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200/80';
 
+  // ponytail: ProgressMetricCard no longer exposes showControls or headerBadge.
+  // Icon + badge rendered as overlay row instead so V2 keeps its visual shape.
   return (
-    <ProgressMetricCard
-      title={label}
-      total={value}
-      data={points}
-      size={compact ? 'sm' : 'md'}
-      showControls={false}
-      showStats={false}
-      accent={
-        badgeTone === 'positive'
-          ? 'emerald'
-          : badgeTone === 'negative'
-            ? 'rose'
-            : 'blue'
-      }
-      delta={caption}
-      deltaLabel={caption ? '' : period}
-      className={className}
-      headerBadge={
-        <div className="flex items-center gap-2">
+    <div className={cn('relative', className)}>
+      {(Icon || badge) ? (
+        <div className="pointer-events-none absolute right-4 top-4 z-10 flex items-center gap-2">
           {Icon ? (
             <span
               className={cn(
@@ -91,8 +80,24 @@ const MetricCardV2: React.FC<MetricCardV2Props> = ({
             </span>
           ) : null}
         </div>
-      }
-    />
+      ) : null}
+      <ProgressMetricCard
+        title={label}
+        total={value}
+        data={points}
+        size={compact ? 'sm' : 'md'}
+        showStats={false}
+        accent={
+          badgeTone === 'positive'
+            ? 'emerald'
+            : badgeTone === 'negative'
+              ? 'rose'
+              : 'blue'
+        }
+        delta={caption}
+        deltaLabel={caption ? '' : period}
+      />
+    </div>
   );
 };
 
