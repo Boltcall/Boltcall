@@ -78,7 +78,7 @@ const AiReceptionistForPlumbers: React.FC = () => {
           "name": "How much does a plumbing AI receptionist cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "An AI receptionist for plumbers typically costs between $99 and $500 per month depending on the provider and features. Boltcall offers a comprehensive plan at $389/month that includes 24/7 AI phone reception, a professional website, AI chatbot, speed-to-lead auto-reply, and Google review automation. This is 85-90% cheaper than hiring a full-time receptionist."
+            "text": "An AI receptionist for plumbers typically costs between $549 and $4997 per month depending on the provider and features. Boltcall offers a comprehensive plan at $549/month that includes 24/7 AI phone reception, a professional website, AI chatbot, speed-to-lead auto-reply, and Google review automation. This is 85-90% cheaper than hiring a full-time receptionist."
           }
         },
         {
@@ -382,7 +382,7 @@ const AiReceptionistForPlumbers: React.FC = () => {
                     </tr>
                     <tr className="bg-green-50">
                       <td className="p-4 font-semibold text-gray-900">Boltcall AI Receptionist</td>
-                      <td className="p-4 text-green-600 font-bold">$389/mo</td>
+                      <td className="p-4 text-green-600 font-bold">$549/mo</td>
                       <td className="p-4 text-gray-700">24/7 instant</td>
                       <td className="p-4 text-gray-700">&lt;1 second</td>
                     </tr>
@@ -403,7 +403,7 @@ const AiReceptionistForPlumbers: React.FC = () => {
                   </div>
                   <div className="bg-white/10 rounded-lg p-4">
                     <div className="text-3xl font-bold mb-2">$600+</div>
-                    <div className="text-blue-100 text-sm">Revenue from just 2 extra jobs vs $389 cost</div>
+                    <div className="text-blue-100 text-sm">Revenue from just 2 extra jobs vs $549 cost</div>
                   </div>
                 </div>
               </div>
@@ -658,7 +658,7 @@ const AiReceptionistForPlumbers: React.FC = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">How much does a plumbing AI receptionist cost?</h3>
                   <p className="text-gray-700 leading-relaxed">
-                    An AI receptionist for plumbers typically costs between $99 and $500 per month depending on the provider and features. Boltcall offers a comprehensive plan at $389/month that includes 24/7 AI phone reception, a professional website, AI chatbot, speed-to-lead auto-reply, and Google review automation. This is 85-90% cheaper than hiring a full-time receptionist at $2,800-$4,000/month.
+                    An AI receptionist for plumbers typically costs between $549 and $4997 per month depending on the provider and features. Boltcall offers a comprehensive plan at $549/month that includes 24/7 AI phone reception, a professional website, AI chatbot, speed-to-lead auto-reply, and Google review automation. This is 85-90% cheaper than hiring a full-time receptionist at $2,800-$4,000/month.
                   </p>
                 </div>
 

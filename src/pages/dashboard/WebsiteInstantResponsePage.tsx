@@ -121,8 +121,8 @@ document.getElementById("lead-form")
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-2xl font-bold text-gray-900">Website Instant Response</h1>
-        <p className="mt-1 text-gray-500">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Website Instant Response</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           Every form submission on your site gets an instant follow-up. Works with any platform — no code changes required.
         </p>
       </motion.div>
@@ -131,7 +131,7 @@ document.getElementById("lead-form")
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="bg-white rounded-xl border border-gray-200 p-6 space-y-6"
+        className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] p-6 space-y-6"
       >
         {/* Tab switcher */}
         <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg">

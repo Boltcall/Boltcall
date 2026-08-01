@@ -231,6 +231,7 @@ describe('Auth flow — Signup', () => {
       expect(mockSignInWithGoogle).toHaveBeenCalled();
     });
   });
+
 });
 
 describe('Auth flow — Mode switching', () => {

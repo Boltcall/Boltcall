@@ -193,6 +193,22 @@ describe('retell-webhook', () => {
       },
       scheduled_messages: {
         insert: makeInsert('scheduled_messages'),
+        // Dedup pre-check: no recent text-back for this phone
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              eq: () => ({
+                in: () => ({
+                  gte: () => ({
+                    limit: () => ({
+                      maybeSingle: async () => ({ data: null, error: null }),
+                    }),
+                  }),
+                }),
+              }),
+            }),
+          }),
+        }),
       },
     } as Record<string, any>;
 
@@ -331,6 +347,18 @@ describe('retell-webhook', () => {
       followup_sequence_steps: sequenceStepQuery(),
       followup_enrollments: {
         insert: makeInsert('followup_enrollments'),
+        // Dedup pre-check: no active enrollment for this phone yet
+        select: () => ({
+          eq: () => ({
+            eq: () => ({
+              eq: () => ({
+                limit: () => ({
+                  maybeSingle: async () => ({ data: null, error: null }),
+                }),
+              }),
+            }),
+          }),
+        }),
       },
       scheduled_messages: {
         insert: makeInsert('scheduled_messages'),

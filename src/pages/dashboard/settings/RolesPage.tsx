@@ -201,8 +201,8 @@ const RolesPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Roles & Permissions</h1>
-          <p className="text-sm text-gray-500 mt-1">Define what each team role can access</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Roles & Permissions</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Define what each team role can access</p>
         </div>
         <div className="flex items-center gap-2">
           <PopButton
@@ -232,7 +232,7 @@ const RolesPage: React.FC = () => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg p-5 hover:shadow-md dark:hover:shadow-black/30 transition-shadow duration-200 ease-out"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -240,9 +240,9 @@ const RolesPage: React.FC = () => {
                       {icon}
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900">{role.name}</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{role.name}</h3>
                       {role.is_system && (
-                        <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                        <span className="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
                           <Lock className="w-3 h-3" /> System
                         </span>
                       )}
@@ -252,29 +252,29 @@ const RolesPage: React.FC = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => openEditModal(role as Role)}
-                        className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                        className="p-1.5 hover:bg-gray-100 dark:hover:bg-[#17171b] rounded transition-colors duration-200 ease-out"
                       >
-                        <Edit className="w-4 h-4 text-gray-500" />
+                        <Edit className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       </button>
                       <button
                         onClick={() => {
                           setSelectedRole(role as Role);
                           setShowDeleteModal(true);
                         }}
-                        className="p-1.5 hover:bg-red-50 rounded transition-colors"
+                        className="p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded transition-colors duration-200 ease-out"
                       >
-                        <Trash2 className="w-4 h-4 text-red-400" />
+                        <Trash2 className="w-4 h-4 text-red-400 dark:text-red-500" />
                       </button>
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mb-3">{role.description}</p>
-                <div className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{role.description}</p>
+                <div className="text-xs text-gray-400 dark:text-gray-500">
                   {perms.length} of {ALL_PERMISSIONS.length} permissions
                 </div>
-                <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
+                <div className="mt-2 w-full bg-gray-100 dark:bg-[#17171b] rounded-full h-1.5">
                   <div
-                    className="bg-blue-500 h-1.5 rounded-full transition-all"
+                    className="bg-blue-500 h-1.5 rounded-full transition-all duration-200 ease-out"
                     style={{ width: `${(perms.length / ALL_PERMISSIONS.length) * 100}%` }}
                   />
                 </div>
@@ -311,7 +311,7 @@ const RolesPage: React.FC = () => {
             {/* Basic Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role Name *</label>
                 <input
                   type="text"
                   value={formName}
@@ -319,32 +319,32 @@ const RolesPage: React.FC = () => {
                     setFormName(e.target.value);
                     if (showCreateModal) setFormSlug(e.target.value.toLowerCase().replace(/\s+/g, '_'));
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                   placeholder="e.g. Support Lead"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Color</label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {ROLE_COLORS.map((c) => (
                     <button
                       key={c}
                       onClick={() => setFormColor(c)}
-                      className={`w-7 h-7 rounded-full border-2 transition-all ${
-                        formColor === c ? 'border-gray-900 scale-110' : 'border-transparent'
-                      } ${ROLE_COLOR_MAP[c]?.split(' ')[1] || 'bg-gray-100'}`}
+                      className={`w-7 h-7 rounded-full border-2 transition-all duration-200 ease-out ${
+                        formColor === c ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'
+                      } ${ROLE_COLOR_MAP[c]?.split(' ')[1] || 'bg-gray-100 dark:bg-[#17171b]'}`}
                     />
                   ))}
                 </div>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
               <input
                 type="text"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 placeholder="What can this role do?"
               />
             </div>
@@ -352,10 +352,10 @@ const RolesPage: React.FC = () => {
             {/* Permissions */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-900">Permissions</h3>
-                <span className="text-xs text-gray-400">{formPermissions.size} / {ALL_PERMISSIONS.length} selected</span>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Permissions</h3>
+                <span className="text-xs text-gray-400 dark:text-gray-500">{formPermissions.size} / {ALL_PERMISSIONS.length} selected</span>
               </div>
-              <div className="space-y-1 border border-gray-200 rounded-lg overflow-hidden">
+              <div className="space-y-1 border border-gray-200 dark:border-[#1e1e24] rounded-lg overflow-hidden">
                 {(Object.keys(PERMISSION_GROUPS) as PermissionGroup[]).map((group) => {
                   const groupPerms = groupedPermissions[group];
                   const isExpanded = expandedGroups.has(group);
@@ -366,36 +366,36 @@ const RolesPage: React.FC = () => {
                     <div key={group}>
                       <button
                         onClick={() => toggleGroup(group)}
-                        className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 hover:bg-gray-100 transition-colors"
+                        className="flex items-center justify-between w-full px-4 py-2.5 bg-gray-50 dark:bg-[#17171b] hover:bg-gray-100 dark:hover:bg-[#1e1e24] transition-colors duration-200 ease-out"
                       >
                         <div className="flex items-center gap-2">
-                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
-                          <span className="text-sm font-medium text-gray-700">{PERMISSION_GROUPS[group]}</span>
-                          <span className="text-xs text-gray-400">({selectedCount}/{groupPerms.length})</span>
+                          {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400 dark:text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{PERMISSION_GROUPS[group]}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">({selectedCount}/{groupPerms.length})</span>
                         </div>
                         <button
                           onClick={(e) => { e.stopPropagation(); toggleGroupAll(group); }}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors duration-200 ease-out"
                         >
                           {allSelected ? 'Deselect all' : 'Select all'}
                         </button>
                       </button>
                       {isExpanded && (
-                        <div className="px-4 py-2 space-y-1 bg-white">
+                        <div className="px-4 py-2 space-y-1 bg-white dark:bg-[#111114]">
                           {groupPerms.map((perm) => (
                             <label
                               key={perm.id}
-                              className="flex items-center gap-3 py-1.5 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2"
+                              className="flex items-center gap-3 py-1.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-[#17171b] rounded px-2 -mx-2 transition-colors duration-200 ease-out"
                             >
                               <input
                                 type="checkbox"
                                 checked={formPermissions.has(perm.id)}
                                 onChange={() => togglePermission(perm.id)}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                className="w-4 h-4 text-blue-600 border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] rounded focus:ring-blue-500"
                               />
                               <div>
-                                <span className="text-sm text-gray-700">{perm.label}</span>
-                                <p className="text-xs text-gray-400">{perm.description}</p>
+                                <span className="text-sm text-gray-700 dark:text-gray-300">{perm.label}</span>
+                                <p className="text-xs text-gray-400 dark:text-gray-500">{perm.description}</p>
                               </div>
                             </label>
                           ))}
@@ -422,9 +422,9 @@ const RolesPage: React.FC = () => {
           </>
         }
       >
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Are you sure you want to delete the role{' '}
-          <span className="font-medium text-gray-900">{selectedRole?.name}</span>?
+          <span className="font-medium text-gray-900 dark:text-white">{selectedRole?.name}</span>?
           Members with this role will lose their permissions.
         </p>
       </ModalShell>

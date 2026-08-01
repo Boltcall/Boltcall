@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   MessageCircle, Send, Check, X, RefreshCw, Copy,
-  Loader2, Phone, ExternalLink, Eye, EyeOff,
+  Loader2, Phone, ExternalLink, Eye, EyeOff, AlertCircle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { InfiniteRibbon } from '@/components/ui/infinite-ribbon';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import Card from '../../components/ui/Card';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -126,18 +128,22 @@ const callWhatsAppFn = async (
 
 const WhatsappPage: React.FC = () => {
   const { user } = useAuth();
+  const handleError = useErrorHandler();
   const [activeTab, setActiveTab] = useState<TabKey>('connection');
   const [settings, setSettings] = useState<WhatsAppSettings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   // Conversations state
   const [threads, setThreads] = useState<WaThread[]>([]);
   const [threadsLoading, setThreadsLoading] = useState(false);
+  const [threadsError, setThreadsError] = useState<string | null>(null);
   const [selectedThread, setSelectedThread] = useState<string | null>(null);
   const [messages, setMessages] = useState<WaMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
   const [msgPage, setMsgPage] = useState(0);
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -162,6 +168,7 @@ const WhatsappPage: React.FC = () => {
   const loadSettings = useCallback(async () => {
     if (!user?.id) return;
     setSettingsLoading(true);
+    setSettingsError(null);
     try {
       const res = await callWhatsAppFn('whatsapp-settings', {
         action: 'get',
@@ -172,13 +179,16 @@ const WhatsappPage: React.FC = () => {
         : { ...DEFAULT_SETTINGS };
       setSettings(s);
       setActiveTab(s.wa_phone_number_id ? 'settings' : 'connection');
-    } catch {
-      setSettings({ ...DEFAULT_SETTINGS });
-      setActiveTab('connection');
+    } catch (err) {
+      handleError('whatsapp: load settings', err, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
+      setSettingsError('Unable to load your WhatsApp settings.');
     } finally {
       setSettingsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   useEffect(() => {
     loadSettings();
@@ -189,6 +199,7 @@ const WhatsappPage: React.FC = () => {
   const loadThreads = useCallback(async () => {
     if (!user?.id) return;
     setThreadsLoading(true);
+    setThreadsError(null);
     try {
       const { data, error } = await supabase
         .from('whatsapp_conversations')
@@ -232,12 +243,17 @@ const WhatsappPage: React.FC = () => {
           new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
       );
       setThreads(out);
-    } catch {
+    } catch (err) {
+      handleError('whatsapp: load conversations', err, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
       setThreads([]);
+      setThreadsError('Unable to load your conversations.');
     } finally {
       setThreadsLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   useEffect(() => {
     if (activeTab === 'conversations' && isConnected) loadThreads();
@@ -285,6 +301,7 @@ const WhatsappPage: React.FC = () => {
       if (!user?.id) return;
       setMessagesLoading(true);
       setMsgPage(0);
+      setMessagesError(null);
       try {
         const { data, error } = await supabase
           .from('whatsapp_conversations')
@@ -297,14 +314,19 @@ const WhatsappPage: React.FC = () => {
         const rows = (data || []) as WaMessage[];
         setHasMoreMessages(rows.length === MESSAGE_PAGE_SIZE);
         setMessages(rows.slice().reverse());
-      } catch {
+      } catch (err) {
+        handleError('whatsapp: load messages', err, {
+          toast: false,
+          metadata: { userId: user.id, threadId },
+        });
         setMessages([]);
         setHasMoreMessages(false);
+        setMessagesError('Unable to load this conversation.');
       } finally {
         setMessagesLoading(false);
       }
     },
-    [user?.id]
+    [user?.id, handleError]
   );
 
   const loadMoreMessages = useCallback(async () => {
@@ -325,12 +347,15 @@ const WhatsappPage: React.FC = () => {
       setHasMoreMessages(rows.length === MESSAGE_PAGE_SIZE);
       setMsgPage(nextPage);
       setMessages((prev) => [...rows.slice().reverse(), ...prev]);
-    } catch {
-      // ignore
+    } catch (err) {
+      handleError('whatsapp: load more messages', err, {
+        toast: false,
+        metadata: { userId: user.id, threadId: selectedThread },
+      });
     } finally {
       setLoadingMore(false);
     }
-  }, [user?.id, selectedThread, msgPage, loadingMore, hasMoreMessages]);
+  }, [user?.id, selectedThread, msgPage, loadingMore, hasMoreMessages, handleError]);
 
   useEffect(() => {
     if (selectedThread) loadMessages(selectedThread);
@@ -384,8 +409,12 @@ const WhatsappPage: React.FC = () => {
       });
       showToast('success', 'Settings saved');
       await loadSettings();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to save');
+    } catch (err) {
+      handleError('whatsapp: save settings', err, {
+        title: 'Could not save settings',
+        message: 'Your WhatsApp settings were not saved. Please try again.',
+        metadata: { userId: user.id },
+      });
     } finally {
       setSaving(false);
     }
@@ -401,8 +430,12 @@ const WhatsappPage: React.FC = () => {
       });
       showToast('success', 'Disconnected');
       await loadSettings();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to disconnect');
+    } catch (err) {
+      handleError('whatsapp: disconnect', err, {
+        title: 'Could not disconnect',
+        message: 'Failed to disconnect WhatsApp. Please try again.',
+        metadata: { userId: user.id },
+      });
     } finally {
       setSaving(false);
     }
@@ -426,8 +459,12 @@ const WhatsappPage: React.FC = () => {
       });
       showToast('success', 'WhatsApp connected');
       await loadSettings();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to connect');
+    } catch (err) {
+      handleError('whatsapp: connect', err, {
+        title: 'Could not connect WhatsApp',
+        message: 'Check your credentials and try again.',
+        metadata: { userId: user.id },
+      });
     } finally {
       setSaving(false);
     }
@@ -443,8 +480,12 @@ const WhatsappPage: React.FC = () => {
         testPhone,
       });
       showToast('success', 'Test message sent');
-    } catch (e: any) {
-      showToast('error', e?.message || 'Test failed');
+    } catch (err) {
+      handleError('whatsapp: test connection', err, {
+        title: 'Test message failed',
+        message: 'We could not send a test WhatsApp message. Check your connection settings.',
+        metadata: { userId: user.id, testPhone },
+      });
     } finally {
       setTesting(false);
     }
@@ -463,8 +504,12 @@ const WhatsappPage: React.FC = () => {
       });
       if (selectedThread) await loadMessages(selectedThread);
       await loadThreads();
-    } catch (e: any) {
-      showToast('error', e?.message || `Failed to ${action}`);
+    } catch (err) {
+      handleError('whatsapp: draft action', err, {
+        title: 'Action failed',
+        message: `Failed to ${action} the AI draft. Please try again.`,
+        metadata: { userId: user.id, messageId, action },
+      });
     }
   };
 
@@ -494,8 +539,12 @@ const WhatsappPage: React.FC = () => {
       setComposeText('');
       await loadMessages(selectedThread);
       await loadThreads();
-    } catch (e: any) {
-      showToast('error', e?.message || 'Failed to send');
+    } catch (err) {
+      handleError('whatsapp: send message', err, {
+        title: 'Message not sent',
+        message: 'Your WhatsApp message could not be sent. Please try again.',
+        metadata: { userId: user.id, threadId: selectedThread },
+      });
     } finally {
       setSending(false);
     }
@@ -550,24 +599,47 @@ const WhatsappPage: React.FC = () => {
     );
   }
 
+  if (settingsError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-8 max-w-md text-center">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Unable to load WhatsApp</h3>
+          <p className="text-sm text-gray-500 mb-4">{settingsError}</p>
+          <button
+            onClick={loadSettings}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+        </Card>
+      </div>
+    );
+  }
+
   if (!isConnected) {
     return (
       <div className="min-h-[60vh] px-4 py-8">
         <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-900">
-            <MessageCircle className="h-4 w-4" />
-            Coming Soon
-          </div>
-
           <div className="w-full overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)]">
-            <div className="hidden lg:block">
+            <div className="relative hidden h-28 overflow-hidden border-b border-gray-200 bg-white lg:block">
               <InfiniteRibbon
-                className="border-b border-yellow-500/30 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.18em]"
+                className="absolute left-1/2 top-1/2 w-[120%] -translate-x-1/2 -translate-y-1/2 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-950 shadow-sm"
                 duration={42}
                 repeat={6}
                 rotation={4}
               >
-                WhatsApp AI follow-up is coming soon
+                Coming Soon
+              </InfiniteRibbon>
+              <InfiniteRibbon
+                className="absolute left-1/2 top-1/2 w-[120%] -translate-x-1/2 -translate-y-1/2 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-950 shadow-sm"
+                duration={42}
+                repeat={6}
+                reverse
+                rotation={-4}
+              >
+                Coming Soon
               </InfiniteRibbon>
             </div>
 
@@ -575,43 +647,24 @@ const WhatsappPage: React.FC = () => {
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 WhatsApp is coming soon
               </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-gray-600 sm:text-base">
-                We&apos;re polishing the WhatsApp experience for V1 so you can capture leads, respond
-                instantly, and keep conversations moving without manual follow-up.
-              </p>
 
-              <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
-                {[
-                  'Instant lead capture from inbound WhatsApp messages',
-                  'AI replies that keep speed-to-lead working after hours',
-                  'A cleaner launch flow instead of manual credential setup',
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm font-medium text-gray-700"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-slate-950 lg:hidden">
+              <div className="relative mt-8 h-28 overflow-hidden rounded-2xl border border-gray-200 bg-white lg:hidden">
                 <InfiniteRibbon
-                  className="border-b border-white/10 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.16em]"
+                  className="absolute left-1/2 top-1/2 w-[135%] -translate-x-1/2 -translate-y-1/2 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-gray-950 shadow-sm"
                   duration={42}
                   repeat={4}
                   rotation={2}
                 >
-                  WhatsApp AI follow-up is coming soon
+                  Coming Soon
                 </InfiniteRibbon>
                 <InfiniteRibbon
-                  className="bg-slate-950 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-white dark:bg-slate-950 dark:text-white"
+                  className="absolute left-1/2 top-1/2 w-[135%] -translate-x-1/2 -translate-y-1/2 bg-yellow-300/95 py-2 text-sm font-semibold uppercase tracking-[0.16em] text-gray-950 shadow-sm"
                   duration={42}
                   repeat={4}
                   reverse
                   rotation={-2}
                 >
-                  Instant response for every lead
+                  Coming Soon
                 </InfiniteRibbon>
               </div>
             </div>
@@ -629,7 +682,7 @@ const WhatsappPage: React.FC = () => {
           <MessageCircle className="w-5 h-5 text-green-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             WhatsApp
             {isConnected && <span className="w-2 h-2 rounded-full bg-green-500" title="Connected" />}
           </h1>
@@ -688,7 +741,7 @@ const WhatsappPage: React.FC = () => {
           )}
 
           {/* Enable / Disable */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Enable WhatsApp</p>
               <p className="text-xs text-gray-500 mt-0.5">Turn WhatsApp on or off for your workspace.</p>
@@ -700,7 +753,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* AI Auto-Reply */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">AI Auto-Reply</p>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -714,7 +767,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Qualify Leads */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Qualify Leads</p>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -728,7 +781,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Booking */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 flex items-start justify-between gap-4">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Booking</p>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -742,7 +795,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Response Tone */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-3">
             <div>
               <p className="text-sm font-medium text-gray-900">Response Tone</p>
               <p className="text-xs text-gray-500 mt-0.5">How the AI sounds when replying to leads.</p>
@@ -765,7 +818,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Business Hours */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-3">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-900">Business Hours Only</p>
@@ -817,7 +870,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Max AI messages */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-2">
             <p className="text-sm font-medium text-gray-900">Max AI Messages per Conversation</p>
             <p className="text-xs text-gray-500">
               After this many AI replies, new messages won't be auto-answered. Set between 1–20.
@@ -838,7 +891,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Greeting Template */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-2">
             <p className="text-sm font-medium text-gray-900">
               Greeting Message{' '}
               <span className="text-gray-400 font-normal text-xs">(optional)</span>
@@ -856,7 +909,7 @@ const WhatsappPage: React.FC = () => {
           </div>
 
           {/* Out-of-Hours Message */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-2">
+          <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5 space-y-2">
             <p className="text-sm font-medium text-gray-900">
               Out-of-Hours Message{' '}
               <span className="text-gray-400 font-normal text-xs">(optional)</span>
@@ -901,7 +954,7 @@ const WhatsappPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden min-h-[70vh]">
+          <div className="flex bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl overflow-hidden min-h-[70vh]">
             {/* Left: thread list */}
             <div className="w-80 border-r border-gray-200 flex flex-col">
               <div className="p-4 border-b border-gray-200">
@@ -929,6 +982,18 @@ const WhatsappPage: React.FC = () => {
                 {threadsLoading ? (
                   <div className="p-6 flex justify-center">
                     <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                  </div>
+                ) : threadsError ? (
+                  <div className="p-6 text-center">
+                    <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600 mb-3">{threadsError}</p>
+                    <button
+                      onClick={loadThreads}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Retry
+                    </button>
                   </div>
                 ) : filteredThreads.length === 0 ? (
                   <div className="p-6 text-center text-sm text-gray-500">
@@ -1029,6 +1094,18 @@ const WhatsappPage: React.FC = () => {
                       <div className="flex justify-center py-6">
                         <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
                       </div>
+                    ) : messagesError ? (
+                      <div className="flex flex-col items-center justify-center py-10 text-center">
+                        <AlertCircle className="w-8 h-8 text-red-400 mb-2" />
+                        <p className="text-sm text-gray-600 mb-3">{messagesError}</p>
+                        <button
+                          onClick={() => selectedThread && loadMessages(selectedThread)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          Retry
+                        </button>
+                      </div>
                     ) : (
                       messages.map((m) => {
                         const inbound = m.direction === 'inbound';
@@ -1127,7 +1204,7 @@ const WhatsappPage: React.FC = () => {
           {!isConnected ? (
             <>
               {/* Credentials form */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-5">
+              <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-6 space-y-5">
                 <div>
                   <h2 className="text-base font-semibold text-gray-900">Connect WhatsApp Business API</h2>
                   <p className="text-sm text-gray-500 mt-1">
@@ -1260,7 +1337,7 @@ const WhatsappPage: React.FC = () => {
           ) : (
             <>
               {/* Connected status */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
+              <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-6 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                     <Check className="w-4 h-4 text-green-600" />
@@ -1327,7 +1404,7 @@ const WhatsappPage: React.FC = () => {
               </div>
 
               {/* Test connection */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-3">
+              <div className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-6 space-y-3">
                 <h3 className="text-sm font-semibold text-gray-900">Test Connection</h3>
                 <p className="text-xs text-gray-500">Send a test WhatsApp message to verify your setup.</p>
                 <div className="flex gap-2">
@@ -1365,8 +1442,8 @@ const Toggle: React.FC<{ value: boolean; onChange: (v: boolean) => void }> = ({
   <button
     type="button"
     onClick={() => onChange(!value)}
-    className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
-      value ? 'bg-green-600' : 'bg-gray-300'
+    className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ease-out ${
+      value ? 'bg-green-600' : 'bg-gray-300 dark:bg-[#2a2a30]'
     }`}
     aria-pressed={value}
   >

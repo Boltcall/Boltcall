@@ -23,11 +23,18 @@ function supabaseAdmin(): SupabaseAdmin {
 
 async function findUserByEmail(email: string | undefined): Promise<{ id: string; email: string | undefined } | null> {
   if (!email) return null;
+  const target = email.toLowerCase();
+  const MAX_PAGES = 50; // 50 * 1000 = 50k users; stop before Netlify budget bites
   try {
-    const { data, error } = await supabaseAdmin().auth.admin.listUsers({ page: 1, perPage: 1000 });
-    if (error || !data?.users) return null;
-    const match = data.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-    return match ? { id: match.id, email: match.email } : null;
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const { data, error } = await supabaseAdmin().auth.admin.listUsers({ page, perPage: 1000 });
+      if (error || !data?.users) return null;
+      const match = data.users.find(u => u.email?.toLowerCase() === target);
+      if (match) return { id: match.id, email: match.email };
+      if (data.users.length < 1000) return null; // last page
+    }
+    console.error(`findUserByEmail exceeded ${MAX_PAGES} pages`);
+    return null;
   } catch (e) {
     console.error('findUserByEmail failed:', e);
     return null;
@@ -129,7 +136,17 @@ async function handleSubscriptionActivated(resource: any) {
 
   console.log(`Subscription activated: ${subscriptionId} (plan: ${planId}) for ${payerEmail} custom_id=${customId || '<none>'}`);
 
-  const { level, interval } = mapPayPalPlan(planId);
+  const mapped = mapPayPalPlan(planId);
+  if (!mapped) {
+    // Unknown plan id — refuse to silently mis-provision. Alert + fail the webhook
+    // so PayPal retries and Noam fixes the env var mapping.
+    console.error(`[paypal-webhook] Unknown planId ${planId} — refusing to default-map`);
+    await sendTelegramNotification(
+      `❌ PayPal plan mapping missing!\n\nPlan: ${planId}\nSub: ${subscriptionId}\nEmail: ${payerEmail}\n\nSet PAYPAL_PLAN_*_MONTHLY / _YEARLY env vars and let PayPal retry.`
+    );
+    throw new Error(`Unknown PayPal plan id: ${planId}`);
+  }
+  const { level, interval } = mapped;
 
   // Resolve user_id: trust custom_id (set by create-paypal-subscription) first,
   // fall back to email lookup for legacy hosted-button payments.
@@ -142,6 +159,15 @@ async function handleSubscriptionActivated(resource: any) {
       matchSource = 'email';
     }
   }
+
+  // Set current_period_end from PayPal's next_billing_time when present;
+  // fall back to computed +1 month/year from start so the UI never shows blank.
+  const nextBilling = resource.billing_info?.next_billing_time as string | undefined;
+  const startDate = startTime ? new Date(startTime) : new Date();
+  const computedEnd = new Date(startDate);
+  if (interval === 'yearly') computedEnd.setUTCFullYear(computedEnd.getUTCFullYear() + 1);
+  else computedEnd.setUTCMonth(computedEnd.getUTCMonth() + 1);
+  const currentPeriodEnd = nextBilling || computedEnd.toISOString();
 
   if (userId) {
     const { error } = await supabaseAdmin()
@@ -156,6 +182,7 @@ async function handleSubscriptionActivated(resource: any) {
         billing_interval: interval,
         status: 'active',
         current_period_start: startTime,
+        current_period_end: currentPeriodEnd,
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'paypal_subscription_id',
@@ -222,26 +249,64 @@ async function handleSubscriptionSuspended(resource: any) {
 
 async function handlePaymentSaleCompleted(resource: any) {
   const amount = resource.amount?.total;
-  const currency = resource.amount?.currency;
+  const currency = resource.amount?.currency || 'USD';
   const saleId = resource.id;
   const subscriptionId = resource.billing_agreement_id;
+  const createTime = resource.create_time || new Date().toISOString();
 
   console.log(`Sale completed: ${saleId} — $${amount} ${currency}`);
 
-  // If this is a recurring payment, update the subscription period
-  if (subscriptionId) {
-    const { error } = await supabaseAdmin()
-      .from('subscriptions')
-      .update({
-        status: 'active',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('paypal_subscription_id', subscriptionId);
+  if (!subscriptionId) return; // one-time payments handled elsewhere
 
-    if (error) {
-      console.error('Error updating subscription on sale:', error);
-    }
+  // Look up subscription to resolve user_id + interval for period math + invoice row.
+  const { data: sub, error: subFetchErr } = await supabaseAdmin()
+    .from('subscriptions')
+    .select('id, user_id, billing_interval')
+    .eq('paypal_subscription_id', subscriptionId)
+    .maybeSingle();
+
+  if (subFetchErr || !sub) {
+    console.error('[paypal-webhook] Sale for unknown subscription', subscriptionId, subFetchErr);
+    return;
   }
+
+  // Roll the subscription period forward.
+  const periodStart = new Date(createTime);
+  const periodEnd = new Date(periodStart);
+  if (sub.billing_interval === 'yearly') periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 1);
+  else periodEnd.setUTCMonth(periodEnd.getUTCMonth() + 1);
+
+  const { error: subErr } = await supabaseAdmin()
+    .from('subscriptions')
+    .update({
+      status: 'active',
+      current_period_start: periodStart.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('paypal_subscription_id', subscriptionId);
+  if (subErr) console.error('Error updating subscription on sale:', subErr);
+
+  // Insert an invoice row so PlanBillingPage → Billing History renders it.
+  // amount_paid stored in cents (integer column) to match Stripe convention.
+  const amountCents = Math.round(parseFloat(amount || '0') * 100);
+  const { error: invErr } = await supabaseAdmin()
+    .from('invoices')
+    .upsert({
+      user_id: sub.user_id,
+      subscription_id: sub.id,
+      paypal_capture_id: saleId,
+      paypal_subscription_id: subscriptionId,
+      amount_paid: amountCents,
+      currency: currency.toLowerCase(),
+      status: 'paid',
+      period_start: periodStart.toISOString(),
+      period_end: periodEnd.toISOString(),
+      created_at: createTime,
+    }, {
+      onConflict: 'paypal_capture_id',
+    });
+  if (invErr) console.error('[paypal-webhook] Error inserting invoice:', invErr);
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -273,8 +338,8 @@ function buildPlanReverseMap(): Record<string, PlanInfo> {
 
 const PLAN_REVERSE_MAP = buildPlanReverseMap();
 
-function mapPayPalPlan(planId: string): PlanInfo {
-  return PLAN_REVERSE_MAP[planId] || { level: 'starter', interval: 'monthly' };
+function mapPayPalPlan(planId: string): PlanInfo | null {
+  return PLAN_REVERSE_MAP[planId] || null;
 }
 
 async function sendTelegramNotification(message: string) {

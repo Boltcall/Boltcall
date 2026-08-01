@@ -73,9 +73,20 @@ export async function validateApiKey(rawKey: string): Promise<ApiKeyValidation> 
     return { valid: false, userId: null, keyName: null, permissions: [], error: 'API key has expired' };
   }
 
+  // Resolve the actual auth.users.id via business_profiles. For most users
+  // workspace_id === user_id and this returns the same value. For workspaces
+  // where they diverge (migrations, agency clients), returning workspace_id
+  // would make every leads.user_id FK insert fail — hence the lookup.
+  const { data: profile } = await supabase
+    .from('business_profiles')
+    .select('user_id')
+    .eq('workspace_id', data.workspace_id)
+    .limit(1)
+    .maybeSingle();
+
   return {
     valid: true,
-    userId: data.workspace_id,
+    userId: profile?.user_id || data.workspace_id,
     keyName: data.name,
     permissions: data.permissions || [],
   };

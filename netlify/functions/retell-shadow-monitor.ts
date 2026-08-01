@@ -55,11 +55,29 @@ async function retellFetch(path: string, options: RequestInit = {}) {
   return data;
 }
 
-function bookRate(calls: { outcome: string }[]): number | null {
-  const qualifying = calls.filter(c => QUALIFYING_OUTCOMES.has(c.outcome));
+// A call counts as booked if the transcript heuristic said so OR a confirmed
+// appointment row is linked to it (appointments.call_id — stronger signal).
+function bookRate(
+  calls: { call_id?: string; outcome: string }[],
+  confirmed: Set<string> = new Set(),
+): number | null {
+  const qualifying = calls.filter(c => QUALIFYING_OUTCOMES.has(c.outcome) || confirmed.has(c.call_id || ''));
   if (qualifying.length === 0) return null;
-  const booked = qualifying.filter(c => c.outcome === 'booked').length;
+  const booked = qualifying.filter(c => c.outcome === 'booked' || confirmed.has(c.call_id || '')).length;
   return booked / qualifying.length;
+}
+
+/** Call ids with a confirmed appointment linked (appointments.call_id). */
+async function confirmedCallIds(supabase: any, callIds: string[]): Promise<Set<string>> {
+  const ids = new Set<string>();
+  for (let i = 0; i < callIds.length; i += 200) {
+    const { data } = await supabase
+      .from('appointments')
+      .select('call_id')
+      .in('call_id', callIds.slice(i, i + 200));
+    for (const row of data || []) if (row.call_id) ids.add(row.call_id);
+  }
+  return ids;
 }
 
 const handler: Handler = async (event) => {
@@ -95,13 +113,9 @@ const handler: Handler = async (event) => {
     return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'DB query failed' }) };
   }
 
-  if (!versions?.length) {
-    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, evaluated: 0, message: 'No versions ready for evaluation' }) };
-  }
-
   const results: any[] = [];
 
-  for (const version of versions) {
+  for (const version of versions || []) {
     const shadowStart: string = version.shadow_started_at;
     const shadowEnd = now.toISOString();
     const shadowAgeH = (now.getTime() - new Date(shadowStart).getTime()) / 3600000;
@@ -109,13 +123,14 @@ const handler: Handler = async (event) => {
     // Shadow window calls
     const { data: shadowCalls } = await supabase
       .from('retell_calls')
-      .select('outcome')
+      .select('call_id, outcome')
       .eq('vertical', version.vertical)
       .gte('started_at', shadowStart)
       .lte('started_at', shadowEnd);
 
-    const shadowRate = bookRate(shadowCalls || []);
-    const shadowQualifying = (shadowCalls || []).filter(c => QUALIFYING_OUTCOMES.has(c.outcome)).length;
+    const shadowConfirmed = await confirmedCallIds(supabase, (shadowCalls || []).map(c => c.call_id));
+    const shadowRate = bookRate(shadowCalls || [], shadowConfirmed);
+    const shadowQualifying = (shadowCalls || []).filter(c => QUALIFYING_OUTCOMES.has(c.outcome) || shadowConfirmed.has(c.call_id)).length;
 
     // Not enough data yet — wait, unless we've hit the 96 h max
     if (shadowRate === null || shadowQualifying < MIN_SHADOW_CALLS) {
@@ -132,12 +147,13 @@ const handler: Handler = async (event) => {
     const baselineStart = new Date(new Date(shadowStart).getTime() - BASELINE_DAYS * 86400000).toISOString();
     const { data: baselineCalls } = await supabase
       .from('retell_calls')
-      .select('outcome')
+      .select('call_id, outcome')
       .eq('vertical', version.vertical)
       .gte('started_at', baselineStart)
       .lt('started_at', shadowStart);
 
-    const baselineRate = bookRate(baselineCalls || []) ?? FALLBACK_BASELINE_RATE;
+    const baselineConfirmed = await confirmedCallIds(supabase, (baselineCalls || []).map(c => c.call_id));
+    const baselineRate = bookRate(baselineCalls || [], baselineConfirmed) ?? FALLBACK_BASELINE_RATE;
 
     const effectiveRate = shadowRate ?? 0;
     const threshold = baselineRate * (1 - REVERT_THRESHOLD_RELATIVE);
@@ -227,6 +243,151 @@ const handler: Handler = async (event) => {
       shadow_book_rate: Math.round(effectiveRate * 1000) / 1000,
       baseline_book_rate: Math.round(baselineRate * 1000) / 1000,
       shadow_qualifying: shadowQualifying,
+    });
+  }
+
+  // ─── A/B experiments (status 'ab_testing', started by retell-ab-start) ────
+  // Variant runs as a SECOND Retell agent with traffic split at call-creation.
+  // Winner promotion: variant beats control on confirmed book rate → patch the
+  // base LLM with the variant prompt and delete the variant agent. Loser or
+  // inconclusive past 2x window → delete variant, revert.
+  const { data: abVersions } = await supabase
+    .from('retell_prompt_versions')
+    .select('id, vertical, agent_id, prompt_text, shadow_started_at, rollback_data')
+    .eq('status', 'ab_testing');
+
+  for (const version of abVersions || []) {
+    const exp = ((version.rollback_data || {}) as any).experiment || {};
+    const startedAt: string | null = version.shadow_started_at;
+    const baseAgentId: string | undefined = exp.base_retell_agent_id;
+    const variantAgentId: string | undefined = exp.variant_retell_agent_id;
+    if (!startedAt || !baseAgentId || !variantAgentId) {
+      console.warn(`[shadow-monitor] AB version ${version.id} malformed experiment metadata, skipping`);
+      continue;
+    }
+    const windowH = Number(exp.evaluation_window_hours) || SHADOW_WINDOW_H;
+    const ageH = (now.getTime() - new Date(startedAt).getTime()) / 3600000;
+    if (ageH < windowH) {
+      results.push({ version_id: version.id, mode: 'ab', decision: 'waiting', age_h: Math.round(ageH) });
+      continue;
+    }
+
+    const nowIso = now.toISOString();
+    const { data: variantCalls } = await supabase
+      .from('retell_calls')
+      .select('call_id, outcome')
+      .eq('retell_agent_id', variantAgentId)
+      .gte('started_at', startedAt);
+    const { data: controlCalls } = await supabase
+      .from('retell_calls')
+      .select('call_id, outcome')
+      .eq('retell_agent_id', baseAgentId)
+      .gte('started_at', startedAt);
+
+    const confirmed = await confirmedCallIds(
+      supabase,
+      [...(variantCalls || []), ...(controlCalls || [])].map(c => c.call_id),
+    );
+    const qualifies = (c: { call_id: string; outcome: string }) =>
+      QUALIFYING_OUTCOMES.has(c.outcome) || confirmed.has(c.call_id);
+    const variantN = (variantCalls || []).filter(qualifies).length;
+    const controlN = (controlCalls || []).filter(qualifies).length;
+    const variantRate = bookRate(variantCalls || [], confirmed);
+    const controlRate = bookRate(controlCalls || [], confirmed);
+
+    const enoughData = variantN >= MIN_SHADOW_CALLS && controlN >= MIN_SHADOW_CALLS && variantRate !== null && controlRate !== null;
+    // Inconclusive: the window auto-extends once (2x); past that, retire.
+    if (!enoughData && ageH < windowH * 2) {
+      results.push({ version_id: version.id, mode: 'ab', decision: 'waiting', variant_n: variantN, control_n: controlN, age_h: Math.round(ageH) });
+      continue;
+    }
+
+    const decision: 'promote' | 'revert' = enoughData && (variantRate as number) > (controlRate as number) ? 'promote' : 'revert';
+    console.log(`[shadow-monitor] AB version ${version.id}: ${decision} | variant=${((variantRate ?? 0) * 100).toFixed(1)}% (n=${variantN}) control=${((controlRate ?? 0) * 100).toFixed(1)}% (n=${controlN})`);
+
+    if (!dry_run) {
+      if (decision === 'promote' && exp.base_llm_id) {
+        try {
+          await retellFetch(`/v2/retell-llm/${exp.base_llm_id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ general_prompt: version.prompt_text }),
+          });
+          // Mirror to the Supabase agent row so the dashboard shows the live prompt
+          if (version.agent_id) {
+            await supabase
+              .from('agents')
+              .update({ system_prompt: version.prompt_text, system_prompt_synced_at: nowIso })
+              .eq('id', version.agent_id);
+          }
+        } catch (err) {
+          console.error(`[shadow-monitor] AB promote failed to patch base LLM for ${version.id}:`, err);
+          results.push({ version_id: version.id, mode: 'ab', decision: 'error', detail: String(err) });
+          continue;
+        }
+      }
+
+      // Either way the variant agent + its LLM are torn down.
+      try {
+        await retellFetch(`/delete-agent/${variantAgentId}`, { method: 'DELETE' });
+      } catch (err) {
+        console.warn(`[shadow-monitor] variant agent delete failed for ${version.id}:`, err);
+      }
+      if (exp.variant_llm_id) {
+        try {
+          await retellFetch(`/delete-retell-llm/${exp.variant_llm_id}`, { method: 'DELETE' });
+        } catch (err) {
+          console.warn(`[shadow-monitor] variant LLM delete failed for ${version.id}:`, err);
+        }
+      }
+
+      if (decision === 'promote') {
+        await supabase
+          .from('retell_prompt_versions')
+          .update({ status: 'live', shadow_ended_at: nowIso, applied_at: nowIso, shadow_book_rate: Math.round((variantRate ?? 0) * 10000) / 10000 })
+          .eq('id', version.id);
+        await supabase
+          .from('retell_prompt_versions')
+          .update({ status: 'superseded', retired_at: nowIso })
+          .eq('vertical', version.vertical)
+          .eq('status', 'live')
+          .neq('id', version.id);
+      } else {
+        await supabase
+          .from('retell_prompt_versions')
+          .update({ status: 'reverted', shadow_ended_at: nowIso, retired_at: nowIso, shadow_book_rate: Math.round((variantRate ?? 0) * 10000) / 10000 })
+          .eq('id', version.id);
+      }
+
+      supabase.from('aios_event_log').insert({
+        event_type: `retell_ab_${decision}d`,
+        channel: 'voice',
+        subject_id: version.id,
+        sentiment: decision === 'promote' ? 'positive' : 'negative',
+        payload: {
+          version_id: version.id,
+          vertical: version.vertical,
+          decision,
+          variant_book_rate: Math.round((variantRate ?? 0) * 1000) / 1000,
+          control_book_rate: Math.round((controlRate ?? 0) * 1000) / 1000,
+          variant_n: variantN,
+          control_n: controlN,
+          age_h: Math.round(ageH),
+        },
+        ts: nowIso,
+      }).then(({ error }) => {
+        if (error) console.error('[shadow-monitor] aios_event_log write failed:', error);
+      });
+    }
+
+    results.push({
+      version_id: version.id,
+      mode: 'ab',
+      decision,
+      dry_run,
+      variant_book_rate: Math.round((variantRate ?? 0) * 1000) / 1000,
+      control_book_rate: Math.round((controlRate ?? 0) * 1000) / 1000,
+      variant_n: variantN,
+      control_n: controlN,
     });
   }
 

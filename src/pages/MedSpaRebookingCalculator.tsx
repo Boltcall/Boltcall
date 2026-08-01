@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+﻿import React, { useState, useMemo, useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -278,7 +278,7 @@ const MedSpaRebookingCalculator: React.FC = () => {
     if (!email) return;
     setSubmitting(true);
     try {
-      await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -794,7 +794,7 @@ const MedSpaRebookingCalculator: React.FC = () => {
               See It In Action
               <ChevronRight className="w-5 h-5" />
             </a>
-            <p className="text-sm text-slate-500 mt-4">Starting at $99/month &bull; No contracts &bull; Set up in 24 hours</p>
+            <p className="text-sm text-slate-500 mt-4">Starting at $549/month &bull; No contracts &bull; Set up in 24 hours</p>
           </motion.div>
         </section>
 

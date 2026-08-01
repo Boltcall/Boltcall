@@ -4,7 +4,7 @@
 
 ### 1. Access Your Supabase Dashboard
 - Go to: https://supabase.com/dashboard
-- Select your project: **hbwogktdajorojljkjwg**
+- Select your project: **puszjwovldwgitfpsnfm**
 
 ### 2. Open SQL Editor
 - Click on **"SQL Editor"** in the left sidebar

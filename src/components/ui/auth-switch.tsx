@@ -36,6 +36,12 @@ interface AuthSwitchProps {
   prefillEmail?: string;
 }
 
+// OAuth providers (Google/Microsoft/Facebook) are not enabled on the prod
+// Supabase project — clicking any button returns 400 "provider is not enabled".
+// Gate the buttons behind an env flag until the providers are wired up in
+// Supabase → Auth → Providers. Flip VITE_OAUTH_ENABLED=true after configuring.
+const OAUTH_ENABLED = import.meta.env.VITE_OAUTH_ENABLED === 'true';
+
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -159,8 +165,23 @@ export default function AuthSwitch({
       } else {
         navigate(redirectTo);
       }
-    } catch {
-      setError("Invalid email or password.");
+    } catch (err) {
+      // Branch on the real Supabase error rather than collapsing every
+      // failure to "Invalid email or password." Network errors and 5xx
+      // used to look identical to a bad password.
+      const msg = err instanceof Error ? err.message : '';
+      const lowered = msg.toLowerCase();
+      if (!msg || /failed to fetch|networkerror|network request failed/i.test(msg)) {
+        setError('Network error. Check your connection and try again.');
+      } else if (/rate.?limit|too many/i.test(lowered)) {
+        setError('Too many attempts. Please wait a minute and try again.');
+      } else if (/email not confirmed|not confirmed/i.test(lowered)) {
+        setError('Please confirm your email address first — check your inbox.');
+      } else if (/invalid login credentials|invalid email or password|invalid credentials/i.test(lowered)) {
+        setError('Invalid email or password.');
+      } else {
+        setError(msg || 'Sign in failed. Please try again.');
+      }
       setLoginFailed(true);
     } finally {
       setIsLoading(false);
@@ -179,7 +200,18 @@ export default function AuthSwitch({
         navigate(redirectTo, { replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create account.");
+      // Route account-exists to sign-in mode, and email-confirmation to a
+      // helpful state instead of a scary error.
+      const name = err instanceof Error ? err.name : '';
+      if (name === 'AccountExistsError') {
+        setError("You already have an account. Sign in instead.");
+        setMode("login");
+        loginForm.setValue("email", data.email);
+      } else if (name === 'EmailConfirmationRequiredError') {
+        setError("Check your email — we sent you a link to confirm your account.");
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to create account.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -421,22 +453,24 @@ export default function AuthSwitch({
                   )}
                   <div className="pt-2">{submitButton("LOGIN", "Signing in...")}</div>
                 </form>
-                <div className="mt-5">
-                  <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
-                  <div className="flex justify-center gap-3">
-                    {[
-                      { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
-                      { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
-                      { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
-                    ].map((s, i) => (
-                      <button key={i} type="button" onClick={s.handler} disabled={isLoading}
-                        className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
-                        title={s.label}>
-                        {s.icon}
-                      </button>
-                    ))}
+                {OAUTH_ENABLED && (
+                  <div className="mt-5">
+                    <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
+                    <div className="flex justify-center gap-3">
+                      {[
+                        { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
+                        { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
+                        { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
+                      ].map((s, i) => (
+                        <button key={i} type="button" onClick={s.handler} disabled={isLoading}
+                          className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
+                          title={s.label}>
+                          {s.icon}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </motion.div>
             ) : (
               <motion.div
@@ -474,24 +508,33 @@ export default function AuthSwitch({
                       <p className="text-red-500 text-xs text-center">{error}</p>
                     </div>
                   )}
+                  <p className="px-2 text-xs text-gray-400">
+                    By signing up you'll be asked to accept our{" "}
+                    <Link to="/terms-of-service" target="_blank" className="underline">
+                      Terms of Service
+                    </Link>{" "}
+                    during setup.
+                  </p>
                   <div className="pt-2">{submitButton("SIGN UP", "Creating account...")}</div>
                 </form>
-                <div className="mt-5">
-                  <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
-                  <div className="flex justify-center gap-3">
-                    {[
-                      { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
-                      { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
-                      { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
-                    ].map((s, i) => (
-                      <button key={i} type="button" onClick={s.handler} disabled={isLoading}
-                        className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
-                        title={s.label}>
-                        {s.icon}
-                      </button>
-                    ))}
+                {OAUTH_ENABLED && (
+                  <div className="mt-5">
+                    <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
+                    <div className="flex justify-center gap-3">
+                      {[
+                        { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
+                        { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
+                        { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
+                      ].map((s, i) => (
+                        <button key={i} type="button" onClick={s.handler} disabled={isLoading}
+                          className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
+                          title={s.label}>
+                          {s.icon}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

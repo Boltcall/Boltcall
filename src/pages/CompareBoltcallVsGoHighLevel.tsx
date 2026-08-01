@@ -63,7 +63,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
           "name": "Is Boltcall cheaper than GoHighLevel?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "GoHighLevel's base plan starts at $97/month, which is lower than Boltcall's $389/month. However, GHL requires additional costs for phone numbers, AI usage, SMS credits, and often third-party integrations to match Boltcall's included features. When you add Twilio for voice, an AI receptionist tool, and setup time, the real cost of GHL often exceeds $500/month for comparable functionality."
+            "text": "GoHighLevel's base plan starts at $97/month, which is lower than Boltcall's $549/month. However, GHL requires additional costs for phone numbers, AI usage, SMS credits, and often third-party integrations to match Boltcall's included features. When you add Twilio for voice, an AI receptionist tool, and setup time, the real cost of GHL often exceeds $500/month for comparable functionality."
           }
         },
         {
@@ -139,7 +139,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
   }, []);
 
   const comparisonData = [
-    { feature: 'Starting Price', boltcall: '$389/mo', ghl: '$97/mo (Starter)', boltcallWin: false },
+    { feature: 'Starting Price', boltcall: '$549/mo', ghl: '$97/mo (Starter)', boltcallWin: false },
     { feature: 'Target User', boltcall: 'Local business owners', ghl: 'Marketing agencies', boltcallWin: true },
     { feature: 'AI Phone Receptionist', boltcall: 'Yes, 24/7', ghl: 'No native (needs Twilio)', boltcallWin: true },
     { feature: 'AI Chatbot', boltcall: 'Yes, included', ghl: 'Yes, basic', boltcallWin: true },
@@ -190,7 +190,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
           {/* AEO Direct Answer Block */}
           <div className="speakable-intro bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
             <p className="text-gray-800 leading-relaxed font-medium">
-              <strong>Boltcall</strong> is a focused AI receptionist platform that answers calls, captures leads, and automates follow-ups for local businesses starting at $389/month with 24-hour setup. <strong>GoHighLevel</strong> is a comprehensive CRM and marketing platform starting at $97/month but requires significant setup time, technical knowledge, and is designed primarily for agencies, not individual small businesses.
+              <strong>Boltcall</strong> is a focused AI receptionist platform that answers calls, captures leads, and automates follow-ups for local businesses starting at $549/month with 24-hour setup. <strong>GoHighLevel</strong> is a comprehensive CRM and marketing platform starting at $97/month but requires significant setup time, technical knowledge, and is designed primarily for agencies, not individual small businesses.
             </p>
           </div>
         </motion.header>
@@ -319,7 +319,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <span><strong className="text-gray-900">$389/mo Core:</strong> AI receptionist, website, speed-to-lead, follow-ups</span>
+                    <span><strong className="text-gray-900">$549/mo Core:</strong> AI receptionist, website, speed-to-lead, follow-ups</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
@@ -369,7 +369,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                 <span className="font-semibold text-gray-900">Real Cost Comparison</span>
               </div>
               <p className="text-gray-700">
-                A local business using GHL with Twilio for voice, LC Phone credits for SMS, and the Unlimited plan typically spends <strong className="text-gray-900">$350–$550/month</strong>. That is comparable to Boltcall's $389 Core plan — except Boltcall includes setup, and GHL requires weeks of configuration.
+                A local business using GHL with Twilio for voice, LC Phone credits for SMS, and the Unlimited plan typically spends <strong className="text-gray-900">$350–$550/month</strong>. That is comparable to Boltcall's $549 Core plan — except Boltcall includes setup, and GHL requires weeks of configuration.
               </p>
             </div>
 
@@ -702,7 +702,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Is Boltcall cheaper than GoHighLevel?</h3>
               <p>
-                GHL's base plan is $97/month versus Boltcall's $389/month. However, to match Boltcall's features, GHL requires the $297 Unlimited plan plus Twilio ($20+/month), SMS credits, and AI add-ons. The real cost with comparable features is <strong className="text-gray-900">$350–$550/month</strong>. Factor in 40+ hours of setup time, and Boltcall delivers better value for local businesses.
+                GHL's base plan is $97/month versus Boltcall's $549/month. However, to match Boltcall's features, GHL requires the $297 Unlimited plan plus Twilio ($20+/month), SMS credits, and AI add-ons. The real cost with comparable features is <strong className="text-gray-900">$350–$550/month</strong>. Factor in 40+ hours of setup time, and Boltcall delivers better value for local businesses.
               </p>
             </div>
 

@@ -7,6 +7,7 @@ import {
   clearPendingAgentSetup,
   readPendingAgentSetup,
 } from '../lib/setup/onboarding';
+import { reportHandledError } from '../lib/errorReporting';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +25,8 @@ const AuthCallback: React.FC = () => {
 
         if (error) {
           console.error('Auth callback error:', error);
-          navigate('/login');
+          reportHandledError('AuthCallback: getSession error', error);
+          navigate('/login?authError=callback');
           return;
         }
 
@@ -33,11 +35,20 @@ const AuthCallback: React.FC = () => {
           const pendingAuthRedirect = consumePendingAuthRedirect();
 
           // Check if user has completed setup
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('business_profiles')
             .select('id')
             .eq('user_id', session.user.id)
             .maybeSingle();
+
+          if (profileError) {
+            // Transient DB/RLS error — do NOT treat as "no profile" (would send an
+            // existing user to /setup or re-run provisioning). Dashboard is safe:
+            // ProtectedRoute re-checks the profile once the DB recovers.
+            console.error('Auth callback profile check failed:', profileError);
+            navigate(pendingAuthRedirect || '/dashboard', { replace: true });
+            return;
+          }
 
           if (!profile && pendingSetup) {
             navigate('/setup/loading', { replace: true });
@@ -59,7 +70,8 @@ const AuthCallback: React.FC = () => {
         }
       } catch (error) {
         console.error('Error handling auth callback:', error);
-        navigate('/login');
+        reportHandledError('AuthCallback: unhandled', error);
+        navigate('/login?authError=callback');
       }
     };
 

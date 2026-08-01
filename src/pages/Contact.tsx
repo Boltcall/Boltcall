@@ -76,7 +76,7 @@ const Contact: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/9073ec26-3576-4fd4-9b63-a65c1d73250e', {
+      const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/9073ec26-3576-4fd4-9b63-a65c1d73250e', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

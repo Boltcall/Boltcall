@@ -31,7 +31,12 @@ export function getHeader(event: HandlerEvent, name: string): string | undefined
 }
 
 export function hasSharedSecret(event: HandlerEvent): boolean {
-  const internalSecret = process.env.INTERNAL_WEBHOOK_SECRET || process.env.INTERNAL_API_SECRET || '';
+  // Historical: two names for the same value shipped in parallel
+  // (INTERNAL_WEBHOOK_SECRET, INTERNAL_API_SECRET). Standardize on
+  // INTERNAL_API_SECRET going forward — leave the legacy fallback here
+  // so unrotated Netlify environments keep working, and drop it after
+  // Week 4 secret rotation.
+  const internalSecret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '';
   const cronSecret = process.env.CRON_SECRET || '';
 
   const providedInternal = header(event, 'x-internal-secret') || '';

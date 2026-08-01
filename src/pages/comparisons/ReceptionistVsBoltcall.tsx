@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Zap, CheckCircle } from 'lucide-react';
@@ -33,7 +33,7 @@ const FAQS = [
   },
   {
     q: 'How much does Boltcall actually cost compared to a receptionist salary?',
-    a: 'Boltcall plans run $99 to $200 per month depending on call volume and features. A full-time receptionist in the US costs $2,500 to $4,000 per month in salary plus another $5,000 to $8,000 per year in benefits and payroll taxes. Total annual savings typically land between $25,000 and $40,000.',
+    a: 'Boltcall plans run $549 to $897 per month depending on call volume and features. A full-time receptionist in the US costs $2,500 to $4,000 per month in salary plus another $5,000 to $8,000 per year in benefits and payroll taxes. Total annual savings typically land between $25,000 and $40,000.',
   },
   {
     q: 'Will I lose the personal touch by removing a human receptionist?',
@@ -100,7 +100,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
       '@context': 'https://schema.org',
       '@type': 'Product',
       name: 'Boltcall AI Receptionist',
-      description: 'AI receptionist replacement for local service businesses. Handles calls 24/7, never misses, costs 90 percent less than a full-time human receptionist.',
+      description: 'AI receptionist replacement for local service businesses. Answers calls 24/7, costs 90 percent less than a full-time human receptionist.',
       brand: { '@type': 'Brand', name: 'Boltcall' },
       offers: {
         '@type': 'AggregateOffer',
@@ -192,7 +192,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
               <tbody>
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Monthly cost</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$99-200/month</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$549-897/month</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">$2,500-4,000/month (salary + benefits)</td>
                 </tr>
                 <tr className="bg-gray-50">
@@ -208,7 +208,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Missed calls</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">
-                    <span className="text-green-600 font-semibold">0% (never misses)</span>
+                    <span className="text-green-600 font-semibold">Answers every call, 24/7</span>
                   </td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">
                     <span className="text-orange-600 font-semibold">15-30% (lunch, breaks, busy)</span>
@@ -265,7 +265,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
           <div className="space-y-6 text-gray-700 leading-relaxed">
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">Boltcall</h3>
-              <p className="text-xl font-bold text-blue-600 mb-2">$99-200/month</p>
+              <p className="text-xl font-bold text-blue-600 mb-2">$549-897/month</p>
               <p className="text-gray-600 mb-4">No additional costs</p>
               <ul className="space-y-2 text-gray-700 ml-4">
                 <li className="flex items-start">
@@ -411,12 +411,15 @@ const ReceptionistVsBoltcall: React.FC = () => {
         >
           <h2 id="real-world-example" className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
             <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-            Real-World Example: 5-Person Law Firm
+            Illustrative Example: 5-Person Law Firm
           </h2>
 
           <div className="space-y-4 text-gray-700 leading-relaxed">
+            <p className="text-sm text-gray-500 italic">
+              This is a hypothetical model, not a real client case study — the kind of math a firm this size might run before switching. Boltcall does not yet have published customer case studies.
+            </p>
             <p>
-              A personal injury law firm in Phoenix with five attorneys ran the math before switching. Their previous setup: one full-time receptionist at $42,000 per year plus $7,200 in benefits and payroll taxes, working 40 hours per week. Voicemail handled everything else.
+              Picture a personal injury law firm in Phoenix with five attorneys running this math before switching. Their setup: one full-time receptionist at $42,000 per year plus $7,200 in benefits and payroll taxes, working 40 hours per week. Voicemail handled everything else.
             </p>
 
             <p>
@@ -447,15 +450,11 @@ const ReceptionistVsBoltcall: React.FC = () => {
             </ul>
 
             <p>
-              After 90 days on Boltcall at $200 per month: 1,894 calls received, 1,892 answered (99.9 percent — two during a brief outage), 217 booked consultations, 38 retained cases. Same 90-day window, three months prior under the receptionist model: 84 booked consultations, 14 retained cases.
-            </p>
-
-            <p className="bg-blue-50 border-l-4 border-blue-600 p-5 rounded-r-lg">
-              <strong>Net result:</strong> 24 additional retained cases over 90 days at $4,200 average = <strong>$100,800 in additional revenue</strong>. Plus $49,200 saved on the receptionist salary and benefits, annualized. Total swing of roughly $150,000 per year for a $2,400 annual Boltcall cost.
+              Model this forward: if Boltcall had answered the 785 calls that went to voicemail instead — at roughly the same 3.9 percent voicemail-to-consultation conversion rate — that's an estimated 30 additional consultations over the same 90 days, on top of the 31 the voicemail funnel already produced. At the firm's case-acceptance and $4,200 average case value, that's a meaningful revenue swing on top of the receptionist salary and benefits saved. Your own numbers will differ.
             </p>
 
             <p className="text-sm text-gray-600 italic">
-              Your numbers will be different depending on call volume, average ticket size, and current answer rate. The pattern is consistent though: high-volume phone-driven businesses see the biggest gains. Run your own version of this math during the strategy call.
+              Your numbers will be different depending on call volume, average ticket size, and current answer rate. Run your own version of this math during the strategy call.
             </p>
           </div>
         </motion.section>

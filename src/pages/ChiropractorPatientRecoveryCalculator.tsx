@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -141,7 +141,7 @@ const ChiropractorPatientRecoveryCalculator: React.FC = () => {
           'name': 'What ROI can a chiropractor expect from an AI receptionist?',
           'acceptedAnswer': {
             '@type': 'Answer',
-            'text': 'Most chiropractic clinics see 500-2,000%+ ROI from AI automation. A $179/month investment typically recovers $3,000-$15,000 in monthly revenue from missed calls, no-shows, and dropped patients.',
+            'text': 'Most chiropractic clinics see 500-2,000%+ ROI from AI automation. A $897/month investment typically recovers $3,000-$15,000 in monthly revenue from missed calls, no-shows, and dropped patients.',
           },
         },
       ],
@@ -257,7 +257,7 @@ const ChiropractorPatientRecoveryCalculator: React.FC = () => {
     if (!formName || !formEmail) return;
     setFormLoading(true);
     try {
-      await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -547,7 +547,7 @@ const ChiropractorPatientRecoveryCalculator: React.FC = () => {
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.annualRecovery)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400">Net gain after Boltcall ($179/mo)</span>
+                      <span className="text-sm text-slate-400">Net gain after Boltcall ($897/mo)</span>
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.netGain)}</span>
                     </div>
                     <div className="border-t border-emerald-500/20 pt-2.5 mt-2.5">
@@ -776,7 +776,7 @@ const ChiropractorPatientRecoveryCalculator: React.FC = () => {
                 },
                 {
                   q: 'What ROI can a chiropractor expect from an AI receptionist?',
-                  a: 'Most chiropractic clinics see 500-2,000%+ ROI from AI automation. A $179/month investment typically recovers $3,000-$15,000 in monthly revenue from missed calls, no-shows, and dropped patients. The calculator above shows your specific numbers.',
+                  a: 'Most chiropractic clinics see 500-2,000%+ ROI from AI automation. A $897/month investment typically recovers $3,000-$15,000 in monthly revenue from missed calls, no-shows, and dropped patients. The calculator above shows your specific numbers.',
                 },
               ].map((faq) => (
                 <motion.div key={faq.q} variants={fadeUp}

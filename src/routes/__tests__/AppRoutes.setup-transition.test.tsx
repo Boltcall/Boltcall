@@ -85,6 +85,9 @@ vi.mock('../../pages/setup/TalkToAgentPage', () => ({
 }));
 
 import AppRoutes from '../AppRoutes';
+import { ToastProvider } from '../../contexts/ToastContext';
+
+const renderRoutes = () => render(<AppRoutes />, { wrapper: ToastProvider });
 
 describe('AppRoutes post-setup transitions', () => {
   beforeEach(() => {
@@ -98,24 +101,27 @@ describe('AppRoutes post-setup transitions', () => {
     routeState.initialEntries = ['/setup/loading'];
     routeState.suspendDashboardProviders = true;
 
-    render(<AppRoutes />);
+    renderRoutes();
 
-    expect(await screen.findByText(/loading setup/i)).toBeInTheDocument();
+    // Generous timeout: lazy route chunks resolve slowly under full-suite CPU load.
+    expect(await screen.findByText(/loading setup/i, {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(document.querySelector('.setup-transition-screen')).toBeInTheDocument();
   });
 
   it('shows a visible loading state while talk-to-agent route is still loading', async () => {
     routeState.initialEntries = ['/setup/talk-to-agent'];
     routeState.suspendTalkToAgentPage = true;
 
-    render(<AppRoutes />);
+    renderRoutes();
 
-    expect(await screen.findByText(/loading setup/i)).toBeInTheDocument();
+    expect(await screen.findByText(/loading setup/i, {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(document.querySelector('.setup-transition-screen')).toBeInTheDocument();
   });
 
   it('renders the agent-led setup page at the canonical /setup route', async () => {
     routeState.initialEntries = ['/setup'];
 
-    render(<AppRoutes />);
+    renderRoutes();
 
     expect(await screen.findByText('V2 setup page')).toBeInTheDocument();
   });
@@ -123,7 +129,7 @@ describe('AppRoutes post-setup transitions', () => {
   it('keeps /setup/agent as a compatibility alias for /setup', async () => {
     routeState.initialEntries = ['/setup/agent'];
 
-    render(<AppRoutes />);
+    renderRoutes();
 
     expect(await screen.findByText('V2 setup page')).toBeInTheDocument();
   });

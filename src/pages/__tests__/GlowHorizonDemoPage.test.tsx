@@ -4,19 +4,11 @@ import { describe, expect, it } from 'vitest';
 import GlowHorizonDemoPage from '../GlowHorizonDemoPage';
 
 describe('GlowHorizonDemoPage', () => {
-  it('renders the glow horizon demo and variant controls', () => {
+  it('renders the boltcall welcome hero', () => {
     render(<GlowHorizonDemoPage />);
 
-    expect(screen.getByRole('heading', { name: /glow horizon/i })).toBeInTheDocument();
-    expect(
-      screen.getByText(/soft directional glow layer for hero sections/i),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /top/i })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    expect(screen.getByRole('button', { name: /bottom/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /left/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /right/i })).toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveClass('min-h-screen', 'overflow-hidden');
+    expect(screen.getByRole('heading', { name: /welcome to boltcall/i })).toBeInTheDocument();
+    expect(document.title).toBe('Glow Horizon Demo - Boltcall');
   });
-}
+});

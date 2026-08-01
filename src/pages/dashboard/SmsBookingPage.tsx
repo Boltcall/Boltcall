@@ -270,7 +270,7 @@ const SmsBookingPage: React.FC = () => {
               <div className="flex items-center gap-2 pl-13 sm:pl-0 flex-shrink-0">
                 <button
                   onClick={() => handleRescheduleBooking(booking)}
-                  className="text-blue-600 hover:text-blue-900 transition-colors p-1.5"
+                  className="text-blue-600 hover:text-blue-900 transition-colors duration-200 ease-out p-1.5"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
@@ -279,7 +279,7 @@ const SmsBookingPage: React.FC = () => {
                     setSelectedBooking(booking);
                     setShowDeleteModal(true);
                   }}
-                  className="text-red-600 hover:text-red-900 transition-colors p-1.5"
+                  className="text-red-600 hover:text-red-900 transition-colors duration-200 ease-out p-1.5"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

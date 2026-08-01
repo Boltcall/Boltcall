@@ -188,4 +188,37 @@ describe('conversation-outcome tenant hardening', () => {
     );
     expect(notifyInfoMock).toHaveBeenCalled();
   });
+
+  it('does not claim self-heal was triggered when the self-heal endpoint rejects it', async () => {
+    userOwnsAgentMock.mockResolvedValue(true);
+    const supabase = makeSupabase();
+    getServiceSupabaseMock.mockReturnValue(supabase.client);
+    (fetch as any).mockResolvedValue({
+      ok: false,
+      status: 429,
+      text: async () => 'Daily heal limit reached',
+    });
+
+    const { testHandler: handler } = await import('../conversation-outcome');
+
+    const res = await handler(
+      makePost({
+        userId: 'user-a',
+        agentId: 'agent-owned',
+        channel: 'voice',
+        conversationId: 'call-fail',
+        transcript: 'lead: I need an appointment\nagent: Please call later',
+        callAnalysis: { call_successful: false, call_summary: 'Lead wanted booking but no booking was offered' },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body)).toMatchObject({
+      outcome: 'fail',
+      healTriggered: false,
+      healTriggerError: 'Self-heal rejected with 429: Daily heal limit reached',
+    });
+    expect(supabase.inserted).toHaveLength(0);
+  });
 });

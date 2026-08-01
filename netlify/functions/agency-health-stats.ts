@@ -62,9 +62,9 @@ import { createClient } from '@supabase/supabase-js';
 
 import { getServiceSupabase } from './_shared/token-utils';
 
-const DEFAULT_SUPABASE_URL = 'https://hbwogktdajorojljkjwg.supabase.co';
+const DEFAULT_SUPABASE_URL = 'https://puszjwovldwgitfpsnfm.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhid29na3RkYWpvcm9qbGprandnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg5Nzk3OTAsImV4cCI6MjA3NDU1NTc5MH0.5OGNa0_WfxPMFqxj9sY4Tq6WZtOaxjejS7Z4HNzbe7w';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1c3pqd292bGR3Z2l0ZnBzbmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2MzI3NzUsImV4cCI6MjEwMDIwODc3NX0.S5bHgXWWdcnB_S9_mUFF2HPbl84dPks9_LBvWAFIQeQ';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //   Constants

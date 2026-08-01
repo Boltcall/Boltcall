@@ -3,8 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
 import { notifyError } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isLocalDev } from './_shared/prod-detect';
+import { findOrCreateLead } from './_shared/lead-linking';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
 function getServiceClient() {
   return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY!, {
@@ -74,9 +76,14 @@ const handler: Handler = async (event) => {
 
   const rawBody = event.body || '';
 
-  // HMAC signature verification (skip if no APP_SECRET set — dev mode)
+  // HMAC signature verification. Fail-closed anywhere except local `netlify dev`.
   const appSecret = process.env.WHATSAPP_APP_SECRET;
-  if (appSecret) {
+  if (!appSecret) {
+    if (!isLocalDev()) {
+      console.error('[whatsapp-webhook] WHATSAPP_APP_SECRET unset — refusing');
+      return { statusCode: 500, body: 'Server misconfigured' };
+    }
+  } else {
     const sigHeader = event.headers['x-hub-signature-256'] || event.headers['X-Hub-Signature-256'] || '';
     const expected = 'sha256=' + crypto.createHmac('sha256', appSecret).update(rawBody).digest('hex');
     if (sigHeader !== expected) {
@@ -159,6 +166,17 @@ const handler: Handler = async (event) => {
             console.error('[whatsapp-webhook] Insert failed:', insertError);
             await notifyError('whatsapp-webhook: Insert failed', insertError as any, { from, to });
             continue;
+          }
+
+          // Link to a lead so WhatsApp isn't the only channel that never
+          // touches `leads` — dedup by phone against SMS/email leads too.
+          if (userId && insertedMsg?.id) {
+            try {
+              const linked = await findOrCreateLead(supabase, { userId, phone: from, source: 'whatsapp' });
+              await supabase.from('whatsapp_conversations').update({ lead_id: linked.id }).eq('id', insertedMsg.id);
+            } catch (linkErr) {
+              console.error('[whatsapp-webhook] Lead linking failed:', linkErr);
+            }
           }
 
           // Trigger AI responder. Fire-and-forget is unreliable on Netlify

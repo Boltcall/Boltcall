@@ -63,7 +63,7 @@ const Pricing: React.FC = () => {
       tokens: "10,000 tokens/mo",
     },
     {
-      name: "ENTERPRISE",
+      name: "Enterprise",
       level: "custom",
       price: { monthly: 997, yearly: 11964 },
       description: "Tailored solutions for your business:",

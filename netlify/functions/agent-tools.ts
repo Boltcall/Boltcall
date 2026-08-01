@@ -4,6 +4,7 @@ import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { estimateBookingValueCents } from './_shared/booking-value';
 
 /**
  * Agent Tools Webhook
@@ -55,7 +56,16 @@ function isAuthorizedToolRequest(event: HandlerEvent): boolean {
     return Boolean(provided) && safeEqual(sharedSecret, provided);
   }
 
-  return process.env.NODE_ENV !== 'production';
+  // Fail-open only outside production, and never silently: log loudly so a
+  // misconfigured deploy (no Retell signature verified, no shared secret set)
+  // is obvious in the function logs instead of quietly accepting every request.
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      '[agent-tools] AUTH BYPASS: request accepted without a valid Retell signature or shared secret because NODE_ENV != production. Set AGENT_TOOLS_SHARED_SECRET (or RETELL_TOOL_SECRET) to lock this down.',
+    );
+    return true;
+  }
+  return false;
 }
 
 // ── Cal.com helpers ──
@@ -560,8 +570,10 @@ async function handleBookAppointment(
       const supabase = getSupabase();
 
       try {
+        const estimatedValueCents = await estimateBookingValueCents(supabase, userId, service);
         await supabase.from('appointments').insert({
           user_id: userId,
+          call_id: callId || null,
           cal_booking_id: String(bookingId),
           cal_event_type: service || 'Appointment',
           client_name: name,
@@ -571,6 +583,7 @@ async function handleBookAppointment(
           starts_at: startISO,
           timezone: 'America/New_York',
           status: 'confirmed',
+          estimated_value_cents: estimatedValueCents,
           raw_webhook: { source: 'agent_tool', call_id: callId, booked_via: bookedVia },
         });
       } catch (dbErr) {

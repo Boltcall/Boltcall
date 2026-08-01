@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
-import { getStrongEnvSecret, signJsonToken } from './_shared/signed-token';
+import { getStrongEnvSecret, signJsonToken, verifyJsonToken } from './_shared/signed-token';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,13 +27,29 @@ const handler: Handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body || '{}');
-    const { word, name, email } = body;
+    const { word, name, email, challenge_token } = body;
 
     if (!word?.trim()) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'word is required' }) };
     }
     if (!name?.trim() || !email?.trim() || !EMAIL_RE.test(email.trim())) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'valid name and email are required' }) };
+    }
+    if (!challenge_token || typeof challenge_token !== 'string') {
+      return { statusCode: 403, headers, body: JSON.stringify({ error: 'Fresh challenge session required' }) };
+    }
+
+    const sessionSecret = getStrongEnvSecret('CHALLENGE_SESSION_SECRET', 'CHALLENGE_CLAIM_SECRET', 'INTERNAL_API_SECRET');
+    if (!sessionSecret) {
+      return { statusCode: 503, headers, body: JSON.stringify({ error: 'Challenge session is not configured' }) };
+    }
+    const session = verifyJsonToken<{ name: string; email: string; challenge: string }>(challenge_token, sessionSecret);
+    if (
+      !session ||
+      session.challenge !== 'break-our-ai' ||
+      session.email !== String(email).trim().toLowerCase().slice(0, 254)
+    ) {
+      return { statusCode: 403, headers, body: JSON.stringify({ error: 'Invalid or expired challenge session' }) };
     }
 
     const submitted = String(word).toLowerCase().trim().slice(0, 80);

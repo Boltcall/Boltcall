@@ -4,10 +4,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { supabase } from '../../lib/supabase';
 import { UnsavedChanges } from '../../components/ui/unsaved-changes';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 const BusinessPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const handleError = useErrorHandler();
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -84,11 +86,14 @@ const BusinessPage: React.FC = () => {
           }
         }
       } catch (err) {
-        console.error('Error fetching business data:', err);
+        handleError('business: fetch profile', err, {
+          message: 'Could not load your business profile. Please refresh and try again.',
+          metadata: { userId: user.id },
+        });
       }
     };
     fetchData();
-  }, [user?.id]);
+  }, [user?.id, handleError]);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -187,18 +192,18 @@ const BusinessPage: React.FC = () => {
     <div className="space-y-8">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900">Business Details</h1>
-        <p className="text-zinc-600 mt-1">Manage your business information and settings</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 dark:text-white">Business Details</h1>
+        <p className="text-zinc-600 dark:text-zinc-400 mt-1">Manage your business information and settings</p>
       </div>
 
       {/* Business Information Form */}
-      <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-zinc-900 mb-6">Business Information</h2>
+      <div className="bg-white dark:bg-[#111114] rounded-2xl border border-zinc-200 dark:border-[#1e1e24] shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-6">Business Information</h2>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Business Name */}
           <div>
-            <label htmlFor="businessName" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="businessName" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
               Business Name
             </label>
             <input
@@ -206,100 +211,100 @@ const BusinessPage: React.FC = () => {
               id="businessName"
               value={formData.businessName}
               onChange={(e) => handleChange('businessName', e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="w-full px-3 py-2 border border-zinc-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ease-out"
             />
           </div>
 
           {/* Website */}
           <div>
-            <label htmlFor="website" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="website" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
               Website
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Globe className="w-4 h-4 text-zinc-400" />
+                <Globe className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
               </div>
               <input
                 type="url"
                 id="website"
                 value={formData.website}
                 onChange={(e) => handleChange('website', e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-3 py-2 border border-zinc-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ease-out"
               />
             </div>
           </div>
 
           {/* Phone Number */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="phone" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
               Phone Number
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Phone className="w-4 h-4 text-zinc-400" />
+                <Phone className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
               </div>
               <input
                 type="tel"
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleChange('phone', e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-3 py-2 border border-zinc-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ease-out"
               />
             </div>
           </div>
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
               Email Address
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="w-4 h-4 text-zinc-400" />
+                <Mail className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
               </div>
               <input
                 type="email"
                 id="email"
                 value={formData.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-3 py-2 border border-zinc-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ease-out"
               />
             </div>
           </div>
 
           {/* Business Hours */}
           <div>
-            <label className="block text-sm font-medium text-zinc-700 mb-2">
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
               Business Hours
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="openTime" className="block text-xs text-zinc-600 mb-1">Opening Time</label>
+                <label htmlFor="openTime" className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Opening Time</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Clock className="w-4 h-4 text-zinc-400" />
+                    <Clock className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
                   </div>
                   <input
                     type="time"
                     id="openTime"
                     value={formData.openTime}
                     onChange={(e) => handleChange('openTime', e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full pl-10 pr-3 py-2 border border-zinc-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ease-out"
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="closeTime" className="block text-xs text-zinc-600 mb-1">Closing Time</label>
+                <label htmlFor="closeTime" className="block text-xs text-zinc-600 dark:text-zinc-400 mb-1">Closing Time</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Clock className="w-4 h-4 text-zinc-400" />
+                    <Clock className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
                   </div>
                   <input
                     type="time"
                     id="closeTime"
                     value={formData.closeTime}
                     onChange={(e) => handleChange('closeTime', e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full pl-10 pr-3 py-2 border border-zinc-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ease-out"
                   />
                 </div>
               </div>
@@ -308,7 +313,7 @@ const BusinessPage: React.FC = () => {
 
           {/* Business Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
               Business Description
             </label>
             <textarea
@@ -316,7 +321,7 @@ const BusinessPage: React.FC = () => {
               rows={4}
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              className="w-full px-3 py-2 border border-zinc-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+              className="w-full px-3 py-2 border border-zinc-300 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-zinc-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ease-out resize-none"
             />
           </div>
 
@@ -325,38 +330,38 @@ const BusinessPage: React.FC = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-6">
+        <div className="bg-white dark:bg-[#111114] rounded-2xl border border-zinc-200 dark:border-[#1e1e24] shadow-sm p-6 hover:shadow-md transition-shadow duration-200 ease-out">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-blue-100 dark:bg-blue-950/30 rounded-lg">
               <Building2 className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-zinc-900">1</div>
-              <div className="text-sm text-zinc-600">Active Location</div>
+              <div className="text-2xl font-bold text-zinc-900 dark:text-white">1</div>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">Active Location</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-6">
+        <div className="bg-white dark:bg-[#111114] rounded-2xl border border-zinc-200 dark:border-[#1e1e24] shadow-sm p-6 hover:shadow-md transition-shadow duration-200 ease-out">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
+            <div className="p-2 bg-green-100 dark:bg-green-950/30 rounded-lg">
               <Phone className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-zinc-900">3</div>
-              <div className="text-sm text-zinc-600">Phone Numbers</div>
+              <div className="text-2xl font-bold text-zinc-900 dark:text-white">3</div>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">Phone Numbers</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-zinc-200 shadow-sm p-6">
+        <div className="bg-white dark:bg-[#111114] rounded-2xl border border-zinc-200 dark:border-[#1e1e24] shadow-sm p-6 hover:shadow-md transition-shadow duration-200 ease-out">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 dark:bg-purple-950/30 rounded-lg">
               <Clock className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-zinc-900">8h</div>
-              <div className="text-sm text-zinc-600">Daily Hours</div>
+              <div className="text-2xl font-bold text-zinc-900 dark:text-white">8h</div>
+              <div className="text-sm text-zinc-600 dark:text-zinc-400">Daily Hours</div>
             </div>
           </div>
         </div>

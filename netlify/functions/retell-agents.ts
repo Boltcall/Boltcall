@@ -3,6 +3,7 @@ import Retell from 'retell-sdk';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireAuth, getUserAgentIds, userOwnsAgent } from './_shared/require-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { listRetellVoiceAgents } from './_shared/retell-call-list';
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -30,9 +31,22 @@ function buildAgentPrompt(businessName: string, country?: string): string {
   const basePrompt = `You are a friendly, professional AI receptionist for ${businessName}. Help callers with scheduling, answering questions, and providing information about the business. Be concise and helpful.`;
   const needsDisclosure = !country || ['us','ca','gb','uk','au','nz','il','ie','de','fr','es','it','nl','be','at','ch','se','no','dk','fi','pt','pl','cz','gr','ro','hu','bg','hr','sk','si','lt','lv','ee','lu','mt','cy','is','li'].includes(country.toLowerCase());
   if (needsDisclosure) {
-    return `IMPORTANT: At the very beginning of every call, you MUST introduce yourself by saying: "Hi, thank you for calling ${businessName}. Just so you know, I'm an AI assistant here to help you." Then proceed naturally with the conversation.\n\n${basePrompt}`;
+    return `IMPORTANT: At the very beginning of every call, you MUST introduce yourself by saying: "Hi, thank you for calling ${businessName}. This call may be recorded, and just so you know, I'm an AI assistant here to help you." Then proceed naturally with the conversation.\n\n${basePrompt}`;
   }
   return basePrompt;
+}
+
+// Customers can override the agent's begin_message via body.begin_message.
+// Terms of Service ties AI/recording disclosure compliance to the customer,
+// but a stripped disclosure is still a Boltcall product risk — so any
+// customer-supplied greeting missing an AI or recording notice gets one
+// appended rather than silently accepted as-is.
+function ensureDisclosure(beginMessage: string, businessName?: string): string {
+  const hasAiNotice = /\bAI\b|artificial intelligence|inteligencia artificial|asistente de IA|בינה מלאכותית/i.test(beginMessage);
+  const hasRecordingNotice = /record|grabad|מוקלט/i.test(beginMessage);
+  if (hasAiNotice && hasRecordingNotice) return beginMessage;
+  const name = businessName || 'us';
+  return `${beginMessage.trim()} This call may be recorded, and I'm an AI assistant here to help you at ${name}.`;
 }
 
 // Generate professional prompt via internal HTTP call to the generate-agent-prompt function
@@ -50,7 +64,7 @@ async function generateProfessionalPrompt(promptConfig: any): Promise<{ prompt: 
     // Fallback: return a basic prompt so agent creation doesn't fail
     return {
       prompt: buildAgentPrompt(promptConfig.businessProfile?.businessName || 'this business', promptConfig.businessProfile?.country),
-      beginMessage: `Hi, thanks for calling ${promptConfig.businessProfile?.businessName || 'us'}! How can I help you today?`,
+      beginMessage: `Hi, thank you for calling ${promptConfig.businessProfile?.businessName || 'us'}. This call may be recorded, and just so you know, I'm an AI assistant here to help you. How can I help you today?`,
     };
   }
 
@@ -220,13 +234,51 @@ async function validateOwnedSetupReferences(
   return { ok: true };
 }
 
+export interface TransferRule {
+  condition_type: 'keyword' | 'default';
+  condition_value: string | null;
+  destination_number: string;
+  priority: number;
+}
+
+// Picks the transfer_call tool's destination shape. Single destination (a
+// bare transferNumber, or exactly one rule) stays `predefined` — no reason to
+// pay for LLM inference to pick between one option. Two or more rules switch
+// to `inferred` so Retell's own model routes off what the caller actually
+// says, built from the rules' condition_value as routing guidance.
+function buildTransferDestination(
+  rules: TransferRule[],
+  fallbackNumber?: string,
+): { type: 'predefined'; number: string } | { type: 'inferred'; prompt: string } | null {
+  if (rules.length >= 2) {
+    const sorted = [...rules].sort((a, b) => a.priority - b.priority);
+    const lines = sorted.map((r) =>
+      r.condition_type === 'default' || !r.condition_value
+        ? `- No specific match / general request to speak to a person: transfer to ${r.destination_number}`
+        : `- If the caller mentions "${r.condition_value}": transfer to ${r.destination_number}`
+    ).join('\n');
+    return {
+      type: 'inferred',
+      prompt: `Pick the transfer destination phone number based on what the caller says, using these routing rules in priority order:\n${lines}\nIf nothing matches and no default rule is listed above, do not transfer — tell the caller you'll have someone call them back.`,
+    };
+  }
+  if (rules.length === 1) {
+    return { type: 'predefined', number: rules[0].destination_number };
+  }
+  if (fallbackNumber) {
+    return { type: 'predefined', number: fallbackNumber };
+  }
+  return null;
+}
+
 // Build general_tools array for LLM creation/update
 // Includes: lookup_caller, transfer_call, end_call, check_availability, book_appointment, cancel_appointment, reschedule_appointment, send_sms, search_knowledge_base
 function buildGeneralTools(options: {
   transferNumber?: string;
+  transferRules?: TransferRule[];
   baseUrl: string;
 }): any[] {
-  const { transferNumber, baseUrl } = options;
+  const { transferNumber, transferRules, baseUrl } = options;
   const toolsWebhookUrl = `${baseUrl}/.netlify/functions/agent-tools`;
 
   const tools: any[] = [
@@ -377,16 +429,14 @@ function buildGeneralTools(options: {
     },
   ];
 
-  // Add transfer_call tool only if a transfer number is provided
-  if (transferNumber) {
+  // Add transfer_call tool only if a destination can be resolved.
+  const transferDestination = buildTransferDestination(transferRules || [], transferNumber);
+  if (transferDestination) {
     tools.unshift({
       type: 'transfer_call',
       name: 'transfer_call',
       description: 'Transfer the call to a human agent or the business owner. Use when the caller explicitly asks to speak to a person, or for urgent matters you cannot handle.',
-      transfer_destination: {
-        type: 'predefined',
-        number: transferNumber,
-      },
+      transfer_destination: transferDestination,
       transfer_option: {
         type: 'warm_transfer',
         show_transferee_as_caller: true,
@@ -451,7 +501,7 @@ const handler: Handler = async (event) => {
         return { statusCode: 200, headers, body: JSON.stringify(agent) };
       }
       // List — return only agents owned by this user, not the org-wide list
-      const allAgents = await client.agent.list();
+      const allAgents = await listRetellVoiceAgents<any>(apiKey);
       const ownedSet = new Set(ownedAgentIds);
       const filtered = (allAgents || []).filter((a: any) => ownedSet.has(a.agent_id));
       return { statusCode: 200, headers, body: JSON.stringify(filtered) };
@@ -510,6 +560,11 @@ const handler: Handler = async (event) => {
 
         const webhookBaseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
+        // Track any LLM we mint this invocation so we can roll it back if the
+        // downstream agent.create throws (otherwise it's an orphaned billable
+        // resource on Retell's side).
+        let createAgentLlmId: string | null = null;
+
         // If no response engine provided, create a Retell LLM first
         if (!responseEngine) {
           const generalTools = buildGeneralTools({
@@ -523,19 +578,32 @@ const handler: Handler = async (event) => {
             ...(body.knowledge_base_ids ? { knowledge_base_ids: body.knowledge_base_ids } : {}),
             general_tools: generalTools,
           } as any);
+          createAgentLlmId = llm.llm_id;
           responseEngine = {
             type: 'retell-llm' as const,
             llm_id: llm.llm_id,
           };
         }
 
-        const agent = await client.agent.create({
-          agent_name: body.agent_name,
-          voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
-          response_engine: responseEngine,
-          webhook_url: `${webhookBaseUrl}/.netlify/functions/retell-webhook`,
-          ...getDefaultAgentConfig(body.language),
-        } as any);
+        let agent;
+        try {
+          agent = await client.agent.create({
+            agent_name: body.agent_name,
+            voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
+            response_engine: responseEngine,
+            webhook_url: `${webhookBaseUrl}/.netlify/functions/retell-webhook`,
+            ...getDefaultAgentConfig(body.language),
+          } as any);
+        } catch (agentCreateErr) {
+          if (createAgentLlmId) {
+            try {
+              await client.llm.delete(createAgentLlmId);
+            } catch (rollbackErr) {
+              console.error('[retell-agents] LLM rollback failed after agent.create error:', rollbackErr);
+            }
+          }
+          throw agentCreateErr;
+        }
 
         return {
           statusCode: 200,
@@ -560,6 +628,65 @@ const handler: Handler = async (event) => {
           };
         }
 
+        // Guard against concurrent create_full calls for the same user
+        // (double-click, two tabs) minting duplicate Retell agents/LLMs.
+        // Stale locks (crashed function) self-expire after 10 min — see
+        // acquire_provisioning_lock in the provisioning_locks migration.
+        const { data: lockAcquired, error: lockErr } = await serviceSupabase.rpc('acquire_provisioning_lock', { p_user_id: userId });
+        if (lockErr) {
+          console.error('[retell-agents] Failed to acquire provisioning lock:', lockErr);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Could not start agent provisioning. Please try again.' }),
+          };
+        }
+        if (!lockAcquired) {
+          return {
+            statusCode: 409,
+            headers,
+            body: JSON.stringify({
+              error: 'Agent setup is already in progress for this account. Please wait for it to finish.',
+              code: 'provisioning_in_progress',
+            }),
+          };
+        }
+
+        try {
+        // Idempotency: the lock only stops concurrent calls — a sequential
+        // re-run (wizard retry, back button, second onboarding pass) would
+        // mint a second Retell agent + LLM. If this user already has an
+        // agent of this type, return it instead of provisioning again.
+        const requestedAgentType = body.agent_type || 'inbound';
+        const { data: existingAgent, error: existingErr } = await serviceSupabase
+          .from('agents')
+          .select('id, retell_agent_id')
+          .eq('user_id', userId)
+          .eq('agent_type', requestedAgentType)
+          .limit(1)
+          .maybeSingle();
+        if (existingErr) {
+          console.error('[retell-agents] Idempotency pre-check failed:', existingErr);
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Could not verify existing agents. Please try again.' }),
+          };
+        }
+        if (existingAgent) {
+          console.log(`[retell-agents] create_full skipped — ${requestedAgentType} agent already exists for user ${userId}`);
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({
+              success: true,
+              agent_id: existingAgent.retell_agent_id,
+              supabase_agent_id: existingAgent.id,
+              already_provisioned: true,
+            }),
+          };
+        }
+
         // Step 0: Scrape website with Firecrawl if URL provided — adds rich content to KB
         if (body.website_url) {
           try {
@@ -568,6 +695,8 @@ const handler: Handler = async (event) => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
               body: JSON.stringify({ url: body.website_url }),
+              // Bound this so a slow scrape can't eat the whole function's timeout budget.
+              signal: AbortSignal.timeout(8000),
             });
 
             if (scrapeRes.ok) {
@@ -633,7 +762,7 @@ const handler: Handler = async (event) => {
           beginMessage = generated.beginMessage;
         } else if (body.general_prompt) {
           generalPrompt = body.general_prompt;
-          beginMessage = body.begin_message;
+          beginMessage = body.begin_message ? ensureDisclosure(body.begin_message, body.business_name) : body.begin_message;
         } else {
           generalPrompt = buildAgentPrompt(body.business_name, body.country);
         }
@@ -650,6 +779,9 @@ const handler: Handler = async (event) => {
 
         // Step 3: Determine response engine
         let responseEngine;
+        // Track the LLM created in this handler so we can roll it back if a
+        // later step (Supabase agent insert) fails and we bail out.
+        let createdLlmId: string | null = null;
         const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
         if (body.llm_id) {
@@ -675,76 +807,87 @@ const handler: Handler = async (event) => {
             llmConfig.begin_message = beginMessage;
           }
           const llm = await client.llm.create(llmConfig);
+          createdLlmId = llm.llm_id;
           responseEngine = { type: 'retell-llm' as const, llm_id: llm.llm_id };
         }
 
-        // Step 4: Create agent with the response engine + default config
+        // Step 4: Create agent with the response engine + default config.
+        // Prefer body.agent_name so callers can distinguish inbound vs
+        // speed-to-lead agents in the Retell dashboard; fall back to the
+        // "{business} AI Receptionist" default only when unset.
         const webhookUrl = `${(process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org')}/.netlify/functions/retell-webhook`;
-        const agent = await client.agent.create({
-          agent_name: `${body.business_name} AI Receptionist`,
-          voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
-          language: body.language || 'en-US',
-          response_engine: responseEngine,
-          webhook_url: webhookUrl,
-          ...getDefaultAgentConfig(body.language),
-        } as any);
-
-        // Step 5: Register agent in Cekura + create test scenarios (don't run yet)
-        let cekuraSetup: { success: boolean; cekura_agent_id?: number; evaluators_created?: number; error?: string } = { success: false };
+        const resolvedAgentName = body.agent_name || `${body.business_name} AI Receptionist`;
+        let agent;
         try {
-          const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+          agent = await client.agent.create({
+            agent_name: resolvedAgentName,
+            voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
+            language: body.language || 'en-US',
+            response_engine: responseEngine,
+            webhook_url: webhookUrl,
+            ...getDefaultAgentConfig(body.language),
+          } as any);
+        } catch (agentCreateErr) {
+          // Roll back the LLM we minted in Step 3 so it does not orphan a
+          // billable Retell resource; then let the outer catch return 5xx.
+          if (createdLlmId) {
+            try {
+              await client.llm.delete(createdLlmId);
+            } catch (rollbackErr) {
+              console.error('[retell-agents] LLM rollback failed after agent.create error:', rollbackErr);
+            }
+          }
+          throw agentCreateErr;
+        }
 
-          // Step 5a: Register agent in Cekura
-          const registerRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
-            body: JSON.stringify({
-              action: 'register_agent',
-              retell_agent_id: agent.agent_id,
-              agent_name: `${body.business_name} AI Receptionist`,
-              phone_number: body.phone_number,
-              language: body.language,
-            }),
-          });
+        // Step 5: Register agent in Cekura + create test scenarios (don't run yet).
+        // Fire-and-forget — Cekura is best-effort and its 2 sequential network
+        // calls should not add wall-clock time to the client-facing response,
+        // which is the main contributor to this endpoint's timeout risk.
+        const cekuraSetup: { success: boolean } = { success: false };
+        void (async () => {
+          try {
+            const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
-          if (registerRes.ok) {
-            const registerData = await registerRes.json();
-            const cekuraAgentId = registerData.cekura_agent_id;
-
-            // Step 5b: Create test evaluators (prepared, not run)
-            const evalRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
+            const registerRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
               body: JSON.stringify({
-                action: 'create_evaluators',
-                cekura_agent_id: cekuraAgentId,
+                action: 'register_agent',
+                retell_agent_id: agent.agent_id,
                 agent_name: `${body.business_name} AI Receptionist`,
-                business_name: body.business_name,
+                phone_number: body.phone_number,
+                language: body.language,
               }),
             });
 
-            if (evalRes.ok) {
-              const evalData = await evalRes.json();
-              cekuraSetup = {
-                success: true,
-                cekura_agent_id: cekuraAgentId,
-                evaluators_created: evalData.evaluators_created,
-              };
-            } else {
-              cekuraSetup = { success: true, cekura_agent_id: cekuraAgentId, evaluators_created: 0, error: 'Evaluator creation failed' };
+            if (registerRes.ok) {
+              const registerData = await registerRes.json();
+              const cekuraAgentId = registerData.cekura_agent_id;
+
+              await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
+                body: JSON.stringify({
+                  action: 'create_evaluators',
+                  cekura_agent_id: cekuraAgentId,
+                  agent_name: `${body.business_name} AI Receptionist`,
+                  business_name: body.business_name,
+                }),
+              });
             }
-          } else {
-            const err = await registerRes.json().catch(() => ({}));
-            cekuraSetup = { success: false, error: err.details || err.error || 'Cekura registration failed' };
+          } catch (testErr) {
+            console.error('Cekura setup failed (non-blocking):', testErr);
           }
-        } catch (testErr) {
-          console.error('Cekura setup failed:', testErr);
-          cekuraSetup = { success: false, error: testErr instanceof Error ? testErr.message : 'Cekura setup failed' };
-        }
+        })();
 
         // Step 6: Save agent to Supabase agents table + create/link KB folder
         let supabaseAgentId: string | null = null;
         let kbFolderId: string | null = body.kb_folder_id || null;
+        // Collect non-fatal KB-linkage failures so the response can tell the UI
+        // the agent exists but its knowledge base wasn't attached (instead of
+        // swallowing the errors into the server log and reporting plain success).
+        const kbWarnings: string[] = [];
 
         const sb = serviceSupabase;
         if (body.user_id) {
@@ -776,11 +919,35 @@ const handler: Handler = async (event) => {
               .single();
 
             if (agentErr) {
-              console.error('[retell-agents] Supabase agent insert failed:', agentErr);
-            } else {
-              supabaseAgentId = agentRow.id;
-              console.log(`[retell-agents] Saved agent to Supabase: ${supabaseAgentId}`);
+              // Hard-fail: the Supabase agent row is the client's source of
+              // truth. If we can't save it, roll back the Retell agent (and
+              // any LLM we minted for it) so a retry does not double-provision
+              // billable resources, and surface a 5xx so the client stops
+              // polling for a phantom "agent".
+              console.error('[retell-agents] Supabase agent insert failed — rolling back Retell resources:', agentErr);
+              try {
+                await client.agent.delete(agent.agent_id);
+              } catch (rollbackErr) {
+                console.error('[retell-agents] Retell agent rollback failed:', rollbackErr);
+              }
+              if (createdLlmId) {
+                try {
+                  await client.llm.delete(createdLlmId);
+                } catch (rollbackErr) {
+                  console.error('[retell-agents] Retell LLM rollback failed:', rollbackErr);
+                }
+              }
+              return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({
+                  error: 'Could not save the agent record. Please try again.',
+                  code: 'supabase_agent_insert_failed',
+                }),
+              };
             }
+            supabaseAgentId = agentRow.id;
+            console.log(`[retell-agents] Saved agent to Supabase: ${supabaseAgentId}`);
 
             // 6b: Create "Business Profile" KB folder (or reuse if kb_folder_id passed)
             if (!kbFolderId && body.business_profile_id) {
@@ -799,6 +966,7 @@ const handler: Handler = async (event) => {
 
               if (folderErr) {
                 console.error('[retell-agents] KB folder creation failed:', folderErr);
+                kbWarnings.push('Could not create the knowledge base folder.');
               } else {
                 kbFolderId = folderRow.id;
                 console.log(`[retell-agents] Created KB folder: ${kbFolderId}`);
@@ -815,6 +983,7 @@ const handler: Handler = async (event) => {
 
               if (updateErr) {
                 console.error('[retell-agents] KB doc folder assignment failed:', updateErr);
+                kbWarnings.push('Could not attach your knowledge base documents to the folder.');
               }
             }
 
@@ -827,10 +996,12 @@ const handler: Handler = async (event) => {
 
               if (linkErr) {
                 console.error('[retell-agents] Agent-folder link failed:', linkErr);
+                kbWarnings.push('Could not link the agent to its knowledge base.');
               }
             }
           } catch (dbErr) {
             console.error('[retell-agents] Supabase operations failed:', dbErr);
+            kbWarnings.push('Knowledge base setup did not complete.');
           }
         }
 
@@ -846,8 +1017,14 @@ const handler: Handler = async (event) => {
             agent,
             prompt_used: body.prompt_config ? 'professional' : body.general_prompt ? 'custom' : 'legacy',
             cekura_setup: cekuraSetup,
+            // Present only when the agent saved but its KB didn't fully attach —
+            // lets the UI show a "KB not attached" notice instead of silent success.
+            kb_warnings: kbWarnings.length ? kbWarnings : undefined,
           }),
         };
+        } finally {
+          await serviceSupabase.from('provisioning_locks').delete().eq('user_id', userId);
+        }
       }
 
       // Create a web call for testing the agent in-browser
@@ -858,9 +1035,39 @@ const handler: Handler = async (event) => {
         if (!(await userOwnsAgent(userId, body.agent_id))) {
           return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to create a call for this agent' }) };
         }
+
+        // A/B traffic split (batch-2 task 6): if this agent has an active
+        // ab_testing prompt version, route split_pct of web calls to the
+        // variant agent and stamp the version id into call metadata so the
+        // scorer can attribute the call to the experiment arm.
+        let targetAgentId: string = body.agent_id;
+        const callMetadata: Record<string, unknown> = { ...(body.metadata || {}) };
+        try {
+          const { data: abVersion } = await getSupabaseAdmin()
+            .from('retell_prompt_versions')
+            .select('id, rollback_data')
+            .eq('status', 'ab_testing')
+            .eq('rollback_data->experiment->>base_retell_agent_id', body.agent_id)
+            .limit(1)
+            .maybeSingle();
+          const exp = ((abVersion?.rollback_data || {}) as any).experiment || {};
+          if (abVersion && exp.variant_retell_agent_id) {
+            const splitPct = Number(exp.shadow_split_pct) || 50;
+            if (Math.random() * 100 < splitPct) {
+              targetAgentId = exp.variant_retell_agent_id;
+              callMetadata.prompt_version_id = abVersion.id;
+              callMetadata.ab_arm = 'variant';
+            } else {
+              callMetadata.ab_arm = 'control';
+            }
+          }
+        } catch (abErr) {
+          console.warn('[retell-agents] AB split lookup failed, using base agent:', abErr);
+        }
+
         const webCall = await client.call.createWebCall({
-          agent_id: body.agent_id,
-          metadata: body.metadata || {},
+          agent_id: targetAgentId,
+          metadata: callMetadata,
         });
         return {
           statusCode: 200,
@@ -999,6 +1206,54 @@ const handler: Handler = async (event) => {
     if (event.httpMethod === 'PUT') {
       const body = JSON.parse(event.body || '{}');
 
+      // Rebuild the transfer_call tool from agents.transfer_phone_number +
+      // transfer_rules and push it to the agent's Retell LLM. Only meaningful
+      // for retell-llm agents — custom-llm (Azure WS) agents manage their own
+      // tools and are skipped with a clear reason instead of silently no-op'ing.
+      if (body.action === 'sync_transfer_config' && body.retell_agent_id) {
+        const retellAgentId = String(body.retell_agent_id);
+        if (!(await userOwnsAgent(userId, retellAgentId))) {
+          return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to modify this agent' }) };
+        }
+
+        const sb = getSupabaseAdmin();
+        const { data: agentRow, error: agentRowErr } = await sb
+          .from('agents')
+          .select('id, transfer_phone_number')
+          .eq('retell_agent_id', retellAgentId)
+          .single();
+        if (agentRowErr || !agentRow) {
+          return { statusCode: 404, headers, body: JSON.stringify({ error: 'Agent not found in Supabase' }) };
+        }
+
+        const { data: rules } = await sb
+          .from('transfer_rules')
+          .select('condition_type, condition_value, destination_number, priority')
+          .eq('agent_id', agentRow.id)
+          .order('priority', { ascending: true });
+
+        const retellAgent = await client.agent.retrieve(retellAgentId).catch(() => null);
+        const llmId = (retellAgent as any)?.response_engine?.llm_id;
+        if (!llmId) {
+          return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ success: false, skipped: true, reason: 'Agent does not use a Retell-managed LLM (custom-llm agents manage their own tools)' }),
+          };
+        }
+
+        const webhookBaseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+        const generalTools = buildGeneralTools({
+          transferNumber: agentRow.transfer_phone_number || undefined,
+          transferRules: (rules || []) as TransferRule[],
+          baseUrl: webhookBaseUrl,
+        });
+
+        await client.llm.update(llmId, { general_tools: generalTools } as any);
+
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, llm_id: llmId, rule_count: (rules || []).length }) };
+      }
+
       // Update LLM prompt directly
       if (body.action === 'update_llm' && body.llm_id) {
         const { llm_id, ...llmUpdates } = body;
@@ -1026,7 +1281,7 @@ const handler: Handler = async (event) => {
           try {
             const sb = getSupabaseAdmin();
             if (sb) {
-              const allAgents = await client.agent.list();
+              const allAgents = await listRetellVoiceAgents<any>(apiKey);
               const matchingAgent = (allAgents || []).find(
                 (a: any) => a.response_engine?.llm_id === llm_id,
               );

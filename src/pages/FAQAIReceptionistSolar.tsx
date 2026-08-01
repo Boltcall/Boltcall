@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -23,7 +23,7 @@ const headings = [
 const faqs = [
   {
     question: 'How much does an AI receptionist cost for a solar company?',
-    answer: 'AI receptionists for solar companies typically cost between $99 and $249 per month with flat-rate pricing. Compare that to a full-time appointment setter at $35,000-$50,000 per year or an outsourced call center at $15-$25 per qualified lead. Most solar companies recover the monthly cost by capturing just one additional qualified lead, since the average residential solar installation generates $8,000-$15,000 in gross revenue. The AI pays for itself within the first few days of operation.',
+    answer: 'AI receptionists for solar companies typically cost between $549 and $4997 per month with flat-rate pricing. Compare that to a full-time appointment setter at $35,000-$50,000 per year or an outsourced call center at $15-$25 per qualified lead. Most solar companies recover the monthly cost by capturing just one additional qualified lead, since the average residential solar installation generates $8,000-$15,000 in gross revenue. The AI pays for itself within the first few days of operation.',
   },
   {
     question: 'How long does it take to set up an AI receptionist for a solar company?',
@@ -67,11 +67,11 @@ const faqs = [
   },
   {
     question: 'What is the ROI of an AI receptionist for a solar company?',
-    answer: 'Solar companies that deploy an AI receptionist typically capture 10-25 additional qualified leads per month from previously missed calls, after-hours inquiries, and faster follow-up. With an average residential installation generating $8,000-$15,000 in gross revenue and a close rate of 20-30%, each additional qualified lead is worth $1,600-$4,500 in expected revenue. Capturing just 10 additional leads per month generates $16,000-$45,000 in expected pipeline value against a $99-$249 monthly investment. Solar companies also report a 25-35% improvement in site survey show rates due to automated reminders and a 15-20% increase in lead-to-close conversion from faster follow-up.',
+    answer: 'Solar companies that deploy an AI receptionist typically capture 10-25 additional qualified leads per month from previously missed calls, after-hours inquiries, and faster follow-up. With an average residential installation generating $8,000-$15,000 in gross revenue and a close rate of 20-30%, each additional qualified lead is worth $1,600-$4,500 in expected revenue. Capturing just 10 additional leads per month generates $16,000-$45,000 in expected pipeline value against a $549ג€“$4997 monthly investment. Solar companies also report a 25-35% improvement in site survey show rates due to automated reminders and a 15-20% increase in lead-to-close conversion from faster follow-up.',
   },
   {
     question: 'How does an AI receptionist compare to a solar call center?',
-    answer: 'Outsourced solar call centers charge $15-$25 per qualified lead or $2,000-$5,000 per month for dedicated agents. Hold times average 30-90 seconds, agents follow generic scripts, and quality varies by shift. An AI receptionist answers in under 2 seconds with zero hold time, qualifies leads using your exact criteria, books appointments directly into your calendar, integrates with your CRM, and costs a flat $99-$249/month regardless of call volume. The AI also works 24/7 and improves consistently as you refine its knowledge base, while call center quality depends on whichever agent is available at the time.',
+    answer: 'Outsourced solar call centers charge $15-$25 per qualified lead or $2,000-$5,000 per month for dedicated agents. Hold times average 30-90 seconds, agents follow generic scripts, and quality varies by shift. An AI receptionist answers in under 2 seconds with zero hold time, qualifies leads using your exact criteria, books appointments directly into your calendar, integrates with your CRM, and costs a flat $549ג€“$4997/month regardless of call volume. The AI also works 24/7 and improves consistently as you refine its knowledge base, while call center quality depends on whichever agent is available at the time.',
   },
   {
     question: 'Can the AI receptionist communicate in multiple languages?',
@@ -260,12 +260,8 @@ const FAQAIReceptionistSolar: React.FC = () => {
               variants={{ ...fadeIn, visible: { ...fadeIn.visible, transition: { duration: 0.5, delay: 0.3 } } }}
               className="bg-blue-50 border border-blue-100 rounded-xl p-5 text-blue-800 text-sm leading-relaxed"
             >
-              An AI receptionist for solar companies qualifies homeowner leads on the first ring, schedules site surveys based on rep availability and geography, answers questions about financing and incentives, and captures the 30-35% of qualified leads that call after hours. It costs $99-$249/month versus $35,000-$50,000/year for a dedicated appointment setter.
+              An AI receptionist for solar companies qualifies homeowner leads on the first ring, schedules site surveys based on rep availability and geography, answers questions about financing and incentives, and captures the 30-35% of qualified leads that call after hours. It costs $549ג€“$4997/month versus $35,000-$50,000/year for a dedicated appointment setter.
             </motion.div>
-            <blockquote className="border-l-4 border-blue-500 pl-6 my-8 bg-blue-50 rounded-r-xl py-4 pr-4">
-              <p className="text-lg text-gray-700 italic leading-relaxed">&ldquo;Solar installers that automate lead response and appointment booking see conversion rates 30&ndash;40% higher than those relying on manual follow-up alone.&rdquo;</p>
-              <footer className="mt-3 text-sm font-semibold text-gray-600">&mdash; Abigail Ross Hopper, President &amp; CEO, Solar Energy Industries Association (SEIA)</footer>
-            </blockquote>
           </div>
         </section>
 
@@ -351,7 +347,7 @@ const FAQAIReceptionistSolar: React.FC = () => {
                     <li>Provides accurate, up-to-date information on financing, federal ITC, and state incentives</li>
                     <li>Integrates with solar CRMs (Salesforce, Aurora Solar, Enerflo) to create qualified leads automatically</li>
                     <li>Reduces site survey no-shows by 30–40% through automated reminders</li>
-                    <li>Costs $99–$249/month vs. $35,000–$50,000/year for a dedicated appointment setter</li>
+                    <li>Costs $549-4997/month vs. $35,000–$50,000/year for a dedicated appointment setter</li>
                   </ul>
                 </div>
                 <div className="bg-red-50 rounded-xl p-6">
@@ -368,11 +364,7 @@ const FAQAIReceptionistSolar: React.FC = () => {
               </div>
             </motion.div>
           </div>
-        
-          <blockquote className="border-l-4 border-blue-500 pl-6 my-8 bg-blue-50 rounded-r-xl py-4 pr-4">
-            <p className="text-lg text-gray-700 italic leading-relaxed">&ldquo;The solar sales cycle is long, but it starts with a single phone call. Installers who cannot answer that first call reliably are leaving thousands of dollars per panel on the table.&rdquo;</p>
-            <footer className="mt-3 text-sm font-semibold text-gray-600">&mdash; Bernadette Del Chiaro, Executive Director, California Solar &amp; Storage Association (CALSSA)</footer>
-          </blockquote></section>
+        </section>
 
         {/* Related Resources */}
         <section className="py-16 bg-gray-50">
@@ -509,7 +501,7 @@ const FAQAIReceptionistSolar: React.FC = () => {
                   ['Assessment no-show rate', '22–30%', '10–15%'],
                   ['Google reviews per month', '1–2', '4–8'],
                   ['Setup time for instant lead response', '2–3 weeks (hire)', '30 minutes'],
-                  ['Monthly cost vs. inside sales hire', '$3,000 – $4,500/mo', '$79 – $179'],
+                  ['Monthly cost vs. inside sales hire', '$3,000 – $4,500/mo', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>
@@ -530,26 +522,6 @@ const FAQAIReceptionistSolar: React.FC = () => {
       </div>
 
 
-      {/* Trust + Social Proof */}
-      <section className="py-10 bg-gray-50 border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
       <Footer />
     </>
   );

@@ -619,7 +619,7 @@ const BlogHowToMakeAIReceptionist: React.FC = () => {
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span>$99-299/month (no upfront cost)</span>
+                    <span>$549-4997/month (no upfront cost)</span>
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
@@ -758,7 +758,7 @@ const BlogHowToMakeAIReceptionist: React.FC = () => {
                 {[
                   ['Setup time', '3–6 months of development', '30 minutes'],
                   ['Upfront cost', '$15,000 – $100,000+', '$0'],
-                  ['Monthly cost', '$2,000 – $10,000 (infrastructure + maintenance)', '$79 – $179'],
+                  ['Monthly cost', '$2,000 – $10,000 (infrastructure + maintenance)', '$549-897'],
                   ['Voice quality', 'Depends on provider and tuning', 'Production-ready, trained on local businesses'],
                   ['Calendar integration', 'Custom development required', 'Built in — connects to Google, Calendly, and more'],
                   ['SMS follow-up', 'Must build separate workflow', 'Included — automated from day one'],

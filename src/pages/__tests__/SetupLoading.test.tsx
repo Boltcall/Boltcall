@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 const mocks = vi.hoisted(() => ({
@@ -36,6 +36,16 @@ vi.mock('react-router-dom', async () => {
 });
 
 import SetupLoading from '../SetupLoading';
+import { ToastProvider } from '../../contexts/ToastContext';
+
+const renderPage = () =>
+  render(
+    <ToastProvider>
+      <MemoryRouter initialEntries={['/setup/loading']}>
+        <SetupLoading />
+      </MemoryRouter>
+    </ToastProvider>,
+  );
 
 describe('SetupLoading', () => {
   beforeEach(() => {
@@ -59,11 +69,7 @@ describe('SetupLoading', () => {
   });
 
   it('starts provisioning the saved setup while the loading screen is shown', async () => {
-    render(
-      <MemoryRouter initialEntries={['/setup/loading']}>
-        <SetupLoading />
-      </MemoryRouter>,
-    );
+    renderPage();
 
     await waitFor(() =>
       expect(mocks.provisionAgentSetup).toHaveBeenCalledWith('user-1', {
@@ -78,5 +84,33 @@ describe('SetupLoading', () => {
       }),
     );
     expect(mocks.clearPendingAgentSetup).toHaveBeenCalledTimes(1);
+  });
+
+  it('only fades the foreground content before navigating away', async () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = renderPage();
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10600);
+      });
+
+      expect(container.querySelector('.setup-loading-page')).not.toHaveClass(
+        'fade-out',
+      );
+
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps loading bar segments white after they fill', () => {
+    const { container } = renderPage();
+
+    const styles = Array.from(container.querySelectorAll('style'))
+      .map((style) => style.textContent || '')
+      .join('\n');
+    expect(styles).toContain('.setup-seg.filled');
+    expect(styles).toContain('background: #ffffff !important');
   });
 });

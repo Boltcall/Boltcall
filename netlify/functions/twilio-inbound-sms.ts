@@ -3,8 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
 import { verifyTwilioSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isLocalDev } from './_shared/prod-detect';
+import { appendChatMessage } from './_shared/chats-sync';
+import { ensureWorkspaceForUser } from './_shared/setup-workspace';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
 function getServiceClient() {
   return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY!, {
@@ -37,6 +40,11 @@ const handler: Handler = async (event) => {
     };
   }
 
+  // Fail-closed unless running under `netlify dev`. TWILIO_AUTH_TOKEN MUST be set.
+  if (!process.env.TWILIO_AUTH_TOKEN && !isLocalDev()) {
+    console.error('[twilio-inbound-sms] TWILIO_AUTH_TOKEN unset; refusing');
+    return { statusCode: 500, headers: { 'Content-Type': 'text/xml' }, body: '<Response/>' };
+  }
   const sigResult = verifyTwilioSignature(event);
   if (sigResult === 'invalid' || (sigResult === 'missing' && process.env.TWILIO_AUTH_TOKEN)) {
     console.warn(`[twilio-inbound-sms] Rejecting ${sigResult} Twilio signature`);
@@ -111,10 +119,74 @@ const handler: Handler = async (event) => {
       await notifyError('twilio-inbound-sms: Insert failed', insertError, { from, to });
     }
 
+    // Dual-write into `chats` so the unified inbox (V2MessagesPage) shows
+    // live SMS threads instead of the empty state.
+    if (userId) {
+      try {
+        const workspace = await ensureWorkspaceForUser<{ id: string }>(userId, 'id');
+        await appendChatMessage(supabase, {
+          userId,
+          workspaceId: workspace?.id || null,
+          sessionId: threadId,
+          source: 'phone',
+          primaryPhone: from,
+          sender: 'customer',
+          content: body,
+        });
+      } catch (chatSyncErr) {
+        console.error('[twilio-inbound-sms] chats dual-write failed:', chatSyncErr);
+      }
+    }
+
     // Check if this is a reply to a scheduled message (appointment confirmation, etc.)
     const lowerBody = body.toLowerCase().trim();
+
+    // ─── SMS opt-out (TCPA) ────────────────────────────────────────
+    // Carrier keywords. "cancel" excluded — it belongs to the appointment
+    // flow below. All outbound SMS share one Twilio from-number, so an
+    // opt-out is platform-wide, keyed by phone alone.
+    const isOptOut = /^(stop|stopall|unsubscribe|end|quit)$/.test(lowerBody);
+    const isOptIn = /^(start|unstop)$/.test(lowerBody);
+
+    if (isOptOut) {
+      const [optoutRes, enrollRes, cancelRes] = await Promise.all([
+        supabase.from('sms_optouts').upsert({ phone: from, user_id: userId }, { onConflict: 'phone' }),
+        supabase
+          .from('followup_enrollments')
+          .update({ status: 'unsubscribed' })
+          .eq('contact_phone', from)
+          .eq('status', 'active'),
+        supabase
+          .from('scheduled_messages')
+          .update({ status: 'cancelled', error: 'recipient opted out (STOP)' })
+          .eq('recipient_phone', from)
+          .eq('status', 'scheduled'),
+      ]);
+      const optErr = optoutRes.error || enrollRes.error || cancelRes.error;
+      if (optErr) {
+        console.error('[twilio-inbound-sms] Opt-out processing failed:', optErr);
+        await notifyError('twilio-inbound-sms: Opt-out processing failed', optErr, { from });
+      }
+      console.log(`[twilio-inbound-sms] Opt-out processed for ${from}`);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'text/xml' },
+        body: '<Response><Message>You have been unsubscribed and will receive no further messages. Reply START to resubscribe.</Message></Response>',
+      };
+    }
+
+    if (isOptIn) {
+      const { error: optInErr } = await supabase.from('sms_optouts').delete().eq('phone', from);
+      if (optInErr) console.error('[twilio-inbound-sms] Opt-in processing failed:', optInErr);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'text/xml' },
+        body: '<Response><Message>You have been resubscribed. Reply STOP to unsubscribe.</Message></Response>',
+      };
+    }
+
     const isConfirm = /^(yes|confirm|ok|y|sure|1)$/i.test(lowerBody);
-    const isCancel = /^(no|cancel|n|stop|2)$/i.test(lowerBody);
+    const isCancel = /^(no|cancel|n|2)$/i.test(lowerBody);
 
     if (userId && (isConfirm || isCancel)) {
       // Find the most recent appointment for this phone number
@@ -188,8 +260,9 @@ const handler: Handler = async (event) => {
   } catch (err: any) {
     console.error('[twilio-inbound-sms] Error:', err);
     await notifyError('twilio-inbound-sms: Unhandled exception', err);
+    // ponytail: 500 (not 200) so Twilio's own retry policy kicks in on transient failures
     return {
-      statusCode: 200,
+      statusCode: 500,
       headers: { 'Content-Type': 'text/xml' },
       body: '<Response/>',
     };

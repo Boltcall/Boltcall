@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -105,7 +105,7 @@ const LandscapingSeasonalRevenueCalculator: React.FC = () => {
           name: 'Is AI affordable for small landscaping companies?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. AI receptionist services like Boltcall cost $179/month -- less than a single lost landscaping customer. Most landscaping businesses see a positive ROI within the first month by recovering just 2-3 missed quote requests.',
+            text: 'Yes. AI receptionist services like Boltcall cost $897/month -- less than a single lost landscaping customer. Most landscaping businesses see a positive ROI within the first month by recovering just 2-3 missed quote requests.',
           },
         },
       ],
@@ -249,7 +249,7 @@ const LandscapingSeasonalRevenueCalculator: React.FC = () => {
     if (!formName || !formEmail) return;
     setFormLoading(true);
     try {
-      await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -581,7 +581,7 @@ const LandscapingSeasonalRevenueCalculator: React.FC = () => {
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.annualRecovery)}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400">Net gain after Boltcall ($179/mo)</span>
+                      <span className="text-sm text-slate-400">Net gain after Boltcall ($897/mo)</span>
                       <span className="text-sm font-bold text-emerald-400">{fmt.format(calc.netGain)}</span>
                     </div>
                     <div className="border-t border-emerald-500/20 pt-2.5 mt-2.5">
@@ -811,7 +811,7 @@ const LandscapingSeasonalRevenueCalculator: React.FC = () => {
                 },
                 {
                   q: 'Is AI affordable for small landscaping companies?',
-                  a: 'Yes. AI receptionist services like Boltcall cost $179/month, which is less than the profit from a single missed landscaping job. Most landscaping businesses see a positive ROI within the first week by recovering just 2-3 missed quote requests that would have gone to a competitor.',
+                  a: 'Yes. AI receptionist services like Boltcall cost $897/month, which is less than the profit from a single missed landscaping job. Most landscaping businesses see a positive ROI within the first week by recovering just 2-3 missed quote requests that would have gone to a competitor.',
                 },
               ].map((faq, i) => (
                 <motion.div key={i} variants={fadeUp}

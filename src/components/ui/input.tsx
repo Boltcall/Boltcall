@@ -8,6 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   value?: string | number | readonly string[];
   className?: string;
+  inputClassName?: string;
 }
 
 const containerVariants: Variants = {
@@ -26,7 +27,7 @@ const letterVariants: Variants = {
   },
   animate: {
     y: '-120%',
-    color: 'var(--zinc-500)',
+    color: 'rgb(113 113 122)',
     transition: {
       type: 'spring',
       stiffness: 300,
@@ -38,6 +39,7 @@ const letterVariants: Variants = {
 export const Input = ({
   label,
   className = '',
+  inputClassName = '',
   disabled,
   id,
   onBlur,
@@ -92,6 +94,7 @@ export const Input = ({
         className={cn(
           'h-14 w-full border-b-2 border-zinc-900 bg-transparent pb-1 pt-5 text-base font-medium text-zinc-900 outline-none placeholder-transparent dark:border-zinc-50 dark:text-zinc-50',
           disabled && 'cursor-not-allowed opacity-50',
+          inputClassName,
         )}
       />
     </div>

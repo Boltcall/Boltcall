@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, useId } from 'react';
-import { User, Search } from 'lucide-react';
+import { User, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
+import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
+import Card from '../../components/ui/Card';
 
 export interface Lead {
   id: string;
@@ -40,11 +42,11 @@ const sourceColors: Record<string, string> = {
 };
 
 const statusStyles: Record<string, string> = {
-  new: 'bg-blue-100 text-blue-700',
-  pending: 'bg-blue-100 text-blue-700',
-  contacted: 'bg-green-100 text-green-700',
-  qualified: 'bg-purple-100 text-purple-700',
-  lost: 'bg-red-100 text-red-700',
+  new: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+  pending: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+  contacted: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-300',
+  qualified: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300',
+  lost: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300',
 };
 
 function formatShortDate(dateString: string): string {
@@ -152,11 +154,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   previewLeads,
 }) => {
   const { user } = useAuth();
-  const { showToast } = useToast();
+  const handleError = useErrorHandler();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [backendLeads, setBackendLeads] = useState<BackendLeadCard[]>([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
   const [isLoadingBackendLeads, setIsLoadingBackendLeads] = useState(true);
+  const [leadsError, setLeadsError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
@@ -164,24 +167,10 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const [chartRange, setChartRange] = useState<'7' | '30'>('7');
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; date: string; value: string } | null>(null);
   const chartRef = useRef<SVGSVGElement>(null);
-  const showToastRef = useRef(showToast);
   const resolvedPreviewLeads = previewLeads ?? EMPTY_PREVIEW_LEADS;
   const chartId = useId().replace(/:/g, '');
   const areaGradientId = `lead-performance-area-${chartId}`;
   const clipPathId = `lead-performance-clip-${chartId}`;
-
-  useEffect(() => {
-    showToastRef.current = showToast;
-  }, [showToast]);
-
-  const showLeadsErrorToast = useCallback(() => {
-    showToastRef.current({
-      title: 'Error',
-      message: 'Failed to fetch leads',
-      variant: 'error',
-      duration: 3000,
-    });
-  }, []);
 
   const fetchLeads = useCallback(async () => {
     if (previewMode) {
@@ -209,6 +198,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
     }
 
     setIsLoadingLeads(true);
+    setLeadsError(null);
     try {
       const { data, error } = await supabase
         .from('leads')
@@ -217,9 +207,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching leads:', error);
-        showLeadsErrorToast();
+        handleError('speed-to-lead: fetch leads', error, {
+          toast: false,
+          metadata: { userId: user.id },
+        });
         setLeads([]);
+        setLeadsError('Unable to load your leads.');
         return;
       }
 
@@ -239,13 +232,16 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         setLeads([]);
       }
     } catch (error) {
-      console.error('Error fetching leads:', error);
-      showLeadsErrorToast();
+      handleError('speed-to-lead: fetch leads', error, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
       setLeads([]);
+      setLeadsError('Unable to load your leads.');
     } finally {
       setIsLoadingLeads(false);
     }
-  }, [previewMode, resolvedPreviewLeads, user?.id]);
+  }, [previewMode, resolvedPreviewLeads, user?.id, handleError]);
 
   useEffect(() => {
     void fetchLeads();
@@ -274,7 +270,12 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       const payload = (await res.json()) as BackendLeadsResponse;
       setBackendLeads(payload.leads);
     } catch (error) {
-      console.error('Error fetching backend leads:', error);
+      // Enrichment endpoint failed — fall back to the raw Supabase leads
+      // (already fetched by fetchLeads) so the table still renders.
+      handleError('speed-to-lead: fetch enriched leads', error, {
+        toast: false,
+        metadata: { userId: user.id },
+      });
       setBackendLeads(
         leads.map((lead) => ({
           id: lead.id,
@@ -289,7 +290,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
     } finally {
       setIsLoadingBackendLeads(false);
     }
-  }, [leads, previewMode, sourceFilter, statusFilter, user?.id]);
+  }, [leads, previewMode, sourceFilter, statusFilter, user?.id, handleError]);
 
   useEffect(() => {
     void fetchBackendLeads();
@@ -457,18 +458,6 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const uniqueSources = useMemo(() => [...new Set(leads.map(l => l.source))], [leads]);
   const isLeadTableLoading = isLoadingLeads || isLoadingBackendLeads;
 
-  // --- Trend Badge ---
-  const TrendBadge = ({ value }: { value: number }) => {
-    const isPositive = value >= 0;
-    return (
-      <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold ${
-        isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-      }`}>
-        {Math.abs(value)}{isPositive ? '\u2191' : '\u2193'}
-      </span>
-    );
-  };
-
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i: number) => ({
@@ -478,15 +467,47 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
     }),
   };
 
+  if (leadsError && !isLoadingLeads && leads.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-8 max-w-md text-center">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Unable to load leads</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{leadsError}</p>
+          <button
+            onClick={fetchLeads}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 ease-out text-sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Retry
+          </button>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 px-1 md:px-0">
 
       {/* Section 1: KPI Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
-          { label: 'Total Leads', value: kpis.totalLeads, trend: kpis.totalLeadsTrend, subtitle: 'Last 7 Days' },
-          { label: 'Contacted', value: kpis.contacted, trend: kpis.contactedTrend, subtitle: 'Last 7 Days' },
-          { label: 'Conversion Rate', value: `${kpis.conversionRate}%`, trend: kpis.conversionTrend, subtitle: 'Last 7 Days' },
+          {
+            label: 'Total Leads',
+            value: kpis.totalLeads,
+            trend: kpis.totalLeadsTrend,
+            subtitle: 'Last 7 Days',
+            accentColor: '#2563eb',
+            caption: 'Inbound leads captured in the current pipeline',
+          },
+          {
+            label: 'Conversion Rate',
+            value: `${kpis.conversionRate}%`,
+            trend: kpis.conversionTrend,
+            subtitle: 'Last 7 Days',
+            accentColor: '#059669',
+            caption: 'Share of leads moved into contacted status',
+          },
         ].map((card, i) => (
           <motion.div
             key={card.label}
@@ -494,14 +515,17 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             initial="hidden"
             animate="visible"
             variants={cardVariants}
-            className="bg-white rounded-lg border border-gray-200 p-5"
           >
-            <p className="text-sm text-gray-500 mb-1">{card.label}</p>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl font-bold text-gray-900">{card.value}</span>
-              <TrendBadge value={card.trend} />
-            </div>
-            <p className="text-xs text-gray-400 mt-2">{card.subtitle}</p>
+            <OverviewMetricCard
+              label={card.label}
+              value={card.value}
+              period={card.subtitle}
+              badge={`${card.trend >= 0 ? '+' : '-'}${Math.abs(card.trend)}`}
+              badgeTone={card.trend >= 0 ? 'positive' : 'negative'}
+              accentColor={card.accentColor}
+              caption={card.caption}
+              chartData={[]}
+            />
           </motion.div>
         ))}
       </div>
@@ -511,26 +535,26 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.4 }}
-        className="bg-white rounded-lg border border-gray-200 p-5"
+        className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-5"
       >
         {/* Chart Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Lead Performance</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lead Performance</h2>
           <div className="flex items-center gap-3">
             {/* Toggle pills */}
-            <div className="flex bg-gray-100 rounded-lg p-0.5">
+            <div className="flex bg-gray-100 dark:bg-[#17171b] rounded-lg p-0.5">
               <button
                 onClick={() => setChartMode('count')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  chartMode === 'count' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200 ease-out ${
+                  chartMode === 'count' ? 'bg-white dark:bg-[#0e0e11] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
                 Lead Count
               </button>
               <button
                 onClick={() => setChartMode('rate')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  chartMode === 'rate' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-200 ease-out ${
+                  chartMode === 'rate' ? 'bg-white dark:bg-[#0e0e11] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
                 Response Rate
@@ -540,7 +564,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             <select
               value={chartRange}
               onChange={e => setChartRange(e.target.value as '7' | '30')}
-              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="text-xs border border-gray-200 dark:border-[#1e1e24] rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-300 bg-white dark:bg-[#0e0e11] focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
@@ -635,7 +659,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
 
         {leads.length === 0 && !isLoadingLeads && (
           <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-gray-400">No lead data yet</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No lead data yet</p>
           </div>
         )}
       </motion.div>
@@ -646,11 +670,11 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.4 }}
-          className="bg-white rounded-lg border border-gray-200 p-5"
+          className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-5"
         >
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Lead flow overview</h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lead flow overview</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               A second graph powered by the backend so you can see how leads move from fresh inquiry to booking or loss.
             </p>
           </div>
@@ -670,17 +694,17 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.4 }}
-        className="bg-white rounded-lg border border-gray-200"
+        className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24]"
       >
         {/* Table Header */}
-        <div className="p-4 sm:p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">Lead List</h2>
+        <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-[#1e1e24] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lead List</h2>
           <div className="flex items-center gap-2 flex-wrap">
             {/* Status filter */}
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="text-xs border border-gray-200 dark:border-[#1e1e24] rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-300 bg-white dark:bg-[#0e0e11] focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="all">All Statuses</option>
               {uniqueStatuses.map(s => (
@@ -691,7 +715,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             <select
               value={sourceFilter}
               onChange={e => setSourceFilter(e.target.value)}
-              className="text-xs border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="text-xs border border-gray-200 dark:border-[#1e1e24] rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-300 bg-white dark:bg-[#0e0e11] focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="all">All Sources</option>
               {uniqueSources.map(s => (
@@ -700,13 +724,13 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             </select>
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search leads..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 w-44"
+                className="pl-8 pr-3 py-1.5 text-xs border border-gray-200 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 w-44"
               />
             </div>
           </div>
@@ -716,27 +740,27 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         {isLeadTableLoading ? (
           <div className="p-12 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-            <p className="text-gray-500 mt-4">Loading leads...</p>
+            <p className="text-gray-500 dark:text-gray-400 mt-4">Loading leads...</p>
           </div>
         ) : filteredLeads.length === 0 ? (
           <div className="p-12 text-center">
-            <User className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">{leads.length === 0 ? 'No leads found' : 'No leads match your filters'}</p>
+            <User className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">{leads.length === 0 ? 'No leads found' : 'No leads match your filters'}</p>
             {leads.length === 0 && (
-              <p className="text-sm text-gray-400 mt-2">Leads will appear here once you start receiving them</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Leads will appear here once you start receiving them</p>
             )}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[960px]">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Source</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Captured</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Summary</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Next Action</th>
+                <tr className="border-b border-gray-100 dark:border-[#17171b]">
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Source</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Captured</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Summary</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Next Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -745,16 +769,16 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                   const srcColor = sourceColors[lead.source] || '#9CA3AF';
                   const srcData = sourceCounts[lead.source];
                   return (
-                    <tr key={lead.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <tr key={lead.id} className="border-b border-gray-50 dark:border-[#17171b] hover:bg-gray-50/50 dark:hover:bg-[#17171b]/50 transition-colors duration-200 ease-out">
                       <td className="px-5 py-3">
-                        <div className="text-sm font-medium text-gray-900">{lead.name}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{lead.name}</div>
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: srcColor }} />
-                          <span className="text-sm text-gray-700">{humanizeLeadSource(lead.source)}</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{humanizeLeadSource(lead.source)}</span>
                           {srcData && (
-                            <span className="text-[10px] text-gray-400 font-medium ml-1">
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium ml-1">
                               {srcData.total}
                               {srcData.trend !== 0 && (
                                 <span className={srcData.trend > 0 ? 'text-green-600' : 'text-red-500'}>
@@ -765,14 +789,14 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-sm text-gray-500">{formatShortDate(lead.captured_at)}</td>
-                      <td className="px-5 py-3 text-sm text-gray-700">{lead.ai_summary}</td>
+                      <td className="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">{formatShortDate(lead.captured_at)}</td>
+                      <td className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">{lead.ai_summary}</td>
                       <td className="px-5 py-3">
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusClass}`}>
                           {lead.status}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-sm font-medium text-blue-600">{lead.next_action}</td>
+                      <td className="px-5 py-3 text-sm font-medium text-blue-600 dark:text-blue-400">{lead.next_action}</td>
                     </tr>
                   );
                 })}

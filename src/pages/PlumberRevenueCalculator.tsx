@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Droplets,
@@ -247,7 +247,7 @@ const PlumberRevenueCalculator: React.FC = () => {
     if (!email) return;
     setFormStatus('sending');
     try {
-      await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -630,7 +630,7 @@ const PlumberRevenueCalculator: React.FC = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-slate-500 uppercase">Net Gain (after $179)</p>
+                    <p className="text-[11px] text-slate-500 uppercase">Net Gain (after $897)</p>
                     <p className="text-lg font-bold text-green-400 tabular-nums">
                       {fmt.format(Math.round(calc.netGain))}
                     </p>
@@ -882,7 +882,7 @@ const PlumberRevenueCalculator: React.FC = () => {
             <TrendingUp className="w-5 h-5" />
           </a>
           <p className="text-slate-500 text-sm mt-4">
-            Starting at $99/month &bull; No contracts &bull; Set up in 24 hours
+            Starting at $549/month &bull; No contracts &bull; Set up in 24 hours
           </p>
         </motion.div>
       </section>

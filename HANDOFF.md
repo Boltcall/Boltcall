@@ -234,7 +234,7 @@ netlify sites:delete --site-id 0329b208-cea2-4205-8e34-13cf7c1da39b --force
 - All changes committed to `main`.
 - No outstanding worktrees (all merged + cleaned up).
 - `npm install` works clean on `main` — Retell SDK v5.33 + all deps reproduce.
-- `npx tsc --noEmit` passes clean.
+- `npm run typecheck` passes clean.
 - Last successful prod deploy: `https://6a2009970f469b2af0e78e11--boltcall.netlify.app` (Google Ads feature live).
 - An in-flight build for the dedup pre-SELECT fix may still be running (see section 1).
 
@@ -242,8 +242,8 @@ netlify sites:delete --site-id 0329b208-cea2-4205-8e34-13cf7c1da39b --force
 
 ## How to verify things without breaking them
 
-- **Probe Supabase directly:** use Claude Code's Supabase MCP if available, or use the project URL `https://hbwogktdajorojljkjwg.supabase.co` with the service key from `netlify env:get SUPABASE_SERVICE_KEY --context production`.
-- **Probe Retell API:** `curl -H "Authorization: Bearer $(netlify env:get RETELL_API_KEY --context production | tail -1)" https://api.retellai.com/list-agents`
+- **Probe Supabase directly:** use Claude Code's Supabase MCP if available, or use the project URL `https://puszjwovldwgitfpsnfm.supabase.co` with the service key from `netlify env:get SUPABASE_SERVICE_KEY --context production`.
+- **Probe Retell API:** `curl -X POST -H "Authorization: Bearer $(netlify env:get RETELL_API_KEY --context production | tail -1)" -H "Content-Type: application/json" -d '{"limit":1,"filter_criteria":{"channel":"voice"}}' https://api.retellai.com/v2/list-agents`
 - **Tail Netlify function logs:** Netlify dashboard → boltcall project → Logs → Functions.
 
 ---

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -38,7 +38,7 @@ const alternatives: Alternative[] = [
     url: 'https://boltcall.org',
     bestFor: 'Local businesses where the #1 problem is missed leads or slow follow-up',
     responseTime: '11 seconds',
-    pricing: '$499/mo agency, from $179/mo SaaS',
+    pricing: '$499/mo agency, from $897/mo SaaS',
     highlight: 'The only entry on this list engineered around a single number: how fast a new lead becomes a booked appointment.',
     strengths: [
       '11 Second Response standard, instrumented end-to-end',
@@ -197,7 +197,7 @@ const PodiumAlternatives: React.FC = () => {
           name: 'What is the best Podium alternative for a single-location local business?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Boltcall is the strongest fit for single-location businesses focused on lead conversion. It is built around an 11 Second Response standard, includes AI phone, SMS, and web chat, and starts at $499/mo agency or $179/mo SaaS with no annual contract.',
+            text: 'Boltcall is the strongest fit for single-location businesses focused on lead conversion. It is built around an 11 Second Response standard, includes AI phone, SMS, and web chat, and starts at $499/mo agency or $897/mo SaaS with no annual contract.',
           },
         },
         {
@@ -213,7 +213,7 @@ const PodiumAlternatives: React.FC = () => {
           name: 'Are there cheaper alternatives to Podium?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Boltcall SaaS DIY starts at $179 per month and the managed agency tier is a flat $499 per month. HaloAI CRM starts at $397 per month. Both publish their pricing rather than quote-based, so you avoid the per-location and per-message escalations Podium customers often hit.',
+            text: 'Yes. Boltcall SaaS DIY starts at $549 per month and the managed agency tier is a flat $897 per month. HaloAI CRM starts at $397 per month. Both publish their pricing rather than quote-based, so you avoid the per-location and per-message escalations Podium customers often hit.',
           },
         },
         {

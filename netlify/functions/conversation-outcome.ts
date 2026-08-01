@@ -31,6 +31,22 @@ function internalHeaders(): Record<string, string> {
   return secret ? { 'x-internal-secret': secret } : {};
 }
 
+async function postSelfHeal(body: Record<string, unknown>): Promise<{ ok: true } | { ok: false; error: string }> {
+  const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+  try {
+    const res = await fetch(`${baseUrl}/.netlify/functions/agent-self-heal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...internalHeaders() },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) return { ok: true };
+    const text = await res.text().catch(() => '');
+    return { ok: false, error: `Self-heal rejected with ${res.status}${text ? `: ${text}` : ''}` };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Self-heal trigger failed' };
+  }
+}
+
 interface OutcomeEvaluation {
   success: boolean;
   outcome_type: 'booked' | 'answered' | 'unresolved';
@@ -193,28 +209,25 @@ const handler: Handler = async (event) => {
       };
     }
 
-    // Failure — trigger self-heal fire-and-forget
-    const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
-    fetch(`${baseUrl}/.netlify/functions/agent-self-heal`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...internalHeaders() },
-      body: JSON.stringify({
-        action: 'heal',
-        agentId,
-        callId: conversationId || null,
-        transcript,
-        callAnalysis: callAnalysis || null,
-        userId,
-      }),
-    }).catch(err => {
-      console.error('[conversation-outcome] Self-heal trigger failed (non-blocking):', err);
+    // Failure — trigger self-heal and report whether it was accepted
+    const healTrigger = await postSelfHeal({
+      action: 'heal',
+      agentId,
+      callId: conversationId || null,
+      transcript,
+      callAnalysis: callAnalysis || null,
+      userId,
     });
+    if (!healTrigger.ok) {
+      console.error('[conversation-outcome] Self-heal trigger rejected:', healTrigger.error);
+      await Promise.resolve(notifyInfo(`Self-heal not accepted: ${healTrigger.error}`)).catch(() => {});
+    }
 
     await notifyInfo(
       `⚠️ *Conversation Failed*\n` +
       `📡 *Channel:* ${(channel || 'unknown').replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&')}\n` +
       `🔍 *Reason:* ${evaluation.reason.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&')}\n` +
-      `🔧 *Self\\-heal:* triggered`
+      `🔧 *Self\\-heal:* ${healTrigger.ok ? 'triggered' : 'not accepted'}`
     );
 
     return {
@@ -225,7 +238,8 @@ const handler: Handler = async (event) => {
         outcomeType: evaluation.outcome_type,
         reason: evaluation.reason,
         confidence: evaluation.confidence,
-        healTriggered: true,
+        healTriggered: healTrigger.ok,
+        ...(healTrigger.ok ? {} : { healTriggerError: healTrigger.error }),
       }),
     };
 

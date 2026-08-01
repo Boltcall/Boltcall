@@ -4,8 +4,9 @@ import { notifyError } from './_shared/notify';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { verifyCalcomSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { estimateBookingValueCents } from './_shared/booking-value';
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
 function getServiceClient() {
   return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY!, {
@@ -155,12 +156,38 @@ const handler: Handler = async (event) => {
 
     // ─── BOOKING_CREATED ──────────────────────────────────────────────
     if (triggerEvent === 'BOOKING_CREATED') {
-      // 1. Insert appointment
+      // Confirmed-booking attribution: link the booking to the retell call
+      // that produced it. Direct via Cal metadata.call_id (set by agent-tools);
+      // else best-effort match on caller phone within 24h. Nullable.
+      let attributedCallId: string | null =
+        typeof payload.metadata?.call_id === 'string' && payload.metadata.call_id
+          ? payload.metadata.call_id
+          : null;
+      if (!attributedCallId && attendeePhone) {
+        const digits = String(attendeePhone).replace(/\D/g, '').slice(-10);
+        if (digits.length >= 7) {
+          const { data: recentCalls } = await supabase
+            .from('retell_calls')
+            .select('call_id, started_at, from_number:retell_payload->>from_number')
+            .eq('workspace_id', workspaceId)
+            .gte('started_at', new Date(Date.now() - 24 * 3600000).toISOString())
+            .order('started_at', { ascending: false })
+            .limit(50);
+          const match = (recentCalls || []).find(
+            (c: any) => String(c.from_number || '').replace(/\D/g, '').slice(-10) === digits
+          );
+          if (match) attributedCallId = match.call_id;
+        }
+      }
+
+      // 1. Insert appointment (valued from the services catalog — never blocks)
+      const estimatedValueCents = await estimateBookingValueCents(supabase, userId, eventTitle);
       const { data: appt, error: apptError } = await supabase
         .from('appointments')
         .insert({
           user_id: userId,
           workspace_id: workspaceId,
+          call_id: attributedCallId,
           cal_booking_id: bookingId,
           cal_event_type: eventTitle,
           client_name: attendeeName,
@@ -171,6 +198,7 @@ const handler: Handler = async (event) => {
           ends_at: endTime,
           timezone: payload.organizer?.timeZone || 'UTC',
           status: 'confirmed',
+          estimated_value_cents: estimatedValueCents,
           raw_webhook: body,
         })
         .select('id')

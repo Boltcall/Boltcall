@@ -4,6 +4,7 @@ import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { emitSaasV2Event } from './_shared/saas-v2-events';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { getServiceSupabase } from './_shared/token-utils';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 type LeadStatus = 'new' | 'contacted' | 'booked' | 'lost';
 type PeriodKey = '7d' | '30d' | '90d' | '12m';
@@ -162,15 +163,11 @@ const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) return json(401, { error: 'Invalid or expired token' });
   const userId = userResult.user.id;
 
-  const { data: workspaceRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, v2_enabled')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-
-  if (wsErr) {
-    console.warn(`[saas-v2-lead-status-flow] workspace lookup failed user=${userId} err=${wsErr.message}`);
+  let workspaceRow: { id: string; v2_enabled?: boolean | null } | null;
+  try {
+    workspaceRow = await findWorkspaceForUser(userId, 'id, v2_enabled');
+  } catch (error: any) {
+    console.warn(`[saas-v2-lead-status-flow] workspace lookup failed user=${userId} err=${error?.message || error}`);
     return json(500, { error: 'Failed to resolve workspace' });
   }
 

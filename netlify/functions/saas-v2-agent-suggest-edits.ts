@@ -34,6 +34,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { callClaude } from './_shared/agency-agents/run-agent';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -243,19 +244,11 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ── 2. Workspace resolution ─────────────────────────────────────────────
-  const { data: workspaceRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  if (wsErr) {
-    return jsonResponse(500, { error: 'Workspace lookup failed' });
-  }
+  const workspaceRow = await findWorkspaceForUser<{ id: string }>(userId, 'id').catch(() => null);
   if (!workspaceRow) {
     return jsonResponse(404, { error: 'No workspace found for this user' });
   }
-  const workspaceId = (workspaceRow as { id: string }).id;
+  const workspaceId = workspaceRow.id;
 
   // ── 3. Load prompt + failures ───────────────────────────────────────────
   const { prompt: agentPrompt } = await loadAgentPrompt(supa, workspaceId);

@@ -91,6 +91,7 @@ vi.mock('../../../lib/supabase', () => ({
       getUser: () => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null }),
       getSession: () => Promise.resolve({ data: { session: { access_token: 'tok' } }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
+      updateUser: () => Promise.resolve({ data: { user: null }, error: null }),
     },
     channel: () => ({ on: () => ({ subscribe: vi.fn() }) }),
     // V2 surfaces occasionally call removeChannel — not in the V1 smoke mock.
@@ -223,7 +224,7 @@ describe('V2OptInGate — smoke', () => {
     __resetV2OptInGateCache();
   });
 
-  it('renders children when v2_enabled = true', async () => {
+  it('renders children for signed-in users', async () => {
     mockSupabaseMaybeSingle.mockResolvedValue({ data: { v2_enabled: true }, error: null });
     await act(async () => {
       renderInRouter(
@@ -235,7 +236,7 @@ describe('V2OptInGate — smoke', () => {
     expect(screen.getByTestId('v2-child')).toBeInTheDocument();
   });
 
-  it('renders the opt-in prompt when v2_enabled = false', async () => {
+  it('does not block signed-in users when v2_enabled = false', async () => {
     mockSupabaseMaybeSingle.mockResolvedValue({ data: { v2_enabled: false }, error: null });
     await act(async () => {
       renderInRouter(
@@ -244,12 +245,8 @@ describe('V2OptInGate — smoke', () => {
         </V2OptInGate>
       );
     });
-    // Children are NOT rendered.
-    expect(screen.queryByTestId('v2-child')).not.toBeInTheDocument();
-    // The opt-in CTA IS rendered.
-    expect(
-      screen.getByRole('button', { name: /enable v2/i })
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('v2-child')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /enable v2/i })).not.toBeInTheDocument();
   });
 });
 
@@ -417,9 +414,8 @@ describe('V2SetupChat — smoke', () => {
     expect(screen.getByLabelText(/business website - optional/i)).toBeInTheDocument();
     const previousButton = screen.getByRole('button', { name: /previous/i });
     const continueButton = screen.getByRole('button', { name: /continue/i });
-    expect(previousButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
-    expect(continueButton).toHaveClass('border-border', 'bg-main', 'text-mtext');
-    expect(continueButton.querySelector('[aria-hidden="true"]')).toHaveClass('bg-black/10');
+    expect(previousButton).toHaveClass('border', 'border-white/14', 'bg-white/6', 'text-white');
+    expect(continueButton).toHaveClass('bg-white', 'text-zinc-950');
     expect(screen.queryByLabelText(/owner name/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/industry/i)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/voice/i)).not.toBeInTheDocument();
@@ -433,25 +429,27 @@ describe('V2SetupChat — smoke', () => {
     fireEvent.change(screen.getByLabelText(/business website - optional/i), {
       target: { value: 'https://boltcall.org' },
     });
+    fireEvent.click(screen.getByLabelText(/I agree to the/i));
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     await act(async () => {
       vi.advanceTimersByTime(360);
     });
 
     expect(screen.getByLabelText(/choose voice/i)).toBeInTheDocument();
+    expect(screen.getByText('Voice')).toBeInTheDocument();
     expect(screen.getByText(/Grace/i)).toBeInTheDocument();
     expect(screen.getByText(/Nico/i)).toBeInTheDocument();
     expect(screen.getByText(/Leland/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/more kb files - optional/i)).toBeInTheDocument();
+    expect(screen.getByText('Call style')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /previous/i })).toHaveClass(
-      'border-border',
-      'bg-main',
-      'text-mtext',
+      'border',
+      'border-white/14',
+      'bg-white/6',
+      'text-white',
     );
     expect(screen.getByRole('button', { name: /finish/i })).toHaveClass(
-      'border-border',
-      'bg-main',
-      'text-mtext',
+      'bg-white',
+      'text-zinc-950',
     );
   });
 
@@ -482,20 +480,13 @@ describe('V2SetupChat — smoke', () => {
     fireEvent.change(screen.getByLabelText(/business website - optional/i), {
       target: { value: 'https://boltcall.org' },
     });
+    fireEvent.click(screen.getByLabelText(/I agree to the/i));
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     await act(async () => {
       vi.advanceTimersByTime(360);
     });
 
     fireEvent.click(screen.getByRole('radio', { name: /Leland/i }));
-    fireEvent.change(screen.getByLabelText(/more kb files - optional/i), {
-      target: {
-        files: [
-          new File(['hello'], 'faq.pdf', { type: 'application/pdf' }),
-          new File(['pricing'], 'pricing.txt', { type: 'text/plain' }),
-        ],
-      },
-    });
 
     fireEvent.click(screen.getByRole('button', { name: /finish/i }));
     expect(screen.getByLabelText(/choose voice/i).closest('.transition-all')).toHaveClass('opacity-0');
@@ -515,7 +506,6 @@ describe('V2SetupChat — smoke', () => {
       goal: 'book-appointments',
       tone: 'friendly_concise',
       transferNumber: '',
-      kbFileNames: ['faq.pdf', 'pricing.txt'],
     });
 
     await act(async () => {

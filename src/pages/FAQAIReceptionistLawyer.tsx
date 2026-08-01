@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -23,7 +23,7 @@ const headings = [
 const faqs = [
   {
     question: 'How much does an AI receptionist cost for a law firm?',
-    answer: 'AI receptionists for law firms typically cost between $99 and $249 per month depending on call volume and features. Compare that to a full-time legal receptionist at $35,000-$50,000 per year, or a legal answering service charging $1.50-$3.00 per call. Most firms recover the cost within the first week by capturing just one or two new client consultations that would have otherwise gone to voicemail. Boltcall offers flat-rate pricing with no per-minute or per-call surcharges.',
+    answer: 'AI receptionists for law firms typically cost between $549 and $4997 per month depending on call volume and features. Compare that to a full-time legal receptionist at $35,000-$50,000 per year, or a legal answering service charging $1.50-$3.00 per call. Most firms recover the cost within the first week by capturing just one or two new client consultations that would have otherwise gone to voicemail. Boltcall offers flat-rate pricing with no per-minute or per-call surcharges.',
   },
   {
     question: 'How long does it take to set up an AI receptionist for a law firm?',
@@ -79,7 +79,7 @@ const faqs = [
   },
   {
     question: 'What is the ROI of an AI receptionist for a law firm?',
-    answer: 'The average law firm that deploys an AI receptionist recovers 15-30 leads per month that were previously lost to missed calls, voicemail, and slow follow-up. With an average personal injury case worth $5,000-$15,000 in fees and an average family law case worth $3,000-$8,000, capturing even 2-3 additional cases per month generates $10,000-$45,000 in new revenue against a monthly cost of $99-$249. Firms also report a 40-60% reduction in receptionist overtime costs and a measurable improvement in Google review ratings due to faster, more consistent client communication.',
+    answer: 'The average law firm that deploys an AI receptionist recovers 15-30 leads per month that were previously lost to missed calls, voicemail, and slow follow-up. With an average personal injury case worth $5,000-$15,000 in fees and an average family law case worth $3,000-$8,000, capturing even 2-3 additional cases per month generates $10,000-$45,000 in new revenue against a monthly cost of $549ג€“$4997. Firms also report a 40-60% reduction in receptionist overtime costs and a measurable improvement in Google review ratings due to faster, more consistent client communication.',
   },
   {
     question: 'How does an AI receptionist compare to a legal answering service?',
@@ -264,7 +264,7 @@ const FAQAIReceptionistLawyer: React.FC = () => {
               variants={{ ...fadeIn, visible: { ...fadeIn.visible, transition: { duration: 0.5, delay: 0.3 } } }}
               className="bg-blue-50 border border-blue-100 rounded-xl p-5 text-blue-800 text-sm leading-relaxed"
             >
-              An AI receptionist for law firms answers every call instantly, performs practice-area-specific client intake, screens for conflicts, books consultations, and routes emergencies to the on-call attorney. It costs $99-$249/month versus $35,000-$50,000/year for a human receptionist and captures the 35-40% of potential clients who call after hours.
+              An AI receptionist for law firms answers every call instantly, performs practice-area-specific client intake, screens for conflicts, books consultations, and routes emergencies to the on-call attorney. It costs $549ג€“$4997/month versus $35,000-$50,000/year for a human receptionist and captures the 35-40% of potential clients who call after hours.
             </motion.div>
             <blockquote className="border-l-4 border-blue-500 pl-6 my-8 bg-blue-50 rounded-r-xl py-4 pr-4">
               <p className="text-lg text-gray-700 italic leading-relaxed">&ldquo;Law firms lose more potential clients to slow intake than to any other cause. A prospect who cannot reach you within the first hour will call your competitor.&rdquo;</p>
@@ -472,7 +472,7 @@ const FAQAIReceptionistLawyer: React.FC = () => {
                   ['Consultation no-show rate', '20–28%', '10–14%'],
                   ['Google reviews per month', '0–1', '3–6'],
                   ['Setup time for 24/7 intake coverage', '2–4 weeks (hire)', '30 minutes'],
-                  ['Monthly cost vs. intake coordinator', '$2,800 – $3,800/mo', '$79 – $179'],
+                  ['Monthly cost vs. intake coordinator', '$2,800 – $3,800/mo', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>
@@ -511,6 +511,17 @@ const FAQAIReceptionistLawyer: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+      <section className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-sm text-gray-600">
+            Ready to see the category page?{' '}
+            <Link to="/industries/lawyer-answering-service" className="font-semibold text-blue-700 hover:underline">
+              Lawyer answering service
+            </Link>{' '}
+            covers the full buyer view.
+          </p>
         </div>
       </section>
       <Footer />

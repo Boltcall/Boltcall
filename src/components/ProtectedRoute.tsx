@@ -37,33 +37,52 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       return;
     }
 
-    // If arriving from setup loading screen, cache and skip
+    // Note: we used to short-circuit here when the URL had `?setupCompleted=true`
+    // and blindly cache SETUP_COMPLETE_KEY. That let a hand-typed
+    // `/dashboard/?setupCompleted=true` (or a Skip after a failed
+    // TalkToAgent) strand the user in an empty dashboard forever because
+    // provisionAgentSetup was skipped from then on. Now we always verify the
+    // business_profiles row exists before caching.
     const params = new URLSearchParams(location.search);
-    if (params.get('setupCompleted') === 'true') {
-      localStorage.setItem(SETUP_COMPLETE_KEY, user.id);
-      setSetupCheck('completed');
-      return;
-    }
+    const arrivedFromSetupLoader = params.get('setupCompleted') === 'true';
 
     // Check if user has completed setup (has a business_profiles row)
     const checkSetup = async () => {
-      try {
+      const querySetup = async () => {
         const { supabase } = await import('../lib/supabase');
-        const { data, error } = await supabase
+        return supabase
           .from('business_profiles')
           .select('id')
           .eq('user_id', user.id)
           .maybeSingle();
+      };
+      try {
+        let { data, error } = await querySetup();
 
         if (error) {
-          console.error('Setup check error:', error);
-          setSetupCheck('completed'); // Don't block on error
+          // One retry before defaulting open — network blips shouldn't
+          // silently mark setup complete and let the user into an empty
+          // dashboard.
+          console.warn('Setup check error, retrying once:', error);
+          await new Promise((r) => setTimeout(r, 400));
+          ({ data, error } = await querySetup());
+        }
+
+        if (error) {
+          console.error('Setup check error (retry failed):', error);
+          setSetupCheck('completed'); // Fail open — better than blocking
           return;
         }
 
         if (data) {
           localStorage.setItem(SETUP_COMPLETE_KEY, user.id);
           setSetupCheck('completed');
+        } else if (arrivedFromSetupLoader) {
+          // The URL claims setup finished but no business_profiles row
+          // exists — treat as still-needed so the wizard runs, and drop
+          // the stale cache marker.
+          localStorage.removeItem(SETUP_COMPLETE_KEY);
+          setSetupCheck('needed');
         } else {
           localStorage.removeItem(SETUP_COMPLETE_KEY);
           setSetupCheck('needed');
@@ -115,7 +134,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // Preserve where the user tried to go so they land back there after
+    // signing in, instead of dropping into the default post-login route.
+    const attempted = location.pathname + location.search + location.hash;
+    const safe = attempted && attempted !== '/' && !attempted.startsWith('/login')
+      ? `?redirect=${encodeURIComponent(attempted)}`
+      : '';
+    return <Navigate to={`/login${safe}`} replace />;
   }
 
   // New user without setup → redirect to setup

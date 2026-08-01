@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -99,7 +99,7 @@ const RoofingMissedLeadCalculator: React.FC = () => {
           name: 'What is the ROI of AI lead response for roofing companies?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Most roofing companies see 1,000-5,000%+ ROI from AI lead response. At $179/month, recovering just one additional roof replacement per month ($9,500+) generates a 53x return on investment.',
+            text: 'Most roofing companies see 1,000-5,000%+ ROI from AI lead response. At $897/month, recovering just one additional roof replacement per month ($9,500+) generates a 53x return on investment.',
           },
         },
       ],
@@ -195,7 +195,7 @@ const RoofingMissedLeadCalculator: React.FC = () => {
     if (!formName || !formEmail) return;
     setFormLoading(true);
     try {
-      await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -413,7 +413,7 @@ const RoofingMissedLeadCalculator: React.FC = () => {
                     {[
                       { label: 'Monthly recovery', val: fmt.format(calc.monthlyRecovery) },
                       { label: 'Annual recovery', val: fmt.format(calc.annualRecovery) },
-                      { label: 'Net gain after Boltcall ($179/mo)', val: fmt.format(calc.netGain) },
+                      { label: 'Net gain after Boltcall ($897/mo)', val: fmt.format(calc.netGain) },
                     ].map((r) => (
                       <div key={r.label} className="flex justify-between items-center">
                         <span className="text-sm text-slate-400">{r.label}</span>
@@ -567,7 +567,7 @@ const RoofingMissedLeadCalculator: React.FC = () => {
                 },
                 {
                   q: 'What ROI do roofing companies get from AI lead response?',
-                  a: 'Most roofing companies see 1,000-5,000%+ ROI. At $179/month for Boltcall, recovering even one additional roof replacement per month ($9,500+) generates a 53x return. The average customer sees 8-12 additional jobs booked per month by eliminating the response delay.',
+                  a: 'Most roofing companies see 1,000-5,000%+ ROI. At $897/month for Boltcall, recovering even one additional roof replacement per month ($9,500+) generates a 53x return. The average customer sees 8-12 additional jobs booked per month by eliminating the response delay.',
                 },
               ].map((faq) => (
                 <motion.div key={faq.q} variants={fadeUp}
@@ -631,7 +631,7 @@ const RoofingMissedLeadCalculator: React.FC = () => {
               { label: 'Average Job Value', desc: 'Blended value of replacements and repairs in your mix' },
               { label: 'Estimate No-Show Cost', desc: 'Revenue tied up in appointments that never happened' },
               { label: 'Annual Recovery Potential', desc: 'What AI lead response can recapture for your business' },
-              { label: 'ROI on AI Automation', desc: "Net return after Boltcall's $179/month cost" },
+              { label: 'ROI on AI Automation', desc: "Net return after Boltcall's $897/month cost" },
             ].map((item) => (
               <div key={item.label} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-sm font-semibold text-gray-900 mb-1">{item.label}</div>

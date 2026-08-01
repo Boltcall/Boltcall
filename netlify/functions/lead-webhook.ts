@@ -8,6 +8,7 @@ import { authenticateApiKey } from './_shared/validate-api-key';
 import { verifyFacebookSignature } from './_shared/verify-signatures';
 import { handleInboundLead } from './_shared/lead-response-service';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isLocalDev } from './_shared/prod-detect';
 
 /**
  * Lead Webhook — receives leads from external sources and inserts into Supabase `leads` table.
@@ -288,9 +289,16 @@ const handler: Handler = async (event) => {
     // Security: if a raw user_id was supplied without an API key, verify it belongs to a real
     // business_profiles row. This prevents anyone who guesses a UUID from injecting fake leads.
     if (!auth.hasKey && body.user_id) {
-      // Optional global shared secret check
+      // Fail-closed: in production, WEBHOOK_SECRET MUST be set + match.
+      // Otherwise anyone who guesses a user_id can inject leads that trigger
+      // billable outbound Retell calls / SMS.
       const globalSecret = process.env.WEBHOOK_SECRET;
-      if (globalSecret && body.webhookSecret !== globalSecret) {
+      if (!globalSecret) {
+        if (!isLocalDev()) {
+          console.error('[lead-webhook] WEBHOOK_SECRET unset; refusing unauthenticated user_id path');
+          return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server misconfigured: webhook secret required' }) };
+        }
+      } else if (body.webhookSecret !== globalSecret) {
         return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized: invalid webhook secret' }) };
       }
 

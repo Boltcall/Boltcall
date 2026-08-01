@@ -412,7 +412,7 @@ const BlogWhatDoesInstantLeadReplyMean: React.FC = () => {
 
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Myth 3: "It's too expensive for small businesses"</h3>
           <p>
-            Modern instant lead reply systems cost as little as $99/month—far less than hiring someone to monitor leads 24/7. The ROI from capturing even a few additional leads typically pays for itself.
+            Modern instant lead reply systems cost as little as $549/month—far less than hiring someone to monitor leads 24/7. The ROI from capturing even a few additional leads typically pays for itself.
           </p>
 
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Myth 4: "It's impersonal and robotic"</h3>

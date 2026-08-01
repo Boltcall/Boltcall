@@ -302,7 +302,7 @@ const SmsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">SMS Agent</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">SMS Agent</h1>
         </div>
         <div className="flex items-center gap-2">
           <PopButton color="gray" size="sm" onClick={loadData} className="gap-1.5">
@@ -332,7 +332,7 @@ const SmsPage: React.FC = () => {
             key={stat.label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl border border-gray-200 p-4"
+            className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] p-4"
           >
             <div className="flex items-center justify-between mb-2">
               <stat.icon className={`w-5 h-5 text-${stat.color}-500`} />
@@ -366,7 +366,7 @@ const SmsPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-gray-200">
+      <div className="flex items-center gap-1 border-b border-gray-200 dark:border-[#1e1e24]">
         {(['conversations', 'settings'] as const).map(tab => (
           <button
             key={tab}
@@ -416,10 +416,10 @@ const SmsPage: React.FC = () => {
                 <button
                   key={thread.threadId}
                   onClick={() => loadThread(thread.threadId)}
-                  className={`w-full text-left p-3 rounded-lg border transition-all ${
+                  className={`w-full text-left p-3 rounded-lg border transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md ${
                     selectedThread === thread.threadId
-                      ? 'border-blue-300 bg-blue-50'
-                      : 'border-gray-200 bg-white hover:bg-gray-50'
+                      ? 'border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30'
+                      : 'border-gray-200 dark:border-[#1e1e24] bg-white dark:bg-[#111114] hover:bg-gray-50 dark:hover:bg-[#17171b]'
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -464,7 +464,7 @@ const SmsPage: React.FC = () => {
           </div>
 
           {/* Message Thread View */}
-          <div className="hidden md:flex flex-col flex-1 bg-white rounded-xl border border-gray-200">
+          <div className="hidden md:flex flex-col flex-1 bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24]">
             {!selectedThread ? (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
@@ -591,7 +591,7 @@ const SmsPage: React.FC = () => {
         </div>
       ) : (
         /* Settings Tab */
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6 max-w-2xl">
+        <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] p-6 space-y-6 max-w-2xl">
           <h3 className="text-lg font-semibold text-gray-900">SMS AI Configuration</h3>
 
           {/* Enable/Disable */}

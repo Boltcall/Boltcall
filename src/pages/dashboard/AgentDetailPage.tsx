@@ -34,12 +34,29 @@ interface AgentData {
   color?: string | null;
 }
 
+interface PromptExperiment {
+  id: string;
+  status: 'ab_testing' | 'shadowing' | 'live' | 'reverted' | 'superseded';
+  shadow_started_at: string | null;
+  shadow_ended_at: string | null;
+  shadow_book_rate: number | null;
+  created_at: string;
+  rollback_data: { experiment?: { shadow_split_pct?: number } } | null;
+}
+
 interface CallLog {
   id: string;
   caller_number: string;
   duration: number;
   outcome: string;
   created_at: string;
+}
+
+interface TransferRule {
+  id: string;
+  condition_value: string | null;
+  destination_number: string;
+  priority: number;
 }
 
 const AgentDetailPage: React.FC = () => {
@@ -51,6 +68,7 @@ const AgentDetailPage: React.FC = () => {
 
   const [agent, setAgent] = useState<AgentData | null>(null);
   const [recentCalls, setRecentCalls] = useState<CallLog[]>([]);
+  const [experiments, setExperiments] = useState<PromptExperiment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showTalkModal, setShowTalkModal] = useState(false);
@@ -64,6 +82,14 @@ const AgentDetailPage: React.FC = () => {
   const [transferPhone, setTransferPhone] = useState('');
   const [avatar, setAvatar] = useState<string | null>(null);
   const [color, setColor] = useState<string | null>(null);
+
+  // Scenario-based transfer routing (Task 7). Each rule saves immediately
+  // (own supabase writes, not part of the batched handleSave diff) since
+  // they're a list, not a single field.
+  const [transferRules, setTransferRules] = useState<TransferRule[]>([]);
+  const [newRuleKeyword, setNewRuleKeyword] = useState('');
+  const [newRuleNumber, setNewRuleNumber] = useState('');
+  const [addingRule, setAddingRule] = useState(false);
 
   // KB Folders state
   const [agentFolders, setAgentFolders] = useState<Array<{ id: string; name: string; is_default: boolean }>>([]);
@@ -155,6 +181,100 @@ const AgentDetailPage: React.FC = () => {
     fetchAllFolders();
   }, [fetchAgentFolders, fetchAllFolders]);
 
+  // Load prompt experiments (A/B tests + shadow rollouts) for this agent.
+  // Read-only card; experiments are created by the objection-mining loop and
+  // founder-side tooling. Hidden entirely when the agent has none.
+  useEffect(() => {
+    const fetchExperiments = async () => {
+      if (!agentId) return;
+      const { data, error } = await supabase
+        .from('retell_prompt_versions')
+        .select('id, status, shadow_started_at, shadow_ended_at, shadow_book_rate, created_at, rollback_data')
+        .eq('agent_id', agentId)
+        .in('status', ['ab_testing', 'shadowing', 'live', 'reverted', 'superseded'])
+        .order('created_at', { ascending: false })
+        .limit(6);
+      if (error) {
+        console.warn('prompt experiments unavailable (AgentDetailPage):', error.message);
+        return;
+      }
+      if (data) setExperiments(data);
+    };
+    fetchExperiments();
+  }, [agentId]);
+
+  // Load transfer rules
+  const fetchTransferRules = useCallback(async () => {
+    if (!agentId) return;
+    const { data, error } = await supabase
+      .from('transfer_rules')
+      .select('id, condition_value, destination_number, priority')
+      .eq('agent_id', agentId)
+      .order('priority', { ascending: true });
+    if (error) {
+      console.warn('transfer_rules unavailable (AgentDetailPage):', error.message);
+      return;
+    }
+    setTransferRules(data || []);
+  }, [agentId]);
+
+  useEffect(() => {
+    fetchTransferRules();
+  }, [fetchTransferRules]);
+
+  // Push agents.transfer_phone_number + transfer_rules to the agent's Retell
+  // LLM. No-ops quietly for custom-llm agents (server tells us via `skipped`).
+  const syncTransferConfig = useCallback(async () => {
+    if (!agent?.retell_agent_id) return;
+    try {
+      await authedFetch(`${FUNC_BASE}/retell-agents`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync_transfer_config', retell_agent_id: agent.retell_agent_id }),
+      });
+    } catch (err) {
+      console.error('syncTransferConfig failed:', err);
+    }
+  }, [agent?.retell_agent_id, FUNC_BASE]);
+
+  const handleAddRule = async () => {
+    if (!agentId || !user?.id || !newRuleKeyword.trim() || !newRuleNumber.trim()) return;
+    setAddingRule(true);
+    try {
+      const { error } = await supabase.from('transfer_rules').insert({
+        user_id: user.id,
+        agent_id: agentId,
+        condition_type: 'keyword',
+        condition_value: newRuleKeyword.trim(),
+        destination_number: newRuleNumber.trim(),
+        priority: transferRules.length,
+      });
+      if (error) throw error;
+      setNewRuleKeyword('');
+      setNewRuleNumber('');
+      await fetchTransferRules();
+      await syncTransferConfig();
+      showToast({ title: 'Rule added', message: 'Routing rule saved and synced', variant: 'success', duration: 2000 });
+    } catch (err) {
+      console.error('handleAddRule failed:', err);
+      showToast({ title: 'Error', message: 'Failed to add routing rule', variant: 'error', duration: 3000 });
+    } finally {
+      setAddingRule(false);
+    }
+  };
+
+  const handleDeleteRule = async (ruleId: string) => {
+    try {
+      const { error } = await supabase.from('transfer_rules').delete().eq('id', ruleId);
+      if (error) throw error;
+      await fetchTransferRules();
+      await syncTransferConfig();
+    } catch (err) {
+      console.error('handleDeleteRule failed:', err);
+      showToast({ title: 'Error', message: 'Failed to remove routing rule', variant: 'error', duration: 3000 });
+    }
+  };
+
   // Load recent calls
   useEffect(() => {
     const fetchCalls = async () => {
@@ -207,9 +327,9 @@ const AgentDetailPage: React.FC = () => {
 
     try {
       // Only write columns that actually exist on the agents table. greeting
-      // is stored as begin_message. transfer_phone_number / avatar / color
-      // have no columns yet — they're UI-only state until a follow-up migration
-      // adds them, otherwise this whole UPDATE 400s and nothing saves.
+      // is stored as begin_message. avatar / color have no columns yet —
+      // they're UI-only state until a follow-up migration adds them.
+      const transferPhoneChanged = transferPhone !== (agent.transfer_phone_number || '');
       const { data: updated, error } = await supabase
         .from('agents')
         .update({
@@ -217,6 +337,7 @@ const AgentDetailPage: React.FC = () => {
           status,
           begin_message: greeting,
           voice_id: voiceId,
+          transfer_phone_number: transferPhone || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', agent.id)
@@ -238,6 +359,9 @@ const AgentDetailPage: React.FC = () => {
           });
         } catch {
           // Non-critical — Retell sync can fail silently
+        }
+        if (transferPhoneChanged) {
+          await syncTransferConfig();
         }
       }
 
@@ -392,7 +516,7 @@ const AgentDetailPage: React.FC = () => {
           <PhoneForwarded className="w-4 h-4 text-gray-500" />
           <label className="text-sm font-semibold text-gray-900 dark:text-white">Transfer Number</label>
         </div>
-        <p className="text-xs text-gray-500 mb-2">When a caller asks for a real person, forward to this number</p>
+        <p className="text-xs text-gray-500 mb-2">Default number — used when no routing rule below matches</p>
         <input
           type="tel"
           value={transferPhone}
@@ -400,6 +524,59 @@ const AgentDetailPage: React.FC = () => {
           className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="+1 (555) 123-4567"
         />
+
+        {/* Scenario-based routing rules */}
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[#1e1e24]">
+          <label className="text-sm font-semibold text-gray-900 dark:text-white">Routing rules</label>
+          <p className="text-xs text-gray-500 mb-2">
+            Route to a different number based on what the caller says. Two or more rules switch the agent to AI-inferred routing.
+          </p>
+          {transferRules.length > 0 && (
+            <div className="space-y-1.5 mb-2">
+              {transferRules.map((rule) => (
+                <div
+                  key={rule.id}
+                  className="flex items-center justify-between gap-2 text-sm bg-gray-50 dark:bg-zinc-900 rounded-lg px-3 py-2"
+                >
+                  <span className="text-gray-700 dark:text-gray-300 truncate">
+                    "{rule.condition_value}" → {rule.destination_number}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteRule(rule.id)}
+                    className="text-xs text-red-500 hover:text-red-700 flex-shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={newRuleKeyword}
+              onChange={(e) => setNewRuleKeyword(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Keyword, e.g. emergency"
+            />
+            <input
+              type="tel"
+              value={newRuleNumber}
+              onChange={(e) => setNewRuleNumber(e.target.value)}
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="+1 (555) 987-6543"
+            />
+            <button
+              type="button"
+              onClick={handleAddRule}
+              disabled={addingRule || !newRuleKeyword.trim() || !newRuleNumber.trim()}
+              className="px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+            >
+              Add
+            </button>
+          </div>
+        </div>
       </motion.div>
 
       {/* Knowledge Base Folders */}
@@ -535,6 +712,58 @@ const AgentDetailPage: React.FC = () => {
           </div>
         )}
       </motion.div>
+
+      {/* Script Experiments — read-only; hidden when the agent has none.
+          ponytail: read-only card; creation UI when users ask for it */}
+      {experiments.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-xl p-5"
+        >
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Script Experiments</h3>
+          <div className="space-y-2">
+            {experiments.map((exp) => {
+              const statusLabel =
+                exp.status === 'ab_testing' ? 'Testing new script' :
+                exp.status === 'shadowing' ? 'Rolling out new script' :
+                exp.status === 'live' ? 'Live' :
+                exp.status === 'superseded' ? 'Replaced' : 'Reverted';
+              const statusClass =
+                exp.status === 'ab_testing' || exp.status === 'shadowing' ? 'bg-blue-100 text-blue-700' :
+                exp.status === 'live' ? 'bg-green-100 text-green-700' :
+                'bg-gray-100 text-gray-600';
+              const split = exp.rollback_data?.experiment?.shadow_split_pct;
+              return (
+                <div
+                  key={exp.id}
+                  className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-zinc-800 last:border-0"
+                >
+                  <div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusClass}`}>
+                      {statusLabel}
+                    </span>
+                    {exp.status === 'ab_testing' && split ? (
+                      <span className="text-xs text-gray-500 ml-2">{split}% of calls on the new script</span>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {exp.shadow_book_rate != null && (
+                      <span className="text-xs text-gray-600 dark:text-gray-300">
+                        {(exp.shadow_book_rate * 100).toFixed(0)}% booked
+                      </span>
+                    )}
+                    <span className="text-xs text-gray-400">
+                      {new Date(exp.shadow_started_at || exp.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
 
       {/* Save Bar — sticky at bottom when changes exist */}
       {hasChanges && (

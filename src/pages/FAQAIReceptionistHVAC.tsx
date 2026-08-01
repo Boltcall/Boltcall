@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -78,7 +78,7 @@ const FAQAIReceptionistHVAC: React.FC = () => {
             "name": "How much does an AI receptionist cost for an HVAC company?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Most AI receptionists for HVAC companies cost between $99 and $249 per month with no per-call fees. Compared to hiring a full-time receptionist at $2,800-3,500 per month, this represents a 90%+ cost reduction while providing 24/7 coverage including weekends and holidays."
+              "text": "Most AI receptionists for HVAC companies cost between $549 and $4997 per month with no per-call fees. Compared to hiring a full-time receptionist at $2,800-3,500 per month, this represents a 90%+ cost reduction while providing 24/7 coverage including weekends and holidays."
             }
           },
           {
@@ -189,7 +189,7 @@ const FAQAIReceptionistHVAC: React.FC = () => {
     {
       question: 'How much does an AI receptionist cost for an HVAC company?',
       answer:
-        'Most AI receptionists for HVAC companies cost between $99 and $249 per month with no per-call fees. Compared to hiring a full-time receptionist at $2,800-3,500 per month, this represents a 90%+ cost reduction while providing 24/7 coverage including weekends and holidays when emergency calls are most common.',
+        'Most AI receptionists for HVAC companies cost between $549 and $4997 per month with no per-call fees. Compared to hiring a full-time receptionist at $2,800-3,500 per month, this represents a 90%+ cost reduction while providing 24/7 coverage including weekends and holidays when emergency calls are most common.',
     },
     {
       question: 'How long does it take to set up an AI receptionist for HVAC?',
@@ -465,7 +465,7 @@ const FAQAIReceptionistHVAC: React.FC = () => {
                 <ul className="space-y-2 text-gray-700 text-sm">
                   <li>• Answers every call instantly during summer and winter peak seasons — no busy signals</li>
                   <li>• Triages emergency calls (gas leaks, no heat in winter) and dispatches on-call techs immediately</li>
-                  <li>• Costs $99–249/mo vs. $2,800–3,500/mo for a full-time receptionist — 90%+ savings</li>
+                  <li>• Costs $549-4997/mo vs. $2,800–3,500/mo for a full-time receptionist — 90%+ savings</li>
                   <li>• Integrates with ServiceTitan, Housecall Pro, and Jobber for real-time booking</li>
                   <li>• Passively upsells maintenance agreements during repair calls</li>
                   <li>• Handles unlimited simultaneous calls with flat-rate pricing regardless of volume spikes</li>
@@ -575,7 +575,7 @@ const FAQAIReceptionistHVAC: React.FC = () => {
                   ['No-show rate for service appointments', '18–22%', '8–12%'],
                   ['Google reviews per month', '1–2', '5–10'],
                   ['Setup time for 24/7 coverage', '2–4 weeks (hire)', '30 minutes'],
-                  ['Monthly cost vs. answering service', '$400 – $1,500/mo', '$79 – $179'],
+                  ['Monthly cost vs. answering service', '$400 – $1,500/mo', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>

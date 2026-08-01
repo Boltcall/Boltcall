@@ -140,17 +140,21 @@ import Home from '../Home';
 import PricingPage from '../PricingPage';
 import Contact from '../Contact';
 import About from '../About';
+import CreditsPage from '../CreditsPage';
 import HelpCenter from '../HelpCenter';
 import Privacy from '../Privacy';
 import Terms from '../Terms';
 import NotFound from '../NotFound';
 import Login from '../Login';
 import Signup from '../Signup';
+import { ToastProvider } from '../../contexts/ToastContext';
 
 const renderInRouter = (Page: React.ComponentType) => {
   return render(
     <MemoryRouter>
-      <Page />
+      <ToastProvider>
+        <Page />
+      </ToastProvider>
     </MemoryRouter>
   );
 };
@@ -161,6 +165,7 @@ describe('Marketing pages — smoke tests', () => {
     ['PricingPage', PricingPage],
     ['Contact', Contact],
     ['About', About],
+    ['CreditsPage', CreditsPage],
     ['HelpCenter', HelpCenter],
     ['Privacy', Privacy],
     ['Terms', Terms],

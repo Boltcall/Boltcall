@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Loader2, Copy, RotateCw, Eye, EyeOff, Clock } from 'lucide-react';
 import { PopButton } from '../../components/ui/pop-button';
 import { useAuth } from '../../contexts/AuthContext';
@@ -200,8 +200,8 @@ const AdInstantResponsePage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-2xl font-bold text-gray-900">Ad Instant Response</h1>
-        <p className="mt-1 text-gray-500">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Ad Instant Response</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           Connect your ad platforms so every lead from your campaigns gets followed up the moment they come in.
         </p>
       </motion.div>
@@ -210,7 +210,7 @@ const AdInstantResponsePage: React.FC = () => {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="bg-white rounded-xl border border-gray-200 p-6 space-y-6"
+        className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] p-6 space-y-6"
       >
         <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -289,7 +289,7 @@ const AdInstantResponsePage: React.FC = () => {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white rounded-xl border border-gray-200 p-6 space-y-6"
+        className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] p-6 space-y-6"
       >
         <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
           <div className="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -446,9 +446,22 @@ const AdInstantResponsePage: React.FC = () => {
       {/* Rotate-key confirmation — modal instead of window.confirm so the
           framing reads as clearly destructive and we don't strand the user
           on a tiny native dialog. */}
+      <AnimatePresence>
       {showRotateConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="bg-white dark:bg-[#111114] rounded-xl max-w-md w-full p-6 shadow-xl"
+          >
             <h3 className="text-lg font-semibold text-gray-900">Rotate the Google Ads key?</h3>
             <p className="mt-2 text-sm text-gray-600">
               Your <strong>current key will stop working immediately</strong> after rotation. Any Google Ads Lead Form
@@ -475,9 +488,10 @@ const AdInstantResponsePage: React.FC = () => {
                 Rotate key
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 };

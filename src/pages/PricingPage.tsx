@@ -22,6 +22,8 @@ const automationIntegrationLinks = [
   { label: 'Make guide', href: '/integrations/make' },
   { label: 'HubSpot guide', href: '/integrations/hubspot' },
   { label: 'GoHighLevel guide', href: '/integrations/gohighlevel' },
+  { label: 'Wix guide', href: '/integrations/wix' },
+  { label: 'Squarespace guide', href: '/integrations/squarespace' },
 ];
 
 const PricingPage: React.FC = () => {
@@ -209,6 +211,9 @@ const PricingPage: React.FC = () => {
             <p className="mt-2 text-sm leading-relaxed text-gray-700">
               Start with a focused mini-implementation: the <Link to="/after-hours-lead-rescue" className="text-indigo-600 hover:text-indigo-700 underline">After-Hours Lead Rescue setup</Link>, the <Link to="/automatic-reviews-agent" className="text-indigo-600 hover:text-indigo-700 underline">Automatic Reviews Agent setup</Link>, or the <Link to="/reminders-agent" className="text-indigo-600 hover:text-indigo-700 underline">Reminders Agent setup</Link>. Each one includes a test message before Boltcall imports the first 100 contacts.
             </p>
+            <p className="mt-3 text-sm leading-relaxed text-gray-700">
+              Want the pricing logic first? Read the <Link to="/credits" className="text-indigo-600 hover:text-indigo-700 underline">shared credits explainer</Link> to see how one monthly pool gets used across phone, SMS, and website chat.
+            </p>
           </div>
         </section>
 
@@ -382,7 +387,7 @@ const PricingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Can I try Boltcall before committing to a plan?</h3>
               <p className="text-gray-700 leading-relaxed">
-                Yes — every plan is backed by a 30-day money-back guarantee, but most buyers like to validate fit first. Start with our <Link to="/seo-audit" className="text-indigo-600 hover:text-indigo-700 underline">free SEO audit</Link> or full <Link to="/seo-aeo-audit" className="text-indigo-600 hover:text-indigo-700 underline">SEO + AEO audit</Link> to see where your site is leaking leads, run a <Link to="/business-audit" className="text-indigo-600 hover:text-indigo-700 underline">business audit</Link> to benchmark your funnel, score your speed with the <Link to="/lead-response-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">lead response scorecard</Link>, or take the <Link to="/ai-readiness-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">AI readiness scorecard</Link>. If you want a deeper dollar-figure projection, the <Link to="/ai-revenue-audit" className="text-indigo-600 hover:text-indigo-700 underline">AI revenue audit</Link> shows exactly what Boltcall would recover for your business, and the <Link to="/lead-magnet/ai-receptionist-buyers-guide" className="text-indigo-600 hover:text-indigo-700 underline">AI Receptionist Buyer's Guide</Link> walks you through every question to ask before signing with any vendor.
+                Yes — every plan is backed by a 30-day money-back guarantee (<Link to="/terms-of-service#guarantee" className="text-indigo-600 hover:text-indigo-700 underline">see guarantee terms</Link>), but most buyers like to validate fit first. Start with our <Link to="/seo-audit" className="text-indigo-600 hover:text-indigo-700 underline">free SEO audit</Link> or full <Link to="/seo-aeo-audit" className="text-indigo-600 hover:text-indigo-700 underline">SEO + AEO audit</Link> to see where your site is leaking leads, run a <Link to="/business-audit" className="text-indigo-600 hover:text-indigo-700 underline">business audit</Link> to benchmark your funnel, score your speed with the <Link to="/lead-response-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">lead response scorecard</Link>, or take the <Link to="/ai-readiness-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">AI readiness scorecard</Link>. If you want a deeper dollar-figure projection, the <Link to="/ai-revenue-audit" className="text-indigo-600 hover:text-indigo-700 underline">AI revenue audit</Link> shows exactly what Boltcall would recover for your business, and the <Link to="/lead-magnet/ai-receptionist-buyers-guide" className="text-indigo-600 hover:text-indigo-700 underline">AI Receptionist Buyer's Guide</Link> walks you through every question to ask before signing with any vendor.
               </p>
             </div>
 

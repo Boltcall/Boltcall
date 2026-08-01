@@ -22,7 +22,7 @@ const loadingSteps = [
   { icon: FileText, text: 'Generating your PDF...' },
 ];
 
-const WEBHOOK_URL = 'https://n8n.srv974118.hstgr.cloud/webhook/solar-speed-playbook';
+const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/solar-speed-playbook';
 
 const SolarSpeedToLeadPlaybook: React.FC = () => {
   useSchemaInjector([

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -23,7 +23,7 @@ const headings = [
 const faqs = [
   {
     question: 'How much does an AI receptionist cost for a veterinary clinic?',
-    answer: 'AI receptionists for veterinary clinics typically cost between $99 and $249 per month with flat-rate pricing and no per-call fees. Compare that to a full-time veterinary receptionist at $30,000-$40,000 per year or a veterinary answering service at $200-$600 per month with limited hours and capabilities. Most clinics recover the cost within the first week by capturing just 1-2 new client appointments that would have gone to voicemail. The average new veterinary client is worth $1,500-$2,500 in lifetime value across annual wellness exams, vaccinations, dental work, and emergency visits.',
+    answer: 'AI receptionists for veterinary clinics typically cost between $549 and $4997 per month with flat-rate pricing and no per-call fees. Compare that to a full-time veterinary receptionist at $30,000-$40,000 per year or a veterinary answering service at $200-$600 per month with limited hours and capabilities. Most clinics recover the cost within the first week by capturing just 1-2 new client appointments that would have gone to voicemail. The average new veterinary client is worth $1,500-$2,500 in lifetime value across annual wellness exams, vaccinations, dental work, and emergency visits.',
   },
   {
     question: 'How long does it take to set up an AI receptionist for a vet clinic?',
@@ -79,11 +79,11 @@ const faqs = [
   },
   {
     question: 'What is the ROI of an AI receptionist for a veterinary clinic?',
-    answer: 'Veterinary clinics that deploy an AI receptionist typically recover 15-25 new client appointments per month from previously missed calls and after-hours inquiries. With each new client worth $1,500-$2,500 in lifetime value and 60-70% converting from call to appointment, the AI generates $13,500-$43,750 in lifetime patient value per month against a $99-$249 monthly investment. Additional ROI comes from 30-50% fewer no-shows (recovering $1,500-$4,500/month in lost production), reduced front desk overtime, and higher Google review ratings from consistent, professional phone handling. Most clinics see a 30:1 to 100:1 return on their AI receptionist investment.',
+    answer: 'Veterinary clinics that deploy an AI receptionist typically recover 15-25 new client appointments per month from previously missed calls and after-hours inquiries. With each new client worth $1,500-$2,500 in lifetime value and 60-70% converting from call to appointment, the AI generates $13,500-$43,750 in lifetime patient value per month against a $549ג€“$4997 monthly investment. Additional ROI comes from 30-50% fewer no-shows (recovering $1,500-$4,500/month in lost production), reduced front desk overtime, and higher Google review ratings from consistent, professional phone handling. Most clinics see a 30:1 to 100:1 return on their AI receptionist investment.',
   },
   {
     question: 'How does an AI receptionist compare to hiring additional front desk staff?',
-    answer: 'A full-time veterinary receptionist costs $30,000-$40,000 per year in salary plus benefits, training, and turnover costs. They cover one shift (typically 8-10 hours), take lunch breaks, call in sick, and can only handle one caller at a time. An AI receptionist costs $99-$249/month, works 24/7/365, handles unlimited simultaneous calls, never calls in sick, and performs consistently on every call. It also does not need to be trained when protocols change. The AI does not replace your front desk team. It handles overflow calls, after-hours coverage, and routine inquiries, freeing your staff to focus on in-clinic patient care where their expertise matters most.',
+    answer: 'A full-time veterinary receptionist costs $30,000-$40,000 per year in salary plus benefits, training, and turnover costs. They cover one shift (typically 8-10 hours), take lunch breaks, call in sick, and can only handle one caller at a time. An AI receptionist costs $549ג€“$4997/month, works 24/7/365, handles unlimited simultaneous calls, never calls in sick, and performs consistently on every call. It also does not need to be trained when protocols change. The AI does not replace your front desk team. It handles overflow calls, after-hours coverage, and routine inquiries, freeing your staff to focus on in-clinic patient care where their expertise matters most.',
   },
   {
     question: 'Can the AI send automated vaccination and wellness reminders?',
@@ -264,7 +264,7 @@ const FAQAIReceptionistVet: React.FC = () => {
               variants={{ ...fadeIn, visible: { ...fadeIn.visible, transition: { duration: 0.5, delay: 0.3 } } }}
               className="bg-blue-50 border border-blue-100 rounded-xl p-5 text-blue-800 text-sm leading-relaxed"
             >
-              An AI receptionist for veterinary clinics answers every call on the first ring, triages emergencies to the on-call vet, books species-specific appointments, sends automated reminders to reduce no-shows by 30-50%, and captures the 30-35% of calls that come after hours. It costs $99-$249/month versus $30,000-$40,000/year for a front desk hire.
+              An AI receptionist for veterinary clinics answers every call on the first ring, triages emergencies to the on-call vet, books species-specific appointments, sends automated reminders to reduce no-shows by 30-50%, and captures the 30-35% of calls that come after hours. It costs $549ג€“$4997/month versus $30,000-$40,000/year for a front desk hire.
             </motion.div>
             <blockquote className="border-l-4 border-blue-500 pl-6 my-8 bg-blue-50 rounded-r-xl py-4 pr-4">
               <p className="text-lg text-gray-700 italic leading-relaxed">&ldquo;Veterinary practices that miss emergency calls after hours risk both patient outcomes and client loyalty. Reliable 24/7 phone answering is now a standard of care expectation.&rdquo;</p>
@@ -355,7 +355,7 @@ const FAQAIReceptionistVet: React.FC = () => {
                     <li>Handles prescription refill requests without interrupting front desk or clinical staff</li>
                     <li>Sends automated vaccination and wellness reminders, increasing compliance by 20–35%</li>
                     <li>Integrates with Cornerstone, AVImark, eVetPractice, and other practice management systems</li>
-                    <li>Costs $99–$249/month vs. $30,000–$40,000/year for a full-time receptionist hire</li>
+                    <li>Costs $549-4997/month vs. $30,000–$40,000/year for a full-time receptionist hire</li>
                   </ul>
                 </div>
                 <div className="bg-red-50 rounded-xl p-6">
@@ -530,7 +530,7 @@ const FAQAIReceptionistVet: React.FC = () => {
                   ['Appointment no-show rate', '15–20%', '7–10%'],
                   ['Google reviews per month', '1–2', '5–9'],
                   ['Setup time for 24/7 coverage', '2–4 weeks (hire)', '30 minutes'],
-                  ['Monthly cost vs. receptionist hire', '$3,200 – $4,200/mo', '$79 – $179'],
+                  ['Monthly cost vs. receptionist hire', '$3,200 – $4,200/mo', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>

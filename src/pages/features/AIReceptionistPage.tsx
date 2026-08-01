@@ -365,6 +365,21 @@ const AIReceptionistPage: React.FC = () => {
                   </Link>
                   .
                 </p>
+                <p className="text-gray-600 leading-relaxed mt-3">
+                  Vertical-specific category pages:{' '}
+                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/dentist-answering-service">
+                    dentist answering service
+                  </Link>
+                  ,{' '}
+                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/lawyer-answering-service">
+                    lawyer answering service
+                  </Link>
+                  , and{' '}
+                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/medspa-answering-service">
+                    med spa answering service
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
           </motion.div>
@@ -908,7 +923,7 @@ const AIReceptionistPage: React.FC = () => {
                   ['Live appointment booking', 'Yes — real-time', 'Yes (during hours)', 'No'],
                   ['SMS follow-up', 'Automated', 'Manual', 'No'],
                   ['No-show reminders', 'Automated', 'Manual', 'No'],
-                  ['Monthly cost', '$79–$179', '$3,200+', '$0'],
+                  ['Monthly cost', '$549-897', '$3,200+', '$0'],
                 ].map((row) => (
                   <tr key={row[0]} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-700 font-medium">{row[0]}</td>

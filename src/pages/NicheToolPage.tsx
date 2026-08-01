@@ -31,7 +31,7 @@ interface NicheConfig {
   webhook_url: string | null;
 }
 
-const DEFAULT_WEBHOOK = 'https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet';
+const DEFAULT_WEBHOOK = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet';
 
 const NicheToolPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();

@@ -45,18 +45,18 @@ const industries = [
 const SpeedToLeadPillar: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Speed to Lead: The Complete Guide for Local Businesses | Boltcall';
+    document.title = 'Speed to Lead Software & Statistics for Local Businesses | Boltcall';
     updateMetaDescription(
-      'Speed to lead is the #1 conversion factor for local businesses. Learn the 5-minute rule, response time benchmarks by industry, and how to respond to every lead instantly.'
+      'Speed to lead guide for local businesses: speed to lead software, response-time statistics, benchmarks by industry, and how to answer every lead instantly.'
     );
 
     const schemas = [
       {
         '@context': 'https://schema.org',
         '@type': 'Article',
-        headline: 'Speed to Lead: The Complete Guide for Local Businesses',
+        headline: 'Speed to Lead Software and Statistics for Local Businesses',
         description:
-          'Speed to lead is the #1 conversion factor for local businesses. Learn the 5-minute rule, response time benchmarks by industry, and how to respond to every lead instantly.',
+          'Speed to lead guide for local businesses: speed to lead software, response-time statistics, benchmarks by industry, and how to answer every lead instantly.',
         author: { '@type': 'Organization', name: 'Boltcall' },
         publisher: {
           '@type': 'Organization',
@@ -89,7 +89,7 @@ const SpeedToLeadPillar: React.FC = () => {
       {
         '@context': 'https://schema.org',
         '@type': 'WebPage',
-        name: 'Speed to Lead: The Complete Guide for Local Businesses',
+        name: 'Speed to Lead Software and Statistics for Local Businesses',
         speakable: { '@type': 'SpeakableSpecification', cssSelector: ['.speakable-intro'] },
       },
     ];
@@ -125,10 +125,12 @@ const SpeedToLeadPillar: React.FC = () => {
             Speed to Lead Guide
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-5 leading-tight">
-            <span className="text-blue-600">Speed to Lead:</span> The Complete Guide for Local Businesses
+            <span className="text-blue-600">Speed to Lead:</span> Software, Statistics, and Benchmarks
           </h1>
           <p className="text-lg text-gray-600 mb-6 max-w-3xl">
-            Response time is the single highest-impact variable in lead conversion. The businesses that win are not the ones with the best ads or the lowest prices. They are the ones that answer first.
+            Response time is the single highest-impact variable in lead conversion. This guide explains speed to lead, the
+            speed to lead statistics local operators should watch, and how speed to lead software helps service businesses
+            answer before buyers call the next provider.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link
@@ -177,6 +179,11 @@ const SpeedToLeadPillar: React.FC = () => {
           </p>
           <p className="text-gray-700 text-lg mb-4 leading-relaxed">
             It is measured in minutes or hours. For local service businesses competing in the same geographic area, it is the primary determinant of who wins the job.
+          </p>
+          <p className="text-gray-700 text-lg mb-4 leading-relaxed">
+            A practical <Link to="/" className="text-blue-600 hover:underline">Boltcall speed-to-lead system</Link> protects
+            that first response across live calls, missed calls, forms, texts, and after-hours demand so the business is not
+            depending on a staff member to notice every lead in real time.
           </p>
           <p className="text-gray-700 text-lg leading-relaxed">
             When a homeowner's pipe bursts at 9pm, they call three plumbers. The one who answers first gets the job. When a new patient searches for a dentist and fills out a contact form, the practice that calls back first gets the booking.{' '}
@@ -492,7 +499,12 @@ const SpeedToLeadPillar: React.FC = () => {
             {' '}or the{' '}
             <Link to="/ai-readiness-scorecard" className="text-blue-600 hover:underline">
               AI Readiness Scorecard
-            </Link>. If your inbound channel is search, run a free{' '}
+            </Link>. Want to see instant response in action?{' '}
+            <Link to="/response-time-test" className="text-blue-600 hover:underline">
+              Request a live test call
+            </Link>
+            {' '}and get emailed exactly how many seconds it took Boltcall to answer.
+            If your inbound channel is search, run a free{' '}
             <Link to="/seo-audit" className="text-blue-600 hover:underline">
               SEO audit
             </Link>

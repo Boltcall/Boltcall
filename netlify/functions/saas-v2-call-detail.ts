@@ -24,6 +24,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -136,12 +137,10 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ── Workspace resolution ───────────────────────────────────────────────
-  const { data: workspaceRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, v2_enabled')
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (wsErr) {
+  let workspaceRow: { id: string; v2_enabled?: boolean | null } | null;
+  try {
+    workspaceRow = await findWorkspaceForUser(userId, 'id, v2_enabled');
+  } catch {
     return { statusCode: 500, headers: cors, body: JSON.stringify({ error: 'Workspace lookup failed' }) };
   }
   if (!workspaceRow) {

@@ -2,12 +2,69 @@ import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { updateMetaDescription } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
+import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 import V2SetupChat from '../../components/v2/V2SetupChat';
-import GlowHorizonFM from '../../components/ui/glow-horizon';
+
+const HEBREW_TO_LATIN: Record<string, string> = {
+  א: 'a',
+  ב: 'b',
+  ג: 'g',
+  ד: 'd',
+  ה: 'h',
+  ו: 'o',
+  ז: 'z',
+  ח: 'ch',
+  ט: 't',
+  י: 'i',
+  כ: 'k',
+  ך: 'k',
+  ל: 'l',
+  מ: 'm',
+  ם: 'm',
+  נ: 'n',
+  ן: 'n',
+  ס: 's',
+  ע: 'a',
+  פ: 'p',
+  ף: 'p',
+  צ: 'tz',
+  ץ: 'tz',
+  ק: 'k',
+  ר: 'r',
+  ש: 'sh',
+  ת: 't',
+};
+
+function formatWelcomeFirstName(name: string | null | undefined) {
+  const firstName = name
+    ?.trim()
+    .split(/[\s,]+/u)
+    .find(Boolean)
+    ?.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+
+  if (!firstName) return null;
+  if (/[A-Za-z]/.test(firstName)) return firstName;
+  if (!/[\u0590-\u05FF]/u.test(firstName)) return firstName;
+
+  // ponytail: Hebrew-only transliteration for this English welcome; add more scripts only if real signups need them.
+  const transliterated = Array.from(
+    firstName.normalize('NFKD').replace(/[\u0591-\u05C7]/gu, ''),
+  )
+    .map((character) => HEBREW_TO_LATIN[character] ?? '')
+    .join('');
+
+  if (!transliterated) return firstName;
+
+  return transliterated.charAt(0).toUpperCase() + transliterated.slice(1);
+}
 
 const V2SetupPage: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [showPrompting, setShowPrompting] = useState(false);
+  const firstName = formatWelcomeFirstName(user?.name);
+  const welcomeHeading = firstName
+    ? `Welcome to Boltcall ${firstName}`
+    : 'Welcome to Boltcall';
 
   useEffect(() => {
     document.title = 'Set Up Boltcall';
@@ -86,22 +143,14 @@ const V2SetupPage: React.FC = () => {
           }
         `}
       </style>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.16) 0%, rgba(73,34,229,0.22) 26%, rgba(8,8,14,0.96) 62%, #050507 100%)',
-        }}
-      />
-      <GlowHorizonFM className="top-20 md:top-28" variant="top" />
-      <main className="mx-auto flex h-full min-h-0 max-w-5xl items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+      <SetupGradientBackground />
+      <main className="mx-auto flex h-full min-h-0 max-w-5xl items-center justify-center px-4 pb-6 pt-24 sm:px-6 sm:pt-28 lg:px-8">
         {!showPrompting ? (
           <h1
             className="relative z-10 text-center text-3xl font-black uppercase tracking-[0.1em] text-white sm:text-5xl lg:text-6xl"
             style={{ animation: 'boltcallSetupWelcome 2300ms cubic-bezier(0.22, 1, 0.36, 1) both' }}
           >
-            Welcome to Boltcall
+            {welcomeHeading}
           </h1>
         ) : (
           <section

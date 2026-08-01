@@ -10,10 +10,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
-import { savePendingAgentSetup } from '../../lib/setup/onboarding';
+import { savePendingAgentSetup, INDUSTRY_OPTIONS as INDUSTRY_SOURCE_OPTIONS, type PendingAgentSetup } from '../../lib/setup/onboarding';
 import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
-import { OriginButton } from '../ui/origin-button';
+import { recordTosAcceptance } from '../../lib/tosAcceptance';
+import { reportHandledError } from '../../lib/errorReporting';
 
 interface ChatMessage {
   id: string;
@@ -47,6 +48,35 @@ interface TurnResponse {
 }
 
 const STORAGE_KEY = 'boltcall_v2_setup_conversation_id';
+const OPENING_DRAFTS_KEY = 'boltcall_v2_setup_opening_drafts';
+
+type OpeningDrafts = {
+  ownerName?: string;
+  country?: string;
+  businessName?: string;
+  website?: string;
+  industry?: string;
+  transferNumber?: string;
+};
+
+function readOpeningDrafts(): OpeningDrafts {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = sessionStorage.getItem(OPENING_DRAFTS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed ? (parsed as OpeningDrafts) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeOpeningDrafts(drafts: OpeningDrafts): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(OPENING_DRAFTS_KEY, JSON.stringify(drafts));
+  } catch { /* quota / disabled — skip */ }
+}
 
 const SEED_GREETING =
   "I'll get your instant lead response system ready through a quick setup. First, tell me who owns this setup.";
@@ -54,14 +84,52 @@ const SEED_GREETING =
 const OPENING_STEP_PROMPTS: Record<OpeningStep, string> = {
   owner: SEED_GREETING,
   business: 'Great. Now tell me about the business we are setting up.',
-  agent: 'Perfect. Now choose how your AI agent should sound and add any knowledge files you want it to know.',
+  agent: 'Perfect. Now choose how your AI agent should sound and how it should handle new leads.',
 };
 
 const VOICE_OPTIONS = [
-  { id: '11labs-Grace', name: 'Grace', description: 'Warm and confident' },
-  { id: '11labs-Nico', name: 'Nico', description: 'Direct and energetic' },
-  { id: 'retell-Leland', name: 'Leland', description: 'Polished and calm' },
+  {
+    id: '11labs-Grace',
+    name: 'Grace',
+    description: 'Warm and confident',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/grace.mp3',
+  },
+  {
+    id: '11labs-Nico',
+    name: 'Nico',
+    description: 'Direct and energetic',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/11labs-pdBC2RxjF7wu7aBAu86E.mp3',
+  },
+  {
+    id: 'retell-Leland',
+    name: 'Leland',
+    description: 'Polished and calm',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/minimax-Leland.mp3',
+  },
 ] as const;
+
+const AGENT_STYLE_OPTIONS = [
+  {
+    id: 'friendly_concise',
+    title: 'Friendly speed-to-lead',
+    description: 'Greet fast, sound helpful, and move the lead toward booking.',
+  },
+  {
+    id: 'confident_direct',
+    title: 'Confident closer',
+    description: 'Ask focused questions and drive toward a clear next step.',
+  },
+  {
+    id: 'formal',
+    title: 'Calm professional',
+    description: 'Keep calls polished, patient, and reassuring.',
+  },
+] as const;
+
+// Local shape mirrors the source-of-truth INDUSTRY_OPTIONS from
+// src/lib/setup/onboarding.ts. Adding a value there flows through here
+// automatically.
+const INDUSTRY_OPTIONS = INDUSTRY_SOURCE_OPTIONS;
 
 type OpeningStep = 'owner' | 'business' | 'agent';
 
@@ -69,23 +137,67 @@ function genId() {
   return 'm_' + Math.random().toString(36).slice(2, 10);
 }
 
-const V2SetupChat: React.FC = () => {
+const ASSISTANT_SPEAKING_MS = 1400;
+const SETUP_BUTTON_BASE =
+  'inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 disabled:cursor-not-allowed disabled:opacity-45';
+const SETUP_BUTTON_PRIMARY = `${SETUP_BUTTON_BASE} bg-white text-zinc-950 hover:bg-zinc-100`;
+const SETUP_BUTTON_SECONDARY =
+  `${SETUP_BUTTON_BASE} border border-white/14 bg-white/6 text-white hover:bg-white/10`;
+
+function normalizeOptionalWebsite(rawValue: string) {
+  const trimmed = rawValue.trim();
+  if (!trimmed) return { value: '', error: null };
+
+  const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return { value: '', error: 'Enter a website URL that starts with http:// or https://.' };
+    }
+    return { value: url.toString().replace(/\/$/, ''), error: null };
+  } catch {
+    return { value: '', error: 'Enter a valid website URL, like boltcall.org.' };
+  }
+}
+
+const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> = ({
+  onSpeakingChange,
+}) => {
   const navigate = useNavigate();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(
     typeof window !== 'undefined' ? sessionStorage.getItem(STORAGE_KEY) : null,
   );
-  const [openingStep, setOpeningStep] = useState<OpeningStep>('owner');
+  // Rehydrate the three opening fields from sessionStorage so a mid-wizard
+  // refresh, back-nav, or session expiry does not restart the user at step 1.
+  const restoredDrafts = readOpeningDrafts();
+  const [openingStep, setOpeningStep] = useState<OpeningStep>(() => {
+    // Rewind to the earliest incomplete opening step so the user picks up
+    // where they left off after a refresh.
+    if (restoredDrafts.businessName) return 'agent';
+    if (restoredDrafts.ownerName && restoredDrafts.country) return 'business';
+    return 'owner';
+  });
   const [isOpeningTransitioning, setIsOpeningTransitioning] = useState(false);
-  const [ownerNameDraft, setOwnerNameDraft] = useState('');
-  const [countryDraft, setCountryDraft] = useState('');
-  const [businessNameDraft, setBusinessNameDraft] = useState('');
-  const [websiteDraft, setWebsiteDraft] = useState('');
+  const [ownerNameDraft, setOwnerNameDraft] = useState(restoredDrafts.ownerName || '');
+  const [countryDraft, setCountryDraft] = useState(restoredDrafts.country || '');
+  const [businessNameDraft, setBusinessNameDraft] = useState(restoredDrafts.businessName || '');
+  const [websiteDraft, setWebsiteDraft] = useState(restoredDrafts.website || '');
+  const [acceptTermsDraft, setAcceptTermsDraft] = useState(false);
   const [voiceDraft, setVoiceDraft] = useState<(typeof VOICE_OPTIONS)[number]['id']>(
     VOICE_OPTIONS[0].id,
   );
-  const [kbFileNames, setKbFileNames] = useState<string[]>([]);
+  const [agentStyleDraft, setAgentStyleDraft] =
+    useState<(typeof AGENT_STYLE_OPTIONS)[number]['id']>('friendly_concise');
+  const [industryDraft, setIndustryDraft] = useState<PendingAgentSetup['industry']>(
+    (restoredDrafts.industry as PendingAgentSetup['industry']) || 'other',
+  );
+  const [transferNumberDraft, setTransferNumberDraft] = useState<string>(restoredDrafts.transferNumber || '');
+  const [playingVoiceId, setPlayingVoiceId] = useState<(typeof VOICE_OPTIONS)[number]['id'] | null>(
+    null,
+  );
+  const [voicePreviewError, setVoicePreviewError] = useState<string | null>(null);
   const [answerDraft, setAnswerDraft] = useState('');
   const [extracted, setExtracted] = useState<ExtractedDraft>({});
   const [stateVersion, setStateVersion] = useState<number>(0);
@@ -97,6 +209,20 @@ const V2SetupChat: React.FC = () => {
 
   const openingTransitionTimer = useRef<number | null>(null);
   const finishTimer = useRef<number | null>(null);
+  const speakingTimer = useRef<number | null>(null);
+  const voiceAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Persist opening drafts every keystroke so a refresh doesn't wipe them.
+  useEffect(() => {
+    writeOpeningDrafts({
+      ownerName: ownerNameDraft || undefined,
+      country: countryDraft || undefined,
+      businessName: businessNameDraft || undefined,
+      website: websiteDraft || undefined,
+      industry: industryDraft || undefined,
+      transferNumber: transferNumberDraft || undefined,
+    });
+  }, [ownerNameDraft, countryDraft, businessNameDraft, websiteDraft, industryDraft, transferNumberDraft]);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,10 +264,22 @@ const V2SetupChat: React.FC = () => {
           } else {
             seedOpening();
           }
+        } else if (res.status === 401) {
+          // Session expired during hydration — don't silently seed a fresh
+          // wizard the user can't submit. Bounce to /login with a note.
+          setError('Your session expired. Please sign in again and continue.');
+          navigate('/login');
+          return;
         } else {
+          reportHandledError(
+            'V2SetupChat: hydrate non-ok',
+            new Error(`saas-v2-setup-state ${res.status}`),
+            { status: res.status },
+          );
           seedOpening();
         }
-      } catch {
+      } catch (err) {
+        reportHandledError('V2SetupChat: hydrate threw', err);
         seedOpening();
       } finally {
         if (!cancelled) setHasHydrated(true);
@@ -152,6 +290,12 @@ const V2SetupChat: React.FC = () => {
       cancelled = true;
       if (openingTransitionTimer.current) window.clearTimeout(openingTransitionTimer.current);
       if (finishTimer.current) window.clearTimeout(finishTimer.current);
+      if (speakingTimer.current) window.clearTimeout(speakingTimer.current);
+      if (voiceAudioRef.current) {
+        voiceAudioRef.current.pause();
+        voiceAudioRef.current.src = '';
+      }
+      onSpeakingChange?.(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -164,6 +308,36 @@ const V2SetupChat: React.FC = () => {
       setWebsiteDraft((prev) => prev || extracted.websiteUrl || '');
     }
   }, [extracted.businessName, extracted.websiteUrl]);
+
+  useEffect(() => {
+    if (!onSpeakingChange) return;
+
+    if (isStreaming || isFinalizing) {
+      if (speakingTimer.current) window.clearTimeout(speakingTimer.current);
+      onSpeakingChange(true);
+      return;
+    }
+
+    const latestAssistantId = [...messages].reverse().find((m) => m.role === 'assistant')?.id;
+    if (!latestAssistantId || !hasHydrated) {
+      onSpeakingChange(false);
+      return;
+    }
+
+    onSpeakingChange(true);
+    if (speakingTimer.current) window.clearTimeout(speakingTimer.current);
+    speakingTimer.current = window.setTimeout(() => {
+      onSpeakingChange(false);
+      speakingTimer.current = null;
+    }, ASSISTANT_SPEAKING_MS);
+
+    return () => {
+      if (speakingTimer.current) {
+        window.clearTimeout(speakingTimer.current);
+        speakingTimer.current = null;
+      }
+    };
+  }, [hasHydrated, isFinalizing, isStreaming, messages, onSpeakingChange]);
 
   function seedOpening() {
     const id = genId();
@@ -200,7 +374,14 @@ const V2SetupChat: React.FC = () => {
 
       const data = await readResponseJson<TurnResponse>(res);
       if (!res.ok || data.error) {
-        setError(data.error || `Setup error (${res.status}). Try again.`);
+        // 401 in the middle of the wizard = session expired. Show a
+        // friendly re-auth prompt instead of the raw "Missing bearer
+        // token" string that the API returns.
+        if (res.status === 401) {
+          setError('Your session expired. Please sign in again and continue.');
+        } else {
+          setError(data.error || `Setup error (${res.status}). Try again.`);
+        }
         setIsStreaming(false);
         return;
       }
@@ -292,6 +473,44 @@ const V2SetupChat: React.FC = () => {
     }
   }
 
+  function stopVoicePreview() {
+    const audio = voiceAudioRef.current;
+    if (!audio) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+    setPlayingVoiceId(null);
+  }
+
+  async function selectAndPreviewVoice(voice: (typeof VOICE_OPTIONS)[number]) {
+    setVoiceDraft(voice.id);
+    setVoicePreviewError(null);
+
+    if (playingVoiceId === voice.id) {
+      stopVoicePreview();
+      return;
+    }
+
+    const audio = voiceAudioRef.current ?? new Audio();
+    voiceAudioRef.current = audio;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = voice.previewUrl;
+    audio.onended = () => setPlayingVoiceId(null);
+    audio.onerror = () => {
+      setPlayingVoiceId(null);
+      setVoicePreviewError('Voice preview could not play. You can still choose this voice.');
+    };
+
+    try {
+      setPlayingVoiceId(voice.id);
+      await audio.play();
+    } catch {
+      setPlayingVoiceId(null);
+      setVoicePreviewError('Voice preview could not play. You can still choose this voice.');
+    }
+  }
+
   function submitOpeningStep() {
     if (openingStep === 'owner') {
       if (!ownerNameDraft.trim() || !countryDraft.trim()) return;
@@ -301,6 +520,13 @@ const V2SetupChat: React.FC = () => {
 
     if (openingStep === 'business') {
       if (!businessNameDraft.trim()) return;
+      const normalizedWebsite = normalizeOptionalWebsite(websiteDraft);
+      if (normalizedWebsite.error) {
+        setError(normalizedWebsite.error);
+        return;
+      }
+      setWebsiteDraft(normalizedWebsite.value);
+      setError(null);
       advanceOpeningStep('agent');
       return;
     }
@@ -308,7 +534,13 @@ const V2SetupChat: React.FC = () => {
     const ownerName = ownerNameDraft.trim();
     const country = countryDraft.trim();
     const companyName = businessNameDraft.trim();
-    const website = websiteDraft.trim();
+    const normalizedWebsite = normalizeOptionalWebsite(websiteDraft);
+    if (normalizedWebsite.error) {
+      setError(normalizedWebsite.error);
+      advanceOpeningStep('business');
+      return;
+    }
+    const website = normalizedWebsite.value;
     if (!ownerName || !country || !companyName) return;
     const voice = VOICE_OPTIONS.find((option) => option.id === voiceDraft) ?? VOICE_OPTIONS[0];
     setError(null);
@@ -317,15 +549,15 @@ const V2SetupChat: React.FC = () => {
       businessName: companyName,
       websiteUrl: website,
       country,
-      industry: 'other',
+      industry: industryDraft || 'other',
       voiceId: voice.id,
       goal: 'book-appointments',
-      tone: 'friendly_concise',
-      transferNumber: '',
-      kbFileNames,
+      tone: agentStyleDraft,
+      transferNumber: transferNumberDraft.trim(),
       createdAt: new Date().toISOString(),
     });
     sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(OPENING_DRAFTS_KEY);
     setIsOpeningTransitioning(true);
     if (finishTimer.current) window.clearTimeout(finishTimer.current);
     finishTimer.current = window.setTimeout(() => {
@@ -355,13 +587,25 @@ const V2SetupChat: React.FC = () => {
     openingStep === 'owner'
       ? !!ownerNameDraft.trim() && !!countryDraft.trim()
       : openingStep === 'business'
-        ? !!businessNameDraft.trim()
+        ? !!businessNameDraft.trim() && acceptTermsDraft
         : !!voiceDraft;
 
   return (
-    <div className="flex h-full min-h-0 w-full max-w-3xl flex-col justify-center bg-transparent">
+    <div className="v2-setup-chat flex h-full min-h-0 w-full max-w-3xl flex-col justify-center bg-transparent">
       <style>
         {`
+          .v2-setup-chat input:-webkit-autofill,
+          .v2-setup-chat input:-webkit-autofill:hover,
+          .v2-setup-chat input:-webkit-autofill:focus,
+          .v2-setup-chat input:-webkit-autofill:active {
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff;
+            -webkit-box-shadow: 0 0 0 1000px rgba(5, 5, 7, 0.96) inset !important;
+            box-shadow: 0 0 0 1000px rgba(5, 5, 7, 0.96) inset !important;
+            border-bottom-color: rgba(255, 255, 255, 0.92) !important;
+            transition: background-color 9999s ease-in-out 0s;
+          }
+
           @keyframes v2SetupFieldFadeIn {
             0% {
               opacity: 0;
@@ -480,11 +724,42 @@ const V2SetupChat: React.FC = () => {
                     label="Website - optional"
                     type="url"
                     value={websiteDraft}
-                    onChange={(e) => setWebsiteDraft(e.target.value)}
+                    onChange={(e) => {
+                      setWebsiteDraft(e.target.value);
+                      if (error) setError(null);
+                    }}
                     className="w-full"
                     autoComplete="url"
+                    aria-invalid={error ? true : undefined}
                   />
                 </div>
+                <label
+                  htmlFor="v2-accept-terms"
+                  className="col-span-full flex items-start gap-2.5 pt-1 text-sm text-white/60 opacity-0"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 340ms both' }}
+                >
+                  <input
+                    id="v2-accept-terms"
+                    type="checkbox"
+                    checked={acceptTermsDraft}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setAcceptTermsDraft(checked);
+                      if (checked) void recordTosAcceptance('signup_wizard');
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+                  />
+                  <span>
+                    I agree to the{' '}
+                    <a href="/terms-of-service" target="_blank" rel="noreferrer" className="underline hover:text-white/80">
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a href="/privacy-policy" target="_blank" rel="noreferrer" className="underline hover:text-white/80">
+                      Privacy Policy
+                    </a>
+                  </span>
+                </label>
               </div>
             )}
 
@@ -495,53 +770,101 @@ const V2SetupChat: React.FC = () => {
                   className="grid gap-3 opacity-0 sm:grid-cols-3"
                   style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both' }}
                 >
+                  <legend className="col-span-full text-sm font-semibold text-white/80">
+                    Voice
+                  </legend>
                   {VOICE_OPTIONS.map((voice) => (
-                    <label
+                    <button
                       key={voice.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={voiceDraft === voice.id}
+                      aria-label={`${voice.name} voice`}
+                      onClick={() => void selectAndPreviewVoice(voice)}
                       className={cn(
-                        'cursor-pointer rounded-2xl border px-4 py-4 text-left transition',
+                        'rounded-2xl border px-4 py-4 text-left transition',
                         voiceDraft === voice.id
                           ? 'border-white bg-white/20 shadow-[0_16px_50px_rgba(255,255,255,0.10)]'
                           : 'border-white/25 bg-white/10 hover:bg-white/15',
                       )}
                     >
-                      <input
-                        type="radio"
-                        name="v2-agent-voice"
-                        value={voice.id}
-                        checked={voiceDraft === voice.id}
-                        onChange={() => setVoiceDraft(voice.id)}
-                        className="sr-only"
-                        aria-label={`${voice.name} voice`}
-                      />
-                      <span className="block text-sm font-semibold text-white">{voice.name}</span>
+                      <span className="flex items-center justify-between gap-3 text-sm font-semibold text-white">
+                        {voice.name}
+                        <span className="rounded-full border border-white/15 bg-black/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-white/65">
+                          {playingVoiceId === voice.id ? 'Playing' : 'Play'}
+                        </span>
+                      </span>
                       <span className="mt-1 block text-xs text-white/65">{voice.description}</span>
-                    </label>
+                    </button>
                   ))}
                 </fieldset>
+                {voicePreviewError && (
+                  <p className="text-left text-xs text-amber-200/85">{voicePreviewError}</p>
+                )}
                 <div
                   className="opacity-0"
                   style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
                 >
-                  <label
-                    htmlFor="v2-kb-files"
-                    className="block border-b-2 border-white pb-3 text-left text-base font-medium text-white"
+                  <fieldset
+                    aria-label="Agent call style"
+                    className="grid gap-3 sm:grid-cols-3"
                   >
-                    More KB files - optional
+                    <legend className="col-span-full text-sm font-semibold text-white/80">
+                      Call style
+                    </legend>
+                    {AGENT_STYLE_OPTIONS.map((style) => (
+                      <button
+                        key={style.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={agentStyleDraft === style.id}
+                        aria-label={style.title}
+                        onClick={() => setAgentStyleDraft(style.id)}
+                        className={cn(
+                          'rounded-2xl border px-4 py-4 text-left transition',
+                          agentStyleDraft === style.id
+                            ? 'border-white bg-white/20 shadow-[0_16px_50px_rgba(255,255,255,0.10)]'
+                            : 'border-white/25 bg-white/10 hover:bg-white/15',
+                        )}
+                      >
+                        <span className="block text-sm font-semibold text-white">{style.title}</span>
+                        <span className="mt-1 block text-xs text-white/65">{style.description}</span>
+                      </button>
+                    ))}
+                  </fieldset>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">Industry</span>
+                    <select
+                      value={industryDraft}
+                      onChange={(e) => setIndustryDraft(e.target.value as PendingAgentSetup['industry'])}
+                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white focus:border-white focus:outline-none"
+                    >
+                      {INDUSTRY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </label>
-                  <input
-                    id="v2-kb-files"
-                    aria-label="More KB files - optional"
-                    type="file"
-                    multiple
-                    className="mt-3 block w-full text-sm text-white/70 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-semibold file:text-zinc-950"
-                    onChange={(e) =>
-                      setKbFileNames(Array.from(e.currentTarget.files ?? []).map((file) => file.name))
-                    }
-                  />
-                  {kbFileNames.length > 0 && (
-                    <p className="mt-2 text-left text-xs text-white/55">{kbFileNames.join(', ')}</p>
-                  )}
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">
+                      Transfer number <span className="font-normal normal-case text-white/50">(optional)</span>
+                    </span>
+                    <input
+                      type="tel"
+                      value={transferNumberDraft}
+                      onChange={(e) => setTransferNumberDraft(e.target.value)}
+                      placeholder="+1 555 123 4567"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-white focus:outline-none"
+                    />
+                    <span className="mt-1 block text-xs text-white/50">Calls the agent can't handle are forwarded here.</span>
+                  </label>
                 </div>
               </div>
             )}
@@ -551,23 +874,23 @@ const V2SetupChat: React.FC = () => {
               style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both' }}
             >
               {openingStep !== 'owner' && (
-                <OriginButton
+                <button
                   type="button"
                   onClick={previousOpeningStep}
                   disabled={isOpeningTransitioning || isStreaming || isFinalizing}
-                  className="h-11 px-5 text-sm"
+                  className={SETUP_BUTTON_SECONDARY}
                 >
                   Previous
-                </OriginButton>
+                </button>
               )}
-              <OriginButton
+              <button
                 type="button"
                 onClick={submitOpeningStep}
                 disabled={!canContinueOpening || isStreaming || isFinalizing}
-                className="h-11 px-5 text-sm"
+                className={SETUP_BUTTON_PRIMARY}
               >
                 {openingStep === 'agent' ? 'Finish' : 'Continue'}
-              </OriginButton>
+              </button>
             </div>
           </div>
         )}
@@ -585,13 +908,14 @@ const V2SetupChat: React.FC = () => {
                 className="w-full"
               />
             </div>
-            <OriginButton
+            <button
+              type="button"
               onClick={() => void sendMessage(answerDraft)}
               disabled={!answerDraft.trim() || isStreaming || isFinalizing}
-              className="h-11 px-5 text-sm"
+              className={SETUP_BUTTON_PRIMARY}
             >
               Continue
-            </OriginButton>
+            </button>
           </div>
         )}
       </div>
@@ -607,7 +931,7 @@ const V2SetupChat: React.FC = () => {
           <button
             onClick={deployAgent}
             disabled={isFinalizing}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-200 disabled:cursor-not-allowed disabled:opacity-45"
           >
             {isFinalizing ? 'Deploying...' : 'Deploy agent'}
           </button>

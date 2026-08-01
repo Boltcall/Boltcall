@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
@@ -70,13 +71,9 @@ async function resolveWorkspace(
   }
   const userId = userResult.user.id;
 
-  const { data: workspace, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const workspace = await findWorkspaceForUser<{ id: string }>(userId, 'id').catch(() => null);
 
-  if (wsErr || !workspace?.id) {
+  if (!workspace?.id) {
     return { ok: false, status: 404, error: 'No workspace found for user' };
   }
 

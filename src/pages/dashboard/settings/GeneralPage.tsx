@@ -13,6 +13,28 @@ import Button from '../../../components/ui/Button';
 import ModalShell from '../../../components/ui/modal-shell';
 import { UnsavedChanges } from '../../../components/ui/unsaved-changes';
 
+// Full ISO 3166-1 country list, computed once. There is no built-in enumerator,
+// so we resolve every 2-letter code through Intl.DisplayNames and keep the ones
+// that map to a real name. Value stays the display name (e.g. 'United States')
+// so existing saved values round-trip. ponytail: postal/state validation is a
+// separate, per-country feature — deferred, not part of this list fix.
+const ALL_COUNTRIES: string[] = (() => {
+  try {
+    const names = new Intl.DisplayNames(['en'], { type: 'region' });
+    const out: string[] = [];
+    for (let i = 65; i <= 90; i++) {
+      for (let j = 65; j <= 90; j++) {
+        const code = String.fromCharCode(i) + String.fromCharCode(j);
+        const name = names.of(code);
+        if (name && name !== code) out.push(name);
+      }
+    }
+    return out.sort((a, b) => a.localeCompare(b));
+  } catch {
+    return ['United States', 'Canada', 'United Kingdom', 'Australia'];
+  }
+})();
+
 const GeneralPage: React.FC = () => {
   const { t } = useTranslation('settings');
   const { showToast } = useToast();
@@ -239,24 +261,10 @@ const GeneralPage: React.FC = () => {
     { code: 'ja', name: 'Japanese' }
   ];
 
-  const countries = [
-    'United States',
-    'Canada',
-    'United Kingdom',
-    'Australia',
-    'Germany',
-    'France',
-    'Spain',
-    'Italy',
-    'Netherlands',
-    'Sweden',
-    'Norway',
-    'Denmark'
-  ];
+  const countries = ALL_COUNTRIES;
 
-  // Source of truth must mirror StepBusinessProfile so the wizard's saved
-  // value (e.g. 'plumber') round-trips correctly here. value = the lowercase
-  // slug stored in business_profiles.main_category, label = display string.
+  // Keep these slugs aligned with business_profiles.main_category so saved
+  // values (for example 'plumber') round-trip cleanly in settings.
   const industries: { value: string; label: string }[] = [
     { value: 'dentist', label: 'Dentist' },
     { value: 'medspa', label: 'Med Spa' },
@@ -290,50 +298,50 @@ const GeneralPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
-        className="bg-white rounded-lg border border-gray-200 p-4 md:p-6"
+        className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-4 md:p-6"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Building2 className="w-5 h-5 text-blue-600" />
+          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-500/15 rounded-lg flex items-center justify-center">
+            <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900">{t('general.businessInfo')}</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">{t('general.businessInfo')}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.businessName')} *
             </label>
             <input
               type="text"
               value={businessInfo.businessName}
               onChange={(e) => handleBusinessInfoChange('businessName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter business name"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.owner')} *
             </label>
             <input
               type="text"
               value={businessInfo.owner}
               onChange={(e) => handleBusinessInfoChange('owner', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter owner name"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.agentLanguage')} *
             </label>
             <select
               value={businessInfo.language}
               onChange={(e) => handleBusinessInfoChange('language', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {languages.map((lang) => (
                 <option key={lang.code} value={lang.code}>
@@ -344,13 +352,13 @@ const GeneralPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.industry')}
             </label>
             <select
               value={businessInfo.industry}
               onChange={(e) => handleBusinessInfoChange('industry', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {industries.map((industry) => (
                 <option key={industry.value} value={industry.value}>
@@ -361,27 +369,27 @@ const GeneralPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.website')}
             </label>
             <input
               type="url"
               value={businessInfo.website}
               onChange={(e) => handleBusinessInfoChange('website', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="https://your-website.com"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.description')}
             </label>
             <textarea
               value={businessInfo.description}
               onChange={(e) => handleBusinessInfoChange('description', e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Brief description of your business"
             />
           </div>
@@ -393,89 +401,89 @@ const GeneralPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, delay: 0.05 }}
-        className="bg-white rounded-lg border border-gray-200 p-4 md:p-6"
+        className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-4 md:p-6"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-            <MapPin className="w-5 h-5 text-green-600" />
+          <div className="w-10 h-10 bg-green-100 dark:bg-green-500/15 rounded-lg flex items-center justify-center">
+            <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
           </div>
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900">{t('general.address')}</h2>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">{t('general.address')}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.addressLine1')} *
             </label>
             <input
               type="text"
               value={addressInfo.line1}
               onChange={(e) => handleAddressChange('line1', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter street address"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.addressLine2')}
             </label>
             <input
               type="text"
               value={addressInfo.line2}
               onChange={(e) => handleAddressChange('line2', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Apartment, suite, unit, etc."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.city')} *
             </label>
             <input
               type="text"
               value={addressInfo.city}
               onChange={(e) => handleAddressChange('city', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter city"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.state')}
             </label>
             <input
               type="text"
               value={addressInfo.state}
               onChange={(e) => handleAddressChange('state', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter state or province"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.postalCode')}
             </label>
             <input
               type="text"
               value={addressInfo.postalCode}
               onChange={(e) => handleAddressChange('postalCode', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter postal code"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('general.country')} *
             </label>
             <select
               value={addressInfo.country}
               onChange={(e) => handleAddressChange('country', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {countries.map((country) => (
                 <option key={country} value={country}>
@@ -492,49 +500,49 @@ const GeneralPage: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, delay: 0.1 }}
-        className="bg-white rounded-lg border border-red-200 p-4 md:p-6"
+        className="bg-white dark:bg-[#111114] rounded-lg border border-red-200 dark:border-red-500/30 p-4 md:p-6"
       >
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-            <AlertTriangle className="w-5 h-5 text-red-600" />
+          <div className="w-10 h-10 bg-red-100 dark:bg-red-500/15 rounded-lg flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
           </div>
           <div>
-            <h2 className="text-lg md:text-xl font-semibold text-gray-900">{t('general.deleteAccount')}</h2>
-            <p className="text-sm text-gray-600 mt-1">{t('general.deleteAccountDesc')}</p>
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">{t('general.deleteAccount')}</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('general.deleteAccountDesc')}</p>
           </div>
         </div>
 
-        <div className="border-t border-red-200 pt-6 space-y-4">
+        <div className="border-t border-red-200 dark:border-red-500/30 pt-6 space-y-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-1">Delete Account</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-1">Delete Account</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Permanently delete your account and all data. This action cannot be undone.
               </p>
-              <p className="text-xs text-gray-400 mt-1">To delete your account, please contact <a href="mailto:support@boltcall.org" className="text-blue-600 hover:underline">support@boltcall.org</a></p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">To delete your account, please contact <a href="mailto:support@boltcall.org" className="text-blue-600 dark:text-blue-400 hover:underline">support@boltcall.org</a></p>
             </div>
             <Button
               variant="outline"
               disabled
-              className="border-red-200 text-red-400 cursor-not-allowed opacity-60"
+              className="border-red-200 dark:border-red-500/30 text-red-400 dark:text-red-500 cursor-not-allowed opacity-60"
               title="Contact support to delete your account"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Account
             </Button>
           </div>
-          <div className="border-t border-red-100" />
+          <div className="border-t border-red-100 dark:border-red-500/20" />
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-1">Delete Workspace</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-1">Delete Workspace</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Once you delete a workspace, there is no going back. Please be certain.
               </p>
             </div>
             <Button
               variant="outline"
               onClick={() => setShowDeleteModal(true)}
-              className="border-red-300 text-red-600 hover:bg-red-50"
+              className="border-red-300 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200 ease-out"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete Workspace
@@ -578,25 +586,22 @@ const GeneralPage: React.FC = () => {
 
                 setIsDeleting(true);
                 try {
-                  // Get the current user
-                  const { data: { user } } = await supabase.auth.getUser();
-                  if (!user) throw new Error('Not authenticated');
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session) throw new Error('Not authenticated');
 
-                  // Delete business profiles for this user
-                  await supabase.from('business_profiles').delete().eq('user_id', user.id);
-                  localStorage.removeItem('boltcall_setup_complete');
-
-                  // Delete workspaces for this user
-                  await supabase.from('workspaces').delete().eq('user_id', user.id);
-
-                  // Delete knowledge base files from storage
-                  const { data: files } = await supabase.storage.from('knowledge-base').list(user.id);
-                  if (files?.length) {
-                    const paths = files.map(f => `${user.id}/${f.name}`);
-                    await supabase.storage.from('knowledge-base').remove(paths);
+                  const res = await fetch('/.netlify/functions/delete-workspace', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ confirm: 'DELETE' }),
+                  });
+                  if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || 'Deletion failed');
                   }
-
-                  // Sign out the user
+                  localStorage.removeItem('boltcall_setup_complete');
                   await supabase.auth.signOut();
 
                   showToast({
@@ -608,18 +613,19 @@ const GeneralPage: React.FC = () => {
                   setShowDeleteModal(false);
                   navigate('/');
                 } catch (error) {
+                  const message = error instanceof Error ? error.message : 'Failed to delete workspace. Please try again.';
                   showToast({
                     title: 'Deletion Failed',
-                    message: 'Failed to delete workspace. Please try again.',
+                    message,
                     variant: 'error',
-                    duration: 4000
+                    duration: 5000
                   });
                 } finally {
                   setIsDeleting(false);
                 }
               }}
               disabled={isDeleting || deleteConfirmText !== 'DELETE'}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200 ease-out disabled:opacity-50"
             >
               {isDeleting ? (
                 <span className="flex items-center gap-2">
@@ -637,14 +643,14 @@ const GeneralPage: React.FC = () => {
         }
       >
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Type <span className="font-semibold">DELETE</span> to confirm:
           </label>
           <input
             type="text"
             value={deleteConfirmText}
             onChange={(e) => setDeleteConfirmText(e.target.value)}
-            className="w-full px-3 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-red-300 dark:border-red-500/40 dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="DELETE"
           />
         </div>

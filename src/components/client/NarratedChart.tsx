@@ -88,13 +88,13 @@ const NarratedChart: React.FC<NarratedChartProps> = ({
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              labelFormatter={(d: string) =>
+              labelFormatter={(d: any) =>
                 new Date(d).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
                 })
               }
-              formatter={(v: number) => [fmt(v), title]}
+              formatter={(v: any) => [fmt(v), title]}
             />
             <Area
               type="monotone"

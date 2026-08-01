@@ -8,6 +8,7 @@ import {
   buildRetellAgentFilter,
   buildRetellEnumInFilter,
   buildRetellStartTimestampFilter,
+  listRetellVoiceAgents,
   normalizeRetellCallList,
 } from '../_shared/retell-call-list';
 
@@ -20,7 +21,7 @@ describe('Retell call list v5 filters', () => {
       packages?: Record<string, { version?: string }>;
     };
 
-    expect(lock.packages?.['node_modules/retell-sdk']?.version).toBe('5.38.0');
+    expect(lock.packages?.['node_modules/retell-sdk']?.version).toBe('5.40.0');
 
     const sdkResourcesDir = path.join(repoRoot, 'node_modules', 'retell-sdk', 'resources');
     if (!fs.existsSync(sdkResourcesDir)) return;
@@ -68,6 +69,28 @@ describe('Retell call list v5 filters', () => {
     expect(normalizeRetellCallList({ items: calls, has_more: false })).toEqual(calls);
   });
 
+  it('lists agents through the current Retell v2 endpoint', async () => {
+    const requests: Array<{ url: string; init: RequestInit }> = [];
+    const fetchMock = async (url: string | URL | Request, init?: RequestInit) => {
+      requests.push({ url: String(url), init: init || {} });
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ items: [{ agent_id: 'agent_1' }], has_more: false }),
+      } as Response;
+    };
+
+    await expect(listRetellVoiceAgents('test-key', fetchMock as typeof fetch)).resolves.toEqual([
+      { agent_id: 'agent_1' },
+    ]);
+
+    expect(requests[0].url).toBe('https://api.retellai.com/v2/list-agents');
+    expect(requests[0].init.method).toBe('POST');
+    expect(JSON.parse(String(requests[0].init.body))).toMatchObject({
+      filter_criteria: { channel: 'voice' },
+    });
+  });
+
   it('does not leave old Retell list-call filter keys in production functions', () => {
     const testsDir = path.dirname(fileURLToPath(import.meta.url));
     const functionsDir = path.resolve(testsDir, '..');
@@ -77,6 +100,8 @@ describe('Retell call list v5 filters', () => {
       /\bupper_threshold\b/,
       /\bafter_start_timestamp\b/,
       /filter_criteria:\s*\{\s*agent_id\b/,
+      /\bclient\.agent\.list\(/,
+      /https:\/\/api\.retellai\.com\/list-agents/,
     ];
 
     function scanDir(dir: string) {

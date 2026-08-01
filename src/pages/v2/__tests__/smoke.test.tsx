@@ -34,6 +34,7 @@ const __v2State = vi.hoisted(() => ({
 const __authState = vi.hoisted(() => ({
   isAuthenticated: true,
   isLoading: false,
+  userName: 'Test User',
 }));
 
 // ── Global mocks (all before any page imports) ─────────────────────────────
@@ -67,7 +68,7 @@ vi.mock('framer-motion', () => ({
 // AuthContext — pretend an authenticated user is always present.
 vi.mock('../../../contexts/AuthContext', () => ({
   useAuth: () => ({
-    user: { id: 'test-user', email: 'test@test.com', name: 'Test User' },
+    user: { id: 'test-user', email: 'test@test.com', name: __authState.userName },
     isAuthenticated: __authState.isAuthenticated,
     isLoading: __authState.isLoading,
   }),
@@ -189,7 +190,13 @@ vi.mock('../../../components/v2/AskBoltcallAIV2', () => ({
 // 'disabled' → renders a sentinel that simulates the "Enable V2" gate screen.
 vi.mock('../../../components/v2/V2SetupChat', () => ({
   __esModule: true,
-  default: () => <div data-testid="v2-setup-chat-stub">V2 setup chat</div>,
+  default: ({ onSpeakingChange }: { onSpeakingChange?: (speaking: boolean) => void }) => {
+    React.useEffect(() => {
+      onSpeakingChange?.(true);
+      return () => onSpeakingChange?.(false);
+    }, [onSpeakingChange]);
+    return <div data-testid="v2-setup-chat-stub">V2 setup chat</div>;
+  },
 }));
 
 vi.mock('../../../components/v2/V2OptInGate', () => ({
@@ -276,6 +283,7 @@ describe('V2 pages — smoke tests', () => {
     __v2State.mode = 'enabled';
     __authState.isAuthenticated = true;
     __authState.isLoading = false;
+    __authState.userName = 'Test User';
     // Fresh global fetch mock per test so prior calls don't leak.
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -323,6 +331,7 @@ describe('V2 pages — smoke tests', () => {
   describe('V2SetupPage', () => {
     it('shows a welcome intro before starting the V2 setup chat', () => {
       vi.useFakeTimers();
+      __authState.userName = 'Test, User';
 
       const { container } = render(
         <MemoryRouter initialEntries={['/setup']}>
@@ -332,7 +341,7 @@ describe('V2 pages — smoke tests', () => {
         </MemoryRouter>,
       );
 
-      expect(screen.getByRole('heading', { name: /welcome to boltcall/i })).toHaveClass(
+      expect(screen.getByRole('heading', { name: /welcome to boltcall test/i })).toHaveClass(
         'text-3xl',
         'sm:text-5xl',
         'lg:text-6xl',
@@ -347,8 +356,23 @@ describe('V2 pages — smoke tests', () => {
       });
 
       expect(screen.getByTestId('v2-setup-chat-stub')).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: /welcome to boltcall/i })).not.toBeInTheDocument();
 
       vi.useRealTimers();
+    });
+
+    it('romanizes a Hebrew first name for the English welcome', () => {
+      __authState.userName = 'נועם יעקבי';
+
+      render(
+        <MemoryRouter initialEntries={['/setup']}>
+          <Routes>
+            <Route path="/setup" element={<V2SetupPage />} />
+          </Routes>
+        </MemoryRouter>,
+      );
+
+      expect(screen.getByRole('heading', { name: /welcome to boltcall noam/i })).toBeInTheDocument();
     });
 
     it('sends signed-out setup visitors to signup first', () => {

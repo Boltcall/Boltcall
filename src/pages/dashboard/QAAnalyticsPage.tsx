@@ -281,12 +281,12 @@ export default function QAAnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">QA Analytics</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white">QA Analytics</h1>
           <p className="text-sm text-gray-400 mt-1">Heal performance, friction trends, and agent health ג€” last 30 days</p>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-sm transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-sm transition-colors duration-200 ease-out"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -321,7 +321,7 @@ export default function QAAnalyticsPage() {
                 <Tooltip
                   contentStyle={{ background: '#1f2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
                   labelStyle={{ color: '#d1d5db' }}
-                  formatter={(v: number) => [`${v}%`, 'Success rate']}
+                  formatter={(v: any) => [`${v}%`, 'Success rate']}
                 />
                 <Line
                   type="monotone" dataKey="rate" stroke="#6366f1" strokeWidth={2}
@@ -347,7 +347,7 @@ export default function QAAnalyticsPage() {
                   </Pie>
                   <Tooltip
                     contentStyle={{ background: '#1f2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
-                    formatter={(v: number, name: string) => [v, name]}
+                    formatter={(v: any, name: any) => [v, name]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -378,7 +378,7 @@ export default function QAAnalyticsPage() {
                 <YAxis type="category" dataKey="name" tick={{ fill: '#9ca3af', fontSize: 11 }} width={110} />
                 <Tooltip
                   contentStyle={{ background: '#1f2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
-                  formatter={(v: number) => [v, 'Occurrences']}
+                  formatter={(v: any) => [v, 'Occurrences']}
                 />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                   {failureTypeData.map((_, i) => (
@@ -402,7 +402,7 @@ export default function QAAnalyticsPage() {
                 <YAxis domain={[0, 100]} tick={{ fill: '#6b7280', fontSize: 11 }} unit="%" />
                 <Tooltip
                   contentStyle={{ background: '#1f2937', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
-                  formatter={(v: number, name: string) => [`${v}%`, name]}
+                  formatter={(v: any, name: any) => [`${v}%`, name]}
                 />
                 <Legend wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
                 <Bar dataKey="healRate" name="Heal rate" fill="#6366f1" radius={[2, 2, 0, 0]} />

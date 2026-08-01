@@ -13,6 +13,42 @@ function hashKey(key: string): string {
   return createHash('sha256').update(key).digest('hex');
 }
 
+/**
+ * Server-side allowlist of API-key permissions. Adding new capabilities
+ * requires an explicit addition here — otherwise the client cannot mint a
+ * key with a permission the server doesn't understand, which used to be
+ * possible because the previous version accepted any string[] the caller
+ * sent.
+ */
+const ALLOWED_PERMISSIONS = new Set<string>([
+  'read:agents',
+  'write:agents',
+  'read:calls',
+  'read:kb',
+  'write:kb',
+  'read:workspace',
+  'write:workspace',
+  'read:leads',
+  'write:leads',
+  'read:webhooks',
+  'write:webhooks',
+]);
+
+function sanitizePermissions(input: unknown): { ok: true; value: string[] } | { ok: false; error: string } {
+  if (input == null) return { ok: true, value: [] };
+  if (!Array.isArray(input)) return { ok: false, error: 'permissions must be an array' };
+  const cleaned: string[] = [];
+  for (const raw of input) {
+    if (typeof raw !== 'string') return { ok: false, error: 'permissions must be strings' };
+    const trimmed = raw.trim();
+    if (!ALLOWED_PERMISSIONS.has(trimmed)) {
+      return { ok: false, error: `unknown permission "${trimmed}"` };
+    }
+    cleaned.push(trimmed);
+  }
+  return { ok: true, value: Array.from(new Set(cleaned)) };
+}
+
 const handler: Handler = async (event) => {
   const cors = getCorsHeaders(event.headers.origin);
 
@@ -43,6 +79,15 @@ const handler: Handler = async (event) => {
           return { statusCode: 400, headers: cors, body: JSON.stringify({ error: 'name required' }) };
         }
 
+        const sanitized = sanitizePermissions(permissions);
+        if (!sanitized.ok) {
+          return {
+            statusCode: 400,
+            headers: cors,
+            body: JSON.stringify({ error: sanitized.error }),
+          };
+        }
+
         const rawKey = `bc_${randomUUID().replace(/-/g, '')}`;
         const keyPrefix = rawKey.substring(0, 11);
         const keyHash = hashKey(rawKey);
@@ -52,7 +97,7 @@ const handler: Handler = async (event) => {
           name,
           key_prefix: keyPrefix,
           key_hash: keyHash,
-          permissions: permissions || [],
+          permissions: sanitized.value,
           status: 'active',
           expires_at: expiresAt || null,
           created_by: user.id,

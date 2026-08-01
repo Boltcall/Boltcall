@@ -484,10 +484,11 @@ const InstantFormReplyPage: React.FC = () => {
             
             <div className="space-y-6">
               <p className="text-lg text-gray-600 leading-relaxed">
-                Instant Form Reply works with virtually any form platform. Whether you use WordPress forms, 
-                Wix forms, Squarespace forms, custom HTML forms, or form builders like Typeform or JotForm, 
-                the system can integrate seamlessly. Integration typically takes just a few minutes and requires 
-                no coding knowledge.
+                Instant Form Reply works with virtually any form platform. Follow our platform-specific setup guides for{' '}
+                <a href="/integrations/wix" className="text-blue-600 underline">Wix</a> and{' '}
+                <a href="/integrations/squarespace" className="text-blue-600 underline">Squarespace</a>, or use WordPress forms,
+                custom HTML forms, or form builders like Typeform or JotForm. Integration typically takes just a few minutes
+                and requires no coding knowledge.
               </p>
               
               <div className="grid md:grid-cols-2 gap-4">

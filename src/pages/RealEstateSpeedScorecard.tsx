@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
   Clock,
@@ -302,7 +302,7 @@ const RealEstateSpeedScorecard: React.FC = () => {
 
     const aiExtraDeals = aiDealsYear - currentDealsYear;
     const aiAdditionalCommission = aiExtraDeals * commissionPerDeal;
-    const boltcallCostYear = 179 * 12; // $179/mo
+    const boltcallCostYear = 179 * 12; // $897/mo
     const aiNetGain = aiAdditionalCommission - boltcallCostYear;
     const aiROI = boltcallCostYear > 0 ? (aiNetGain / boltcallCostYear) * 100 : 0;
 
@@ -347,7 +347,7 @@ const RealEstateSpeedScorecard: React.FC = () => {
     setFormSubmitting(true);
     setFormError('');
     try {
-      await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -787,7 +787,7 @@ const RealEstateSpeedScorecard: React.FC = () => {
                         <span className="font-bold text-emerald-400">{fmt(calc.aiAdditionalCommission)}/yr</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400">Boltcall cost ($179/mo)</span>
+                        <span className="text-slate-400">Boltcall cost ($897/mo)</span>
                         <span className="font-medium text-slate-300">-{fmt(calc.boltcallCostYear)}/yr</span>
                       </div>
                       <div className="border-t border-emerald-500/20 pt-2 mt-2">
@@ -1001,7 +1001,7 @@ const RealEstateSpeedScorecard: React.FC = () => {
                 <ArrowRight className="w-5 h-5" />
               </a>
               <p className="text-xs text-slate-500 mt-5">
-                Starting at $99/month &bull; No contracts &bull; Set up in 24 hours
+                Starting at $549/month &bull; No contracts &bull; Set up in 24 hours
               </p>
             </div>
           </div>

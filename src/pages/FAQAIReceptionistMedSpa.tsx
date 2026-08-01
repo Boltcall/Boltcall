@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
@@ -23,7 +23,7 @@ const headings = [
 const faqs = [
   {
     question: 'How much does an AI receptionist cost for a med spa?',
-    answer: 'AI receptionists for med spas typically cost between $99 and $249 per month with flat-rate pricing and no per-call fees. Compare that to a full-time front desk receptionist at $32,000-$42,000 per year or an answering service at $200-$500 per month with limited capabilities. Most med spas recover the cost within the first week by capturing 2-3 new Botox or filler appointments that would have otherwise gone to voicemail. The average new med spa client spends $1,200-$3,000 in the first year across multiple treatments.',
+    answer: 'AI receptionists for med spas typically cost between $549 and $4997 per month with flat-rate pricing and no per-call fees. Compare that to a full-time front desk receptionist at $32,000-$42,000 per year or an answering service at $200-$500 per month with limited capabilities. Most med spas recover the cost within the first week by capturing 2-3 new Botox or filler appointments that would have otherwise gone to voicemail. The average new med spa client spends $1,200-$3,000 in the first year across multiple treatments.',
   },
   {
     question: 'How long does it take to set up an AI receptionist for a med spa?',
@@ -87,7 +87,7 @@ const faqs = [
   },
   {
     question: 'What is the ROI of an AI receptionist for a med spa?',
-    answer: 'Med spas that deploy an AI receptionist typically capture 20-40 additional appointments per month from previously missed calls and after-hours inquiries. With an average treatment value of $300-$500, that represents $6,000-$20,000 in additional monthly revenue against a $99-$249 monthly cost. The ROI is amplified by rebooking automation (25-40% higher rebooking rates), reduced no-shows from automated reminders (30-50% fewer no-shows), and increased average ticket from consistent upselling (10-15% higher). Most med spas see a 20:1 to 50:1 return on their AI receptionist investment within the first 90 days.',
+    answer: 'Med spas that deploy an AI receptionist typically capture 20-40 additional appointments per month from previously missed calls and after-hours inquiries. With an average treatment value of $300-$500, that represents $6,000-$20,000 in additional monthly revenue against a $549ג€“$4997 monthly cost. The ROI is amplified by rebooking automation (25-40% higher rebooking rates), reduced no-shows from automated reminders (30-50% fewer no-shows), and increased average ticket from consistent upselling (10-15% higher). Most med spas see a 20:1 to 50:1 return on their AI receptionist investment within the first 90 days.',
   },
   {
     question: 'Can the AI send Google review requests automatically?',
@@ -264,7 +264,7 @@ const FAQAIReceptionistMedSpa: React.FC = () => {
               variants={{ ...fadeIn, visible: { ...fadeIn.visible, transition: { duration: 0.5, delay: 0.3 } } }}
               className="bg-blue-50 border border-blue-100 rounded-xl p-5 text-blue-800 text-sm leading-relaxed"
             >
-              An AI receptionist for med spas answers every call instantly, books treatment-specific appointments, handles pricing questions, automates rebooking reminders, and captures after-hours inquiries. It costs $99-$249/month versus $32,000-$42,000/year for a front desk hire and typically captures 20-40 additional appointments per month from previously missed calls.
+              An AI receptionist for med spas answers every call instantly, books treatment-specific appointments, handles pricing questions, automates rebooking reminders, and captures after-hours inquiries. It costs $549ג€“$4997/month versus $32,000-$42,000/year for a front desk hire and typically captures 20-40 additional appointments per month from previously missed calls.
             </motion.div>
           </div>
         </section>
@@ -342,7 +342,7 @@ const FAQAIReceptionistMedSpa: React.FC = () => {
                   <li>• Automates rebooking reminders, increasing return rates by 25–40%</li>
                   <li>• Consistently presents relevant add-ons, lifting average ticket by 10–15%</li>
                   <li>• HIPAA-compliant data handling with AES-256 encryption and BAA support</li>
-                  <li>• Costs $99–249/mo vs. $32,000–42,000/yr for a full-time front-desk hire</li>
+                  <li>• Costs $549-4997/mo vs. $32,000–42,000/yr for a full-time front-desk hire</li>
                 </ul>
               </div>
               <div className="bg-red-50 rounded-xl p-6">
@@ -520,7 +520,7 @@ const FAQAIReceptionistMedSpa: React.FC = () => {
                   ['No-show rate', '18–25%', '8–12%'],
                   ['Google reviews per month', '1–2', '5–10'],
                   ['Setup time for 24/7 coverage', '2–4 weeks (hire)', '30 minutes'],
-                  ['Monthly cost vs. front desk hire', '$3,000 – $4,200/mo', '$79 – $179'],
+                  ['Monthly cost vs. front desk hire', '$3,000 – $4,200/mo', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>
@@ -559,6 +559,17 @@ const FAQAIReceptionistMedSpa: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+      <section className="py-12 bg-white border-t border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-sm text-gray-600">
+            Ready to see the category page?{' '}
+            <Link to="/industries/medspa-answering-service" className="font-semibold text-blue-700 hover:underline">
+              Med spa answering service
+            </Link>{' '}
+            covers the full buyer view.
+          </p>
         </div>
       </section>
       <Footer />

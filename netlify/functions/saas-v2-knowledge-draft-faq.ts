@@ -2,6 +2,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
@@ -203,14 +204,11 @@ const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) return unauthorized('Invalid or expired token');
   const userId = userResult.user.id;
 
-  const { data: ws, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  if (wsErr) {
-    console.error('[saas-v2-knowledge-draft-faq] workspace lookup failed:', wsErr.message);
+  let ws: { id: string } | null;
+  try {
+    ws = await findWorkspaceForUser(userId, 'id');
+  } catch (error: any) {
+    console.error('[saas-v2-knowledge-draft-faq] workspace lookup failed:', error?.message || error);
     return {
       statusCode: 500,
       headers: cors,

@@ -3,6 +3,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 import { normalizeVerticalSlug } from './_shared/vertical-knowledge/retrieve';
 
 interface WorkspaceRow {
@@ -63,18 +64,15 @@ const handler: Handler = async (event) => {
   }
   const userId = userResult.user.id;
 
-  const { data: workspace, error: wsErr } = await supabase
-    .from('workspaces')
-    .select('id, name')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  if (wsErr) {
-    console.error('[saas-v2-vertical-guardrails] workspace lookup failed', wsErr);
+  let workspace: { id: string; name?: string | null } | null;
+  try {
+    workspace = await findWorkspaceForUser(userId, 'id, name');
+  } catch (error) {
+    console.error('[saas-v2-vertical-guardrails] workspace lookup failed', error);
     return json(500, { error: 'Workspace lookup failed' });
   }
   if (!workspace) return json(404, { error: 'No workspace found for this user' });
-  const workspaceId = (workspace as { id: string }).id;
+  const workspaceId = workspace.id;
 
   const { data: profile } = await supabase
     .from('business_profiles')

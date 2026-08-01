@@ -136,7 +136,7 @@ const Comparisons: React.FC = () => {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <p className="text-gray-700">
-          This page compares Boltcall's AI receptionist with traditional call centers, human receptionists, and other answering services, highlighting the advantages and disadvantages of each option.
+          This page compares the <Link to="/" className="font-semibold text-blue-600 hover:underline">Boltcall speed-to-lead system</Link> with traditional call centers, human receptionists, and other answering services, highlighting the advantages and disadvantages of each option.
         </p>
       </section>
 

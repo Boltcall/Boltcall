@@ -50,6 +50,7 @@ interface TeamState {
   // ─── Activity Log ───
   activityLogs: ActivityLog[];
   activityLogsLoading: boolean;
+  activityLogsError: string | null;
   activityLogsTotalCount: number;
   fetchActivityLogs: (userId: string, filter?: ActivityLogFilter, page?: number, limit?: number) => Promise<void>;
   logActivity: (action: string, details: string, metadata?: Record<string, unknown>) => Promise<void>;
@@ -174,6 +175,13 @@ export const useTeamStore = create<TeamState>((set, get) => ({
     return { success, failed };
   },
 
+  // Direct client writes are safe here: workspace_members RLS is
+  //   UPDATE USING (invited_by = auth.uid())  [no WITH CHECK -> applies to new row too].
+  // A member's own row has invited_by = <owner>, not their uid, so they can't even
+  // select it for update — self-escalation is blocked at the DB. Roles are likewise
+  // gated to `is_system = false AND workspace_id IN (owner's workspaces)`. Verified
+  // against supabase/migrations/20260325_team_rbac_workspace.sql — do NOT re-route
+  // these through a Netlify function; that only duplicates enforced RLS.
   updateMemberRole: async (memberId: string, role: string) => {
     const { error } = await supabase
       .from('workspace_members')
@@ -343,10 +351,11 @@ export const useTeamStore = create<TeamState>((set, get) => ({
   // ─── Activity Log State ────────────────────────────────────────────────
   activityLogs: [],
   activityLogsLoading: true,
+  activityLogsError: null,
   activityLogsTotalCount: 0,
 
   fetchActivityLogs: async (userId: string, filter?: ActivityLogFilter, page = 0, limit = 50) => {
-    set({ activityLogsLoading: true });
+    set({ activityLogsLoading: true, activityLogsError: null });
     try {
       let query = supabase
         .from('activity_logs')
@@ -370,6 +379,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
       });
     } catch (err) {
       console.error('[teamStore] fetchActivityLogs failed:', err);
+      set({ activityLogsError: err instanceof Error ? err.message : 'Failed to load activity' });
     } finally {
       set({ activityLogsLoading: false });
     }
@@ -518,15 +528,18 @@ export const useTeamStore = create<TeamState>((set, get) => ({
   },
 
   deleteWorkspace: async () => {
-    const ws = get().workspace;
-    if (!ws) return;
-
-    const { error } = await supabase
-      .from('workspaces')
-      .delete()
-      .eq('id', ws.id);
-    if (error) throw error;
-
+    // Route through the server-side function so we (1) cancel any active PayPal
+    // subscription before deleting the workspace row and (2) cascade all
+    // dependent data. See netlify/functions/delete-workspace.ts.
+    const res = await fetch(`${FUNCTIONS_BASE}/delete-workspace`, {
+      method: 'POST',
+      headers: await authedHeaders(),
+      body: JSON.stringify({ confirm: 'DELETE' }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Delete workspace failed');
+    }
     set({ workspace: null });
   },
 }));

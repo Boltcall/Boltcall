@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -365,7 +365,7 @@ const BestAIReceptionistHomeServices: React.FC = () => {
                   ['Monthly revenue from missed calls', 'Lost permanently', 'Recovered — booked by AI'],
                   ['Lead qualification before dispatch', 'Manual — inconsistent', 'Automated every call'],
                   ['Google review requests per month', '0–2', '8–15'],
-                  ['Monthly cost', '$3,200+ (human receptionist)', '$79 – $179'],
+                  ['Monthly cost', '$3,200+ (human receptionist)', '$549-897'],
                 ].map(([metric, without, with_ai]) => (
                   <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-700 font-medium">{metric}</td>

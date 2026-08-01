@@ -1,6 +1,6 @@
 import React from 'react';
 import ProgressMetricCard from '../ui/progress-metric-card';
-import { cn } from '../../lib/utils';
+import type { SeriesPoint } from '../ui/progress-metric-card';
 
 type Tone = 'positive' | 'negative' | 'neutral';
 
@@ -16,6 +16,56 @@ interface OverviewMetricCardProps {
   className?: string;
   compact?: boolean;
   caption?: string;
+  comparisonValue?: number;
+}
+
+function toNumber(value: string | number): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  const normalized = value.replace(/[^0-9.-]/g, '');
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function buildFallbackPoints(
+  chartData: number[],
+  value: string | number,
+  comparisonValue?: number,
+): SeriesPoint[] {
+  if (chartData.length >= 2) {
+    return chartData.map((point, index) => ({
+      value: point,
+      date: `Point ${index + 1}`,
+    }));
+  }
+
+  if (chartData.length === 1) {
+    return [
+      { value: chartData[0], date: 'Point 1' },
+      { value: chartData[0], date: 'Point 2' },
+    ];
+  }
+
+  const currentValue = toNumber(value);
+  if (currentValue === null) {
+    return [];
+  }
+
+  const baseline =
+    typeof comparisonValue === 'number' && Number.isFinite(comparisonValue)
+      ? comparisonValue
+      : currentValue;
+
+  return [
+    { value: baseline, date: 'Previous' },
+    { value: currentValue, date: 'Current' },
+  ];
 }
 
 const OverviewMetricCard: React.FC<OverviewMetricCardProps> = ({
@@ -25,23 +75,17 @@ const OverviewMetricCard: React.FC<OverviewMetricCardProps> = ({
   badge,
   badgeTone = 'neutral',
   chartData = [],
-  icon: Icon,
-  accentColor = '#2563eb',
   className,
   compact = false,
   caption,
+  comparisonValue,
 }) => {
-  const points = chartData.map((point, index) => ({
-    value: point,
-    date: `Point ${index + 1}`,
-  }));
-
-  const badgeClassName =
-    badgeTone === 'positive'
-      ? 'bg-emerald-50 text-green-600 ring-1 ring-emerald-200/80'
-      : badgeTone === 'negative'
-        ? 'bg-rose-50 text-red-600 ring-1 ring-rose-200/80'
-        : 'bg-slate-100 text-slate-500 ring-1 ring-slate-200/80';
+  const points = buildFallbackPoints(chartData, value, comparisonValue);
+  const metricAccent =
+    badgeTone === 'negative' ? 'rose' : 'blue';
+  const displayPercent = badge?.trim().endsWith('%') ? badge.trim() : undefined;
+  const displayDelta = caption ?? (displayPercent ? undefined : badge);
+  const displayPeriod = period?.trim() || 'Past 30 days';
 
   return (
     <ProgressMetricCard
@@ -49,43 +93,14 @@ const OverviewMetricCard: React.FC<OverviewMetricCardProps> = ({
       total={value}
       data={points}
       size={compact ? 'sm' : 'md'}
-      showControls={false}
-      showStats={false}
-      accent={
-        badgeTone === 'positive'
-          ? 'emerald'
-          : badgeTone === 'negative'
-            ? 'rose'
-            : 'blue'
-      }
-      delta={caption}
-      deltaLabel={caption ? '' : period}
+      showStats={!compact}
+      accent={metricAccent}
+      percent={displayPercent}
+      delta={displayDelta}
+      deltaLabel={displayDelta ? '' : displayPeriod}
+      period={displayPeriod}
+      periodOptions={[{ label: displayPeriod }]}
       className={className}
-      headerBadge={
-        <div className="flex items-center gap-2">
-          {Icon ? (
-            <span
-              className={cn(
-                'inline-flex shrink-0 items-center justify-center rounded-2xl',
-                compact ? 'size-9' : 'size-10',
-              )}
-              style={{ backgroundColor: `${accentColor}12`, color: accentColor }}
-            >
-              <Icon className={compact ? 'size-4' : 'size-5'} />
-            </span>
-          ) : null}
-          {badge ? (
-            <span
-              className={cn(
-                'shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
-                badgeClassName,
-              )}
-            >
-              {badge}
-            </span>
-          ) : null}
-        </div>
-      }
     />
   );
 };

@@ -71,6 +71,8 @@ const MissedCallsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCall, setSelectedCall] = useState<MissedCallDisplay | null>(null);
   const [showEditPanel, setShowEditPanel] = useState(false);
+  // Text-back delivery badge per call id — the "we texted them back" proof
+  const [textbackBadges, setTextbackBadges] = useState<Record<string, { label: string; className: string }>>({});
 
   // Stats
   const [textbacksSent, setTextbacksSent] = useState(0);
@@ -229,11 +231,79 @@ const MissedCallsPage: React.FC = () => {
 
       missed.sort((a, b) => b.missedAt - a.missedAt);
       setMissedCalls(missed);
+      await fetchTextbackBadges(missed);
     } catch (err) {
       console.error('Error fetching missed calls:', err);
       setError('Failed to fetch missed calls. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Match each missed call to its follow-up SMS (scheduled_messages) and any
+  // inbound reply (sms_conversations) by phone + time window, and build a badge.
+  const fetchTextbackBadges = async (missed: MissedCallDisplay[]) => {
+    if (!user?.id) return;
+    const phones = [...new Set(missed.map((c) => c.callerPhone).filter((p) => p !== 'Unknown'))];
+    if (!phones.length) return;
+
+    try {
+      const oldest = new Date(Math.min(...missed.map((c) => c.missedAt)) - 60 * 1000).toISOString();
+      const [{ data: msgs }, { data: replies }] = await Promise.all([
+        supabase
+          .from('scheduled_messages')
+          .select('recipient_phone, status, sent_at, created_at')
+          .eq('user_id', user.id)
+          .eq('channel', 'sms')
+          .in('recipient_phone', phones)
+          .gte('created_at', oldest),
+        supabase
+          .from('sms_conversations')
+          .select('from_number, created_at')
+          .eq('user_id', user.id)
+          .eq('direction', 'inbound')
+          .in('from_number', phones)
+          .gte('created_at', oldest),
+      ]);
+
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      const badges: Record<string, { label: string; className: string }> = {};
+
+      for (const call of missed) {
+        if (call.callerPhone === 'Unknown') continue;
+
+        const replied = (replies || []).some(
+          (r) => r.from_number === call.callerPhone && new Date(r.created_at).getTime() > call.missedAt
+        );
+        if (replied) {
+          badges[call.id] = { label: 'Replied', className: 'bg-green-100 text-green-800' };
+          continue;
+        }
+
+        // Follow-up SMS created within 24h after the missed call
+        const msg = (msgs || []).find((m) => {
+          if (m.recipient_phone !== call.callerPhone) return false;
+          const created = new Date(m.created_at).getTime();
+          return created >= call.missedAt - 60 * 1000 && created <= call.missedAt + DAY_MS;
+        });
+        if (!msg) continue;
+
+        if (msg.status === 'sent') {
+          const mins = Math.max(0, Math.round((new Date(msg.sent_at || msg.created_at).getTime() - call.missedAt) / 60000));
+          badges[call.id] = {
+            label: mins < 1 ? 'Text sent · <1m after' : `Text sent · ${mins}m after`,
+            className: 'bg-blue-100 text-blue-800',
+          };
+        } else if (msg.status === 'scheduled') {
+          badges[call.id] = { label: 'Text scheduled', className: 'bg-gray-100 text-gray-700' };
+        } else if (msg.status === 'failed') {
+          badges[call.id] = { label: 'Text failed', className: 'bg-red-100 text-red-800' };
+        }
+      }
+
+      setTextbackBadges(badges);
+    } catch (err) {
+      console.error('Error fetching text-back statuses:', err);
     }
   };
 
@@ -338,17 +408,17 @@ const MissedCallsPage: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="bg-white rounded-xl border border-gray-200 shadow-sm p-6"
+        transition={{ duration: 0.22, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+        className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm p-6"
       >
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-950/40 rounded-lg">
+              <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Missed Call Text-Back</h2>
-              <p className="text-sm text-gray-500">Automatically text callers when their call is missed</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Missed Call Text-Back</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-500">Automatically text callers when their call is missed</p>
             </div>
           </div>
           {/* Enable toggle */}
@@ -359,7 +429,7 @@ const MissedCallsPage: React.FC = () => {
               onChange={(e) => { setConfig({ ...config, enabled: e.target.checked }); setIsDirty(true); }}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+            <div className="w-11 h-6 bg-gray-200 dark:bg-[#1e1e24] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 dark:peer-focus:ring-blue-950/40 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all after:duration-200 after:ease-out peer-checked:bg-blue-600" />
           </label>
         </div>
 
@@ -367,30 +437,30 @@ const MissedCallsPage: React.FC = () => {
           <div className="space-y-4">
             {/* Template editor */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 SMS Template
               </label>
               <textarea
                 value={config.template}
                 onChange={(e) => { setConfig({ ...config, template: e.target.value }); setIsDirty(true); }}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-[#1e1e24] dark:bg-[#17171b] dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                 placeholder="Enter your text-back message..."
               />
-              <p className="text-xs text-gray-400 mt-1">
-                Available variables: <code className="bg-gray-100 px-1 rounded">{'{{business_name}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{business_phone}}'}</code>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Available variables: <code className="bg-gray-100 dark:bg-[#17171b] dark:text-gray-300 px-1 rounded">{'{{business_name}}'}</code>, <code className="bg-gray-100 dark:bg-[#17171b] dark:text-gray-300 px-1 rounded">{'{{business_phone}}'}</code>
               </p>
             </div>
 
             {/* Delay selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Send text-back
               </label>
               <select
                 value={config.delay_minutes}
                 onChange={(e) => { setConfig({ ...config, delay_minutes: parseInt(e.target.value) }); setIsDirty(true); }}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-[#1e1e24] dark:bg-[#17171b] dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               >
                 <option value={0}>Immediately</option>
                 <option value={1}>After 1 minute</option>
@@ -402,7 +472,7 @@ const MissedCallsPage: React.FC = () => {
             <div className="flex items-center gap-3 pt-2">
               <button
                 onClick={() => { setConfig({ ...config, template: DEFAULT_TEMPLATE, delay_minutes: 0 }); setIsDirty(true); }}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 ease-out"
               >
                 Reset to default
               </button>
@@ -411,7 +481,7 @@ const MissedCallsPage: React.FC = () => {
         )}
 
         {!config.enabled && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Enable this feature to automatically send a text message when a call is missed.
           </p>
         )}
@@ -419,36 +489,36 @@ const MissedCallsPage: React.FC = () => {
 
       {/* Section C: Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border p-4">
+        <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border dark:border-[#1e1e24] p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <Phone className="w-5 h-5 text-red-600" />
+            <div className="p-2 bg-red-100 dark:bg-red-950/40 rounded-lg">
+              <Phone className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Missed (7 days)</p>
-              <p className="text-2xl font-bold text-gray-900">{missedCalls.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Missed (7 days)</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{missedCalls.length}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border p-4">
+        <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border dark:border-[#1e1e24] p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-blue-100 dark:bg-blue-950/40 rounded-lg">
+              <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Text-Backs Sent</p>
-              <p className="text-2xl font-bold text-gray-900">{textbacksSent}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Text-Backs Sent</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{textbacksSent}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border p-4">
+        <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border dark:border-[#1e1e24] p-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <PhoneCall className="w-5 h-5 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-950/40 rounded-lg">
+              <PhoneCall className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Response Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {missedCalls.length > 0 && textbacksSent > 0
                   ? `${Math.round((textbacksSent / missedCalls.length) * 100)}%`
                   : '--'}
@@ -460,9 +530,9 @@ const MissedCallsPage: React.FC = () => {
 
       {/* Error state */}
       {error && (
-        <div className="bg-white rounded-lg shadow-sm border p-12 flex flex-col items-center justify-center">
+        <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border dark:border-[#1e1e24] p-12 flex flex-col items-center justify-center">
           <AlertCircle className="w-10 h-10 text-red-500 mb-3" />
-          <p className="text-red-600 font-medium">{error}</p>
+          <p className="text-red-600 dark:text-red-400 font-medium">{error}</p>
           <PopButton
             color="blue"
             size="sm"
@@ -479,7 +549,7 @@ const MissedCallsPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.22, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         >
           {loading ? (
             <CallHistorySkeleton />
@@ -498,13 +568,13 @@ const MissedCallsPage: React.FC = () => {
                 <div className="flex items-center gap-6">
                   {/* Caller */}
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-4 h-4 text-red-600" />
+                    <div className="w-8 h-8 bg-red-100 dark:bg-red-950/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{call.callerPhone}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{call.callerPhone}</div>
                       {call.disconnectionReason && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-500">
                           {call.disconnectionReason.replace(/_/g, ' ')}
                         </div>
                       )}
@@ -512,18 +582,18 @@ const MissedCallsPage: React.FC = () => {
                   </div>
 
                   {/* Missed At */}
-                  <div className="text-sm text-gray-900 flex-1">
+                  <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4 text-gray-400" />
                       {new Date(call.missedAt).toLocaleDateString()}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-500">
                       {new Date(call.missedAt).toLocaleTimeString()}
                     </div>
                   </div>
 
                   {/* Duration */}
-                  <div className="text-sm text-gray-900 flex-1">{call.duration}</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">{call.duration}</div>
 
                   {/* Status */}
                   <div className="flex-1">
@@ -532,16 +602,23 @@ const MissedCallsPage: React.FC = () => {
                     >
                       {call.statusLabel}
                     </span>
+                    {textbackBadges[call.id] && (
+                      <span
+                        className={`mt-1 block w-fit px-2.5 py-0.5 rounded-full text-xs font-medium ${textbackBadges[call.id].className}`}
+                      >
+                        {textbackBadges[call.id].label}
+                      </span>
+                    )}
                   </div>
 
                   {/* Agent */}
-                  <div className="text-sm text-gray-900 flex-1">{call.agentName}</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">{call.agentName}</div>
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => handleViewDetails(call)}
-                      className="text-blue-600 hover:text-blue-900 transition-colors"
+                      className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400 transition-colors duration-200 ease-out"
                       title="View details"
                     >
                       <Eye className="w-4 h-4" />
@@ -551,7 +628,7 @@ const MissedCallsPage: React.FC = () => {
                         href={call.recordingUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-purple-600 hover:text-purple-900 transition-colors"
+                        className="text-purple-600 hover:text-purple-900 dark:hover:text-purple-400 transition-colors duration-200 ease-out"
                         title="Play recording"
                       >
                         <Play className="w-4 h-4" />
@@ -560,7 +637,7 @@ const MissedCallsPage: React.FC = () => {
                     {call.callerPhone !== 'Unknown' && (
                       <a
                         href={buildTelHref(call.callerPhone)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors duration-200 ease-out"
                         title="Call back"
                       >
                         <PhoneCall className="w-3.5 h-3.5" />
@@ -582,27 +659,27 @@ const MissedCallsPage: React.FC = () => {
                 selectedCall ? (
                   <div className="space-y-5">
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                         Caller Phone
                       </label>
-                      <p className="text-sm font-medium text-gray-900">{selectedCall.callerPhone}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedCall.callerPhone}</p>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                         Time
                       </label>
-                      <p className="text-sm text-gray-900">
+                      <p className="text-sm text-gray-900 dark:text-gray-100">
                         {new Date(selectedCall.missedAt).toLocaleString()}
                       </p>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                         Duration
                       </label>
-                      <p className="text-sm text-gray-900">{selectedCall.duration}</p>
+                      <p className="text-sm text-gray-900 dark:text-gray-100">{selectedCall.duration}</p>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                         Status
                       </label>
                       <span
@@ -612,34 +689,34 @@ const MissedCallsPage: React.FC = () => {
                       </span>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                         Agent
                       </label>
-                      <p className="text-sm text-gray-900">{selectedCall.agentName}</p>
+                      <p className="text-sm text-gray-900 dark:text-gray-100">{selectedCall.agentName}</p>
                     </div>
                     {selectedCall.disconnectionReason && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                           Disconnection Reason
                         </label>
-                        <p className="text-sm text-gray-900">
+                        <p className="text-sm text-gray-900 dark:text-gray-100">
                           {selectedCall.disconnectionReason.replace(/_/g, ' ')}
                         </p>
                       </div>
                     )}
                     {selectedCall.callSummary && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                           AI Summary
                         </label>
-                        <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-[#17171b] rounded-lg p-3">
                           {selectedCall.callSummary}
                         </p>
                       </div>
                     )}
                     {selectedCall.recordingUrl && (
                       <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-1">
                           Recording
                         </label>
                         <audio controls className="w-full mt-1">

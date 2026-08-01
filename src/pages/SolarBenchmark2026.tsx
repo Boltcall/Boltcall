@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { updateMetaDescription } from '../lib/utils';
 
-const WEBHOOK_URL = 'https://n8n.srv974118.hstgr.cloud/webhook/solar-benchmark-2026';
+const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/solar-benchmark-2026';
 
 const FINDINGS = [
   { stat: '~8%', label: 'of solar companies respond in under 5 minutes' },

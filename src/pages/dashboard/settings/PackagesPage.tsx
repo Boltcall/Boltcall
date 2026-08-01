@@ -177,13 +177,13 @@ const PackagesPage: React.FC = () => {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Add-on Packages</h1>
-          <p className="text-sm text-gray-500 mt-1 max-w-lg">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white tracking-tight">Add-on Packages</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-lg">
             Extend your Boltcall workspace with powerful add-ons. Each package integrates seamlessly — enable what fits your business, skip what doesn't.
           </p>
         </div>
         {activeCount > 0 && (
-          <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 rounded-full px-3 py-1.5 text-xs font-medium text-blue-700 flex-shrink-0">
+          <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-full px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 flex-shrink-0">
             <Sparkles className="w-3.5 h-3.5" />
             {activeCount} package{activeCount > 1 ? 's' : ''} active
           </div>
@@ -197,13 +197,13 @@ const PackagesPage: React.FC = () => {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3"
+            className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-4 flex items-center gap-3"
           >
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <p className="text-sm text-red-700 flex-1">{error}</p>
+            <p className="text-sm text-red-700 dark:text-red-300 flex-1">{error}</p>
             <button
               onClick={() => setError(null)}
-              className="text-red-400 hover:text-red-600 text-sm transition-colors"
+              className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-300 text-sm transition-colors duration-200 ease-out"
             >
               Dismiss
             </button>
@@ -226,10 +226,10 @@ const PackagesPage: React.FC = () => {
               initial="hidden"
               animate="visible"
               className={`
-                relative flex flex-col bg-white rounded-2xl border transition-all duration-200 overflow-hidden
+                relative flex flex-col bg-white dark:bg-[#111114] rounded-2xl border transition-all duration-200 ease-out overflow-hidden
                 ${enabled
-                  ? `border-2 ${pkg.borderActive} shadow-lg ${pkg.shadowActive}`
-                  : 'border border-gray-200 hover:border-gray-300 hover:shadow-md shadow-sm'
+                  ? `border-2 ${pkg.borderActive} shadow-lg ${pkg.shadowActive} dark:shadow-black/40`
+                  : 'border border-gray-200 dark:border-[#1e1e24] hover:border-gray-300 dark:hover:border-[#2a2a30] hover:shadow-md dark:hover:shadow-black/30 shadow-sm'
                 }
               `}
             >
@@ -263,50 +263,50 @@ const PackagesPage: React.FC = () => {
 
                 {/* Name + tagline */}
                 <div>
-                  <h3 className="text-[15px] font-semibold text-gray-900 leading-snug">{pkg.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">{pkg.description}</p>
+                  <h3 className="text-[15px] font-semibold text-gray-900 dark:text-white leading-snug">{pkg.name}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">{pkg.description}</p>
                 </div>
 
                 {/* Price */}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-gray-900 tracking-tight">{pkg.price}</span>
-                  <span className="text-sm text-gray-400 font-medium">{pkg.priceNote}</span>
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{pkg.price}</span>
+                  <span className="text-sm text-gray-400 dark:text-gray-500 font-medium">{pkg.priceNote}</span>
                 </div>
 
                 {/* Feature list */}
                 <ul className="space-y-2.5 flex-1">
                   {pkg.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5">
-                      <div className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="w-2.5 h-2.5 text-green-600" strokeWidth={3} />
+                      <div className="w-4 h-4 rounded-full bg-green-100 dark:bg-green-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Check className="w-2.5 h-2.5 text-green-600 dark:text-green-400" strokeWidth={3} />
                       </div>
-                      <span className="text-[13px] text-gray-600 leading-snug">{feature}</span>
+                      <span className="text-[13px] text-gray-600 dark:text-gray-400 leading-snug">{feature}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               {/* Card footer */}
-              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/60 flex items-center justify-between gap-3">
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-[#17171b] bg-gray-50/60 dark:bg-[#17171b]/60 flex items-center justify-between gap-3">
                 <Link
                   to={pkg.configLink}
                   className={`
-                    inline-flex items-center gap-1.5 text-xs font-semibold transition-all duration-150 group
-                    ${enabled ? 'text-blue-600 hover:text-blue-700' : 'text-gray-500 hover:text-gray-700'}
+                    inline-flex items-center gap-1.5 text-xs font-semibold transition-all duration-200 ease-out group
+                    ${enabled ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}
                   `}
                 >
                   <Zap className="w-3.5 h-3.5" />
                   Configure
-                  <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150" />
+                  <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 ease-out" />
                 </Link>
 
                 <div className="flex items-center gap-2.5">
-                  <span className={`text-xs font-medium ${enabled ? 'text-green-600' : 'text-gray-400'}`}>
+                  <span className={`text-xs font-medium ${enabled ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     {enabled ? 'Enabled' : 'Disabled'}
                   </span>
                   {isToggling ? (
                     <div className="w-12 flex items-center justify-center">
-                      <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                      <Loader2 className="w-4 h-4 animate-spin text-gray-400 dark:text-gray-500" />
                     </div>
                   ) : (
                     <PremiumToggle checked={enabled} onChange={() => toggleFeature(pkg.key)} />
@@ -319,7 +319,7 @@ const PackagesPage: React.FC = () => {
       </div>
 
       {/* Footer note */}
-      <p className="text-xs text-gray-400 pt-2">
+      <p className="text-xs text-gray-400 dark:text-gray-500 pt-2">
         Add-ons are billed separately on top of your base plan. Changes take effect immediately.
       </p>
     </div>

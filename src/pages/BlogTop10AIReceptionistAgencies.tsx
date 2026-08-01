@@ -74,8 +74,8 @@ const BlogTop10AIReceptionistAgencies: React.FC = () => {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
       'mainEntity': [
-        {'@type': 'Question', 'name': 'What is the best AI receptionist agency for small businesses?', 'acceptedAnswer': {'@type': 'Answer', 'text': 'For small local service businesses, Boltcall ranks #1 for speed-to-lead response at $99/month. For businesses needing human backup, Smith.ai is the most established option.'}},
-        {'@type': 'Question', 'name': 'How much do AI receptionist agencies cost?', 'acceptedAnswer': {'@type': 'Answer', 'text': 'AI receptionist pricing ranges from $99/month (Boltcall) to enterprise contracts over $1,000/month. Most small business solutions fall between $99-$299/month.'}},
+        {'@type': 'Question', 'name': 'What is the best AI receptionist agency for small businesses?', 'acceptedAnswer': {'@type': 'Answer', 'text': 'For small local service businesses, Boltcall ranks #1 for speed-to-lead response at $549/month. For businesses needing human backup, Smith.ai is the most established option.'}},
+        {'@type': 'Question', 'name': 'How much do AI receptionist agencies cost?', 'acceptedAnswer': {'@type': 'Answer', 'text': 'AI receptionist pricing ranges from $549/month (Boltcall) to enterprise contracts over $1,000/month. Most small business solutions fall between $549-$4997/month.'}},
         {'@type': 'Question', 'name': 'What is speed to lead and why does it matter?', 'acceptedAnswer': {'@type': 'Answer', 'text': 'Speed to lead is how fast your business responds to a new inbound inquiry. Research shows a 391% higher conversion rate when businesses respond within 5 minutes versus 30+ minutes.'}},
         {'@type': 'Question', 'name': 'Can an AI receptionist book appointments?', 'acceptedAnswer': {'@type': 'Answer', 'text': 'Yes. Most AI receptionist agencies integrate with calendar tools. Boltcall handles the full flow from inbound call to confirmed booking automatically.'}}
       ]
@@ -107,13 +107,13 @@ const BlogTop10AIReceptionistAgencies: React.FC = () => {
         'Full automation: inbound call handling, SMS, website chat, and appointment booking',
         'Speed-to-lead AI that qualifies and books before competitors even see the lead',
         'Simple setup — live in under 30 minutes',
-        'Transparent flat-rate pricing starting at $99/mo'
+        'Transparent flat-rate pricing starting at $549/mo'
       ],
       cons: [
         'Focused on local service businesses — not designed for enterprise or e-commerce',
         'Newer platform (2025) — fewer third-party reviews than incumbents'
       ],
-      pricing: 'Starting at $99/month',
+      pricing: 'Starting at $549/month',
       features: ['Instant speed-to-lead AI', 'AI phone receptionist', 'SMS auto-reply', 'Appointment booking', 'Lead qualification', '24/7 coverage'],
       icon: <Zap className="w-6 h-6" />,
       color: 'blue'
@@ -950,11 +950,11 @@ const BlogTop10AIReceptionistAgencies: React.FC = () => {
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">What is the best AI receptionist agency for small businesses?</h3>
-              <p className="text-gray-700 leading-relaxed">For small local service businesses (plumbers, dentists, HVAC), <strong>Boltcall</strong> ranks #1 because it prioritizes speed-to-lead response at $99/month. For businesses needing human backup, Smith.ai is the most established option.</p>
+              <p className="text-gray-700 leading-relaxed">For small local service businesses (plumbers, dentists, HVAC), <strong>Boltcall</strong> ranks #1 because it prioritizes speed-to-lead response at $549/month. For businesses needing human backup, Smith.ai is the most established option.</p>
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">How much do AI receptionist agencies cost?</h3>
-              <p className="text-gray-700 leading-relaxed">AI receptionist pricing ranges from $99/month (Boltcall) to enterprise contracts over $1,000/month. Most small business solutions fall between $99&ndash;$299/month.</p>
+              <p className="text-gray-700 leading-relaxed">AI receptionist pricing ranges from $549/month (Boltcall) to enterprise contracts over $1,000/month. Most small business solutions fall between $549-4997/month.</p>
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Can an AI receptionist book appointments?</h3>

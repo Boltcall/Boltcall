@@ -29,7 +29,7 @@ const HEADERS = {
 };
 
 const SUPABASE_URL =
-  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://hbwogktdajorojljkjwg.supabase.co';
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
 function generateKey(): string {
   return crypto.randomBytes(32).toString('hex');

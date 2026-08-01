@@ -115,7 +115,7 @@ const BusinessAuditPage: React.FC = () => {
 
         try {
             // Using the same webhook as SEO Audit for now, similar functionality
-            const response = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/a2ecf792-bbad-4667-9223-fef18bfda0df', {
+            const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/a2ecf792-bbad-4667-9223-fef18bfda0df', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

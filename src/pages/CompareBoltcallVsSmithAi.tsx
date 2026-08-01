@@ -191,7 +191,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
           {/* AEO Direct Answer Block */}
           <div className="speakable-intro bg-blue-50 border-l-4 border-blue-500 p-6 mb-10">
             <p className="text-lg font-medium text-gray-900">
-              <strong>Quick Answer:</strong> Boltcall is better for small local businesses that want flat monthly pricing, an all-in-one platform with AI phone answering, chatbot, website, and speed-to-lead automation starting at $389/month. Smith.ai is better for law firms and enterprises that need hybrid AI-plus-human call handling with 7,000+ integrations, but per-call pricing gets expensive at high volume.
+              <strong>Quick Answer:</strong> Boltcall is better for small local businesses that want flat monthly pricing, an all-in-one platform with AI phone answering, chatbot, website, and speed-to-lead automation starting at $549/month. Smith.ai is better for law firms and enterprises that need hybrid AI-plus-human call handling with 7,000+ integrations, but per-call pricing gets expensive at high volume.
             </p>
           </div>
 
@@ -505,7 +505,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
                 <li className="flex items-start space-x-3">
                   <CheckCircle className="h-6 w-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <span className="text-lg text-gray-700">
-                    <strong>You receive fewer than 50 calls per month.</strong> At low volume, Smith.ai's $95/month AI plan is significantly cheaper than Boltcall's $389. If your call volume is genuinely low and you only need phone answering, Smith.ai is the more cost-effective option.
+                    <strong>You receive fewer than 50 calls per month.</strong> At low volume, Smith.ai's $95/month AI plan is significantly cheaper than Boltcall's $549. If your call volume is genuinely low and you only need phone answering, Smith.ai is the more cost-effective option.
                   </span>
                 </li>
               </ul>

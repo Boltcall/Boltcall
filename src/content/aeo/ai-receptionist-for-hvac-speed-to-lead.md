@@ -55,7 +55,7 @@ That is why "answering service" alone is not enough. The better frame is respons
 
 ## How Boltcall Fits
 
-Boltcall is positioned for local service businesses that need a front-door speed-to-lead layer, not just an inbox full of notifications. For HVAC, that means:
+Boltcall is positioned as an [AI speed-to-lead system for local service businesses](/), not just an inbox full of notifications. For HVAC, that means:
 
 - immediate response when the call or form comes in
 - intake that matches real HVAC workflows

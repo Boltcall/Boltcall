@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Circle, Phone, Building2, Users, MessageSquare, Bot, Plug } from 'lucide-react';
+import { CheckCircle, Circle, Phone, Building2, Users, MessageSquare, Plug } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   // Mock setup steps - in real app this would come from API
@@ -36,14 +36,6 @@ const Dashboard: React.FC = () => {
       icon: <MessageSquare className="w-5 h-5" />,
       completed: false,
       link: '/dashboard/sms'
-    },
-    {
-      id: 5,
-      title: 'Set Up Personal Assistant',
-      description: 'Configure your AI personal assistant',
-      icon: <Bot className="w-5 h-5" />,
-      completed: false,
-      link: '/dashboard/assistant'
     },
     {
       id: 6,

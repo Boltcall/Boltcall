@@ -1,0 +1,1089 @@
+/**
+ * /start — Boltcall's premium onboarding.
+ *
+ * A cinematic, one-question-per-screen flow that builds the user's entire
+ * setup FROM their website instead of asking them to type it:
+ *
+ *   welcome → website → intel (auto-built profile) → pain → voice → launch → live
+ *
+ * Psychology baked in:
+ *  - Personalization: Google name + avatar on the welcome screen; the
+ *    business's own logo appears within seconds of pasting a URL.
+ *  - Labor illusion: the intel scene narrates real scraping/extraction work.
+ *  - Smart defaults: everything arrives prefilled; the user confirms, not types.
+ *  - IKEA effect: light-touch edits (name, services, voice) create ownership.
+ *  - Endowed progress: the rail starts with "Account" already complete.
+ *  - Closed loop: the pain point named mid-flow is explicitly retired on the
+ *    final screen — and the fix is genuinely live (agents deployed).
+ *  - Peak-end: the flow hands off to a live web call with their own agent.
+ *
+ * This flow is ADDITIVE — /setup (V2 chat wizard) remains the default and is
+ * untouched. Deployment reuses the exact same provisioning path.
+ */
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ArrowRight,
+  Check,
+  Globe,
+  Loader2,
+  Moon,
+  PhoneMissed,
+  Play,
+  Timer,
+  Users,
+  Volume2,
+} from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
+import GlowHorizonFM from '../../components/ui/glow-horizon';
+import { AnimatedTitleFM } from '../../components/ui/glow-horizon-utils/animated-title-fm';
+import {
+  VOICE_OPTIONS,
+  INDUSTRY_OPTIONS,
+  savePendingAgentSetup,
+  clearPendingAgentSetup,
+  type PendingAgentSetup,
+} from '../../lib/setup/onboarding';
+import { provisionAgentSetup } from '../../lib/setup/provisionAgentSetup';
+import { useWebsiteIntel, normalizeWebsite, logoCandidates, type WebsiteIntel } from './useWebsiteIntel';
+import { cn } from '../../lib/utils';
+import { PAIN_TO_STORE_KEY, isPainPoint } from '../../lib/setup/painMap';
+import { useSetupStore } from '../../stores/setupStore';
+
+// ─── Types & constants ────────────────────────────────────────────────────
+
+type Scene = 'welcome' | 'website' | 'intel' | 'pain' | 'voice' | 'launch';
+
+const SCENE_ORDER: Scene[] = ['welcome', 'website', 'intel', 'pain', 'voice', 'launch'];
+
+const DRAFT_KEY = 'boltcall_start_draft';
+
+const RAIL_PHASES: Array<{ label: string; scenes: Scene[] }> = [
+  { label: 'Account', scenes: [] }, // endowed — always complete
+  { label: 'Business', scenes: ['welcome', 'website', 'intel'] },
+  { label: 'Focus', scenes: ['pain'] },
+  { label: 'Voice', scenes: ['voice'] },
+  { label: 'Launch', scenes: ['launch'] },
+];
+
+const PAIN_POINTS = [
+  {
+    id: 'missed_calls',
+    title: 'Missed calls',
+    detail: 'The phone rings while we’re working. Those jobs go to whoever answers first.',
+    icon: PhoneMissed,
+    fix: 'Every call now gets picked up on the first ring — even with your hands full.',
+  },
+  {
+    id: 'after_hours',
+    title: 'After-hours silence',
+    detail: 'Leads call at 7pm, hit voicemail, and never call back.',
+    icon: Moon,
+    fix: '7pm, 2am, Sunday morning — your line now answers around the clock.',
+  },
+  {
+    id: 'slow_followup',
+    title: 'Slow follow-up',
+    detail: 'New leads sit for hours before anyone replies. By then they’ve moved on.',
+    icon: Timer,
+    fix: 'New leads now get a call back in under 60 seconds, automatically.',
+  },
+  {
+    id: 'front_desk',
+    title: 'Overwhelmed front desk',
+    detail: 'Too many calls, not enough hands. Good customers wait on hold.',
+    icon: Users,
+    fix: 'Overflow calls are now answered instantly, so nobody waits on hold.',
+  },
+] as const;
+
+type PainId = (typeof PAIN_POINTS)[number]['id'];
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+// Launch steps narrate the real provisioning promise. The final step holds
+// until the promise actually resolves. Step 4 swaps in per-pain copy so the
+// user sees us configuring THEIR pain, not a generic line.
+const PAIN_LAUNCH_LINE: Record<PainId, string> = {
+  missed_calls: 'Enabling missed-call text-back',
+  after_hours: 'Loading business hours',
+  slow_followup: 'Turning on speed-to-lead',
+  front_desk: 'Wiring call forwarding',
+};
+
+function launchStepsFor(pain: PainId | null): string[] {
+  return [
+    'Creating your workspace',
+    'Loading your services and answers',
+    'Training your receptionist',
+    pain ? PAIN_LAUNCH_LINE[pain] : 'Deploying your speed-to-lead agent',
+    'Bringing everything online',
+  ];
+}
+
+const LAUNCH_STEP_COUNT = 5;
+
+interface Draft {
+  scene: Scene;
+  websiteInput: string;
+  websiteUrl: string;
+  domain: string;
+  businessName: string;
+  industry: PendingAgentSetup['industry'];
+  services: Array<{ name: string; duration: number; price: number }>;
+  faqs: Array<{ question: string; answer: string }>;
+  logoUrl: string;
+  logoFallbackUrl: string;
+  pain: PainId | null;
+  voiceId: PendingAgentSetup['voiceId'];
+  tone: PendingAgentSetup['tone'];
+  transferNumber: string;
+  intelDone: boolean;
+}
+
+const EMPTY_DRAFT: Draft = {
+  scene: 'welcome',
+  websiteInput: '',
+  websiteUrl: '',
+  domain: '',
+  businessName: '',
+  industry: 'other',
+  services: [],
+  faqs: [],
+  logoUrl: '',
+  logoFallbackUrl: '',
+  pain: null,
+  voiceId: VOICE_OPTIONS[0].value,
+  tone: 'friendly_concise',
+  transferNumber: '',
+  intelDone: false,
+};
+
+function readDraft(): Draft {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    if (!raw) return EMPTY_DRAFT;
+    const parsed = JSON.parse(raw) as Partial<Draft>;
+    // Never resume into transient scenes.
+    const scene = parsed.scene === 'launch' || parsed.scene === 'welcome'
+      ? (parsed.businessName ? 'intel' : 'website')
+      : (parsed.scene ?? 'welcome');
+    return { ...EMPTY_DRAFT, ...parsed, scene };
+  } catch {
+    return EMPTY_DRAFT;
+  }
+}
+
+function firstNameOf(name: string | null | undefined): string | null {
+  const first = name?.trim().split(/[\s,]+/).find(Boolean);
+  return first ? first.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '') || null : null;
+}
+
+// Voice-agent onboarding creates billable resources — never index it.
+function useNoindex() {
+  useEffect(() => {
+    let tag = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.name = 'robots';
+      document.head.appendChild(tag);
+    }
+    const previous = tag.content;
+    tag.content = 'noindex, nofollow';
+    return () => { tag!.content = previous || ''; };
+  }, []);
+}
+
+// ─── Shared atoms ─────────────────────────────────────────────────────────
+
+const sceneVariants = {
+  initial: { opacity: 0, y: 24, filter: 'blur(12px)' },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+  exit: { opacity: 0, y: -16, filter: 'blur(8px)' },
+};
+
+const SceneShell: React.FC<{ id: string; children: React.ReactNode; wide?: boolean }> = ({ id, children, wide }) => (
+  <motion.div
+    key={id}
+    variants={sceneVariants}
+    initial="initial"
+    animate="animate"
+    exit="exit"
+    transition={{ duration: 0.55, ease: EASE }}
+    className={cn('relative z-10 mx-auto w-full px-6', wide ? 'max-w-3xl' : 'max-w-2xl')}
+  >
+    {children}
+  </motion.div>
+);
+
+const Reveal: React.FC<{ delay?: number; children: React.ReactNode; className?: string }> = ({ delay = 0, children, className }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 18, filter: 'blur(8px)' }}
+    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+    transition={{ duration: 0.65, ease: EASE, delay }}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
+
+const PrimaryButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ className, children, ...rest }) => (
+  <button
+    type="button"
+    {...rest}
+    className={cn(
+      'group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white px-7 text-sm font-semibold text-zinc-950 transition-all',
+      'hover:bg-zinc-100 hover:shadow-[0_0_40px_rgba(255,255,255,0.25)]',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
+      'disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none',
+      className,
+    )}
+  >
+    {children}
+  </button>
+);
+
+const GhostButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ className, children, ...rest }) => (
+  <button
+    type="button"
+    {...rest}
+    className={cn(
+      'inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-6 text-sm font-medium text-white/85 transition-colors',
+      'hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
+      'disabled:cursor-not-allowed disabled:opacity-40',
+      className,
+    )}
+  >
+    {children}
+  </button>
+);
+
+/** Business logo with graceful degradation: Clearbit → favicon → initial. */
+const LogoTile: React.FC<{
+  logoUrl: string;
+  fallbackUrl: string;
+  name: string;
+  size?: number;
+  className?: string;
+}> = ({ logoUrl, fallbackUrl, name, size = 64, className }) => {
+  const [stage, setStage] = useState<0 | 1 | 2>(logoUrl ? 0 : 2);
+  const src = stage === 0 ? logoUrl : stage === 1 ? fallbackUrl : '';
+
+  useEffect(() => {
+    setStage(logoUrl ? 0 : 2);
+  }, [logoUrl, fallbackUrl]);
+
+  return (
+    <div
+      className={cn(
+        'flex items-center justify-center overflow-hidden rounded-2xl border border-white/15 bg-white/[0.07] shadow-[0_10px_40px_rgba(0,0,0,0.45)]',
+        className,
+      )}
+      style={{ width: size, height: size }}
+    >
+      {src ? (
+        <img
+          src={src}
+          alt={`${name} logo`}
+          className="h-full w-full object-contain p-2"
+          onError={() => setStage((s) => (s === 0 ? 1 : 2))}
+        />
+      ) : (
+        <span className="text-2xl font-black text-white/80">{(name || '?').charAt(0).toUpperCase()}</span>
+      )}
+    </div>
+  );
+};
+
+/** Top progress rail — starts with "Account" already complete (endowed progress). */
+const ProgressRail: React.FC<{ scene: Scene }> = ({ scene }) => {
+  // Hide during cinematic scenes so nothing competes with the Boltcall logo
+  // header (top-8) or the "welcome" title animation.
+  if (scene === 'welcome') return null;
+  const sceneIdx = SCENE_ORDER.indexOf(scene);
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-center px-6 pt-24 sm:pt-28">
+      <div className="flex w-full max-w-xl items-center gap-2">
+        {RAIL_PHASES.map((phase, i) => {
+          const phaseStart = phase.scenes.length ? SCENE_ORDER.indexOf(phase.scenes[0]) : -1;
+          const phaseEnd = phase.scenes.length ? SCENE_ORDER.indexOf(phase.scenes[phase.scenes.length - 1]) : -1;
+          const done = i === 0 || sceneIdx > phaseEnd;
+          const active = !done && sceneIdx >= phaseStart && sceneIdx <= phaseEnd;
+          return (
+            <div key={phase.label} className="flex flex-1 flex-col items-center gap-1.5">
+              <div className="h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+                <motion.div
+                  className={cn('h-full rounded-full', done ? 'bg-white' : 'bg-white/70')}
+                  initial={false}
+                  animate={{ width: done ? '100%' : active ? '55%' : '0%' }}
+                  transition={{ duration: 0.7, ease: EASE }}
+                />
+              </div>
+              <span
+                className={cn(
+                  'text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors duration-500',
+                  done ? 'text-white/85' : active ? 'text-white/60' : 'text-white/25',
+                )}
+              >
+                {done && i === 0 ? '✓ ' : ''}
+                {phase.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ─── Scenes ───────────────────────────────────────────────────────────────
+
+// Welcome scene: pairs with the GlowHorizon beam falling from the top of the
+// page. WELCOME TO BOLTCALL {NAME} rises in via AnimatedTitleFM; SceneShell's
+// exit animation fades it out when the flow advances.
+const WelcomeScene: React.FC<{ firstName: string | null }> = ({ firstName }) => {
+  const welcomeText = firstName
+    ? `WELCOME TO BOLTCALL ${firstName.toUpperCase()}`
+    : 'WELCOME TO BOLTCALL';
+  return (
+    <SceneShell id="welcome" wide>
+      <div className="flex flex-col items-center text-center">
+        <AnimatedTitleFM open title={welcomeText} />
+      </div>
+    </SceneShell>
+  );
+};
+
+const WebsiteScene: React.FC<{
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  onSkip: () => void;
+  error: string | null;
+}> = ({ value, onChange, onSubmit, onSkip, error }) => {
+  const preview = normalizeWebsite(value);
+  const logos = preview ? logoCandidates(preview.domain) : null;
+  return (
+    <SceneShell id="website">
+      <Reveal>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+          Your website?
+        </h2>
+      </Reveal>
+      <Reveal delay={0.2}>
+        <form
+          className="mt-6 flex items-center gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+        >
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/35">
+              {logos ? (
+                <img
+                  src={logos.fallback}
+                  alt=""
+                  className="h-5 w-5 rounded-sm"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              ) : (
+                <Globe className="h-5 w-5" />
+              )}
+            </div>
+            <input
+              autoFocus
+              type="text"
+              inputMode="url"
+              autoComplete="url"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder="yourbusiness.com"
+              aria-label="Business website"
+              className="h-14 w-full rounded-2xl border border-white/15 bg-white/[0.06] pl-12 pr-4 text-lg text-white placeholder-white/25 outline-none backdrop-blur transition-colors focus:border-white/50 focus:bg-white/[0.09]"
+            />
+          </div>
+          <PrimaryButton
+            disabled={!preview}
+            onClick={onSubmit}
+            aria-label="Continue"
+            className="h-14 w-14 rounded-2xl px-0"
+          >
+            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+          </PrimaryButton>
+        </form>
+      </Reveal>
+      {error && <p className="mt-3 text-sm text-rose-300">{error}</p>}
+      <Reveal delay={0.4}>
+        <button
+          type="button"
+          onClick={onSkip}
+          className="mt-6 text-sm text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
+        >
+          I don&rsquo;t have a website — set up manually
+        </button>
+      </Reveal>
+    </SceneShell>
+  );
+};
+
+/** Rotating "what we're doing" lines while intel loads — labor illusion. */
+const DISCOVERY_LINES = [
+  'Reading your homepage…',
+  'Finding the services you offer…',
+  'Drafting answers to common caller questions…',
+  'Matching your industry…',
+  'Pulling your brand together…',
+];
+
+const IntelScene: React.FC<{
+  draft: Draft;
+  loading: boolean;
+  manual: boolean;
+  degraded: boolean;
+  onPatch: (patch: Partial<Draft>) => void;
+  onConfirm: () => void;
+  onChangeWebsite: () => void;
+}> = ({ draft, loading, manual, degraded, onPatch, onConfirm, onChangeWebsite }) => {
+  const [lineIdx, setLineIdx] = useState(0);
+
+  useEffect(() => {
+    if (!loading) return;
+    const t = setInterval(() => setLineIdx((i) => (i + 1) % DISCOVERY_LINES.length), 1600);
+    return () => clearInterval(t);
+  }, [loading]);
+
+  if (loading) {
+    return (
+      <SceneShell id="intel-loading">
+        <div className="flex flex-col items-center text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, ease: EASE }}
+          >
+            <LogoTile
+              logoUrl={draft.logoUrl}
+              fallbackUrl={draft.logoFallbackUrl}
+              name={draft.domain}
+              size={88}
+              className="shadow-[0_0_80px_rgba(140,160,255,0.25)]"
+            />
+          </motion.div>
+          <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-white/45">{draft.domain}</p>
+          <div className="mt-6 h-8">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={lineIdx}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.35 }}
+                className="flex items-center gap-2 text-lg text-white/80"
+              >
+                <Loader2 className="h-4 w-4 animate-spin text-white/50" />
+                {DISCOVERY_LINES[lineIdx]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+        </div>
+      </SceneShell>
+    );
+  }
+
+  return (
+    <SceneShell id="intel">
+      <Reveal>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+          {manual ? 'Your business' : 'Confirm your business'}
+        </h2>
+      </Reveal>
+
+      <Reveal delay={0.15}>
+        <div className="mt-6 flex items-center gap-4">
+          <LogoTile
+            logoUrl={draft.logoUrl}
+            fallbackUrl={draft.logoFallbackUrl}
+            name={draft.businessName || draft.domain}
+            size={48}
+          />
+          <input
+            type="text"
+            value={draft.businessName}
+            onChange={(e) => onPatch({ businessName: e.target.value })}
+            placeholder="Business name"
+            aria-label="Business name"
+            className="flex-1 border-b border-white/15 bg-transparent pb-1 text-lg font-semibold text-white placeholder-white/25 outline-none transition-colors focus:border-white/60"
+          />
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.18}>
+        <div className="mt-4">
+          <label
+            htmlFor="start-industry"
+            className="mb-1.5 block text-xs font-medium uppercase tracking-[0.14em] text-white/45"
+          >
+            Industry
+          </label>
+          <select
+            id="start-industry"
+            value={draft.industry}
+            onChange={(e) => onPatch({ industry: e.target.value as PendingAgentSetup['industry'] })}
+            aria-label="Industry"
+            className="w-full rounded-xl border border-white/15 bg-white/[0.06] px-3 py-2.5 text-sm text-white outline-none transition-colors focus:border-white/50 focus:bg-white/[0.09]"
+          >
+            {INDUSTRY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-[#0b0b12] text-white">
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Reveal>
+
+      {degraded && !manual && (
+        <Reveal delay={0.2}>
+          <p className="mt-4 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-xs leading-relaxed text-white/70">
+            We couldn&rsquo;t read your website. You can still continue. Your agent will use your answers instead.
+          </p>
+        </Reveal>
+      )}
+
+      {draft.services.length > 0 && (
+        <Reveal delay={0.22}>
+          <ul className="mt-6 space-y-1.5">
+            {draft.services.slice(0, 4).map((svc, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm text-white/75">
+                <Check className="h-3.5 w-3.5 shrink-0 text-emerald-300/70" />
+                <span className="truncate">{svc.name}</span>
+              </li>
+            ))}
+            {draft.services.length > 4 && (
+              <li className="pl-5 text-xs text-white/40">+ {draft.services.length - 4} more</li>
+            )}
+          </ul>
+        </Reveal>
+      )}
+
+      <Reveal delay={0.3} className="mt-7 flex flex-wrap items-center gap-4">
+        <PrimaryButton onClick={onConfirm} disabled={!draft.businessName.trim()}>
+          Looks right
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </PrimaryButton>
+        {!manual && (
+          <button
+            type="button"
+            onClick={onChangeWebsite}
+            className="text-xs text-white/40 underline-offset-4 transition-colors hover:text-white/70 hover:underline"
+          >
+            Change website
+          </button>
+        )}
+      </Reveal>
+    </SceneShell>
+  );
+};
+
+const PainScene: React.FC<{ selected: PainId | null; onSelect: (id: PainId) => void }> = ({ selected, onSelect }) => (
+  <SceneShell id="pain" wide>
+    <Reveal>
+      <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+        What&rsquo;s costing you the most?
+      </h2>
+    </Reveal>
+    <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+      {PAIN_POINTS.map((p, i) => {
+        const Icon = p.icon;
+        const active = selected === p.id;
+        return (
+          <Reveal key={p.id} delay={0.15 + i * 0.06}>
+            <button
+              type="button"
+              onClick={() => onSelect(p.id)}
+              aria-pressed={active}
+              className={cn(
+                'group flex h-full w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all duration-300',
+                active
+                  ? 'border-white bg-white/[0.1]'
+                  : 'border-white/10 bg-transparent hover:border-white/25 hover:bg-white/[0.04]',
+              )}
+            >
+              <Icon className={cn('h-5 w-5 shrink-0 transition-colors', active ? 'text-white' : 'text-white/60')} />
+              <span className="text-sm font-medium text-white">{p.title}</span>
+            </button>
+          </Reveal>
+        );
+      })}
+    </div>
+  </SceneShell>
+);
+
+const VoiceScene: React.FC<{
+  draft: Draft;
+  onPatch: (patch: Partial<Draft>) => void;
+  onLaunch: () => void;
+}> = ({ draft, onPatch, onLaunch }) => {
+  const [playing, setPlaying] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => () => { audioRef.current?.pause(); }, []);
+
+  async function preview(voice: (typeof VOICE_OPTIONS)[number]) {
+    onPatch({ voiceId: voice.value });
+    const audio = audioRef.current ?? new Audio();
+    audioRef.current = audio;
+    if (playing === voice.value) {
+      audio.pause();
+      setPlaying(null);
+      return;
+    }
+    audio.pause();
+    audio.src = voice.previewUrl;
+    audio.onended = () => setPlaying(null);
+    audio.onerror = () => setPlaying(null);
+    try {
+      setPlaying(voice.value);
+      await audio.play();
+    } catch {
+      setPlaying(null);
+    }
+  }
+
+  return (
+    <SceneShell id="voice" wide>
+      <Reveal>
+        <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
+          Pick a voice
+        </h2>
+      </Reveal>
+
+      <div className="mt-6 grid gap-2.5 sm:grid-cols-3">
+        {VOICE_OPTIONS.map((voice, i) => {
+          const active = draft.voiceId === voice.value;
+          const isPlaying = playing === voice.value;
+          return (
+            <Reveal key={voice.value} delay={0.15 + i * 0.06}>
+              <button
+                type="button"
+                onClick={() => void preview(voice)}
+                aria-pressed={active}
+                className={cn(
+                  'flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-all duration-300',
+                  active
+                    ? 'border-white bg-white/[0.1]'
+                    : 'border-white/10 bg-transparent hover:border-white/25 hover:bg-white/[0.04]',
+                )}
+              >
+                <span className="text-sm font-semibold text-white">{voice.label}</span>
+                <span
+                  className={cn(
+                    'flex h-7 w-7 items-center justify-center rounded-full transition-colors',
+                    isPlaying ? 'bg-white text-zinc-950' : 'text-white/60',
+                  )}
+                >
+                  {isPlaying ? <Volume2 className="h-3.5 w-3.5 animate-pulse" /> : <Play className="ml-0.5 h-3.5 w-3.5" />}
+                </span>
+              </button>
+            </Reveal>
+          );
+        })}
+      </div>
+
+      {draft.pain === 'front_desk' && (
+        <Reveal delay={0.35}>
+          <div className="mt-7 max-w-sm">
+            <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+              Forward calls to
+            </label>
+            <input
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              value={draft.transferNumber}
+              onChange={(e) => onPatch({ transferNumber: e.target.value })}
+              placeholder="+1 555 123 4567"
+              aria-label="Transfer number"
+              required
+              className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.05] px-4 text-sm text-white placeholder-white/25 outline-none transition-colors focus:border-white/50"
+            />
+            <p className="mt-1.5 text-xs text-white/40">Overflow calls we can&rsquo;t handle route here.</p>
+          </div>
+        </Reveal>
+      )}
+
+      <Reveal delay={0.4} className="mt-8">
+        <PrimaryButton
+          onClick={onLaunch}
+          disabled={draft.pain === 'front_desk' && !draft.transferNumber.trim()}
+        >
+          Build my agent
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </PrimaryButton>
+      </Reveal>
+    </SceneShell>
+  );
+};
+
+const LaunchScene: React.FC<{
+  draft: Draft;
+  stepIdx: number;
+  error: string | null;
+  onRetry: () => void;
+}> = ({ draft, stepIdx, error, onRetry }) => {
+  const pain = PAIN_POINTS.find((p) => p.id === draft.pain);
+  const steps = launchStepsFor(draft.pain);
+  return (
+    <SceneShell id="launch">
+      <div className="flex flex-col items-center text-center">
+        <motion.div
+          animate={error ? {} : { scale: [1, 1.04, 1] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <LogoTile
+            logoUrl={draft.logoUrl}
+            fallbackUrl={draft.logoFallbackUrl}
+            name={draft.businessName}
+            size={80}
+            className="shadow-[0_0_90px_rgba(140,160,255,0.3)]"
+          />
+        </motion.div>
+        <h2 className="mt-8 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+          Building {draft.businessName}&rsquo;s agent
+        </h2>
+        {pain && !error && (
+          <p className="mt-3 text-sm text-white/55">
+            First job: fixing <span className="font-semibold text-white/85">{pain.title.toLowerCase()}</span>.
+          </p>
+        )}
+
+        {!error ? (
+          <ul className="mt-10 w-full max-w-sm space-y-3 text-left">
+            {steps.map((step, i) => {
+              const done = i < stepIdx;
+              const current = i === stepIdx;
+              return (
+                <motion.li
+                  key={step}
+                  initial={{ opacity: 0, x: -14 }}
+                  animate={{ opacity: done || current ? 1 : 0.3, x: 0 }}
+                  transition={{ duration: 0.45, ease: EASE, delay: i * 0.06 }}
+                  className="flex items-center gap-3 text-sm"
+                >
+                  <span
+                    className={cn(
+                      'flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-500',
+                      done
+                        ? 'border-emerald-300/60 bg-emerald-300/15 text-emerald-300'
+                        : current
+                          ? 'border-white/50 text-white'
+                          : 'border-white/15 text-transparent',
+                    )}
+                  >
+                    {done ? <Check className="h-3.5 w-3.5" /> : current ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                  </span>
+                  <span className={cn('transition-colors duration-500', done ? 'text-white/50 line-through decoration-white/20' : current ? 'text-white' : 'text-white/40')}>
+                    {step}
+                  </span>
+                </motion.li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="mt-10 w-full max-w-md rounded-2xl border border-rose-300/25 bg-rose-500/10 p-5 text-left">
+            <p className="text-sm font-semibold text-rose-200">Launch hit a snag</p>
+            <p className="mt-1 text-xs leading-relaxed text-rose-200/75">{error}</p>
+            <GhostButton onClick={onRetry} className="mt-4 h-10 px-5 text-xs">
+              Try again
+            </GhostButton>
+          </div>
+        )}
+      </div>
+    </SceneShell>
+  );
+};
+
+
+// ─── Page ─────────────────────────────────────────────────────────────────
+
+const StartOnboarding: React.FC = () => {
+  useNoindex();
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  const [draft, setDraft] = useState<Draft>(() => readDraft());
+  const [googleName, setGoogleName] = useState<string | null>(null);
+  const [websiteError, setWebsiteError] = useState<string | null>(null);
+  const [manualMode, setManualMode] = useState(false);
+  const [launchStepIdx, setLaunchStepIdx] = useState(0);
+  const [launchError, setLaunchError] = useState<string | null>(null);
+  const launchStarted = useRef(false);
+
+  const websiteIntel = useWebsiteIntel();
+
+  const patch = useCallback((p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p })), []);
+  const goTo = useCallback((scene: Scene) => setDraft((d) => ({ ...d, scene })), []);
+
+  useEffect(() => {
+    document.title = 'Get started — Boltcall';
+  }, []);
+
+  // Persist the draft so a refresh resumes mid-flow.
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch { /* quota — skip */ }
+  }, [draft]);
+
+  // OAuth full_name lives in user_metadata (Google/Microsoft only). Email
+  // signups have no name — welcome falls back to the plain "WELCOME TO BOLTCALL".
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (cancelled) return;
+      const meta = data.user?.user_metadata as Record<string, unknown> | undefined;
+      const fullName = (meta?.full_name || meta?.name) as string | undefined;
+      if (fullName) setGoogleName(fullName);
+    });
+    return () => { cancelled = true; };
+  }, [isAuthenticated]);
+
+  // Welcome auto-advances — the user did nothing yet, so ask nothing yet.
+  useEffect(() => {
+    if (draft.scene !== 'welcome' || isLoading || !isAuthenticated) return;
+    // Hold long enough for the GlowHorizon beam (2s + 1.2s white-arc delay)
+    // and the title to fully land before advancing.
+    const t = window.setTimeout(() => goTo('website'), 4000);
+    return () => window.clearTimeout(t);
+  }, [draft.scene, isLoading, isAuthenticated, goTo]);
+
+  // Only trust an OAuth-provided name (Google/Microsoft user_metadata.full_name).
+  // Email signups have no real name — user.name is derived from the email
+  // prefix in transformSupabaseUser, and we don't want "WELCOME TO BOLTCALL
+  // NOAMYAKOBY6" showing up.
+  const firstName = useMemo(() => firstNameOf(googleName), [googleName]);
+
+  function submitWebsite() {
+    const normalized = normalizeWebsite(draft.websiteInput);
+    if (!normalized) {
+      setWebsiteError('Enter a valid website, like yourbusiness.com');
+      return;
+    }
+    setWebsiteError(null);
+    const logos = logoCandidates(normalized.domain);
+    patch({
+      websiteUrl: normalized.url,
+      domain: normalized.domain,
+      logoUrl: logos.primary,
+      logoFallbackUrl: logos.fallback,
+      scene: 'intel',
+    });
+    if (user?.id) {
+      void websiteIntel.run(normalized.url, user.id).then((intel: WebsiteIntel | null) => {
+        if (!intel) return;
+        setDraft((d) => ({
+          ...d,
+          businessName: d.businessName || intel.businessName,
+          industry: d.industry === 'other' ? intel.industry : d.industry,
+          services: d.services.length ? d.services : intel.services,
+          faqs: d.faqs.length ? d.faqs : intel.faqs,
+          intelDone: true,
+        }));
+      });
+    }
+  }
+
+  function skipWebsite() {
+    setManualMode(true);
+    patch({ websiteUrl: '', domain: '', logoUrl: '', logoFallbackUrl: '', intelDone: true, scene: 'intel' });
+  }
+
+  const runLaunch = useCallback(() => {
+    if (!user?.id) return;
+    setLaunchError(null);
+    setLaunchStepIdx(0);
+
+    const setup: PendingAgentSetup = {
+      ownerName: googleName || user.name || undefined,
+      businessName: draft.businessName.trim(),
+      websiteUrl: draft.websiteUrl,
+      country: 'us',
+      industry: draft.industry,
+      voiceId: draft.voiceId,
+      goal: 'book-appointments',
+      tone: draft.tone,
+      transferNumber: draft.transferNumber.trim(),
+      services: draft.services.filter((s) => s.name.trim()),
+      faqs: draft.faqs,
+      logoUrl: draft.logoUrl || undefined,
+      painPoint: draft.pain || undefined,
+      createdAt: new Date().toISOString(),
+    };
+    // Same recovery contract as /setup: a failed launch leaves the pending
+    // setup persisted so retry / the legacy loader can resume it.
+    savePendingAgentSetup(setup);
+
+    // Narrate real work: advance one step every ~1.6s but hold the last step
+    // until provisioning actually resolves.
+    const stepTimer = window.setInterval(() => {
+      setLaunchStepIdx((i) => Math.min(i + 1, LAUNCH_STEP_COUNT - 1));
+    }, 1600);
+    const minimumShow = new Promise((r) => setTimeout(r, LAUNCH_STEP_COUNT * 1600));
+
+    Promise.all([provisionAgentSetup(user.id, setup), minimumShow])
+      .then(() => {
+        clearPendingAgentSetup();
+        window.clearInterval(stepTimer);
+        setLaunchStepIdx(LAUNCH_STEP_COUNT);
+        // Bridge the /start pain choice onto the dashboard checklist. The
+        // checklist reads setupStore.survey.painPoints (a different name
+        // vocabulary) — PAIN_TO_STORE_KEY normalizes. Without this the
+        // personalized branch in useSetupProgress silently falls back to
+        // "all features" and the user never sees their picked pain first.
+        if (setup.painPoint && isPainPoint(setup.painPoint)) {
+          useSetupStore.getState().updateSurvey({
+            painPoints: [PAIN_TO_STORE_KEY[setup.painPoint]],
+          });
+        }
+        setTimeout(() => {
+          sessionStorage.removeItem(DRAFT_KEY);
+          navigate('/setup/talk-to-agent');
+        }, 500);
+      })
+      .catch((error) => {
+        window.clearInterval(stepTimer);
+        console.error('Start onboarding launch failed:', error);
+        setLaunchError(
+          error instanceof Error ? error.message : 'Something went wrong while deploying. Try again.',
+        );
+      });
+  }, [user, googleName, draft, navigate]);
+
+  // Kick provisioning exactly once when entering the launch scene.
+  useEffect(() => {
+    if (draft.scene !== 'launch' || launchStarted.current) return;
+    launchStarted.current = true;
+    runLaunch();
+  }, [draft.scene, runLaunch]);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-[#050507]" />;
+  }
+  if (!isAuthenticated) {
+    return <Navigate to="/signup?redirect=%2Fstart" replace />;
+  }
+
+  return (
+    <div className="dark relative isolate flex min-h-screen flex-col overflow-hidden bg-[#050507] text-white">
+      {/* Background: radial field + GlowHorizon beam falling from the top
+          (same recipe as GlowHorizonDemoPage), with the white Boltcall
+          wordmark pinned above it. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.16) 0%, rgba(73,34,229,0.22) 26%, rgba(8,8,14,0.96) 62%, #050507 100%)',
+          }}
+        />
+        <GlowHorizonFM className="top-20 md:top-28" variant="top" />
+        <div className="absolute inset-x-0 top-8 flex justify-center px-6 sm:top-10">
+          <picture>
+            <source srcSet="/boltcall_full_logo.webp" type="image/webp" />
+            <img
+              src="/boltcall_full_logo.png"
+              alt="Boltcall"
+              className="h-9 w-auto opacity-95 brightness-0 invert sm:h-10"
+              width={160}
+              height={52}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+            />
+          </picture>
+        </div>
+      </div>
+      <ProgressRail scene={draft.scene} />
+      {/* Header slot reserves vertical space so scene content stays clear of
+          the Boltcall logo, progress rail, AND the purple glow arc top edge.
+          Sized to sit just below the widest arc curve. */}
+      <div aria-hidden className="h-44 flex-shrink-0 sm:h-56 md:h-64" />
+      <main className="relative flex flex-1 items-start justify-center px-4 pb-16 sm:pb-20">
+      <AnimatePresence mode="wait">
+        {draft.scene === 'welcome' && (
+          <WelcomeScene key="welcome" firstName={firstName} />
+        )}
+        {draft.scene === 'website' && (
+          <WebsiteScene
+            key="website"
+            value={draft.websiteInput}
+            onChange={(v) => {
+              patch({ websiteInput: v });
+              if (websiteError) setWebsiteError(null);
+            }}
+            onSubmit={submitWebsite}
+            onSkip={skipWebsite}
+            error={websiteError}
+          />
+        )}
+        {draft.scene === 'intel' && (
+          <IntelScene
+            key="intel"
+            draft={draft}
+            loading={!draft.intelDone && websiteIntel.status === 'scanning'}
+            manual={manualMode}
+            degraded={websiteIntel.degraded}
+            onPatch={patch}
+            onConfirm={() => goTo('pain')}
+            onChangeWebsite={() => {
+              // Full reset of website-derived data — the old site's intel
+              // must not bleed into the new one.
+              patch({
+                businessName: '',
+                industry: 'other',
+                services: [],
+                faqs: [],
+                logoUrl: '',
+                logoFallbackUrl: '',
+                domain: '',
+                websiteUrl: '',
+                intelDone: false,
+                scene: 'website',
+              });
+            }}
+          />
+        )}
+        {draft.scene === 'pain' && (
+          <PainScene
+            key="pain"
+            selected={draft.pain}
+            onSelect={(id) => {
+              // Select → brief beat so the choice registers → advance.
+              patch({ pain: id });
+              setTimeout(() => goTo('voice'), 450);
+            }}
+          />
+        )}
+        {draft.scene === 'voice' && (
+          <VoiceScene key="voice" draft={draft} onPatch={patch} onLaunch={() => goTo('launch')} />
+        )}
+        {draft.scene === 'launch' && (
+          <LaunchScene
+            key="launch"
+            draft={draft}
+            stepIdx={launchStepIdx}
+            error={launchError}
+            onRetry={() => runLaunch()}
+          />
+        )}
+      </AnimatePresence>
+      </main>
+    </div>
+  );
+};
+
+export default StartOnboarding;

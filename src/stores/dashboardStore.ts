@@ -1,10 +1,26 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import dayjs from 'dayjs';
-import { mockData } from '../data/mock';
-import { fetchDashboardStats, fetchDailyMetrics, fetchBusinessHealth, fetchCallbackStats, fetchChatStats, fetchLeads } from '../lib/dashboardApi';
+import { fetchDashboardStats, fetchCallbackStats } from '../lib/dashboardApi';
 import type { DashboardStats } from '../lib/dashboardApi';
 import type { Lead, Kpis, TimeSeriesPoint, ChannelPerf, Faq, Transcript, Alert, FunnelStep, Channel, Intent } from '../types/dashboard';
+
+// Empty-state seeds — new users see blank widgets that fill in when
+// fetchLiveData resolves, not fabricated demo numbers.
+const emptyKpis: Kpis = {
+  leads: 0,
+  qualifiedPct: 0,
+  bookings: 0,
+  speedToFirstReplyMedianSec: 0,
+  showRatePct: 0,
+  deltas: {
+    leads: 0,
+    qualifiedPct: 0,
+    bookings: 0,
+    speedToFirstReplyMedianSec: 0,
+    showRatePct: 0,
+  },
+};
 
 interface DashboardFilters {
   dateRange: {
@@ -79,17 +95,17 @@ const defaultFilters: DashboardFilters = {
 export const useDashboardStore = create<DashboardState>()(
   persist(
     (set, get) => ({
-      // Initial state — mock data as fallback until live data loads
+      // Initial state — empty widgets. Live data fills them in.
       filters: defaultFilters,
       selectedClient: 'default-client',
-      kpis: mockData.kpis,
-      timeSeries: mockData.timeSeries,
-      channelPerf: mockData.channelPerf,
-      leads: mockData.leads,
-      faqs: mockData.faqs,
-      transcripts: mockData.transcripts,
-      alerts: mockData.alerts,
-      funnelSteps: mockData.funnelSteps,
+      kpis: emptyKpis,
+      timeSeries: [],
+      channelPerf: [],
+      leads: [],
+      faqs: [],
+      transcripts: [],
+      alerts: [],
+      funnelSteps: [],
 
       // Live data
       liveStats: null,
@@ -160,79 +176,37 @@ export const useDashboardStore = create<DashboardState>()(
         }));
       },
 
-      // Fetch all live data from APIs
+      // Fetch the two live sources the dashboard actually renders:
+      // liveStats (TodayGlanceCard headline metrics) + callbackStats (pending count).
+      // The `leads` table is owned by SpeedToLeadPage; do not mirror it here from
+      // `callbacks` — that was a second, wrong source of truth. KPIs/timeSeries used
+      // to be synthesized from mismatched fields (bookings := ai_calls_today); those
+      // fabrications are removed. Add a real reader here only when something renders it.
       fetchLiveData: async () => {
         set({ loading: true, fetchError: null });
 
-        try {
-          const [stats, metrics, health, callbacks, chats, leads] = await Promise.allSettled([
-            fetchDashboardStats(),
-            fetchDailyMetrics(30),
-            fetchBusinessHealth(),
-            fetchCallbackStats(),
-            fetchChatStats(),
-            fetchLeads({ limit: 50 }),
-          ]);
+        const [stats, callbacks] = await Promise.allSettled([
+          fetchDashboardStats(),
+          fetchCallbackStats(),
+        ]);
 
-          const liveStats = stats.status === 'fulfilled' ? stats.value : null;
-          const dailyMetrics = metrics.status === 'fulfilled' ? metrics.value : [];
-          const businessHealth = health.status === 'fulfilled' ? health.value : null;
-          const callbackStats = callbacks.status === 'fulfilled' ? callbacks.value : null;
-          const chatStats = chats.status === 'fulfilled' ? chats.value : null;
-          const leadsData = leads.status === 'fulfilled' ? leads.value : [];
+        const liveStats = stats.status === 'fulfilled' ? stats.value : null;
+        const callbackStats = callbacks.status === 'fulfilled' ? callbacks.value : null;
 
-          // Build KPIs from live data if available
-          const updatedKpis: Partial<Kpis> = {};
-          if (liveStats?.summary) {
-            const s = liveStats.summary;
-            updatedKpis.leads = (callbackStats as any)?.total || get().kpis.leads;
-            updatedKpis.bookings = s.ai_calls_today;
-          }
+        // fetchDashboardStats throws on HTTP error / timeout, so a rejection here is a
+        // real outage — surface it instead of silently showing empty widgets.
+        const fetchError =
+          stats.status === 'rejected'
+            ? (stats.reason instanceof Error ? stats.reason.message : 'Failed to load dashboard data')
+            : null;
 
-          // Convert daily metrics to time series format
-          const liveTimeSeries: TimeSeriesPoint[] = dailyMetrics.map((m: any) => ({
-            date: m.date,
-            leads: m.new_leads_total || 0,
-            bookings: m.calls_booked || 0,
-          }));
-
-          set({
-            liveStats,
-            dailyMetrics,
-            businessHealth,
-            callbackStats,
-            chatStats,
-            lastFetchedAt: new Date().toISOString(),
-            loading: false,
-            // Update store data with live data where available
-            ...(liveTimeSeries.length > 0 && { timeSeries: liveTimeSeries }),
-            ...(Object.keys(updatedKpis).length > 0 && { kpis: { ...get().kpis, ...updatedKpis } }),
-            ...(leadsData.length > 0 && {
-              leads: leadsData.map((l: any) => ({
-                id: l.id,
-                createdAt: l.created_at,
-                name: l.client_name || 'Unknown',
-                phone: l.client_phone || '',
-                email: l.client_email || '',
-                channel: 'form' as Channel,
-                source: l.source || 'unknown',
-                intent: l.status === 'completed' ? 'closed' as Intent : 'new' as Intent,
-                qualified: l.status === 'scheduled' || l.status === 'completed',
-                booked: l.status === 'scheduled' || l.status === 'completed',
-                showed: l.status === 'completed',
-                owner: '',
-                tags: l.tags || [],
-                notes: l.outcome_notes || '',
-              })),
-            }),
-          });
-        } catch (error) {
-          console.error('Dashboard fetch error:', error);
-          set({
-            loading: false,
-            fetchError: error instanceof Error ? error.message : 'Failed to fetch data',
-          });
-        }
+        set({
+          liveStats,
+          callbackStats,
+          lastFetchedAt: new Date().toISOString(),
+          loading: false,
+          fetchError,
+        });
       },
 
       // Full dashboard refresh

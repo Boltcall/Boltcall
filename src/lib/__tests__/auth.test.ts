@@ -117,6 +117,7 @@ describe('auth lib functions', () => {
         email: 'john@example.com',
         password: 'pass123',
         options: {
+          emailRedirectTo: expect.stringMatching(/\/auth\/callback$/),
           data: {
             name: 'John Doe',
             company: 'TestCorp',

@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import React, { useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
@@ -393,7 +393,7 @@ const BestAIAnsweringServiceDentalMedical: React.FC = () => {
                   ['Monthly new patient calls captured', '65–75% of total', '99%+ of total'],
                   ['Time on routine FAQ calls', '2–3 hours/day', 'Under 30 min/day'],
                   ['Post-visit review requests sent', '0–5% of patients', '95%+ (automated)'],
-                  ['Monthly cost', '$3,200 – $4,500 (salary)', '$79 – $179 flat'],
+                  ['Monthly cost', '$3,200 – $4,500 (salary)', '$549-897 flat'],
                   ['Setup time', '2–4 weeks (hire + train)', '30 minutes'],
                 ].map(([metric, trad, ai]) => (
                   <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">

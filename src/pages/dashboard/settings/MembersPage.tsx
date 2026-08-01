@@ -248,7 +248,7 @@ const MembersPage: React.FC = () => {
 
   // ─── Formatters ─────────────────────────────────────────────
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return '\u2014';
+    if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -292,8 +292,8 @@ const MembersPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Team Members</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your workspace team</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Team Members</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your workspace team</p>
         </div>
         <PermissionGate permission="settings.members">
           <div className="flex items-center gap-2">
@@ -318,8 +318,8 @@ const MembersPage: React.FC = () => {
           { label: 'Pending Invites', value: pendingCount, color: 'bg-amber-50 text-amber-700' },
           { label: 'Admins & Owners', value: adminCount, color: 'bg-purple-50 text-purple-700' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-white border border-gray-200 rounded-lg p-4">
-            <p className="text-xs text-gray-500">{stat.label}</p>
+          <div key={stat.label} className="bg-white dark:bg-[#111114] border border-gray-200 dark:border-[#1e1e24] rounded-lg p-4">
+            <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
             <p className={`text-2xl font-bold mt-1 ${stat.color.split(' ')[1]}`}>{stat.value}</p>
           </div>
         ))}
@@ -334,14 +334,14 @@ const MembersPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or email..."
-            className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         <div className="flex items-center gap-3">
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Roles</option>
             {PREDEFINED_ROLES.map((r) => (
@@ -351,7 +351,7 @@ const MembersPage: React.FC = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+            className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Statuses</option>
             <option value="active">Active</option>
@@ -364,26 +364,26 @@ const MembersPage: React.FC = () => {
       {/* ─── Pending Invitations ──────────────────────────────── */}
       {pendingMembers.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold text-amber-700 mb-3 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-3 flex items-center gap-2">
             <Mail className="w-4 h-4" />
             Pending Invitations ({pendingMembers.length})
           </h2>
-          <div className="bg-amber-50 border border-amber-200 rounded-lg divide-y divide-amber-200">
+          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg divide-y divide-amber-200 dark:divide-amber-500/20">
             {pendingMembers.map((member) => {
               const roleInfo = getRoleInfo(member.role);
               return (
                 <div key={member.id} className="flex flex-col sm:flex-row sm:items-center justify-between px-3 sm:px-5 py-3 gap-2 sm:gap-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-4 h-4 text-amber-600" />
+                    <div className="w-9 h-9 bg-amber-100 dark:bg-amber-500/15 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-sm font-medium text-gray-900 truncate block">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate block">
                         {member.name || member.email}
                       </span>
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0 text-xs text-gray-500">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0 text-xs text-gray-500 dark:text-gray-400">
                         <span className="truncate">{member.email}</span>
-                        <span className="hidden sm:inline text-gray-300">|</span>
+                        <span className="hidden sm:inline text-gray-300 dark:text-gray-600">|</span>
                         <span>Invited {formatDate(member.invited_at)}</span>
                       </div>
                     </div>
@@ -396,7 +396,7 @@ const MembersPage: React.FC = () => {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => handleResendInvite(member)}
-                          className="px-2.5 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-md transition-colors"
+                          className="px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/15 hover:bg-amber-200 dark:hover:bg-amber-500/25 rounded-md transition-colors duration-200 ease-out"
                         >
                           Resend
                         </button>
@@ -405,7 +405,7 @@ const MembersPage: React.FC = () => {
                             setSelectedMember(member);
                             setShowDeleteModal(true);
                           }}
-                          className="px-2.5 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+                          className="px-2.5 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-md transition-colors duration-200 ease-out"
                         >
                           Revoke
                         </button>
@@ -420,20 +420,20 @@ const MembersPage: React.FC = () => {
       )}
 
       {/* ─── Active Members Table ─────────────────────────────── */}
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="bg-white dark:bg-[#111114] rounded-lg shadow-sm border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-[#17171b]">
               <tr>
-                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="hidden sm:table-cell px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
-                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
+                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                <th className="hidden sm:table-cell px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Joined</th>
+                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Active</th>
+                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-[#111114] divide-y divide-gray-200 dark:divide-[#1e1e24]">
               {[...activeMembers, ...suspendedMembers].map((member, i) => {
                 const roleInfo = getRoleInfo(member.role);
                 const statusInfo = getStatusInfo(member.status);
@@ -445,7 +445,7 @@ const MembersPage: React.FC = () => {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25, delay: i * 0.03 }}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className="hover:bg-gray-50 dark:hover:bg-[#17171b] cursor-pointer transition-colors duration-200 ease-out"
                     onClick={() => {
                       setSelectedMember(member);
                       setShowDetailPanel(true);
@@ -454,19 +454,19 @@ const MembersPage: React.FC = () => {
                     <td className="px-3 md:px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          member.avatar_url ? '' : 'bg-gray-200'
+                          member.avatar_url ? '' : 'bg-gray-200 dark:bg-[#17171b]'
                         }`}>
                           {member.avatar_url ? (
                             <img src={member.avatar_url} alt="" className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover" width={40} height={40} loading="lazy" decoding="async" />
                           ) : (
-                            <User className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+                            <User className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                             {member.name || member.email.split('@')[0]}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-500 truncate">{member.email}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{member.email}</div>
                         </div>
                       </div>
                     </td>
@@ -475,7 +475,7 @@ const MembersPage: React.FC = () => {
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center ${roleInfo.color}`}>
                           {roleInfo.icon}
                         </div>
-                        <span className="text-sm text-gray-900 hidden sm:inline">{roleInfo.name}</span>
+                        <span className="text-sm text-gray-900 dark:text-white hidden sm:inline">{roleInfo.name}</span>
                       </div>
                     </td>
                     <td className="hidden sm:table-cell px-3 md:px-6 py-4 whitespace-nowrap">
@@ -484,15 +484,15 @@ const MembersPage: React.FC = () => {
                         {statusInfo.label}
                       </span>
                     </td>
-                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatDate(member.accepted_at || member.invited_at)}
                     </td>
-                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatLastActive(member.last_active)}
                     </td>
                     <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
                       {isMemberOwner ? (
-                        <span className="text-xs text-gray-400">\u2014</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
                       ) : canManageMembers ? (
                         <div className="flex items-center gap-1">
                           <button
@@ -501,15 +501,15 @@ const MembersPage: React.FC = () => {
                               setEditRole(member.role);
                               setShowEditModal(true);
                             }}
-                            className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                            className="p-1.5 hover:bg-gray-100 dark:hover:bg-[#17171b] rounded transition-colors duration-200 ease-out"
                             title="Edit role"
                           >
-                            <Edit className="w-4 h-4 text-gray-600" />
+                            <Edit className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                           </button>
                           {member.status === 'suspended' ? (
                             <button
                               onClick={() => handleReactivate(member)}
-                              className="p-1.5 hover:bg-green-50 rounded transition-colors"
+                              className="p-1.5 hover:bg-green-50 dark:hover:bg-green-500/10 rounded transition-colors duration-200 ease-out"
                               title="Reactivate"
                             >
                               <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -520,7 +520,7 @@ const MembersPage: React.FC = () => {
                                 setSelectedMember(member);
                                 setShowSuspendModal(true);
                               }}
-                              className="p-1.5 hover:bg-yellow-50 rounded transition-colors"
+                              className="p-1.5 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 rounded transition-colors duration-200 ease-out"
                               title="Suspend"
                             >
                               <Ban className="w-4 h-4 text-yellow-500" />
@@ -531,14 +531,14 @@ const MembersPage: React.FC = () => {
                               setSelectedMember(member);
                               setShowDeleteModal(true);
                             }}
-                            className="p-1.5 hover:bg-red-50 rounded transition-colors"
+                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded transition-colors duration-200 ease-out"
                             title="Remove member"
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />
                           </button>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">\u2014</span>
+                        <span className="text-xs text-gray-400 dark:text-gray-500">—</span>
                       )}
                     </td>
                   </motion.tr>
@@ -547,7 +547,7 @@ const MembersPage: React.FC = () => {
 
               {filteredMembers.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     {searchQuery || filterRole || filterStatus
                       ? 'No members match your filters.'
                       : 'No team members yet. Invite someone to get started.'}
@@ -579,42 +579,42 @@ const MembersPage: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed right-0 top-0 bottom-0 w-[420px] bg-white shadow-2xl z-50 overflow-y-auto"
+              className="fixed right-0 top-0 bottom-0 w-[420px] bg-white dark:bg-[#111114] shadow-2xl z-50 overflow-y-auto"
             >
               <div className="p-6">
                 {/* Close */}
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">Member Details</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Member Details</h2>
                   <button
                     onClick={() => { setShowDetailPanel(false); setSelectedMember(null); }}
-                    className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-[#17171b] rounded-lg transition-colors duration-200 ease-out"
                   >
-                    <X className="w-5 h-5 text-gray-500" />
+                    <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   </button>
                 </div>
 
                 {/* Avatar & Name */}
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 bg-gray-200 dark:bg-[#17171b] rounded-full flex items-center justify-center">
                     {selectedMember.avatar_url ? (
                       <img src={selectedMember.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover" width={64} height={64} loading="lazy" decoding="async" />
                     ) : (
-                      <User className="w-8 h-8 text-gray-500" />
+                      <User className="w-8 h-8 text-gray-500 dark:text-gray-400" />
                     )}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {selectedMember.name || selectedMember.email.split('@')[0]}
                     </h3>
-                    <p className="text-sm text-gray-500">{selectedMember.email}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{selectedMember.email}</p>
                   </div>
                 </div>
 
                 {/* Info Grid */}
-                <div className="space-y-4 border-t border-gray-200 pt-4">
+                <div className="space-y-4 border-t border-gray-200 dark:border-[#1e1e24] pt-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Role</label>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Role</label>
                       <div className="flex items-center gap-2">
                         <span className={`w-6 h-6 rounded-full flex items-center justify-center ${getRoleInfo(selectedMember.role).color}`}>
                           {getRoleInfo(selectedMember.role).icon}
@@ -623,58 +623,58 @@ const MembersPage: React.FC = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Status</label>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusInfo(selectedMember.status).color}`}>
                         {getStatusInfo(selectedMember.status).icon}
                         {getStatusInfo(selectedMember.status).label}
                       </span>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Invited</label>
-                      <span className="text-sm text-gray-700">{formatDate(selectedMember.invited_at)}</span>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Invited</label>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{formatDate(selectedMember.invited_at)}</span>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Joined</label>
-                      <span className="text-sm text-gray-700">{formatDate(selectedMember.accepted_at)}</span>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Joined</label>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{formatDate(selectedMember.accepted_at)}</span>
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">Last Active</label>
-                      <span className="text-sm text-gray-700">{formatLastActive(selectedMember.last_active)}</span>
+                      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Last Active</label>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{formatLastActive(selectedMember.last_active)}</span>
                     </div>
                     {selectedMember.suspended_at && (
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Suspended</label>
-                        <span className="text-sm text-red-600">{formatDate(selectedMember.suspended_at)}</span>
+                        <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Suspended</label>
+                        <span className="text-sm text-red-600 dark:text-red-400">{formatDate(selectedMember.suspended_at)}</span>
                       </div>
                     )}
                   </div>
 
                   {selectedMember.suspended_reason && (
-                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <label className="block text-xs text-red-600 font-medium mb-1">Suspension Reason</label>
-                      <p className="text-sm text-red-700">{selectedMember.suspended_reason}</p>
+                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg">
+                      <label className="block text-xs text-red-600 dark:text-red-400 font-medium mb-1">Suspension Reason</label>
+                      <p className="text-sm text-red-700 dark:text-red-300">{selectedMember.suspended_reason}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Actions */}
                 {canManageMembers && selectedMember.role !== 'owner' && (
-                  <div className="border-t border-gray-200 pt-4 mt-6 space-y-2">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase mb-3">Actions</h4>
+                  <div className="border-t border-gray-200 dark:border-[#1e1e24] pt-4 mt-6 space-y-2">
+                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-3">Actions</h4>
                     <button
                       onClick={() => {
                         setEditRole(selectedMember.role);
                         setShowEditModal(true);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#17171b] rounded-lg transition-colors duration-200 ease-out"
                     >
-                      <Edit className="w-4 h-4 text-gray-400" />
+                      <Edit className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                       Change Role
                     </button>
                     {selectedMember.status === 'suspended' ? (
                       <button
                         onClick={() => handleReactivate(selectedMember)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-500/10 rounded-lg transition-colors duration-200 ease-out"
                       >
                         <CheckCircle2 className="w-4 h-4" />
                         Reactivate Member
@@ -682,7 +682,7 @@ const MembersPage: React.FC = () => {
                     ) : (
                       <button
                         onClick={() => setShowSuspendModal(true)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-yellow-700 hover:bg-yellow-50 rounded-lg transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 rounded-lg transition-colors duration-200 ease-out"
                       >
                         <Ban className="w-4 h-4" />
                         Suspend Member
@@ -690,7 +690,7 @@ const MembersPage: React.FC = () => {
                     )}
                     <button
                       onClick={() => setShowDeleteModal(true)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors duration-200 ease-out"
                     >
                       <Trash2 className="w-4 h-4" />
                       Remove from Team
@@ -723,28 +723,28 @@ const MembersPage: React.FC = () => {
       >
         <form id="invite-form" onSubmit={handleInvite} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address *</label>
             <input
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="member@company.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Name (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name (optional)</label>
             <input
               type="text"
               value={inviteName}
               onChange={(e) => setInviteName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="John Smith"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role *</label>
             <div className="space-y-2">
               {ASSIGNABLE_ROLES.map((role) => {
                 const icon = ROLE_ICONS[role.slug] || <Shield className="w-4 h-4" />;
@@ -752,8 +752,8 @@ const MembersPage: React.FC = () => {
                 return (
                   <label
                     key={role.slug}
-                    className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                      inviteRole === role.slug ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                    className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors duration-200 ease-out ${
+                      inviteRole === role.slug ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10' : 'border-gray-200 dark:border-[#1e1e24] hover:bg-gray-50 dark:hover:bg-[#17171b]'
                     }`}
                   >
                     <input
@@ -768,8 +768,8 @@ const MembersPage: React.FC = () => {
                       {icon}
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-900">{role.name}</span>
-                      <p className="text-xs text-gray-500">{role.description}</p>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{role.name}</span>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{role.description}</p>
                     </div>
                   </label>
                 );
@@ -777,12 +777,12 @@ const MembersPage: React.FC = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Personal Message (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Personal Message (optional)</label>
             <textarea
               value={inviteMessage}
               onChange={(e) => setInviteMessage(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               placeholder="Hey, join our team on Boltcall..."
             />
           </div>
@@ -806,27 +806,27 @@ const MembersPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email Addresses</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Addresses</label>
             <textarea
               value={bulkEmails}
               onChange={(e) => setBulkEmails(e.target.value)}
               rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
               placeholder="alice@example.com&#10;bob@example.com&#10;charlie@example.com"
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               {bulkEmails.split(/[\n,;]+/).filter((e) => e.trim()).length} email(s) detected
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Role for all invitees</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Role for all invitees</label>
             <select
               value={bulkRole}
               onChange={(e) => setBulkRole(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {ASSIGNABLE_ROLES.map((r) => (
-                <option key={r.slug} value={r.slug}>{r.name} \u2014 {r.description}</option>
+                <option key={r.slug} value={r.slug}>{r.name} — {r.description}</option>
               ))}
             </select>
           </div>
@@ -846,8 +846,8 @@ const MembersPage: React.FC = () => {
         }
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Change role for <span className="font-medium text-gray-900">{selectedMember?.name || selectedMember?.email}</span>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Change role for <span className="font-medium text-gray-900 dark:text-white">{selectedMember?.name || selectedMember?.email}</span>
           </p>
           <div className="space-y-2">
             {ASSIGNABLE_ROLES.map((role) => {
@@ -856,8 +856,8 @@ const MembersPage: React.FC = () => {
               return (
                 <label
                   key={role.slug}
-                  className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                    editRole === role.slug ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                  className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors duration-200 ease-out ${
+                    editRole === role.slug ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10' : 'border-gray-200 dark:border-[#1e1e24] hover:bg-gray-50 dark:hover:bg-[#17171b]'
                   }`}
                 >
                   <input
@@ -895,20 +895,20 @@ const MembersPage: React.FC = () => {
         }
       >
         <div className="space-y-4">
-          <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-yellow-800">
+          <div className="flex items-start gap-3 p-3 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/30 rounded-lg">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-yellow-800 dark:text-yellow-300">
               Suspending <strong>{selectedMember?.name || selectedMember?.email}</strong> will immediately revoke their access.
               You can reactivate them later.
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Reason (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason (optional)</label>
             <textarea
               value={suspendReason}
               onChange={(e) => setSuspendReason(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               placeholder="Reason for suspension..."
             />
           </div>
@@ -927,9 +927,9 @@ const MembersPage: React.FC = () => {
           </>
         }
       >
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Are you sure you want to remove{' '}
-          <span className="font-medium text-gray-900">{selectedMember?.name || selectedMember?.email}</span> from your
+          <span className="font-medium text-gray-900 dark:text-white">{selectedMember?.name || selectedMember?.email}</span> from your
           team? This action cannot be undone.
         </p>
       </ModalShell>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, CheckCircle, TrendingUp, Zap, Users, HelpCircle, Clock as ClockIcon, AlertCircle, Globe } from 'lucide-react';
 import Header from '../components/Header';
@@ -105,7 +105,7 @@ const AIAgentComparison: React.FC = () => {
             AI agents like Boltcall cost 10–20× less than traditional call centers, respond instantly 24/7, and never miss a lead — making them the clear winner for local businesses that rely on inbound calls.
           </p>
           <ul className="space-y-1.5 text-sm text-gray-700">
-            <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">✓</span> <span><strong>Cost:</strong> $99–200/month vs. $2,000–5,000/month for a call center</span></li>
+            <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">✓</span> <span><strong>Cost:</strong> $549-897/month vs. $2,000–5,000/month for a call center</span></li>
             <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">✓</span> <span><strong>Speed:</strong> 0–5 second response vs. 2–5 minute average hold</span></li>
             <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">✓</span> <span><strong>Availability:</strong> 24/7/365 vs. business hours only</span></li>
             <li className="flex items-start gap-2"><span className="text-blue-500 mt-0.5">✓</span> <span><strong>Missed leads:</strong> 0% vs. 30–50% during peak hours at call centers</span></li>
@@ -136,7 +136,7 @@ const AIAgentComparison: React.FC = () => {
               <tbody>
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Cost per month</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$99-200/month</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">$549-897/month</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">$2,000-5,000/month</td>
                 </tr>
                 <tr className="bg-gray-50">
@@ -172,7 +172,7 @@ const AIAgentComparison: React.FC = () => {
                 <tr className="bg-white">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Missed-lead rate</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">
-                    <span className="text-green-600 font-semibold">0% (never misses a call)</span>
+                    <span className="text-green-600 font-semibold">Answers every call, 24/7</span>
                   </td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">
                     <span className="text-red-600 font-semibold">30-50% during peak hours</span>
@@ -233,7 +233,7 @@ const AIAgentComparison: React.FC = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="text-green-600 mr-2 mt-1">•</span>
-                    <span>Affordable ($99-200/month)</span>
+                    <span>Affordable ($549-897/month)</span>
                   </li>
                   <li className="flex items-start">
                     <span className="text-green-600 mr-2 mt-1">•</span>

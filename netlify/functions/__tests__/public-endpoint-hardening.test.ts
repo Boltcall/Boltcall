@@ -45,9 +45,14 @@ describe('challenge-submit hardening', () => {
 
   it('returns a signed claim token only for the configured winner word', async () => {
     const { testHandler: handler } = await import('../challenge-submit');
+    const challenge_token = signJsonToken({
+      name: 'Noam',
+      email: 'noam@example.com',
+      challenge: 'break-our-ai',
+    }, process.env.CHALLENGE_CLAIM_SECRET!, 60);
 
     const res = await handler(
-      makeEvent({ body: { word: 'swordfish', name: 'Noam', email: 'noam@example.com' } }) as any,
+      makeEvent({ body: { word: 'swordfish', name: 'Noam', email: 'noam@example.com', challenge_token } }) as any,
       {} as any,
     );
 
@@ -62,6 +67,18 @@ describe('challenge-submit hardening', () => {
     );
     expect(claim?.email).toBe('noam@example.com');
     expect(claim?.challenge).toBe('break-our-ai');
+  });
+
+  it('rejects answers without a fresh challenge session token', async () => {
+    const { testHandler: handler } = await import('../challenge-submit');
+
+    const res = await handler(
+      makeEvent({ body: { word: 'swordfish', name: 'Noam', email: 'noam@example.com' } }) as any,
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(403);
+    expect(JSON.parse(res.body).error).toMatch(/challenge session/i);
   });
 
   it('rejects disallowed browser origins', async () => {
@@ -134,6 +151,7 @@ describe('acs-numbers hardening', () => {
 describe('public cost endpoint hardening', () => {
   it('does not create challenge Retell agents when the admin token is missing', async () => {
     delete process.env.ADMIN_API_TOKEN;
+    delete process.env.INTERNAL_API_SECRET;
     process.env.RETELL_API_KEY = 'test-retell-key';
     const { testHandler: handler } = await import('../create-challenge-agent');
 

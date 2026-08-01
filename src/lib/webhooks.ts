@@ -69,6 +69,9 @@ export const createAgentAndKnowledgeBase = async (data: {
     fallbackLine?: string;
     complianceDisclosure?: { enabled?: boolean; text?: string };
     pronunciationGuide?: string;
+    // The pain the user picked in /start onboarding, threaded down so the
+    // agent prompt can prepend a one-line "primary focus" for it.
+    painPoint?: string;
   };
   agentType?: string;
   agentName?: string;

@@ -135,13 +135,13 @@ const PipelineForecast: React.FC<PipelineForecastProps> = ({
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              labelFormatter={(d: string) =>
+              labelFormatter={(d: any) =>
                 new Date(d).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
                 })
               }
-              formatter={(v: number, name: string) => [`$${Math.round(v).toLocaleString()}`, name === 'actual' ? 'Actual' : name === 'forecast' ? 'Forecast' : name === 'band_high' ? 'Upper 80%' : 'Lower 80%']}
+              formatter={(v: any, name: any) => [`$${Math.round(v).toLocaleString()}`, name === 'actual' ? 'Actual' : name === 'forecast' ? 'Forecast' : name === 'band_high' ? 'Upper 80%' : 'Lower 80%']}
             />
             {/* CI band — only renders for the forecast segment */}
             <Area

@@ -326,4 +326,261 @@ describe('agent-self-heal tenant hardening', () => {
       expect.anything(),
     );
   });
+
+  it('does not patch the live Retell LLM when verification fails', async () => {
+    userOwnsAgentMock.mockResolvedValue(true);
+    deductTokensMock.mockResolvedValue({ success: true, tokensDeducted: 20, remainingBalance: 100 });
+    const supabase = makeCustomLlmSupabase();
+    getServiceSupabaseMock.mockReturnValue(supabase.client);
+    chatCompletionMock.mockImplementation(async (systemPrompt: string) => {
+      if (systemPrompt.includes('voice agent debugger')) {
+        return JSON.stringify({
+          failureType: 'missed_booking',
+          failureSummary: 'The agent did not offer a booking slot.',
+          rootCause: 'Booking instruction was too weak.',
+          testMessages: ['I need an appointment'],
+          promptFix: 'Always offer the next available booking slot.',
+          severity: 'high',
+        });
+      }
+      if (systemPrompt.includes('AI agent test engineer')) {
+        return JSON.stringify([
+          { label: 'similar_1', messages: ['Can I book?'] },
+          { label: 'similar_2', messages: ['Need an appointment'] },
+          { label: 'similar_3', messages: ['Do you have tomorrow?'] },
+          { label: 'exact', messages: ['I need an appointment'] },
+        ]);
+      }
+      if (systemPrompt.includes('verification judge')) {
+        return JSON.stringify({ passed: false, score: 20, notes: 'Still fails.' });
+      }
+      return '{}';
+    });
+
+    (fetch as any).mockImplementation(async (url: string) => {
+      const path = new URL(url).pathname;
+      if (path.includes('/get-agent/')) {
+        return { ok: true, json: async () => ({ agent_id: 'agent-owned', agent_name: 'Retell Agent', response_engine: { type: 'retell-llm', llm_id: 'live-llm' } }) };
+      }
+      if (path.includes('/get-retell-llm/')) {
+        return { ok: true, json: async () => ({ llm_id: 'live-llm', general_prompt: 'Original live prompt' }) };
+      }
+      if (path.endsWith('/create-retell-llm')) {
+        return { ok: true, json: async () => ({ llm_id: `temp-llm-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat-agent')) {
+        return { ok: true, json: async () => ({ agent_id: `chat-agent-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat')) {
+        return { ok: true, json: async () => ({ chat_id: `chat-${Math.random()}`, first_message: 'Hi.' }) };
+      }
+      if (path.endsWith('/create-chat-completion')) {
+        return { ok: true, json: async () => ({ messages: [{ role: 'assistant', content: 'Please call later.' }] }) };
+      }
+      if (path.includes('/get-chat/')) {
+        return { ok: true, json: async () => ({ chat_analysis: { call_successful: false } }) };
+      }
+      if (path.includes('/end-chat/') || path.includes('/delete-chat-agent/') || path.includes('/delete-retell-llm/')) {
+        return { ok: true, status: 204, json: async () => ({}) };
+      }
+      throw new Error(`Unexpected Retell path: ${path}`);
+    });
+
+    const { testHandler: handler } = await import('../agent-self-heal');
+    const res = await handler(
+      makePost({
+        action: 'heal',
+        userId: 'user-a',
+        agentId: 'agent-owned',
+        transcript: 'lead: I need an appointment\nagent: Please call later',
+        callAnalysis: { call_successful: false },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).fix.verified).toBe(false);
+    expect(fetch).not.toHaveBeenCalledWith(
+      expect.stringContaining('/update-retell-llm/live-llm'),
+      expect.anything(),
+    );
+  });
+
+  it('normalizes malformed scenario output to exactly four verification checks', async () => {
+    userOwnsAgentMock.mockResolvedValue(true);
+    deductTokensMock.mockResolvedValue({ success: true, tokensDeducted: 20, remainingBalance: 100 });
+    const supabase = makeCustomLlmSupabase();
+    getServiceSupabaseMock.mockReturnValue(supabase.client);
+    let judgeCalls = 0;
+    chatCompletionMock.mockImplementation(async (systemPrompt: string) => {
+      if (systemPrompt.includes('voice agent debugger')) {
+        return JSON.stringify({
+          failureType: 'missed_booking',
+          failureSummary: 'The agent did not offer a booking slot.',
+          rootCause: 'Booking instruction was too weak.',
+          testMessages: ['I need an appointment'],
+          promptFix: 'Always offer the next available booking slot.',
+          severity: 'high',
+        });
+      }
+      if (systemPrompt.includes('AI agent test engineer')) {
+        return JSON.stringify([
+          { label: 'similar_1', messages: ['Can I book?'] },
+          { label: 'similar_2', messages: ['Need an appointment'] },
+          { label: 'similar_3', messages: ['Do you have tomorrow?'] },
+          { label: 'exact', messages: ['I need an appointment'] },
+          { label: 'extra', messages: ['extra failing scenario'] },
+        ]);
+      }
+      if (systemPrompt.includes('verification judge')) {
+        judgeCalls++;
+        return JSON.stringify({ passed: true, score: 95, notes: 'The fix held.' });
+      }
+      return '{}';
+    });
+
+    (fetch as any).mockImplementation(async (url: string) => {
+      const path = new URL(url).pathname;
+      if (path.includes('/get-agent/')) {
+        return { ok: true, json: async () => ({ agent_id: 'agent-owned', agent_name: 'Custom Agent', response_engine: { type: 'custom-llm' } }) };
+      }
+      if (path.endsWith('/create-retell-llm')) {
+        return { ok: true, json: async () => ({ llm_id: `temp-llm-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat-agent')) {
+        return { ok: true, json: async () => ({ agent_id: `chat-agent-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat')) {
+        return { ok: true, json: async () => ({ chat_id: `chat-${Math.random()}`, first_message: 'Hi, I can help book you.' }) };
+      }
+      if (path.endsWith('/create-chat-completion')) {
+        return { ok: true, json: async () => ({ messages: [{ role: 'assistant', content: 'I can book the next slot.' }] }) };
+      }
+      if (path.includes('/get-chat/')) {
+        return { ok: true, json: async () => ({ chat_analysis: { call_successful: false } }) };
+      }
+      if (path.includes('/end-chat/') || path.includes('/delete-chat-agent/') || path.includes('/delete-retell-llm/')) {
+        return { ok: true, status: 204, json: async () => ({}) };
+      }
+      throw new Error(`Unexpected Retell path: ${path}`);
+    });
+
+    const { testHandler: handler } = await import('../agent-self-heal');
+    const res = await handler(
+      makePost({
+        action: 'heal',
+        userId: 'user-a',
+        agentId: 'agent-owned',
+        transcript: 'lead: I need an appointment\nagent: Please call later',
+        callAnalysis: { call_successful: false },
+      }),
+      {} as any,
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).fix.totalRuns).toBe(4);
+    expect(judgeCalls).toBe(4);
+  });
+
+  it('does not ship a fix when the active rubric passes but the failure-specific judge fails', async () => {
+    userOwnsAgentMock.mockResolvedValue(true);
+    deductTokensMock.mockResolvedValue({ success: true, tokensDeducted: 20, remainingBalance: 100 });
+    const supabase = makeCustomLlmSupabase();
+    getServiceSupabaseMock.mockReturnValue({
+      ...supabase.client,
+      from: vi.fn((table: string) => {
+        if (table === 'qa_rubrics') {
+          return {
+            select: () => ({
+              eq: () => ({
+                eq: () => ({
+                  limit: () => ({
+                    maybeSingle: () => Promise.resolve({
+                      data: { criteria: [{ id: 'booking', label: 'Booking', description: 'Books the lead', weight: 1 }] },
+                      error: null,
+                    }),
+                  }),
+                }),
+              }),
+            }),
+          };
+        }
+        return supabase.client.from(table);
+      }),
+    });
+    chatCompletionMock.mockImplementation(async (systemPrompt: string) => {
+      if (systemPrompt.includes('voice agent debugger')) {
+        return JSON.stringify({
+          failureType: 'missed_booking',
+          failureSummary: 'The agent did not offer a booking slot.',
+          rootCause: 'Booking instruction was too weak.',
+          testMessages: ['I need an appointment'],
+          promptFix: 'Always offer the next available booking slot when intent is clear.',
+          severity: 'high',
+        });
+      }
+      if (systemPrompt.includes('AI agent test engineer')) {
+        return JSON.stringify([
+          { label: 'similar_1', messages: ['Can I book?'] },
+          { label: 'similar_2', messages: ['Need an appointment'] },
+          { label: 'similar_3', messages: ['Do you have tomorrow?'] },
+          { label: 'exact', messages: ['I need an appointment'] },
+        ]);
+      }
+      if (systemPrompt.includes('QA evaluator')) {
+        return JSON.stringify({ overall: 100, criteriaScores: {} });
+      }
+      if (systemPrompt.includes('verification judge')) {
+        return JSON.stringify({ passed: false, score: 20, notes: 'The original failure still happens.' });
+      }
+      return '{}';
+    });
+
+    (fetch as any).mockImplementation(async (url: string, options?: RequestInit) => {
+      const path = new URL(url).pathname;
+      if (path.includes('/get-agent/')) {
+        return {
+          ok: true,
+          json: async () => ({ agent_id: 'agent-owned', agent_name: 'Custom Agent', response_engine: { type: 'custom-llm' } }),
+        };
+      }
+      if (path.endsWith('/create-retell-llm')) {
+        return { ok: true, json: async () => ({ llm_id: `temp-llm-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat-agent')) {
+        return { ok: true, json: async () => ({ agent_id: `chat-agent-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat')) {
+        return { ok: true, json: async () => ({ chat_id: `chat-${Math.random()}`, first_message: 'Hi.' }) };
+      }
+      if (path.endsWith('/create-chat-completion')) {
+        return { ok: true, json: async () => ({ messages: [{ role: 'assistant', content: 'Please call later.' }] }) };
+      }
+      if (path.includes('/get-chat/')) {
+        return { ok: true, json: async () => ({ chat_analysis: { call_successful: false } }) };
+      }
+      if (path.includes('/end-chat/') || path.includes('/delete-chat-agent/') || path.includes('/delete-retell-llm/')) {
+        return { ok: true, status: 204, json: async () => ({}) };
+      }
+      throw new Error(`Unexpected Retell path: ${path}`);
+    });
+
+    const { testHandler: handler } = await import('../agent-self-heal');
+    const res = await handler(
+      makePost({
+        action: 'heal',
+        userId: 'user-a',
+        agentId: 'agent-owned',
+        transcript: 'lead: I need an appointment\nagent: Please call later',
+        callAnalysis: { call_successful: false },
+      }),
+      {} as any,
+    );
+
+    const body = JSON.parse(res.body);
+    expect(res.statusCode).toBe(200);
+    expect(body.fix.verified).toBe(false);
+    expect(supabase.state.prompt).toBe('Original custom LLM prompt');
+    expect(supabase.state.healInserted?.status).toBe('max_attempts_reached');
+  });
 });

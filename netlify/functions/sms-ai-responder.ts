@@ -6,6 +6,8 @@ import { buildAgentContext } from './_shared/agent-context';
 import { sendAcsSms } from './_shared/acs-sdk';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { appendChatMessage } from './_shared/chats-sync';
+import { ensureWorkspaceForUser } from './_shared/setup-workspace';
 
 /**
  * SMS AI Responder — Generates AI-powered responses for inbound SMS.
@@ -192,7 +194,10 @@ RESPOND IN THIS EXACT JSON FORMAT:
       .eq('id', messageId)
       .eq('user_id', userId);
 
-    if (!existingLead && qualification.score >= 30) {
+    // Unconditional creation on first inbound contact — was previously gated on
+    // qualification.score >= 30, which dropped low-score leads from the funnel
+    // entirely and starved Task 7's lead-scoring signal of clean coverage.
+    if (!existingLead) {
       const { data: newLead } = await supabase.from('leads').insert({
         user_id: userId, phone: message.from_number, source: 'sms',
         status: qualification.intent === 'booking' ? 'hot' : 'new',
@@ -224,6 +229,21 @@ RESPOND IN THIS EXACT JSON FORMAT:
           .eq('user_id', userId);
         await deductTokens(userId, SMS_AI_TOKEN_COST + TOKEN_COSTS.sms_sent, 'sms_sent', `AI SMS reply to ${message.from_number}`, { message_id: messageId, thread_id: threadId });
         await notifyInfo(`📱 *SMS Auto\\-Reply Sent*\nTo: ${message.from_number}\nIntent: ${qualification.intent} (${qualification.score}/100)\nReply: ${replyText.slice(0, 100)}`);
+        try {
+          const workspace = await ensureWorkspaceForUser<{ id: string }>(userId, 'id');
+          await appendChatMessage(supabase, {
+            userId,
+            workspaceId: workspace?.id || null,
+            sessionId: threadId,
+            source: 'phone',
+            leadId,
+            primaryPhone: message.from_number,
+            sender: 'agent',
+            content: replyText,
+          });
+        } catch (chatSyncErr) {
+          console.error('[sms-ai-responder] chats dual-write failed:', chatSyncErr);
+        }
       } else {
         console.error('[sms-ai-responder] Failed to send SMS:', sendResult.error);
         await supabase.from('sms_conversations').update({ ai_draft_status: 'pending' }).eq('id', messageId).eq('user_id', userId);

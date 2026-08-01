@@ -15,6 +15,7 @@ const ROUTES = [
   { path: "/pricing",                                             priority: "0.9", changefreq: "monthly" },
   { path: "/about",                                               priority: "0.8", changefreq: "monthly" },
   { path: "/contact",                                             priority: "0.7", changefreq: "monthly" },
+  { path: "/credits",                                             priority: "0.7", changefreq: "monthly" },
   { path: "/help-center",                                         priority: "0.7", changefreq: "monthly" },
   { path: "/partners",                                            priority: "0.7", changefreq: "monthly" },
   { path: "/book-a-call",                                         priority: "0.7", changefreq: "monthly" },
@@ -25,6 +26,8 @@ const ROUTES = [
   { path: "/integrations/make",                                   priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/hubspot",                                priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/gohighlevel",                            priority: "0.8", changefreq: "monthly" },
+  { path: "/integrations/wix",                                    priority: "0.8", changefreq: "monthly" },
+  { path: "/integrations/squarespace",                            priority: "0.8", changefreq: "monthly" },
   { path: "/ai-course",                                           priority: "0.8", changefreq: "monthly" },
   { path: "/privacy-policy",                                      priority: "0.5", changefreq: "yearly"  },
   { path: "/terms-of-service",                                    priority: "0.5", changefreq: "yearly"  },
@@ -46,6 +49,8 @@ const ROUTES = [
   // Speed Test Funnel — /speed-test/offer is a funnel step, noindex'd at the
   // page level. Don't list it in the sitemap.
   { path: "/speed-test",                                         priority: "0.8", changefreq: "weekly"  },
+
+  { path: "/response-time-test", priority: "0.8", changefreq: "weekly" },
 
   // Lead Magnets & Audits
   { path: "/lead-magnet",                                        priority: "0.8", changefreq: "weekly"  },
@@ -69,6 +74,9 @@ const ROUTES = [
   { path: "/industries/hvac-answering-service",                  priority: "0.9", changefreq: "monthly" },
   { path: "/industries/plumbing-answering-service",              priority: "0.9", changefreq: "monthly" },
   { path: "/industries/contractor-answering-service",            priority: "0.9", changefreq: "monthly" },
+  { path: "/industries/dentist-answering-service",               priority: "0.9", changefreq: "monthly" },
+  { path: "/industries/lawyer-answering-service",                priority: "0.9", changefreq: "monthly" },
+  { path: "/industries/medspa-answering-service",                priority: "0.9", changefreq: "monthly" },
   // /voice-agent-setup is a private multi-step wizard creating billable
   // Retell + Twilio resources — noindex'd at the page level, not for SEO.
   { path: "/solar",                                               priority: "0.9", changefreq: "monthly" },
@@ -79,7 +87,6 @@ const ROUTES = [
   { path: "/solar-speed-score",                                 priority: "0.8", changefreq: "monthly" },
   { path: "/funnel-optimizer",                                   priority: "0.7", changefreq: "monthly" },
   { path: "/rank-on-google-offer",                               priority: "0.7", changefreq: "monthly" },
-
   // Industry Tools
   { path: "/tools/5-minute-response-playbook",                   priority: "0.8", changefreq: "monthly" },
   { path: "/tools/vet-clinic-revenue-calculator",                priority: "0.8", changefreq: "monthly" },
@@ -152,6 +159,65 @@ const ROUTES = [
   { path: "/compare/boltcall-vs-lindy",                         priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-convin",                        priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-soundhound",                    priority: "0.8", changefreq: "monthly" },
+  { path: "/compare/boltcall-vs-emitrr",                        priority: "0.8", changefreq: "monthly" },
+  { path: "/compare/boltcall-vs-calomation",                    priority: "0.8", changefreq: "monthly" },
+  { path: "/compare/podium-alternatives",                       priority: "0.8", changefreq: "monthly" },
+  { path: "/comparisons/call-centers-vs-boltcall",              priority: "0.8", changefreq: "monthly" },
+  { path: "/comparisons/crm-vs-boltcall",                       priority: "0.8", changefreq: "monthly" },
+  { path: "/comparisons/voicemail-vs-boltcall",                 priority: "0.8", changefreq: "monthly" },
+
+  // Live blog posts previously flagged by scripts/audit-sitemap-diff.mjs
+  { path: "/blog/what-is-ai-receptionist-guide",                priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/is-ai-receptionist-worth-it",                  priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/how-instant-lead-reply-works",                 priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/instant-lead-reply-guide",                     priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/phone-call-scripts",                           priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/tips-for-professional-telephone-etiquette",    priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/answering-service-scheduling",                 priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/benefits-of-outsourced-reception-services",    priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/google-reviews-automation-local-business",     priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/solar-ai-lead-response",                       priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/dental-ai-lead-response",                      priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-for-dentists",                 priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-med-spas",                     priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-for-law-firms",                priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/speed-to-lead-for-law-firms",                  priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-real-estate-agents",           priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-worth-it-roi",                 priority: "0.8", changefreq: "monthly" },
+  { path: "/blog/ai-chatbot-vs-live-chat-phone-answering",      priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-dentist-faq",                  priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-hvac-faq",                     priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-lawyer-faq",                   priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-plumber-faq",                  priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-solar-faq",                    priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-vet-faq",                      priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/ai-receptionist-medspa-faq",                   priority: "0.7", changefreq: "monthly" },
+
+  // Product + landing pages
+  { path: "/agent-architecture",                                priority: "0.7", changefreq: "monthly" },
+  { path: "/ai-agent-comparison",                               priority: "0.8", changefreq: "monthly" },
+  { path: "/ai-revenue-calculator",                             priority: "0.8", changefreq: "monthly" },
+  { path: "/demo",                                              priority: "0.7", changefreq: "monthly" },
+  { path: "/dpa",                                               priority: "0.5", changefreq: "yearly"  },
+  { path: "/law-firm-security",                                 priority: "0.5", changefreq: "yearly"  },
+  { path: "/free-website-package",                              priority: "0.7", changefreq: "monthly" },
+  { path: "/free-website-package/pricing",                      priority: "0.6", changefreq: "monthly" },
+  { path: "/funnel-optimiser",                                  priority: "0.6", changefreq: "monthly" },
+  { path: "/newsletter",                                        priority: "0.6", changefreq: "monthly" },
+  { path: "/personal-injury",                                   priority: "0.7", changefreq: "monthly" },
+  { path: "/lead-magnet/speed-to-lead-stack",                   priority: "0.6", changefreq: "monthly" },
+
+  // Public game / lead capture
+  { path: "/challenge",                                         priority: "0.6", changefreq: "monthly" },
+
+  // Industry calculators
+  { path: "/tools/auto-repair-missed-call-calculator",          priority: "0.7", changefreq: "monthly" },
+  { path: "/tools/chiropractor-patient-recovery-calculator",    priority: "0.7", changefreq: "monthly" },
+  { path: "/tools/cleaning-service-booking-calculator",         priority: "0.7", changefreq: "monthly" },
+  { path: "/tools/insurance-lead-response-scorecard",           priority: "0.7", changefreq: "monthly" },
+  { path: "/tools/landscaping-seasonal-revenue-calculator",     priority: "0.7", changefreq: "monthly" },
+  { path: "/tools/lawyer-intake-calculator",                    priority: "0.7", changefreq: "monthly" },
+  { path: "/tools/roofing-missed-lead-calculator",              priority: "0.7", changefreq: "monthly" },
 ];
 
 // Canonicalize: ensure trailing slash on every path so sitemap URLs match

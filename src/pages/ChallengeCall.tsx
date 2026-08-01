@@ -190,7 +190,7 @@ const ChallengeCall: React.FC = () => {
               {name ? `Good luck, ${name}!` : 'The Challenge'}
             </h1>
             <p className="text-gray-600">
-              You have 60 seconds. Start the call, talk to Aria, and try to get her to reveal the secret word.
+              You have 60 seconds. Start the call, talk to Aria, and try to get her to reveal the secret word. She will give one fair clue near the end.
             </p>
           </motion.div>
 
@@ -230,6 +230,12 @@ const ChallengeCall: React.FC = () => {
                   >
                     <div className="w-28 h-28 bg-blue-50 border-2 border-blue-200 rounded-full grid place-items-center mb-8">
                       <Mic className="w-12 h-12 text-blue-600" />
+                    </div>
+
+                    <div className="mb-6 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-gray-200 bg-gray-50 px-5 py-3">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <span className="font-mono text-2xl font-bold text-[#0B1220]">1:00</span>
+                      <span className="text-sm font-semibold text-gray-600">starts on pickup</span>
                     </div>
 
                     <h2 className="text-xl font-bold text-[#0B1220] mb-2">Ready when you are</h2>

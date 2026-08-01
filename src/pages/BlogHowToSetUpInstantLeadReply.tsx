@@ -242,11 +242,11 @@ const BlogHowToSetUpInstantLeadReply: React.FC = () => {
             </li>
             <li className="flex items-start">
               <CheckCircle className="w-6 h-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-              <span><strong>Wix:</strong> Add Boltcall app from Wix App Market</span>
+              <span><strong>Wix:</strong> Use a Wix Automation → HTTP Request action — full steps in the <a href="/integrations/wix" className="text-blue-600 underline">Wix integration guide</a></span>
             </li>
             <li className="flex items-start">
               <CheckCircle className="w-6 h-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-              <span><strong>Squarespace:</strong> Add webhook in form settings</span>
+              <span><strong>Squarespace:</strong> Zapier bridge or Code Injection — see the <a href="/integrations/squarespace" className="text-blue-600 underline">Squarespace integration guide</a></span>
             </li>
             <li className="flex items-start">
               <CheckCircle className="w-6 h-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />

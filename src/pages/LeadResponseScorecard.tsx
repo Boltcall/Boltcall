@@ -292,7 +292,7 @@ const LeadResponseScorecard: React.FC = () => {
       const results = calculateResults();
 
       // Fire n8n webhook (non-blocking)
-      fetch('https://n8n.srv974118.hstgr.cloud/webhook/lead-magnet', {
+      fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -134,13 +134,29 @@ const handler: Handler = async (event) => {
         return { statusCode: 403, headers, body: JSON.stringify({ error: resources.error }) };
       }
 
-      // Get pending leads (batch of 10 to avoid timeout)
-      const { data: pendingLeads } = await supabase
+      // Atomically claim a batch: flip pending → calling in a single conditional
+      // UPDATE and only keep the rows we actually flipped. Two concurrent runs (or a
+      // retry after a mid-loop timeout) can't grab the same lead — the second UPDATE
+      // won't match rows already moved off 'pending'. This is the double-call guard.
+      // ponytail: batch of 10, no artificial pacing. If the loop ever approaches the
+      // 10s sync budget, rename to outbound-calls-background.ts (26s) — no UI caller
+      // reads the sync response today, so that migration is safe when needed.
+      const { data: candidateRows } = await supabase
         .from('reactivation_leads')
-        .select('*')
+        .select('id')
         .eq('campaign_id', campaignId)
         .eq('call_status', 'pending')
         .limit(10);
+
+      const { data: pendingLeads } = candidateRows && candidateRows.length > 0
+        ? await supabase
+            .from('reactivation_leads')
+            .update({ call_status: 'calling', called_at: new Date().toISOString() })
+            .eq('campaign_id', campaignId)
+            .eq('call_status', 'pending')
+            .in('id', candidateRows.map((r) => r.id))
+            .select('*')
+        : { data: [] as any[] };
 
       if (!pendingLeads || pendingLeads.length === 0) {
         // No more leads — mark campaign as completed
@@ -163,12 +179,7 @@ const handler: Handler = async (event) => {
 
       for (const lead of pendingLeads) {
         try {
-          // Mark as calling
-          await supabase
-            .from('reactivation_leads')
-            .update({ call_status: 'calling', called_at: new Date().toISOString() })
-            .eq('id', lead.id);
-
+          // Already claimed as 'calling' by the atomic batch update above.
           // Initiate outbound call via Retell
           const callResponse = await retell.call.createPhoneCall({
             from_number: campaign.from_number,
@@ -213,11 +224,6 @@ const handler: Handler = async (event) => {
           }
 
           callsInitiated++;
-
-          // Rate limit: wait 2 seconds between calls
-          if (callsInitiated < pendingLeads.length) {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
         } catch (callErr: any) {
           console.error(`[outbound-calls] Call to ${lead.phone} failed:`, callErr);
           await supabase

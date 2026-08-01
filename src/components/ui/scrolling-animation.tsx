@@ -21,7 +21,7 @@ const ANGLE_STEP = (2 * Math.PI) / channels.length
 const START_ANGLE = -Math.PI / 2
 
 function getExpandRadius() {
-  return window.innerWidth < 640 ? 120 : 220
+  return window.innerWidth < 640 ? 96 : 220
 }
 
 interface ScrollingAnimationProps {

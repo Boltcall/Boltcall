@@ -101,7 +101,107 @@ async function triggerOutcomeEvaluation(call: any, agentId: string, userId: stri
     }),
   }).catch(err => {
     console.error('[retell-webhook] Outcome evaluation trigger failed (non-blocking):', err);
+    notifyError('retell-webhook: outcome-eval', err, { callId: call.call_id, userId: userId || undefined });
   });
+}
+
+// ─── Response-time proof widget (Task 9) ────────────────────────────────────
+// Independent of the missed-call/outcome pipelines above — correlates a
+// call_ended event against response_time_demos by call_id, computes answer
+// latency, and emails the report. No-ops for every call that isn't one of
+// these demo calls (the DB lookup simply finds nothing).
+
+async function sendResponseTimeReportEmail(to: string, latencyMs: number): Promise<void> {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) throw new Error('BREVO_API_KEY not configured');
+
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org';
+  const fromName = process.env.BREVO_FROM_NAME || 'Boltcall';
+  const seconds = (latencyMs / 1000).toFixed(1);
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb;color:#111827;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="540" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+        <tr><td style="background:#1d4ed8;padding:24px 32px;">
+          <p style="margin:0;font-size:18px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Boltcall</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;">Boltcall answered your test call in ${seconds}s</h1>
+          <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">
+            Most local businesses miss the call entirely or take 4+ minutes to call back.
+            The first business to respond usually wins the job — here's what instant response is worth to you.
+          </p>
+          <a href="https://boltcall.org/pricing" style="display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:600;font-size:15px;">
+            See Boltcall Plans →
+          </a>
+        </td></tr>
+        <tr><td style="padding:16px 32px;border-top:1px solid #e5e7eb;">
+          <p style="margin:0;font-size:12px;color:#9ca3af;">You requested this test call at boltcall.org. © 2026 Boltcall</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      sender: { name: fromName, email: fromEmail },
+      to: [{ email: to }],
+      subject: `Boltcall answered your test call in ${seconds}s`,
+      htmlContent: html,
+    }),
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(`Brevo error ${response.status}: ${data.message || 'unknown'}`);
+  }
+}
+
+async function correlateResponseTimeDemo(call: any): Promise<void> {
+  const callId = call.call_id;
+  if (!callId) return;
+
+  const supabase = getSupabase();
+  const { data: demo } = await supabase
+    .from('response_time_demos')
+    .select('id, email, dialed_at, status')
+    .eq('call_id', callId)
+    .maybeSingle();
+  if (!demo || demo.status !== 'dialed') return;
+
+  const answered = call.call_status === 'ended' && (call.duration_ms || 0) > 0;
+  if (!answered) {
+    await supabase.from('response_time_demos').update({ status: 'no_answer' }).eq('id', demo.id);
+    return;
+  }
+
+  const dialedAtMs = new Date(demo.dialed_at).getTime();
+  const answeredAtMs = typeof call.start_timestamp === 'number' ? call.start_timestamp : Date.now();
+  const latencyMs = Math.max(0, answeredAtMs - dialedAtMs);
+
+  await supabase
+    .from('response_time_demos')
+    .update({
+      status: 'answered',
+      answered_at: new Date(answeredAtMs).toISOString(),
+      latency_ms: latencyMs,
+    })
+    .eq('id', demo.id);
+
+  try {
+    await sendResponseTimeReportEmail(demo.email, latencyMs);
+    await supabase.from('response_time_demos').update({ status: 'report_sent' }).eq('id', demo.id);
+  } catch (err) {
+    console.error('[retell-webhook] Response-time report email failed:', err);
+  }
 }
 
 const handler: Handler = async (event) => {
@@ -154,6 +254,13 @@ const handler: Handler = async (event) => {
         body: JSON.stringify({ error: 'No call_id in payload' }),
       };
     }
+
+    // Fire-and-forget — no-ops for every call that isn't a response-time
+    // proof demo call (see correlateResponseTimeDemo above).
+    void correlateResponseTimeDemo(call).catch(err => {
+      console.error('[retell-webhook] Response-time correlation failed (non-blocking):', err);
+      notifyError('retell-webhook: response-time-report', err, { callId: call.call_id });
+    });
 
     // Detect direction — Retell sets call_type to 'outbound_api' for API-initiated calls
     const isOutbound = call.call_type === 'outbound_api' || call.call_type === 'outbound_phone_call';
@@ -258,7 +365,10 @@ const handler: Handler = async (event) => {
                   notes: call.call_analysis?.call_summary || null,
                 },
               }),
-            }).catch(err => console.error('[retell-webhook] Completed call CRM sync failed:', err));
+            }).catch(err => {
+              console.error('[retell-webhook] Completed call CRM sync failed:', err);
+              notifyError('retell-webhook: crm-sync', err, { callId: call.call_id, userId: agentOwner.user_id });
+            });
           }
 
           // ── Outcome evaluation: record win or trigger self-heal ──────────
@@ -279,6 +389,7 @@ const handler: Handler = async (event) => {
           body: JSON.stringify({ call }),
         }).catch(err => {
           console.error('[retell-webhook] Call scorer trigger failed (non-blocking):', err);
+          notifyError('retell-webhook: call-scorer', err, { callId: call.call_id, userId: agentOwner?.user_id });
         });
       }
 
@@ -333,29 +444,44 @@ const handler: Handler = async (event) => {
 
     const config = (featureRow?.missed_call_config || {}) as Record<string, any>;
 
-    // Step 3: Create a lead for inbound missed calls. Outbound leads already exist from lead-webhook.
+    // Step 3: Link to an existing lead for inbound missed calls, or create one.
+    // Previously inserted a fresh `leads` row on every missed call with no
+    // dedup — a caller who called twice without booking spawned two rows.
     let lead: { id: string } | null = null;
     if (!isOutbound) {
-      const { data: newLead, error: leadError } = await supabase
+      const { data: existingMissedLead } = await supabase
         .from('leads')
-        .insert({
-          first_name: null,
-          last_name: null,
-          phone: callerPhone,
-          source: 'missed_call',
-          status: 'pending',
-          user_id: userId,
-          raw_data: call,
-        })
         .select('id')
-        .single();
-      if (leadError) {
-        console.error('[retell-webhook] Failed to create lead:', leadError);
-        await notifyError('retell-webhook: Lead creation failed', leadError, {
-          callerPhone, userId, callId: call.call_id, callStatus: call.call_status,
-        });
+        .eq('phone', callerPhone)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingMissedLead) {
+        lead = existingMissedLead;
       } else {
-        lead = newLead;
+        const { data: newLead, error: leadError } = await supabase
+          .from('leads')
+          .insert({
+            first_name: null,
+            last_name: null,
+            phone: callerPhone,
+            source: 'missed_call',
+            status: 'pending',
+            user_id: userId,
+            raw_data: call,
+          })
+          .select('id')
+          .single();
+        if (leadError) {
+          console.error('[retell-webhook] Failed to create lead:', leadError);
+          await notifyError('retell-webhook: Lead creation failed', leadError, {
+            callerPhone, userId, callId: call.call_id, callStatus: call.call_status,
+          });
+        } else {
+          lead = newLead;
+        }
       }
     } else {
       const metadataLeadId = typeof call.metadata?.lead_id === 'string' ? call.metadata.lead_id : null;
@@ -439,6 +565,22 @@ const handler: Handler = async (event) => {
           .eq('is_active', true);
 
         if (sequences && sequences.length > 0) {
+          // Dedup: an active enrollment for this number already owns the
+          // follow-up. A second missed call must not double-enroll — that
+          // means duplicate texts to the same lead.
+          const { data: activeEnrollment } = await supabase
+            .from('followup_enrollments')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('contact_phone', callerPhone)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle();
+
+          if (activeEnrollment) {
+            console.log(`[retell-webhook] Skipping enrollment — active enrollment already exists for ${callerPhone}`);
+            sequenceControlledTextback = true;
+          } else {
           for (const seq of sequences) {
             // Get the first step's delay to calculate next_step_at
             const { data: firstStep } = await supabase
@@ -528,6 +670,13 @@ const handler: Handler = async (event) => {
             const { error: enrollmentError } = await supabase.from('followup_enrollments').insert(enrollmentInsert);
 
             if (enrollmentError) {
+              if ((enrollmentError as { code?: string }).code === '23505') {
+                // Lost the race to a concurrent webhook — the winner's
+                // enrollment owns the follow-up. Not an error.
+                console.log(`[retell-webhook] Enrollment race lost for ${callerPhone} (unique index) — skipping`);
+                sequenceControlledTextback = true;
+                continue;
+              }
               console.error('[retell-webhook] Failed to enroll no-answer sequence:', enrollmentError);
               await notifyError('retell-webhook: Follow-up enrollment failed', enrollmentError, {
                 callerPhone, userId, callId: call.call_id, sequenceId: seq.id,
@@ -540,6 +689,7 @@ const handler: Handler = async (event) => {
           }
           if (sequenceEnrollmentCount > 0) {
             console.log(`[retell-webhook] Auto-enrolled ${callerPhone} in ${sequenceEnrollmentCount} ${triggerType} sequence(s)`);
+          }
           }
         }
       } catch (enrollErr) {
@@ -610,6 +760,36 @@ const handler: Handler = async (event) => {
     // Step 6: Calculate scheduled time based on delay config
     const delayMinutes = config.delay_minutes ?? 0;
     const scheduledFor = new Date(Date.now() + delayMinutes * 60 * 1000).toISOString();
+
+    // Step 7a: Dedup — don't stack a second text-back if one was already
+    // queued or sent to this number in the last 24h (second missed call
+    // from the same lead = duplicate texts otherwise). Best-effort: a
+    // failed dedup check must never block the text-back itself.
+    let recentTextback: { id: string } | null = null;
+    try {
+      const { data } = await supabase
+        .from('scheduled_messages')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('recipient_phone', callerPhone)
+        .eq('type', 'missed_call_textback')
+        .in('status', ['scheduled', 'sent'])
+        .gte('scheduled_for', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .limit(1)
+        .maybeSingle();
+      recentTextback = data;
+    } catch (dedupErr) {
+      console.error('[retell-webhook] Text-back dedup check failed (non-blocking):', dedupErr);
+    }
+
+    if (recentTextback) {
+      console.log(`[retell-webhook] Text-back deduped — recent message already exists for ${callerPhone}`);
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ ok: true, missed: true, textback: false, reason: 'deduped', lead_created: !!lead }),
+      };
+    }
 
     // Step 7: Insert scheduled message
     const { error: msgError } = await supabase.from('scheduled_messages').insert({

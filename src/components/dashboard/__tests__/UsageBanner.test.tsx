@@ -19,8 +19,17 @@ let mockUsageData: any = {
   planTier: 'free',
 };
 
+let mockTokenData: any = {
+  monthlyAllocation: 1000,
+  tokensUsed: 0,
+};
+
 vi.mock('../../../hooks/useUsageTracking', () => ({
   useUsageTracking: () => mockUsageData,
+}));
+
+vi.mock('../../../contexts/TokenContext', () => ({
+  useTokens: () => mockTokenData,
 }));
 
 vi.mock('../../../lib/plan-limits', async () => {
@@ -44,13 +53,17 @@ describe('UsageBanner', () => {
       getAllResourceUsages: () => [],
       planTier: 'free',
     };
+    mockTokenData = {
+      monthlyAllocation: 1000,
+      tokensUsed: 0,
+    };
   });
 
   it('should render nothing when no resources are at or approaching limit', () => {
     mockUsageData.getAllResourceUsages = () => [
       { resource: 'ai_voice_minutes', current: 2, limit: 10, percentage: 20, isAtLimit: false, isApproaching: false },
     ];
-    const { container } = renderBanner();
+    renderBanner();
     // No warning banners should be visible
     expect(screen.queryByText(/limit reached/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Approaching/)).not.toBeInTheDocument();
@@ -63,67 +76,70 @@ describe('UsageBanner', () => {
       ],
       planTier: 'enterprise',
     };
-    const { container } = renderBanner();
+    renderBanner();
     expect(screen.queryByText(/limit reached/)).not.toBeInTheDocument();
   });
 
-  it('should show red banner when resource is at limit', () => {
-    mockUsageData.getAllResourceUsages = () => [
-      { resource: 'ai_voice_minutes', current: 10, limit: 10, percentage: 100, isAtLimit: true, isApproaching: false },
-    ];
+  it('should show red banner when shared credits are exhausted', () => {
+    mockTokenData = {
+      monthlyAllocation: 1000,
+      tokensUsed: 1000,
+    };
     renderBanner();
-    expect(screen.getByText(/AI Voice Minutes limit reached/)).toBeInTheDocument();
-    // There may be multiple "Upgrade" links; just confirm at least one exists
+    expect(screen.getByText(/Shared credits exhausted/)).toBeInTheDocument();
     expect(screen.getAllByText(/Upgrade/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('should show usage numbers in the at-limit banner', () => {
-    mockUsageData.getAllResourceUsages = () => [
-      { resource: 'sms_sent', current: 20, limit: 20, percentage: 100, isAtLimit: true, isApproaching: false },
-    ];
+  it('should show usage numbers in the shared-pool banner', () => {
+    mockTokenData = {
+      monthlyAllocation: 1000,
+      tokensUsed: 1000,
+    };
     renderBanner();
-    expect(screen.getByText(/20/)).toBeInTheDocument();
+    expect(screen.getByText(/1,000 of 1,000 credits/)).toBeInTheDocument();
   });
 
-  it('should show amber banner when resource is approaching limit', () => {
-    mockUsageData.getAllResourceUsages = () => [
-      { resource: 'ai_chat_messages', current: 45, limit: 50, percentage: 90, isAtLimit: false, isApproaching: true },
-    ];
+  it('should show amber banner when shared credits are running low', () => {
+    mockTokenData = {
+      monthlyAllocation: 1000,
+      tokensUsed: 850,
+    };
     renderBanner();
-    expect(screen.getByText(/Approaching.*AI Chat Messages limit/i)).toBeInTheDocument();
+    expect(screen.getByText(/Shared credits running low/)).toBeInTheDocument();
     expect(screen.getByText(/View Usage/)).toBeInTheDocument();
   });
 
-  it('should show "multiple limits" when multiple resources are approaching', () => {
+  it('should still show structural warnings separately', () => {
     mockUsageData.getAllResourceUsages = () => [
-      { resource: 'ai_voice_minutes', current: 9, limit: 10, percentage: 90, isAtLimit: false, isApproaching: true },
-      { resource: 'sms_sent', current: 17, limit: 20, percentage: 85, isAtLimit: false, isApproaching: true },
+      { resource: 'phone_numbers', current: 1, limit: 1, percentage: 100, isAtLimit: true, isApproaching: false },
     ];
     renderBanner();
-    expect(screen.getByText(/multiple limits/)).toBeInTheDocument();
+    expect(screen.getByText(/Phone Numbers limit reached/)).toBeInTheDocument();
   });
 
   it('should have an Upgrade link pointing to plan-billing', () => {
-    mockUsageData.getAllResourceUsages = () => [
-      { resource: 'ai_voice_minutes', current: 10, limit: 10, percentage: 100, isAtLimit: true, isApproaching: false },
-    ];
+    mockTokenData = {
+      monthlyAllocation: 1000,
+      tokensUsed: 1000,
+    };
     renderBanner();
     const upgradeLink = screen.getByText('Upgrade').closest('a');
     expect(upgradeLink).toHaveAttribute('href', '/dashboard/settings/plan-billing');
   });
 
-  it('should dismiss at-limit banner when X is clicked', () => {
-    mockUsageData.getAllResourceUsages = () => [
-      { resource: 'ai_voice_minutes', current: 10, limit: 10, percentage: 100, isAtLimit: true, isApproaching: false },
-    ];
+  it('should dismiss shared-pool banner when X is clicked', () => {
+    mockTokenData = {
+      monthlyAllocation: 1000,
+      tokensUsed: 1000,
+    };
     renderBanner();
-    expect(screen.getByText(/AI Voice Minutes limit reached/)).toBeInTheDocument();
+    expect(screen.getByText(/Shared credits exhausted/)).toBeInTheDocument();
 
     // Find and click the dismiss button (the X button next to upgrade)
     const dismissButtons = screen.getAllByRole('button');
     const xButton = dismissButtons.find((btn) => btn.querySelector('svg'));
     if (xButton) fireEvent.click(xButton);
 
-    expect(screen.queryByText(/AI Voice Minutes limit reached/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Shared credits exhausted/)).not.toBeInTheDocument();
   });
 });

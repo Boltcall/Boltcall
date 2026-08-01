@@ -2,16 +2,51 @@ export const PENDING_SETUP_STORAGE_KEY = 'boltcall_pending_agent_setup';
 
 export const INDUSTRY_OPTIONS = [
   { value: 'other', label: 'Other' },
+  { value: 'plumbing', label: 'Plumbing' },
+  { value: 'hvac', label: 'HVAC' },
   { value: 'roofing', label: 'Roofing' },
-  { value: 'law-firms', label: 'Law Firms' },
-  { value: 'med-spa', label: 'Med Spa' },
+  { value: 'dental', label: 'Dental' },
+  { value: 'med_spa', label: 'Med Spa' },
+  { value: 'law_firm', label: 'Law firm' },
   { value: 'solar', label: 'Solar' },
+  { value: 'vet', label: 'Veterinary' },
+  { value: 'real_estate', label: 'Real estate' },
+  { value: 'auto_repair', label: 'Auto repair' },
+  { value: 'cleaning', label: 'Cleaning services' },
+  { value: 'landscaping', label: 'Landscaping' },
+  { value: 'electrical', label: 'Electrical' },
+  { value: 'pest_control', label: 'Pest control' },
+  { value: 'moving', label: 'Moving' },
+  { value: 'restaurant', label: 'Restaurant' },
+  { value: 'fitness', label: 'Fitness / Gym' },
+  { value: 'accounting', label: 'Accounting / Tax' },
+  { value: 'towing', label: 'Towing' },
+  { value: 'locksmith', label: 'Locksmith' },
+  { value: 'garage_door', label: 'Garage door' },
+  { value: 'pool_service', label: 'Pool service' },
+  { value: 'painting', label: 'Painting' },
+  { value: 'chiropractor', label: 'Chiropractor' },
 ] as const;
 
 export const VOICE_OPTIONS = [
-  { value: '11labs-Grace', label: 'Grace', description: 'Warm and confident' },
-  { value: '11labs-Nico', label: 'Nico', description: 'Direct and energetic' },
-  { value: 'retell-Leland', label: 'Leland', description: 'Polished and calm' },
+  {
+    value: '11labs-Grace',
+    label: 'Grace',
+    description: 'Warm and confident',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/grace.mp3',
+  },
+  {
+    value: '11labs-Nico',
+    label: 'Nico',
+    description: 'Direct and energetic',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/11labs-pdBC2RxjF7wu7aBAu86E.mp3',
+  },
+  {
+    value: 'retell-Leland',
+    label: 'Leland',
+    description: 'Polished and calm',
+    previewUrl: 'https://retell-utils-public.s3.us-west-2.amazonaws.com/minimax-Leland.mp3',
+  },
 ] as const;
 
 export const GOAL_OPTIONS = [
@@ -21,6 +56,7 @@ export const GOAL_OPTIONS = [
 
 export const TONE_OPTIONS = [
   { value: 'friendly_concise', label: 'Friendly and concise' },
+  { value: 'confident_direct', label: 'Confident and direct' },
   { value: 'formal', label: 'Professional' },
 ] as const;
 
@@ -36,6 +72,12 @@ export interface PendingAgentSetup {
   transferNumber: string;
   kbFileNames?: string[];
   createdAt: string;
+  // Optional enrichment from the /start onboarding — website-extracted
+  // knowledge that seeds the agents' KB instead of launching them empty.
+  services?: Array<{ name: string; duration: number; price: number }>;
+  faqs?: Array<{ question: string; answer: string }>;
+  logoUrl?: string;
+  painPoint?: string;
 }
 
 export function savePendingAgentSetup(data: PendingAgentSetup) {

@@ -17,23 +17,31 @@ class Boltcall_API {
 
 		$endpoint = BOLTCALL_API_BASE . '/.netlify/functions/lead-webhook/' . rawurlencode( $user_id );
 
+		$clean = self::sanitize_payload( $data );
 		$payload = array_merge(
 			array(
 				'source'     => $source,
 				'source_url' => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : home_url( '/' ),
 			),
-			self::sanitize_payload( $data )
+			self::normalize_lead_fields( $clean ),
+			$clean
 		);
+
+		$headers = array(
+			'Content-Type' => 'application/json',
+			'User-Agent'   => 'Boltcall-WP/' . BOLTCALL_VERSION . '; ' . home_url( '/' ),
+		);
+		$api_key = trim( (string) get_option( 'boltcall_api_key', '' ) );
+		if ( '' !== $api_key && 0 === strpos( $api_key, 'bc_' ) ) {
+			$headers['Authorization'] = 'Bearer ' . $api_key;
+		}
 
 		$response = wp_remote_post(
 			$endpoint,
 			array(
 				'timeout'     => 8,
 				'redirection' => 2,
-				'headers'     => array(
-					'Content-Type' => 'application/json',
-					'User-Agent'   => 'Boltcall-WP/' . BOLTCALL_VERSION . '; ' . home_url( '/' ),
-				),
+				'headers'     => $headers,
 				'body'        => wp_json_encode( $payload ),
 			)
 		);
@@ -66,6 +74,28 @@ class Boltcall_API {
 			),
 			'wordpress_test'
 		);
+	}
+
+	// Map common form-field synonyms (your-email, contact_phone, full_name, ...) to
+	// the { email, phone, name } the webhook expects. Skips keys already present.
+	public static function normalize_lead_fields( $clean ) {
+		$syn = array(
+			'email' => array( 'email', 'your_email', 'user_email', 'contact_email', 'e_mail', 'email_address', 'input_email' ),
+			'phone' => array( 'phone', 'your_phone', 'phone_number', 'tel', 'telephone', 'mobile', 'contact_phone', 'input_phone' ),
+			'name'  => array( 'name', 'your_name', 'full_name', 'fullname', 'contact_name', 'input_name' ),
+		);
+		$lookup = array();
+		foreach ( $clean as $k => $v ) {
+			$lookup[ str_replace( '-', '_', $k ) ] = $v;
+		}
+		$out = array();
+		foreach ( $syn as $target => $keys ) {
+			if ( isset( $lookup[ $target ] ) && '' !== $lookup[ $target ] ) continue;
+			foreach ( $keys as $k ) {
+				if ( isset( $lookup[ $k ] ) && '' !== $lookup[ $k ] ) { $out[ $target ] = $lookup[ $k ]; break; }
+			}
+		}
+		return $out;
 	}
 
 	public static function sanitize_payload( $data ) {

@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getSupabase } from './_shared/token-utils';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isLocalDev } from './_shared/prod-detect';
 
 // Instantly webhook receiver — captures lead-level events for attribution.
 // Configured in Instantly dashboard at:
@@ -23,9 +24,14 @@ const handler: Handler = async (event) => {
   }
 
   // Signature verification: Instantly signs payloads via HMAC on the body
-  // using INSTANTLY_WEBHOOK_SECRET. Skip verification if secret unset (dev).
+  // using INSTANTLY_WEBHOOK_SECRET. Fail-closed in production.
   const secret = process.env.INSTANTLY_WEBHOOK_SECRET;
-  if (secret) {
+  if (!secret) {
+    if (!isLocalDev()) {
+      console.error('[instantly-webhook] INSTANTLY_WEBHOOK_SECRET unset — refusing');
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server misconfigured' }) };
+    }
+  } else {
     const sig = event.headers['x-instantly-signature'] || event.headers['X-Instantly-Signature'];
     if (!sig) {
       return { statusCode: 401, headers, body: JSON.stringify({ error: 'Missing signature' }) };

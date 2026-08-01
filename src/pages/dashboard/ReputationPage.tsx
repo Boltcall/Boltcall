@@ -271,7 +271,7 @@ const ReputationPage: React.FC = () => {
                     </div>
                     <button
                       onClick={() => setShowSetupModal(false)}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#1a1a1f] rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-[#1a1a1f] rounded-lg transition-colors duration-200 ease-out"
                     >
                       <X className="w-5 h-5 text-gray-400" />
                     </button>
@@ -296,7 +296,7 @@ const ReputationPage: React.FC = () => {
                     <p className="text-xs text-gray-400">Takes about 3 minutes</p>
                     <button
                       onClick={() => { setShowSetupModal(false); setIsEditing(true); }}
-                      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+                      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors duration-200 ease-out"
                     >
                       Let's Go
                       <ArrowRight className="w-4 h-4" />
@@ -331,7 +331,7 @@ const ReputationPage: React.FC = () => {
           </div>
           <button
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 font-medium transition-colors duration-200 ease-out"
           >
             <Pencil className="w-3.5 h-3.5" />
             Edit Settings
@@ -607,9 +607,9 @@ const ReputationPage: React.FC = () => {
           </div>
           <button
             onClick={() => { setSmsEnabled(!smsEnabled); dirty(); }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${smsEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-out ${smsEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`}
           >
-            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${smsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ease-out ${smsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
           </button>
         </div>
 

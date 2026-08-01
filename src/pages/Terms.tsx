@@ -3,7 +3,7 @@ import { updateMetaDescription } from '../lib/utils';
 import { Scale, FileText, Shield, AlertTriangle, CreditCard, Phone, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const LAST_UPDATED = 'May 2026';
+const LAST_UPDATED = 'July 2026';
 
 const Terms: React.FC = () => {
   React.useEffect(() => {
@@ -116,12 +116,45 @@ const Terms: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* SECTION 6 — Payment Terms */}
+        {/* SECTION 6 — AI Accuracy, Regulated Professions & No Professional Advice */}
+        <motion.div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }}>
+          <div className="flex items-start gap-4 mb-4">
+            <div className="p-2 bg-orange-50 rounded-lg shrink-0"><AlertTriangle className="w-5 h-5 text-orange-600" /></div>
+            <h2 className="text-2xl font-bold text-gray-900">6. AI Accuracy, Regulated Professions &amp; No Professional Advice</h2>
+          </div>
+          <div className="text-gray-700 text-sm leading-relaxed space-y-3">
+            <p><strong>AI accuracy.</strong> The Service uses artificial intelligence and automated speech recognition, which may mishear, misclassify, or record caller information incorrectly. Boltcall is an intake and lead-capture tool, not a system of record for deadlines, appointments, or case management. You must independently verify all information captured by the Service — including names, dates, deadlines, and callback numbers — before relying on it for any consequential decision.</p>
+            <p><strong>No professional advice.</strong> If you operate in a regulated profession (including law, medicine, dentistry, mental health, accounting, or financial services), the AI agent does not and cannot provide legal, medical, financial, or other professional advice, and no professional relationship (including no attorney-client relationship) is formed by any interaction with the Service. The AI agent's role is limited to intake, scheduling, and message-taking. You remain solely responsible for all professional, ethical, and regulatory obligations applicable to your practice, including conflicts checks, deadline calendaring, confidentiality, and any rules governing advertising or client communications (e.g., bar association or medical board rules).</p>
+            <p>You must not configure or instruct the AI agent to give advice, assess the merits of a matter, predict outcomes, quote binding terms, or otherwise act beyond intake and scheduling for any regulated-profession use case.</p>
+            <p>Law firms: see our <a href="/law-firm-security" className="text-blue-600 hover:underline">Security &amp; Compliance for Law Firms</a> page for a plain-language summary of the guardrails and data handling described here.</p>
+          </div>
+        </motion.div>
+
+        {/* SECTION 7 — Guarantee Terms */}
+        <motion.div id="guarantee" className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }}>
+          <div className="flex items-start gap-4 mb-4">
+            <div className="p-2 bg-emerald-50 rounded-lg shrink-0"><Shield className="w-5 h-5 text-emerald-600" /></div>
+            <h2 className="text-2xl font-bold text-gray-900">7. Guarantee Terms</h2>
+          </div>
+          <div className="text-gray-700 text-sm leading-relaxed space-y-3">
+            <p>Where Boltcall advertises a money-back or results guarantee (e.g., on a pricing page), the following terms apply and control over any shorter marketing description:</p>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li>The guarantee applies only to paying subscribers on an eligible plan, starting from the date the AI agent is fully configured and live on your account.</li>
+              <li>To claim the guarantee, contact <a href="mailto:support@boltcall.org" className="text-blue-600 hover:underline">support@boltcall.org</a> within the stated window (e.g., 30 days) with your account details.</li>
+              <li>The guarantee requires that you have not materially misconfigured the agent, disabled call routing, or otherwise prevented the Service from operating as intended.</li>
+              <li><strong>Sole and exclusive remedy:</strong> if the guarantee is not met, your sole remedy is a refund of fees paid for the applicable period, or an account credit at Boltcall's discretion. The guarantee does not create any additional liability, warranty, or right to damages beyond the refund described here.</li>
+            </ul>
+          </div>
+        </motion.div>
+
+        {/* SECTION 8 — Payment Terms */}
         <motion.div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
           <div className="flex items-start gap-4 mb-4">
             <div className="p-2 bg-emerald-50 rounded-lg shrink-0"><CreditCard className="w-5 h-5 text-emerald-600" /></div>
-            <h2 className="text-2xl font-bold text-gray-900">6. Payment Terms</h2>
+            <h2 className="text-2xl font-bold text-gray-900">8. Payment Terms</h2>
           </div>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
             <p>Subscriptions are billed monthly or annually in advance. Prices are displayed in USD or ILS as selected. All fees are exclusive of applicable taxes.</p>
@@ -136,7 +169,7 @@ const Terms: React.FC = () => {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <div className="flex items-start gap-4 mb-4">
             <div className="p-2 bg-blue-50 rounded-lg shrink-0"><Shield className="w-5 h-5 text-blue-600" /></div>
-            <h2 className="text-2xl font-bold text-gray-900">7. Data &amp; Privacy</h2>
+            <h2 className="text-2xl font-bold text-gray-900">9. Data &amp; Privacy</h2>
           </div>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
             <p>Our collection and use of your personal data is governed by our <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a>, which is incorporated into these Terms by reference.</p>
@@ -148,28 +181,31 @@ const Terms: React.FC = () => {
         {/* SECTION 8 — Intellectual Property */}
         <motion.div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Intellectual Property</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Intellectual Property</h2>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
             <p>Boltcall and its licensors own all rights in the Service, including software, UI, AI models, and documentation. You receive a limited, non-exclusive, non-transferable license to use the Service during your subscription.</p>
             <p>You retain ownership of your data. You grant Boltcall a limited license to process your data solely to provide the Service. We do not use your customer conversations to train shared AI models without your consent.</p>
           </div>
         </motion.div>
 
-        {/* SECTION 9 — Limitation of Liability */}
+        {/* SECTION 11 — Disclaimers, Limitation of Liability & Indemnification */}
         <motion.div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Limitation of Liability</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Disclaimers, Limitation of Liability &amp; Indemnification</h2>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
-            <p>To the maximum extent permitted by applicable law, Boltcall's total liability for any claim arising from these Terms or the Service is limited to the fees you paid in the 12 months preceding the claim.</p>
-            <p>In no event is Boltcall liable for indirect, incidental, consequential, or punitive damages, including lost profits, lost leads, or business interruption — even if advised of the possibility of such damages.</p>
+            <p><strong>No warranty.</strong> The Service is provided "AS IS" and "AS AVAILABLE," without warranties of any kind, whether express, implied, or statutory, including any implied warranty of merchantability, fitness for a particular purpose, or non-infringement. Boltcall does not warrant that the Service will be uninterrupted, error-free, or that AI-generated output will be accurate or complete.</p>
+            <p><strong>Liability cap.</strong> To the maximum extent permitted by applicable law, Boltcall's total liability for any claim arising from these Terms or the Service is limited to the fees you paid in the 12 months preceding the claim.</p>
+            <p><strong>Excluded damages.</strong> In no event is Boltcall liable for indirect, incidental, consequential, or punitive damages, including lost profits, lost leads, lost clients, or business interruption — even if advised of the possibility of such damages.</p>
+            <p><strong>Sole remedy.</strong> Where these Terms or any Boltcall guarantee provide a specific remedy (such as a service credit or refund under Section 7), that remedy is your sole and exclusive remedy for the applicable issue.</p>
+            <p><strong>Your indemnification of us.</strong> You agree to indemnify and hold Boltcall harmless from any third-party claim, loss, or expense (including reasonable legal fees) arising from: (a) your use of the Service, (b) your failure to comply with professional, regulatory, or legal obligations applicable to your business, (c) content or instructions you configure into the AI agent, or (d) your violation of these Terms or applicable law.</p>
             <p>Nothing in these Terms limits liability that cannot be excluded under mandatory Israeli consumer or data-protection law.</p>
           </div>
         </motion.div>
 
-        {/* SECTION 10 — Termination */}
+        {/* SECTION 12 — Termination */}
         <motion.div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Termination</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Termination</h2>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
             <p>You may cancel your subscription at any time through your account dashboard. We may terminate or suspend your account for material breach of these Terms, non-payment, or illegal use, with or without notice depending on severity.</p>
             <p>Upon termination, your access to the Service ceases. You may request a data export within 30 days of termination — after which we may delete your data in accordance with our <a href="/privacy-policy" className="text-blue-600 hover:underline">Privacy Policy</a> retention schedule. Payment obligations for services already rendered survive termination.</p>
@@ -179,24 +215,25 @@ const Terms: React.FC = () => {
         {/* SECTION 11 — Governing Law */}
         <motion.div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Governing Law &amp; Dispute Resolution</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">13. Governing Law, Arbitration &amp; Dispute Resolution</h2>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
-            <p>These Terms are governed by the laws of the <strong>State of Israel</strong>. Any dispute arising from these Terms or the Service shall be submitted to the exclusive jurisdiction of the <strong>Tel Aviv-Yafo District Court</strong> (or the relevant Magistrate's Court for smaller claims).</p>
+            <p>These Terms are governed by the laws of the <strong>State of Israel</strong>. Subject to the arbitration agreement below, any dispute arising from these Terms or the Service shall be submitted to the exclusive jurisdiction of the <strong>Tel Aviv-Yafo District Court</strong> (or the relevant Magistrate's Court for smaller claims).</p>
+            <p><strong>Arbitration (customers outside Israel).</strong> If you are located outside Israel, any dispute arising from these Terms or the Service — other than claims for injunctive relief to protect intellectual property or confidential information — will be resolved by binding arbitration on an individual basis, rather than in court, except where prohibited by mandatory local law. The arbitration will be conducted in English, seated in Tel Aviv, Israel, under rules to be specified at the time a dispute arises. Judgment on the arbitration award may be entered in any court of competent jurisdiction. Nothing here waives protections you have as a consumer under mandatory law in your jurisdiction.</p>
             <p>Before initiating formal proceedings, both parties agree to attempt good-faith resolution by contacting <a href="mailto:legal@boltcall.org" className="text-blue-600 hover:underline">legal@boltcall.org</a>. If you are a consumer under Israeli Consumer Protection Law, you also have the right to file a complaint with the Israeli Consumer Protection and Fair Trade Authority (הרשות להגנת הצרכן).</p>
           </div>
         </motion.div>
 
-        {/* SECTION 12 — Changes */}
+        {/* SECTION 14 — Changes */}
         <motion.div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">12. Changes to These Terms</h2>
-          <p className="text-gray-700 text-sm leading-relaxed">We may update these Terms to reflect changes in law, our services, or our policies. We will notify you by email at least 14 days before material changes take effect. Continued use after the effective date constitutes acceptance. The current version is always at <a href="/terms-of-service" className="text-blue-600 hover:underline">boltcall.org/terms-of-service</a>.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">14. Changes to These Terms</h2>
+          <p className="text-gray-700 text-sm leading-relaxed">We may update these Terms to reflect changes in law, our services, or our policies. We will notify you by email at least 14 days before material changes take effect, and re-prompt acceptance in-app for material changes. Continued use after the effective date constitutes acceptance. The current version is always at <a href="/terms-of-service" className="text-blue-600 hover:underline">boltcall.org/terms-of-service</a>.</p>
         </motion.div>
 
-        {/* SECTION 13 — Contact */}
+        {/* SECTION 15 — Contact */}
         <motion.div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-8"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
-          <h2 className="text-2xl font-bold text-gray-900 mb-5">13. Contact</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-5">15. Contact</h2>
           <div className="text-sm text-gray-700 space-y-2">
             <p><strong>General:</strong> <a href="mailto:support@boltcall.org" className="text-blue-600 hover:underline">support@boltcall.org</a></p>
             <p><strong>Legal / contracts:</strong> <a href="mailto:legal@boltcall.org" className="text-blue-600 hover:underline">legal@boltcall.org</a></p>

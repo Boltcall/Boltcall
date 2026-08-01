@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { updateMetaDescription } from '../../lib/utils';
 import { motion } from 'framer-motion';
-import { Check, Zap, Database, Image, Globe, Server, Star, Phone, User, Mail } from 'lucide-react';
+import { Check, Zap, Database, Image, Globe, Server, Phone, User, Mail } from 'lucide-react';
 import GiveawayBar from '../../components/GiveawayBar';
 import Header from '../../components/Header';
 import Button from '../../components/ui/Button';
@@ -44,30 +44,34 @@ const SpeedTestOffer: React.FC = () => {
     { icon: Server, text: 'Hosting recommendations' },
   ];
 
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      company: 'Tech Startup',
-      text: 'Our site speed improved by 60% in just one week!',
-      rating: 5,
-    },
-    {
-      name: 'Mike Chen',
-      company: 'E-commerce Store',
-      text: 'Best investment we made. Load time cut in half.',
-      rating: 5,
-    },
-  ];
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      const res = await fetch('/.netlify/functions/speed-test-offer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubmitError(data?.error || 'Something went wrong. Try again.');
+        return;
+      }
+      setIsSubmitted(true);
+    } catch {
+      setSubmitError('Network error. Check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -150,31 +154,6 @@ const SpeedTestOffer: React.FC = () => {
                     ))}
                   </ul>
                 </div>
-
-                {/* Testimonials */}
-                <div className="bg-white rounded-xl shadow-md border border-gray-200 p-8">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">What Our Clients Say</h2>
-                  <div className="space-y-6">
-                    {testimonials.map((testimonial, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.2 }}
-                        className="border-l-4 border-blue-500 pl-4"
-                      >
-                        <div className="flex items-center gap-1 mb-2">
-                          {[...Array(testimonial.rating)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                        <p className="text-gray-700 mb-2">"{testimonial.text}"</p>
-                        <p className="text-sm font-medium text-gray-900">{testimonial.name}</p>
-                        <p className="text-sm text-gray-500">{testimonial.company}</p>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               {/* Right: Form */}
@@ -233,6 +212,9 @@ const SpeedTestOffer: React.FC = () => {
                       </div>
                     </div>
 
+                    {submitError && (
+                      <p className="text-sm text-red-600" role="alert">{submitError}</p>
+                    )}
                     <Button
                       type="submit"
                       variant="primary"

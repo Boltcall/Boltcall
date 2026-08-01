@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { updateMetaDescription } from '../lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -254,7 +254,7 @@ const DentistChairCalculator: React.FC = () => {
         },
       };
 
-      const res = await fetch('https://n8n.srv974118.hstgr.cloud/webhook/niche-lead-magnet', {
+      const res = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -735,7 +735,7 @@ const DentistChairCalculator: React.FC = () => {
                       </div>
                       <div className="flex justify-between items-center pt-2 border-t border-teal-500/20">
                         <span className="text-sm text-slate-400">
-                          Net gain after Boltcall ($179/mo)
+                          Net gain after Boltcall ($897/mo)
                         </span>
                         <span className="text-lg font-black text-teal-300">
                           +{fmt(calc.netGain)}
@@ -1019,7 +1019,7 @@ const DentistChairCalculator: React.FC = () => {
                 <ArrowRight className="w-5 h-5" />
               </a>
               <p className="text-slate-500 text-sm mt-4">
-                Starting at $99/month &bull; No contracts &bull; Set up in 24 hours
+                Starting at $549/month &bull; No contracts &bull; Set up in 24 hours
               </p>
             </div>
           </motion.div>

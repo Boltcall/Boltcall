@@ -100,9 +100,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       await supabaseLogout();
-      dispatch({ type: 'LOGOUT' });
     } catch (error) {
       console.error('Logout error:', error);
+      // Server sign-out failed (network/5xx) — clear the local session anyway
+      // so autoRefreshToken can't resurrect it after the user chose to log out.
+      const { supabase } = await import('../lib/supabase');
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+    } finally {
+      // Wipe user-scoped browser state so a second account signing in on the
+      // same browser doesn't inherit the previous user's cached location or
+      // setup status.
+      try {
+        localStorage.removeItem('currentLocationId');
+        localStorage.removeItem('boltcall_setup_complete');
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('currentLocationId:')) localStorage.removeItem(k);
+        }
+      } catch { /* localStorage unavailable — safe to ignore */ }
+      dispatch({ type: 'LOGOUT' });
     }
   };
 

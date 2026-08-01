@@ -90,7 +90,7 @@ export interface SetupData {
       enabled: boolean;
       text: string;
     };
-    tone: 'friendly_concise' | 'formal' | 'playful' | 'calm';
+    tone: 'friendly_concise' | 'confident_direct' | 'formal' | 'playful' | 'calm';
     pronunciationGuide: string;
   };
   

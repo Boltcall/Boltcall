@@ -1,4 +1,4 @@
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { ArrowDown, ArrowRight, ArrowUp } from 'lucide-react';
 import {
   ACCENTS,
@@ -11,8 +11,7 @@ import {
   type MetricSeries,
   type SeriesPoint,
 } from './metric-chart';
-import { PeriodSelect, ViewToggle, type PeriodOption } from './metric-controls';
-import { cn } from '../../lib/utils';
+import { PeriodSelect, type PeriodOption } from './metric-controls';
 
 export type { SeriesPoint, MetricSeries, MetricAccent, ChartView, PeriodOption };
 
@@ -36,8 +35,6 @@ export interface ProgressMetricCardProps {
   defaultIndex?: number;
   size?: CardSize;
   showStats?: boolean;
-  showControls?: boolean;
-  headerBadge?: ReactNode;
   valueFormatter?: (value: number) => string;
   dateFormatter?: (date: string) => string;
   loading?: boolean;
@@ -55,28 +52,28 @@ const NEUTRAL_PCT = 0.5;
 
 const SIZES: Record<
   CardSize,
-  { minH: string; pad: string; footer: string; title: string; headline: string }
+  { minH: string; maxW: string; pad: string; title: string; headline: string }
 > = {
   sm: {
-    minH: 'min-h-[190px]',
-    pad: 'px-5 pt-5',
-    footer: 'px-5 py-3',
-    title: 'text-[14px]',
-    headline: 'text-[34px]',
+    minH: 'min-h-[168px]',
+    maxW: 'max-w-[280px]',
+    pad: 'px-4 pt-4 pb-4',
+    title: 'text-[13px]',
+    headline: 'text-[30px]',
   },
   md: {
-    minH: 'min-h-[250px]',
-    pad: 'px-6 pt-6',
-    footer: 'px-6 py-4',
-    title: 'text-[16px]',
-    headline: 'text-[48px]',
+    minH: 'min-h-[212px]',
+    maxW: 'max-w-[340px]',
+    pad: 'px-4 pt-4 pb-4',
+    title: 'text-[14px]',
+    headline: 'text-[38px]',
   },
   lg: {
-    minH: 'min-h-[340px]',
-    pad: 'px-8 pt-8',
-    footer: 'px-8 py-5',
-    title: 'text-[18px]',
-    headline: 'text-[68px]',
+    minH: 'min-h-[260px]',
+    maxW: 'max-w-[400px]',
+    pad: 'px-5 pt-5 pb-5',
+    title: 'text-[16px]',
+    headline: 'text-[48px]',
   },
 };
 
@@ -86,8 +83,6 @@ const sliceWindow = (points: SeriesPoint[], count?: number) =>
 export default function ProgressMetricCard({
   title,
   total,
-  delta,
-  deltaLabel = 'today',
   percent,
   trend,
   unit,
@@ -100,9 +95,6 @@ export default function ProgressMetricCard({
   series,
   defaultIndex,
   size = 'md',
-  showStats = true,
-  showControls = true,
-  headerBadge,
   valueFormatter,
   dateFormatter,
   loading = false,
@@ -110,15 +102,10 @@ export default function ProgressMetricCard({
 }: ProgressMetricCardProps) {
   const gridId = `grid-${useId().replace(/:/g, '')}`;
   const sz = SIZES[size];
-  const shell = cn(
-    'relative flex w-full flex-col overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_22px_45px_-28px_rgba(15,23,42,0.45)]',
-    sz.minH,
-    className,
-  );
+  const shell = `relative mx-auto flex ${sz.minH} w-full ${sz.maxW} flex-col overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`;
 
   const periods = periodOptions ?? DEFAULT_PERIODS;
   const [selectedLabel, setSelectedLabel] = useState(period);
-  const [view, setView] = useState<ChartView>(defaultView);
 
   const baseSeries: MetricSeries[] = useMemo(
     () => (series?.length ? series : [{ name: title, data: data ?? [], accent }]),
@@ -129,17 +116,23 @@ export default function ProgressMetricCard({
     periods.find((option) => option.label === selectedLabel) ?? periods[periods.length - 1];
 
   const visibleSeries = useMemo(
-    () => baseSeries.map((entry) => ({ ...entry, data: sliceWindow(entry.data, selectedOption?.points) })),
+    () =>
+      baseSeries.map((entry) => ({
+        ...entry,
+        data: sliceWindow(entry.data, selectedOption?.points),
+      })),
     [baseSeries, selectedOption],
   );
 
   const primary = visibleSeries[0];
   const isMulti = visibleSeries.length > 1;
-  const hasVisualData = (primary?.data.length ?? 0) >= 2;
+  const hasData = (primary?.data.length ?? 0) >= 2;
+  const hasDisplayTotal =
+    total !== undefined && total !== null && String(total).trim().length > 0;
 
   const stats = useMemo(() => {
     const values = primary?.data.map((point) => point.value) ?? [];
-    const sum = values.reduce((acc, next) => acc + next, 0);
+    const sum = values.reduce((accumulator, next) => accumulator + next, 0);
     const first = values[0] ?? 0;
     const last = values[values.length - 1] ?? 0;
     const previous = values[values.length - 2] ?? first;
@@ -168,11 +161,10 @@ export default function ProgressMetricCard({
   const fullFormatter =
     valueFormatter ?? ((value: number) => value.toLocaleString() + (unit ? ` ${unit}` : ''));
   const formatDate = dateFormatter ?? ((value: string) => value);
-  const signedValue = (value: number) => `${value >= 0 ? '+' : '-'}${compactFormatter(Math.abs(value))}`;
 
   const displayTotal = total ?? compactFormatter(stats.sum);
-  const displayDelta = delta ?? (hasVisualData ? signedValue(stats.step) : '');
-  const displayPercent = percent ?? (hasVisualData ? `${Math.abs(stats.pct).toFixed(1)}%` : undefined);
+  const displayPercent =
+    percent ?? (hasData ? `${Math.abs(stats.pct).toFixed(1)}%` : undefined);
 
   const chartSeries: ChartSeries[] = visibleSeries.map((entry, index) => ({
     name: entry.name,
@@ -195,16 +187,29 @@ export default function ProgressMetricCard({
   if (loading) {
     return (
       <div className={shell} aria-busy="true">
-        <div className={cn('flex flex-1 flex-col', sz.pad)}>
-          <div className="flex items-center justify-between">
-            <div className="h-5 w-32 animate-pulse rounded bg-slate-100" />
-            <div className="h-5 w-24 animate-pulse rounded bg-slate-100" />
+        <div className={`flex flex-1 flex-col ${sz.pad}`}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="h-5 w-28 animate-pulse rounded bg-muted" />
+            <div className="h-5 w-16 animate-pulse rounded bg-muted" />
           </div>
-          <div className="mt-6 h-12 w-36 animate-pulse rounded-xl bg-slate-100" />
-          <div className="mt-auto h-20 w-full animate-pulse rounded-xl bg-slate-100/80" />
+          <div className="mt-5 h-12 w-32 animate-pulse rounded-lg bg-muted" />
+          <div className="mt-auto h-20 w-full animate-pulse rounded-lg bg-muted/50" />
         </div>
-        <div className={cn('border-t border-slate-200/70', sz.footer)}>
-          <div className="h-4 w-32 animate-pulse rounded bg-slate-100" />
+      </div>
+    );
+  }
+
+  if (!hasData && !hasDisplayTotal) {
+    return (
+      <div className={shell}>
+        <div className={`flex flex-1 flex-col ${sz.pad}`}>
+          <h3 className={`${sz.title} font-semibold tracking-tight text-foreground`}>{title}</h3>
+          <div className="flex flex-1 flex-col items-center justify-center gap-1 py-6 text-center">
+            <p className="text-sm font-medium text-foreground">No data yet</p>
+            <p className="text-xs text-muted-foreground">
+              Metrics will appear once data is available.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -212,138 +217,74 @@ export default function ProgressMetricCard({
 
   return (
     <div className={shell}>
-      {hasVisualData && (
-        <div className="absolute inset-y-0 right-0 z-0" style={{ width: `${REGION_W}%` }}>
-          <div
-            className="absolute inset-0"
-            style={{ background: `linear-gradient(to left, ${color.soft}, transparent 78%)` }}
-          />
-          <div
-            className="absolute inset-0 text-slate-300/70"
-            style={{
-              WebkitMaskImage: 'linear-gradient(to right, transparent, black 52%)',
-              maskImage: 'linear-gradient(to right, transparent, black 52%)',
-            }}
-          >
-            <svg className="h-full w-full" aria-hidden>
-              <defs>
-                <pattern id={gridId} width="14" height="14" patternUnits="userSpaceOnUse">
-                  <circle cx="1" cy="1" r="1" fill="currentColor" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill={`url(#${gridId})`} />
-            </svg>
-          </div>
-
-          <MetricChart
-            series={chartSeries}
-            view={view}
-            defaultIndex={fallbackIndex}
-            valueFormatter={fullFormatter}
-            dateFormatter={formatDate}
-          />
-        </div>
-      )}
-
-      <div className={cn('relative z-10 flex flex-1 flex-col', sz.pad)}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5">
-              <h3 className={cn(sz.title, 'truncate font-semibold tracking-tight text-slate-900')}>
-                {title}
-              </h3>
-              {showControls && hasVisualData ? <ViewToggle value={view} onChange={setView} /> : null}
-            </div>
-          </div>
-
-          {headerBadge ? (
-            <div className="pointer-events-auto shrink-0">{headerBadge}</div>
-          ) : showControls && (displayPercent || periods.length > 1) ? (
-            <div className="flex items-center gap-2.5 text-[13px]">
-              {displayPercent ? (
-                <span className="flex items-center gap-1 font-semibold" style={{ color: color.text }}>
-                  <TrendIcon size={15} strokeWidth={2.4} />
-                  {displayPercent}
-                </span>
-              ) : null}
-              <PeriodSelect
-                value={selectedLabel}
-                options={periods}
-                onChange={handlePeriodChange}
-                accentText={color.text}
-              />
-            </div>
-          ) : null}
+      <div className="absolute inset-y-0 right-0 z-0" style={{ width: `${REGION_W}%` }}>
+        <div
+          className="absolute inset-0"
+          style={{ background: `linear-gradient(to left, ${color.stroke}1f, transparent 75%)` }}
+        />
+        <div
+          className="absolute inset-0 text-foreground/[0.13]"
+          style={{
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 55%)',
+            maskImage: 'linear-gradient(to right, transparent, black 55%)',
+          }}
+        >
+          <svg className="h-full w-full" aria-hidden>
+            <defs>
+              <pattern id={gridId} width="14" height="14" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="1" fill="currentColor" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#${gridId})`} />
+          </svg>
         </div>
 
-        {isMulti && hasVisualData ? (
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
+        <MetricChart
+          series={chartSeries}
+          view={defaultView}
+          defaultIndex={fallbackIndex}
+          valueFormatter={fullFormatter}
+          dateFormatter={formatDate}
+        />
+      </div>
+
+      <div className={`pointer-events-none relative z-10 flex flex-1 flex-col ${sz.pad}`}>
+        <div className="flex items-center justify-between gap-4">
+          <h3 className={`${sz.title} font-semibold tracking-tight text-foreground`}>{title}</h3>
+          <div className="flex items-center gap-3 text-[13px]">
+            {displayPercent ? (
+              <span className="flex items-center gap-1 font-medium" style={{ color: color.text }}>
+                <TrendIcon size={15} strokeWidth={2.5} />
+                {displayPercent}
+              </span>
+            ) : null}
+            <PeriodSelect
+              value={selectedLabel}
+              options={periods}
+              onChange={handlePeriodChange}
+              accentText={color.text}
+            />
+          </div>
+        </div>
+
+        <div className={`mt-2 ${sz.headline} font-medium leading-none tracking-tight text-foreground`}>
+          {displayTotal}
+        </div>
+
+        {isMulti && (
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
             {chartSeries.map((entry) => (
               <span
                 key={entry.name}
-                className="flex items-center gap-1.5 text-[12px] text-slate-500"
+                className="flex items-center gap-1.5 text-[11px] text-muted-foreground"
               >
                 <span className="h-2 w-2 rounded-full" style={{ background: entry.color }} />
                 {entry.name}
               </span>
             ))}
           </div>
-        ) : null}
-
-        <div className={cn('mt-5 font-semibold leading-none tracking-tight text-slate-950', sz.headline)}>
-          {displayTotal}
-        </div>
-
-        {!hasVisualData && (displayDelta || deltaLabel) ? (
-          <div className="mt-auto pt-6 text-xs text-slate-500">
-            {displayDelta ? (
-              <span className="font-medium" style={{ color: color.text }}>
-                {displayDelta}
-              </span>
-            ) : null}
-            {displayDelta && deltaLabel ? ' ' : null}
-            {deltaLabel ? <span>{deltaLabel}</span> : null}
-          </div>
-        ) : null}
+        )}
       </div>
-
-      {hasVisualData && (displayDelta || (showStats && primary?.data.length)) ? (
-        <div
-          className={cn(
-            'relative z-10 flex items-center justify-between gap-3 border-t border-slate-200/70 bg-white/92 backdrop-blur-sm',
-            sz.footer,
-          )}
-        >
-          <div className="text-[13px]">
-            {displayDelta ? (
-              <span className="font-semibold" style={{ color: color.text }}>
-                {displayDelta}
-              </span>
-            ) : null}
-            {displayDelta && deltaLabel ? ' ' : null}
-            {deltaLabel ? <span className="text-slate-500">{deltaLabel}</span> : null}
-          </div>
-
-          {showStats ? (
-            <div className="flex items-center gap-2.5 text-[12px] text-slate-500">
-              <span>
-                <span className="font-semibold text-slate-800">{compactFormatter(stats.peak)}</span> peak
-              </span>
-              <span className="opacity-40">/</span>
-              <span>
-                <span className="font-semibold text-slate-800">{compactFormatter(stats.low)}</span> low
-              </span>
-              <span className="opacity-40">/</span>
-              <span>
-                <span className="font-semibold text-slate-800">
-                  {compactFormatter(Math.round(stats.avg))}
-                </span>{' '}
-                avg
-              </span>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
     </div>
   );
 }

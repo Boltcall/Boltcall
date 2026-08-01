@@ -182,12 +182,16 @@ function deltaTone(delta: { text: string; tone: 'up' | 'down' | 'flat' } | undef
 const KpiTile: React.FC<{
   label: string;
   value: number | string;
+  currentValue?: number;
+  comparisonValue?: number;
   delta?: { text: string; tone: 'up' | 'down' | 'flat' };
   goodDirection?: 'up' | 'down';
-}> = ({ label, value, delta, goodDirection = 'up' }) => {
+}> = ({ label, value, currentValue, comparisonValue, delta, goodDirection = 'up' }) => {
   const chartData =
-    typeof value === 'number' && delta && delta.text !== 'flat'
-      ? [Math.max(value - Math.abs(value * 0.18), 0), value]
+    typeof currentValue === 'number' && typeof comparisonValue === 'number'
+      ? [comparisonValue, currentValue]
+      : typeof value === 'number' && delta && delta.text !== 'flat'
+        ? [Math.max(value - Math.abs(value * 0.18), 0), value]
       : [];
 
   const icon =
@@ -223,6 +227,7 @@ const KpiTile: React.FC<{
       label={label}
       period="Vs yesterday"
       value={value}
+      comparisonValue={comparisonValue}
       badge={delta?.text ?? '-'}
       badgeTone={deltaTone(delta, goodDirection)}
       chartData={chartData}
@@ -315,18 +320,24 @@ const V2HomePage: React.FC = () => {
           <KpiTile
             label="Calls answered"
             value={data.kpi_today.calls_answered}
+            currentValue={data.kpi_today.calls_answered}
+            comparisonValue={data.kpi_yesterday.calls_answered}
             delta={deltaPill(data.kpi_today.calls_answered, data.kpi_yesterday.calls_answered)}
             goodDirection="up"
           />
           <KpiTile
             label="Leads booked"
             value={data.kpi_today.leads_booked}
+            currentValue={data.kpi_today.leads_booked}
+            comparisonValue={data.kpi_yesterday.leads_booked}
             delta={deltaPill(data.kpi_today.leads_booked, data.kpi_yesterday.leads_booked)}
             goodDirection="up"
           />
           <KpiTile
             label="Missed"
             value={data.kpi_today.missed_calls}
+            currentValue={data.kpi_today.missed_calls}
+            comparisonValue={data.kpi_yesterday.missed_calls}
             delta={deltaPill(data.kpi_today.missed_calls, data.kpi_yesterday.missed_calls)}
             goodDirection="down"
           />
@@ -337,6 +348,8 @@ const V2HomePage: React.FC = () => {
                 ? `${data.kpi_today.avg_response_seconds}s`
                 : '—'
             }
+            currentValue={data.kpi_today.avg_response_seconds}
+            comparisonValue={data.kpi_yesterday.avg_response_seconds}
             delta={
               data.kpi_today.avg_response_seconds > 0 && data.kpi_yesterday.avg_response_seconds > 0
                 ? deltaPill(

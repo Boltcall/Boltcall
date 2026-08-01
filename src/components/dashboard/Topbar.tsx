@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, User } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useDashboardStore } from '../../stores/dashboardStore';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -41,16 +41,17 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
         
         {/* Right side - User info */}
         <div className="flex items-center gap-3">
-          {/* User avatar and info */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-zinc-600" />
+          {/* Workspace card: gradient initial avatar + label/name */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+              {displayName.charAt(0).toUpperCase()}
             </div>
-            <div className="hidden sm:block">
-              <div className="text-sm font-medium text-zinc-900">{displayName}</div>
+            <div className="hidden sm:block leading-tight">
+              <div className="text-[11px] text-zinc-400">Workspace</div>
+              <div className="text-sm font-semibold text-zinc-900">{displayName}</div>
             </div>
           </div>
-          
+
           {/* Plan badge */}
           <span className="text-xs rounded-full px-2 py-0.5 bg-emerald-50 text-emerald-700 font-medium">
             Pro

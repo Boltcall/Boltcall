@@ -155,7 +155,7 @@ const Metrics: React.FC = () => {
             </div>
             <div>
               <div className="text-2xl font-bold text-brand-blue mb-1">99.9%</div>
-              <div className="text-text-muted">Uptime Guarantee</div>
+              <div className="text-text-muted">Uptime</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-brand-blue mb-1">5min</div>

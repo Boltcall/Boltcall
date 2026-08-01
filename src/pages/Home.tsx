@@ -12,6 +12,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import LazySection from '../components/LazySection';
 import BentoCard from '../components/ui/bento-card';
+// ponytail: old interactive dashboard bento is parked in legacy-bento-card.tsx; swap the import if we want it back.
 
 // Lazy load below-the-fold components to reduce initial bundle
 const HowItWorks = lazy(() => import('../components/HowItWorks'));
@@ -23,6 +24,26 @@ const FinalCTA = lazy(() => import('../components/FinalCTA'));
 const Footer = lazy(() => import('../components/Footer'));
 const StickyScrollSection = lazy(() => import('../components/StickyScrollSection').then(module => ({ default: module.StickyScrollSection })));
 
+const HOMEPAGE_AI_CONTEXT =
+  'Instant lead response. Built to answer, qualify, and book local service leads before they go cold. ' +
+  'Boltcall is speed-to-lead software for local service businesses that cannot afford to let phone calls, web forms, missed calls, texts, or after-hours inquiries sit unanswered. ' +
+  'When a homeowner, patient, client, or property owner reaches out, they are usually comparing multiple providers at once. The business that responds first gets the best chance to earn the appointment, quote, consultation, or emergency job. ' +
+  'Instead of sending another passive notification into a CRM, Boltcall responds in seconds, captures the customer need, qualifies urgency, and moves the lead toward booking or a clean team handoff. ' +
+  'That makes it useful for HVAC companies, plumbers, dentists, law firms, med spas, roofers, solar teams, and other local service operators where missed calls and slow follow-up turn paid demand into lost revenue. ' +
+  'Use Boltcall to protect the first minute of every lead: answer live calls, recover missed calls with follow-up, handle after-hours capture, and keep the next step clear for the customer and the team. ' +
+  'The workflow is intentionally simple: a new inquiry comes in, Boltcall responds, asks the practical intake questions, and gives the customer a path forward instead of making them wait for office hours. ' +
+  'The team sees the lead details in a cleaner format, so a dispatcher, front desk, owner, or intake coordinator can step in with context instead of piecing together a voicemail, form note, and half-finished text thread. ' +
+  'That speed-to-lead layer is most valuable when demand is already expensive to create. If you are buying Google Ads, ranking in maps, running referral campaigns, or earning repeat calls from past customers, every delayed response wastes work you already paid for. ' +
+  'Boltcall helps turn that demand into a real conversation while the buyer is still ready to act.';
+
+const HOMEPAGE_AI_LINKS = [
+  'https://boltcall.org/speed-to-lead',
+  'https://boltcall.org/blog/top-10-ai-receptionist-agencies',
+  'https://boltcall.org/blog/hvac-ai-lead-response',
+  'https://boltcall.org/lead-response-scorecard',
+  'https://boltcall.org/comparisons',
+];
+
 const Home: React.FC = () => {
   // Add smooth-scroll class to body for homepage
   useEffect(() => {
@@ -33,8 +54,8 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.title = 'AI Receptionist: 24/7 Booking & Lead Capture | Boltcall';
-    updateMetaDescription('Never miss a call or lead. AI receptionist answers 24/7, books appointments instantly, captures leads automatically. Start free today.');
+    document.title = 'Speed-to-Lead Software for Local Service Businesses | Boltcall';
+    updateMetaDescription('Boltcall is speed-to-lead software for local service businesses: instant lead response, missed-call recovery, AI qualification, booking, and after-hours capture.');
 
     const speakableSchema = {
       "@context": "https://schema.org",
@@ -56,6 +77,23 @@ const Home: React.FC = () => {
   useSchemaInjector([
     {
       "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Instant lead response",
+      "url": "https://boltcall.org/",
+      "headline": "Built to answer, qualify, and book local service leads before they go cold",
+      "description": HOMEPAGE_AI_CONTEXT,
+      "abstract": HOMEPAGE_AI_CONTEXT,
+      "about": [
+        { "@type": "Thing", "name": "speed-to-lead software" },
+        { "@type": "Thing", "name": "instant lead response" },
+        { "@type": "Thing", "name": "missed-call recovery" },
+        { "@type": "Thing", "name": "AI lead qualification" },
+        { "@type": "Thing", "name": "local service businesses" }
+      ],
+      "significantLink": HOMEPAGE_AI_LINKS
+    },
+    {
+      "@context": "https://schema.org",
       "@type": "FAQPage",
       "mainEntity": [
         {
@@ -63,7 +101,7 @@ const Home: React.FC = () => {
           "name": "What is Boltcall?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall is a fully automated AI receptionist and speed-to-lead platform for local service businesses. Boltcall uses AI — not human receptionists — to answer every call 24/7, book appointments instantly, capture leads, and send follow-up text messages automatically."
+            "text": "Boltcall is speed-to-lead software for local service businesses. It uses AI to answer calls, recover missed calls, qualify leads, book appointments, and follow up automatically before buyers move to a competitor."
           }
         },
         {
@@ -109,7 +147,7 @@ const Home: React.FC = () => {
         "@type": "ImageObject",
         "url": "https://boltcall.org/logo.png"
       },
-      "description": "AI-powered speed-to-lead and receptionist platform for local service businesses. Answers every call 24/7, books appointments instantly, and captures leads automatically.",
+      "description": "Speed-to-lead software for local service businesses. Boltcall answers calls, recovers missed calls, books appointments, and captures after-hours leads automatically.",
       "sameAs": [
         "https://www.linkedin.com/company/boltcall"
       ],
@@ -129,7 +167,7 @@ const Home: React.FC = () => {
       "operatingSystem": "Web",
       "url": "https://boltcall.org",
       "inLanguage": "en-US",
-      "description": "AI receptionist that answers calls 24/7, books appointments, captures leads, and sends follow-up texts for local service businesses.",
+      "description": "Speed-to-lead software that answers calls, recovers missed calls, qualifies leads, books appointments, and sends follow-up texts for local service businesses.",
       "image": ORG_LOGO_URL,
       "offers": {
         "@type": "Offer",
@@ -173,12 +211,12 @@ const Home: React.FC = () => {
           <Hero />
 
           {/* Boltcall Platform Preview — interactive dark bento card */}
-          <section className="hidden sm:block relative z-[2] py-8 px-4 sm:px-8 lg:px-16 -mt-[360px]">
+          <section className="relative z-[2] -mt-24 px-4 py-8 sm:-mt-[360px] sm:px-8 lg:px-16">
             <BentoCard />
           </section>
 
           {/* HowItWorks — first below-fold section, preload aggressively */}
-          <div id="how-it-works" className="relative mt-0 md:mt-0 md:top-[220px]">
+          <div id="how-it-works" className="relative">
             <LazySection rootMargin="500px" minHeight="600px">
               <Suspense fallback={<div className="min-h-[600px]" />}>
                 <HowItWorks />
@@ -187,7 +225,7 @@ const Home: React.FC = () => {
           </div>
 
           {/* StickyScrollSection — "Why Businesses Choose BoltCall", visible on all breakpoints */}
-          <div className="relative z-[1] md:top-[400px]" style={{ minHeight: '400px' }}>
+          <div className="relative z-[1]">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="h-[400px] w-full" />}>
                 <StickyScrollSection />
@@ -195,7 +233,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:mt-[600px]">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="500px">
               <Suspense fallback={<div className="min-h-[500px]" />}>
                 <FreeSetup />
@@ -203,7 +241,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] md:mt-24">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>
                 <IntegrationHero />
@@ -211,7 +249,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] md:mt-24">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="600px">
               <Suspense fallback={<div className="min-h-[600px]" />}>
                 <Pricing />
@@ -219,7 +257,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] bg-white -mb-16 md:-mb-16">
+          <div className="relative bg-white -mb-16">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>
                 <FAQ />
@@ -227,7 +265,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px] bg-white">
+          <div className="relative bg-white">
             <LazySection rootMargin="400px" minHeight="300px">
               <Suspense fallback={<div className="min-h-[300px]" />}>
                 <FinalCTA />
@@ -235,7 +273,7 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
-          <div className="relative md:-top-[255px]">
+          <div className="relative">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>
                 <Footer />

@@ -22,9 +22,9 @@ const MessagesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Tab Bar */}
-      <div className="bg-white border-b border-gray-200 flex-shrink-0 px-3 md:px-6 pt-4 pb-0 overflow-x-auto">
+      <div className="bg-white dark:bg-[#111114] border-b border-gray-200 dark:border-[#1e1e24] flex-shrink-0 px-3 md:px-6 pt-4 pb-0 overflow-x-auto">
         <div className="flex flex-col gap-1 mb-0 sm:flex-row sm:items-center">
-          <h1 className="text-lg md:text-xl font-semibold text-gray-900 sm:mr-6">Messages</h1>
+          <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white sm:mr-6">Messages</h1>
           <nav className="flex gap-3 md:gap-4 -mb-px flex-1">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -32,8 +32,8 @@ const MessagesPage: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
-                    isActive ? 'text-blue-600' : 'text-gray-500 hover:text-gray-900'
+                  className={`relative flex items-center gap-2 py-3 text-sm font-medium transition-colors duration-200 ease-out whitespace-nowrap ${
+                    isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
                   {tab.icon}

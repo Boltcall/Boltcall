@@ -61,6 +61,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'AI Visibility Check', labelHe: 'בדיקת נראות AI', href: '/ai-visibility-check' },
       { label: 'Website Health Check', labelHe: 'בדיקת בריאות אתר', href: '/speed-test' },
       { label: 'Speed Test Offer', labelHe: 'הצעת בדיקת מהירות', href: '/speed-test/offer' },
+      { label: 'Response Time Test', labelHe: 'בדיקת זמן תגובה', href: '/response-time-test' },
       { label: 'AI Readiness Scorecard', labelHe: 'כרטיס מוכנות ל-AI', href: '/ai-readiness-scorecard' },
       { label: 'Lead Response Scorecard', labelHe: 'כרטיס תגובה ללידים', href: '/lead-response-scorecard' },
       { label: 'AI Revenue Audit', labelHe: 'בדיקת הכנסות מ-AI', href: '/ai-revenue-audit' },
@@ -87,12 +88,15 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'HVAC Answering Service', labelHe: 'שירות מענה ל-HVAC', href: '/industries/hvac-answering-service' },
       { label: 'Plumbing Answering Service', labelHe: 'שירות מענה לאינסטלטורים', href: '/industries/plumbing-answering-service' },
       { label: 'Contractor Answering Service', labelHe: 'שירות מענה לקבלנים', href: '/industries/contractor-answering-service' },
+      { label: 'Dentist Answering Service', labelHe: 'שירות מענה לרופאי שיניים', href: '/industries/dentist-answering-service' },
+      { label: 'Lawyer Answering Service', labelHe: 'שירות מענה לעורכי דין', href: '/industries/lawyer-answering-service' },
+      { label: 'Med Spa Answering Service', labelHe: 'שירות מענה למד ספא', href: '/industries/medspa-answering-service' },
       { label: 'Speed-to-Lead for Solar', labelHe: 'מהירות ללידים לסולאר', href: '/solar' },
       { label: 'Solar Speed Benchmark', labelHe: 'בנצ׳מרק מהירות לסולאר', href: '/solar-benchmark' },
       { label: 'Solar Benchmark 2026', labelHe: 'בנצ׳מרק סולאר 2026', href: '/solar-benchmark-2026' },
       { label: 'Solar Speed Playbook', labelHe: 'פלייבוק מהירות לסולאר', href: '/solar-speed-playbook' },
       { label: 'Solar Speed Score Quiz', labelHe: 'חידון ציון מהירות לסולאר', href: '/solar-speed-score' },
-      { label: 'Voice Agent Setup', labelHe: 'הגדרת סוכן קולי', href: '/voice-agent-setup' },
+      { label: 'Voice Agent Setup', labelHe: 'הגדרת סוכן קולי', href: '/start' },
       { label: 'Rank on Google Offer', labelHe: 'הצעת דירוג בגוגל', href: '/rank-on-google-offer' },
       { label: 'Free Website Offer', labelHe: 'הצעת אתר חינם', href: '/free-website' },
       { label: 'Giveaway', labelHe: 'הגרלה', href: '/giveaway' },
@@ -132,6 +136,8 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'Email: support@boltcall.org', labelHe: 'אימייל: support@boltcall.org', href: 'mailto:support@boltcall.org' },
       { label: 'Privacy Policy', labelHe: 'מדיניות פרטיות', href: '/privacy-policy' },
       { label: 'Terms of Service', labelHe: 'תנאי שימוש', href: '/terms-of-service' },
+      { label: 'Data Processing Agreement', labelHe: 'הסכם עיבוד נתונים', href: '/dpa' },
+      { label: 'Security for Law Firms', labelHe: 'אבטחה למשרדי עורכי דין', href: '/law-firm-security' },
     ],
   };
 
@@ -357,6 +363,10 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
 
         {/* Bottom Footer */}
         <div className={`border-t ${borderClass} py-6`}>
+          <p className={`${mutedTextClass} text-xs text-center md:text-left mb-4`}>
+            Results vary by business and are not guaranteed. Service subject to our{' '}
+            <Link to="/terms-of-service" className={`${hoverTextClass} underline transition-colors`}>Terms of Service</Link>.
+          </p>
           <div className={`flex flex-col md:flex-row justify-between items-center gap-4 ${isRtl ? 'md:flex-row-reverse' : ''}`}>
             <motion.div
               className={`${mutedTextClass} text-sm`}

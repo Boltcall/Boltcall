@@ -46,6 +46,7 @@ import type { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { callClaude } from './_shared/agency-agents/run-agent';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -202,14 +203,11 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ── 2. Resolve workspace from JWT (NEVER from body) ─────────────────────
-  const { data: workspaceRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-  if (wsErr) {
-    console.error('[saas-v2-agent-summary] workspace lookup failed', wsErr);
+  let workspaceRow: { id: string } | null;
+  try {
+    workspaceRow = await findWorkspaceForUser(userId, 'id');
+  } catch (error) {
+    console.error('[saas-v2-agent-summary] workspace lookup failed', error);
     return jsonResponse(500, { error: 'Workspace lookup failed' });
   }
   if (!workspaceRow) {

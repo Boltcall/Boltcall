@@ -121,23 +121,3 @@ export async function handleLeadSubmission(data: LeadFormData): Promise<{ succes
     };
   }
 }
-
-// Simple Express-like server for development
-export function createMockServer() {
-  return {
-    post: async (path: string, data: { name: string; email: string; subject: string; message: string; company?: string; website?: string; phone?: string }) => {
-      if (path === '/lead') {
-        const leadData = {
-          name: data.name,
-          email: data.email,
-          company: data.company || '',
-          website: data.website || '',
-          phone: data.phone || '',
-          message: data.message
-        };
-        return await handleLeadSubmission(leadData);
-      }
-      throw new Error('Endpoint not found');
-    }
-  };
-}

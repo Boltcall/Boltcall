@@ -116,8 +116,14 @@ const handler: Handler = async (event) => {
     // Override any client-supplied userId with the authenticated one. This
     // single line closes the spoofable-userId vulnerability across every
     // action below.
+    // Overwrite any client-supplied userId with the authenticated one BEFORE
+    // any per-action destructuring runs. Do NOT drop this line without also
+    // removing the per-branch `const { userId, ... } = body` destructures
+    // below — those still read `body.userId` and would re-open the
+    // spoofable-userId vulnerability if this line ever disappears.
     body.userId = authedUserId;
     const { action } = body;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const userId = authedUserId;
     const supabase = getSupabase();
 

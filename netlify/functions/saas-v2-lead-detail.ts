@@ -28,6 +28,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 import { getServiceSupabase } from './_shared/token-utils';
 import { emitSaasV2Event } from './_shared/saas-v2-events';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
@@ -379,20 +380,16 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // 2. Resolve workspace + v2 gate
-  const { data: workspaceRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, v2_enabled')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle();
-
-  if (wsErr) {
-    console.warn(`[saas-v2-lead-detail] workspace lookup failed user=${userId} err=${wsErr.message}`);
+  let workspaceRow: { id: string; v2_enabled?: boolean | null } | null;
+  try {
+    workspaceRow = await findWorkspaceForUser(userId, 'id, v2_enabled');
+  } catch (error: any) {
+    console.warn(`[saas-v2-lead-detail] workspace lookup failed user=${userId} err=${error?.message || error}`);
     return serverError('Failed to resolve workspace');
   }
   if (!workspaceRow) return notFound();
-  const workspaceId = (workspaceRow as { id: string }).id;
-  if (!(workspaceRow as { v2_enabled?: boolean }).v2_enabled) {
+  const workspaceId = workspaceRow.id;
+  if (!workspaceRow.v2_enabled) {
     return {
       statusCode: 403,
       headers: cors,

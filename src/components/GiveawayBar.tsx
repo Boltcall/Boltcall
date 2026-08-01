@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 const GiveawayBar: React.FC = () => {
   const { t } = useTranslation('marketing');
   return (
-    <Link to="/challenge" className="block">
+    <Link to="/giveaway" className="block">
       <div className="bg-blue-600 text-white w-full cursor-pointer shadow-none drop-shadow-none ring-0 border-none outline-none" style={{ contain: 'layout style', boxShadow: 'none' }}>
         <div className="relative z-10">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pr-14 md:pr-4 lg:pr-8">
             <div className="flex items-center justify-center py-1 gap-2 sm:gap-3">
               <div className="flex items-center space-x-1 sm:space-x-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">

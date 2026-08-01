@@ -3,6 +3,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { chatCompletion } from './_shared/azure-ai';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 import { getV2CorsHeaders, getRequestOrigin } from './_shared/cors-v2';
 /**
@@ -293,14 +294,11 @@ const handler: Handler = async (event) => {
   const userId = userResult.user.id;
 
   // ── Resolve workspace_id via user_id (server-derived only) ─────────────
-  const { data: workspaceRow, error: wsErr } = await supa
-    .from('workspaces')
-    .select('id, v2_enabled, created_at')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (wsErr) {
-    console.error('[saas-v2-home] workspace lookup failed:', wsErr.message);
+  let workspaceRow: { id: string; v2_enabled?: boolean | null; created_at?: string | null } | null;
+  try {
+    workspaceRow = await findWorkspaceForUser(userId, 'id, v2_enabled, created_at');
+  } catch (error: any) {
+    console.error('[saas-v2-home] workspace lookup failed:', error?.message || error);
     return {
       statusCode: 500,
       headers: { ...cors, 'Content-Type': 'application/json' },

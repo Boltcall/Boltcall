@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { useTranslation } from 'react-i18next';
 import { useLenis } from '../hooks/useLenis';
 import ErrorBoundary from '../components/ErrorBoundary';
-const AuthRedirectRecovery = React.lazy(() =>
-  import('../components/auth/AuthRedirectRecovery')
-);
+import AuthRedirectRecovery from '../components/auth/AuthRedirectRecovery';
+import { readPendingAuthRedirect } from '../lib/authRedirect';
+import { useAuth } from '../contexts/AuthContext';
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
 // critical-path modulepreload list on marketing pages.
 const AuthProvider = React.lazy(() =>
@@ -14,6 +14,8 @@ const AuthProvider = React.lazy(() =>
 // DashboardProviders is lazy — keeps SubscriptionContext+TokenContext (and their
 // transitive Supabase deps) out of the critical-path bundle on marketing pages.
 const DashboardProviders = React.lazy(() => import('../components/DashboardProviders'));
+// Lazy for the same reason — imports supabase directly.
+const TosAcceptanceGate = React.lazy(() => import('../components/auth/TosAcceptanceGate'));
 import ProtectedRoute from '../components/ProtectedRoute';
 // PlanGate is lazy — breaks the PlanGate→SubscriptionContext→stripe.ts→supabase
 // static import chain so supabase never lands in the critical-path bundle.
@@ -24,7 +26,7 @@ import Home from '../pages/Home';
 import GlassDemo from '../pages/GlassDemo';
 import BlogSchemaWrapper from '../components/BlogSchemaWrapper';
 import SetupLoading from '../pages/SetupLoading';
-import SetupClassic from '../pages/SetupClassic';
+import { SetupGradientBackground } from '../components/setup/SetupGradientBackground';
 const TalkToAgentPage = React.lazy(() => import('../pages/setup/TalkToAgentPage'));
 // Lazy — imports framer-motion; keeping it eager pulled that library into the
 // initial bundle, inflating TBT by ~200 KiB of parse work on every page load.
@@ -33,6 +35,7 @@ const AeoMarkdownArticlePage = React.lazy(() => import('../pages/AeoMarkdownArti
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
+const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 
 // ── Lazy loads — V2 shell (AI-native default, parallel surface to V1) ────
 // V2 is the AI-native redesign that all 12 Day-8 V2 pages compose into.
@@ -59,7 +62,7 @@ const V2SettingsPage = React.lazy(() => import('../pages/v2/V2SettingsPage'));
 // ── Lazy loads — Dashboard shell & pages ─────────────────────────────────
 const DashboardLayout = React.lazy(() => import('../components/dashboard/DashboardLayout'));
 const SettingsLayout = React.lazy(() => import('../components/dashboard/SettingsLayout'));
-const DashboardPage = React.lazy(() => import('../pages/dashboard/DashboardPage'));
+const HomePage = React.lazy(() => import('../pages/dashboard/HomePage'));
 const AnalyticsPage = React.lazy(() => import('../pages/dashboard/AnalyticsPage'));
 const DeepAnalyticsPage = React.lazy(() => import('../pages/dashboard/DeepAnalyticsPage'));
 const AgentsPage = React.lazy(() => import('../pages/dashboard/AgentsPage'));
@@ -85,9 +88,13 @@ const LeadsPage = React.lazy(() => import('../pages/dashboard/LeadsPage'));
 const MissedCallsPage = React.lazy(() => import('../pages/dashboard/MissedCallsPage'));
 const MessagesPage = React.lazy(() => import('../pages/dashboard/MessagesPage'));
 const LocationDashboardPage = React.lazy(() => import('../pages/dashboard/LocationDashboardPage'));
-const GettingStartedPage = React.lazy(() => import('../pages/dashboard/GettingStartedPage'));
 const FeedbackPage = React.lazy(() => import('../pages/dashboard/FeedbackPage'));
 const BoltcallAgentPage = React.lazy(() => import('../pages/dashboard/BoltcallAgentPage'));
+const AgentTestsPage = React.lazy(() => import('../pages/dashboard/AgentTestsPage'));
+const ConversationsPage = React.lazy(() => import('../pages/dashboard/ConversationsPage'));
+const YourAiPage = React.lazy(() => import('../pages/dashboard/YourAiPage'));
+const YourAiOverview = React.lazy(() => import('../pages/dashboard/YourAiOverview'));
+const GrowthPage = React.lazy(() => import('../pages/dashboard/GrowthPage'));
 // ── Lazy loads — Agency OS (founder-gated via FounderGate) ───────────────
 const QueuePage = React.lazy(() => import('../pages/dashboard/agency/QueuePage'));
 const HealthPage = React.lazy(() => import('../pages/dashboard/agency/HealthPage'));
@@ -125,29 +132,35 @@ const NotificationPage = React.lazy(() => import('../pages/dashboard/settings/No
 const RolesPage = React.lazy(() => import('../pages/dashboard/settings/RolesPage'));
 const ActivityLogPage = React.lazy(() => import('../pages/dashboard/settings/ActivityLogPage'));
 const ApiKeysPage = React.lazy(() => import('../pages/dashboard/settings/ApiKeysPage'));
+const ServicesSettingsPage = React.lazy(() => import('../pages/dashboard/settings/ServicesPage'));
 
 const SetupTransitionFallback: React.FC<{ message?: string }> = ({
   message = 'Loading setup...',
 }) => (
-  <div className="flex min-h-screen items-center justify-center bg-white px-4 text-sm font-medium text-zinc-500">
-    {message}
+  <div className="setup-transition-screen relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4 text-center">
+    <SetupGradientBackground />
+    <div className="relative z-10 space-y-3">
+      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-white/80" />
+      <p className="text-sm font-medium text-white/72">{message}</p>
+    </div>
   </div>
 );
 
 const SetupTransitionErrorState: React.FC = () => (
-  <div className="flex min-h-screen items-center justify-center bg-white px-4">
-    <div className="max-w-md text-center">
-      <h1 className="text-2xl font-semibold text-zinc-950">
+  <div className="setup-transition-screen relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4">
+    <SetupGradientBackground />
+    <div className="relative z-10 max-w-md text-center">
+      <h1 className="text-2xl font-semibold text-white">
         Setup hit a snag
       </h1>
-      <p className="mt-3 text-sm leading-6 text-zinc-600">
+      <p className="mt-3 text-sm leading-6 text-white/68">
         Refresh the page and Boltcall will resume from your latest saved setup
         state.
       </p>
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="mt-6 inline-flex items-center justify-center rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+        className="mt-6 inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-medium text-zinc-950 transition-colors hover:bg-white/90"
       >
         Refresh page
       </button>
@@ -168,16 +181,17 @@ const PostSetupRouteShell: React.FC<{
   </ErrorBoundary>
 );
 const WorkspacePage = React.lazy(() => import('../pages/dashboard/settings/WorkspacePage'));
-const PackagesPage = React.lazy(() => import('../pages/dashboard/settings/PackagesPage'));
 
 // ── Lazy loads — Static / info pages ─────────────────────────────────────
 const HelpCenter = React.lazy(() => import('../pages/HelpCenter'));
 const Privacy = React.lazy(() => import('../pages/Privacy'));
 const Terms = React.lazy(() => import('../pages/Terms'));
 const DPA = React.lazy(() => import('../pages/DPA'));
+const LawFirmSecurityPage = React.lazy(() => import('../pages/LawFirmSecurityPage'));
 const Contact = React.lazy(() => import('../pages/Contact'));
 const BookCall = React.lazy(() => import('../pages/BookCall'));
 const About = React.lazy(() => import('../pages/About'));
+const CreditsPage = React.lazy(() => import('../pages/CreditsPage'));
 const Newsletter = React.lazy(() => import('../pages/Newsletter'));
 const PricingPage = React.lazy(() => import('../pages/PricingPage'));
 const PersonalInjury = React.lazy(() => import('../pages/PersonalInjury'));
@@ -199,6 +213,12 @@ const HubSpotIntegrationPage = React.lazy(() =>
 const GoHighLevelIntegrationPage = React.lazy(() =>
   import('../pages/IntegrationPages').then(m => ({ default: m.GoHighLevelIntegrationPage }))
 );
+const WixIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.WixIntegrationPage }))
+);
+const SquarespaceIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.SquarespaceIntegrationPage }))
+);
 const NotFound = React.lazy(() => import('../pages/NotFound'));
 const AdminPanel = React.lazy(() => import('../pages/AdminPanel'));
 
@@ -217,6 +237,7 @@ const LeadMagnetThankYouPage = React.lazy(() => import('../pages/LeadMagnetThank
 const LeadMagnetClaudeCodeOvernightKitPage = React.lazy(() => import('../pages/LeadMagnetClaudeCodeOvernightKitPage'));
 const LeadMagnetAIReceptionistBuyersGuide = React.lazy(() => import('../pages/LeadMagnetAIReceptionistBuyersGuide'));
 const LeadMagnetSpeedToLeadStackPage = React.lazy(() => import('../pages/LeadMagnetSpeedToLeadStackPage'));
+const LeadMagnetIntakeAgentPlaybookPage = React.lazy(() => import('../pages/LeadMagnetIntakeAgentPlaybookPage'));
 const AfterHoursLeadRescuePage = React.lazy(() => import('../pages/AfterHoursLeadRescuePage'));
 const AutomaticReviewsAgentPage = React.lazy(() => import('../pages/AutomaticReviewsAgentPage'));
 const RemindersAgentPage = React.lazy(() => import('../pages/RemindersAgentPage'));
@@ -231,7 +252,10 @@ const AIAuditPage = React.lazy(() => import('../pages/AIAuditPage'));
 const AIAuditThankYouPage = React.lazy(() => import('../pages/AIAuditThankYouPage'));
 const SEOAuditPDF = React.lazy(() => import('../pages/SEOAuditPDF'));
 const SEOAuditPDFThankYou = React.lazy(() => import('../pages/SEOAuditPDFThankYou'));
+const WebsiteAuditPDF = React.lazy(() => import('../pages/WebsiteAuditPDF'));
+const WebsiteAuditThankYou = React.lazy(() => import('../pages/WebsiteAuditThankYou'));
 const BusinessAuditPage = React.lazy(() => import('../pages/BusinessAuditPage'));
+const AuditPage = React.lazy(() => import('../pages/AuditPage'));
 const RankOnGoogleOfferPage = React.lazy(() => import('../pages/RankOnGoogleOfferPage'));
 const NicheToolPage = React.lazy(() => import('../pages/NicheToolPage'));
 const FunnelOptimizer = React.lazy(() => import('../pages/FunnelOptimizer'));
@@ -239,11 +263,13 @@ const FunnelOptimiser = React.lazy(() => import('../pages/FunnelOptimiser'));
 const HVACAnsweringServicePage = React.lazy(() => import('../pages/HVACAnsweringServicePage'));
 const PlumbingAnsweringServicePage = React.lazy(() => import('../pages/PlumbingAnsweringServicePage'));
 const ContractorAnsweringServicePage = React.lazy(() => import('../pages/ContractorAnsweringServicePage'));
+const DentistAnsweringServicePage = React.lazy(() => import('../pages/DentistAnsweringServicePage'));
+const LawyerAnsweringServicePage = React.lazy(() => import('../pages/LawyerAnsweringServicePage'));
+const MedSpaAnsweringServicePage = React.lazy(() => import('../pages/MedSpaAnsweringServicePage'));
 const SolarIndustryHub = React.lazy(() => import('../pages/SolarIndustryHub'));
 const SolarSpeedToLeadPlaybook = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybook'));
 const SolarSpeedToLeadPlaybookThankYou = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybookThankYou'));
 const SolarBenchmarkPage = React.lazy(() => import('../pages/SolarBenchmarkPage'));
-const VoiceAgentOnboarding = React.lazy(() => import('../pages/VoiceAgentOnboarding'));
 const AiReadinessScorecard = React.lazy(() => import('../pages/AiReadinessScorecard'));
 const AiReceptionistRoi = React.lazy(() => import('../pages/AiReceptionistRoi'));
 const FiveMinuteResponsePlaybook = React.lazy(() => import('../pages/FiveMinuteResponsePlaybook'));
@@ -272,6 +298,7 @@ const SpeedTestLanding = React.lazy(() => import('../pages/speed-test/SpeedTestL
 const SpeedTestLogin = React.lazy(() => import('../pages/speed-test/SpeedTestLogin'));
 const SpeedTestReport = React.lazy(() => import('../pages/speed-test/SpeedTestReport'));
 const SpeedTestOffer = React.lazy(() => import('../pages/speed-test/SpeedTestOffer'));
+const ResponseTimeTest = React.lazy(() => import('../pages/ResponseTimeTest'));
 
 // ── Lazy loads — Blog pages ──────────────────────────────────────────────
 const BlogCenter = React.lazy(() => import('../pages/BlogCenter'));
@@ -324,9 +351,11 @@ const Challenge = React.lazy(() => import('../pages/Challenge'));
 const ChallengeCall = React.lazy(() => import('../pages/ChallengeCall'));
 const ChallengeWinner = React.lazy(() => import('../pages/ChallengeWinner'));
 const ButtonDemoPage = React.lazy(() => import('../pages/ButtonDemoPage'));
+const MetricCardsDemoPage = React.lazy(() => import('../pages/MetricCardsDemoPage'));
 const OriginButtonDemoPage = React.lazy(() => import('../pages/OriginButtonDemoPage'));
 const GlowHorizonDemoPage = React.lazy(() => import('../pages/GlowHorizonDemoPage'));
 const DemoFlowPage = React.lazy(() => import('../pages/DemoFlowPage'));
+const LiveCallPrototypePage = React.lazy(() => import('../pages/LiveCallPrototypePage'));
 const DrHazakLandingPage = React.lazy(() => import('../pages/DrHazakLandingPage'));
 const AgentArchitecturePage = React.lazy(() => import('../pages/AgentArchitecturePage'));
 const LogoAnimationDemoPage = React.lazy(() => import('../pages/LogoAnimationDemoPage'));
@@ -343,10 +372,26 @@ const V2CallsPage = React.lazy(() => import('../pages/v2/V2CallsPage'));
 // signed-in user can reach the wizard before V2 is flipped on. The finalize
 // endpoint is where V2 actually goes live for the workspace.
 const V2SetupPage = React.lazy(() => import('../pages/v2/V2SetupPage'));
+// /start — premium website-first onboarding (additive; /setup stays default).
+const StartOnboarding = React.lazy(() => import('../pages/start/StartOnboarding'));
+
+const RECOVERABLE_AUTH_REDIRECT_PATHS = new Set(['/', '/login', '/signup', '/auth/callback']);
+
+function isMatchingAuthRedirect(currentPath: string, pendingRedirect: string) {
+  return currentPath === pendingRedirect || currentPath.startsWith(`${pendingRedirect}/`);
+}
 
 const NavigationWrapper: React.FC = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
+  const { isAuthenticated, isLoading } = useAuth();
+  const pendingAuthRedirect = readPendingAuthRedirect();
+  const hasAuthHash = typeof window !== 'undefined' && window.location.hash.length > 1;
+  const isRecoveringAuthRedirect =
+    !!pendingAuthRedirect &&
+    (RECOVERABLE_AUTH_REDIRECT_PATHS.has(location.pathname) || hasAuthHash) &&
+    !isMatchingAuthRedirect(location.pathname, pendingAuthRedirect) &&
+    (isLoading || isAuthenticated);
 
   // RTL support for Hebrew — only apply to dashboard, public pages stay English LTR
   useEffect(() => {
@@ -375,6 +420,10 @@ const NavigationWrapper: React.FC = () => {
   // Initialize Lenis smooth scrolling
   useLenis();
 
+  if (isRecoveringAuthRedirect) {
+    return <AuthRedirectRecovery />;
+  }
+
   return (
     <Suspense fallback={null}>
       <AuthRedirectRecovery />
@@ -383,14 +432,6 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/glass-demo" element={<GlassDemo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Navigate to="/dashboard/getting-started" replace />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/dashboard/*"
           element={
@@ -403,8 +444,8 @@ const NavigationWrapper: React.FC = () => {
             </ProtectedRoute>
           }
         >
-          <Route index element={<DashboardPage />} />
-          <Route path="getting-started" element={<GettingStartedPage />} />
+          <Route index element={<HomePage />} />
+          <Route path="getting-started" element={<Navigate to="/dashboard" replace />} />
           <Route path="boltcall-agent" element={<BoltcallAgentPage />} />
           <Route path="feedback" element={<FeedbackPage />} />
           <Route path="locations/:locationId" element={<LocationDashboardPage />} />
@@ -435,31 +476,63 @@ const NavigationWrapper: React.FC = () => {
 
           {/* Pro-gated merged pages */}
           <Route path="leads" element={<PlanGate requiredPlan="pro"><LeadsPage /></PlanGate>} />
-          <Route path="calls" element={<PlanGate requiredPlan="starter"><CallHistoryPage /></PlanGate>} />
-          <Route path="messages" element={<PlanGate requiredPlan="pro"><MessagesPage /></PlanGate>} />
+
+          {/* Conversations hub — tabs for Calls / Messages / Missed */}
+          <Route path="conversations" element={<ConversationsPage />}>
+            <Route index element={<Navigate to="calls" replace />} />
+            <Route path="calls" element={<PlanGate requiredPlan="starter"><CallHistoryPage /></PlanGate>} />
+            <Route path="messages" element={<PlanGate requiredPlan="pro"><MessagesPage /></PlanGate>} />
+            <Route path="missed" element={<PlanGate requiredPlan="pro"><MissedCallsPage /></PlanGate>} />
+          </Route>
+
+          {/* Your AI hub — Overview / Personality / Knowledge / Voice / Phone / Test */}
+          <Route path="your-ai" element={<YourAiPage />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<YourAiOverview />} />
+            <Route path="personality" element={<PlanGate requiredPlan="starter"><AgentsPage /></PlanGate>} />
+            <Route path="knowledge" element={<PlanGate requiredPlan="starter"><KnowledgeBasePage /></PlanGate>} />
+            <Route path="voice" element={<PlanGate requiredPlan="starter"><VoiceLibraryPage /></PlanGate>} />
+            <Route path="phone" element={<PlanGate requiredPlan="starter"><PhoneNumbersPage /></PlanGate>} />
+            <Route path="test" element={<PlanGate requiredPlan="starter"><AgentTestsPage /></PlanGate>} />
+          </Route>
+
+          {/* Growth hub — Analytics / Reputation / Reminders / Follow-ups */}
+          <Route path="growth" element={<GrowthPage />}>
+            <Route index element={<Navigate to="analytics" replace />} />
+            <Route path="analytics" element={<PlanGate requiredPlan="pro"><AnalyticsPage /></PlanGate>} />
+            <Route path="reputation" element={<PlanGate requiredPlan="pro"><ReputationPage /></PlanGate>} />
+            <Route path="reminders" element={<PlanGate requiredPlan="pro"><RemindersPage /></PlanGate>} />
+            <Route path="follow-ups" element={<PlanGate requiredPlan="pro"><MessagesPage /></PlanGate>} />
+          </Route>
+
+          {/* Redirects from old top-level paths → hub tabs (bookmarks, external links) */}
+          <Route path="calls" element={<Navigate to="/dashboard/conversations/calls" replace />} />
+          <Route path="messages" element={<Navigate to="/dashboard/conversations/messages" replace />} />
+          <Route path="missed-calls" element={<Navigate to="/dashboard/conversations/missed" replace />} />
+          <Route path="agents" element={<Navigate to="/dashboard/your-ai/personality" replace />} />
+          <Route path="agent-tests" element={<Navigate to="/dashboard/your-ai/test" replace />} />
+          <Route path="voice-library" element={<Navigate to="/dashboard/your-ai/voice" replace />} />
+          <Route path="knowledge-base" element={<Navigate to="/dashboard/your-ai/knowledge" replace />} />
+          <Route path="phone" element={<Navigate to="/dashboard/your-ai/phone" replace />} />
+          <Route path="phone-numbers" element={<Navigate to="/dashboard/your-ai/phone" replace />} />
+          <Route path="analytics" element={<Navigate to="/dashboard/growth/analytics" replace />} />
+          <Route path="reputation" element={<Navigate to="/dashboard/growth/reputation" replace />} />
+          <Route path="reminders" element={<Navigate to="/dashboard/growth/reminders" replace />} />
+          <Route path="follow-ups" element={<Navigate to="/dashboard/growth/follow-ups" replace />} />
 
           {/* Starter-gated pages */}
           <Route path="qa/rubrics"   element={<PlanGate requiredPlan="starter"><QARubricsPage /></PlanGate>} />
           <Route path="qa/review"    element={<PlanGate requiredPlan="starter"><QAReviewPage /></PlanGate>} />
           <Route path="qa/analytics" element={<PlanGate requiredPlan="starter"><QAAnalyticsPage /></PlanGate>} />
           <Route path="ai-receptionist" element={<PlanGate requiredPlan="starter"><ReceptionistPage /></PlanGate>} />
-          <Route path="agents" element={<PlanGate requiredPlan="starter"><AgentsPage /></PlanGate>} />
           <Route path="agents/:agentId" element={<PlanGate requiredPlan="starter"><AgentDetailPage /></PlanGate>} />
-          <Route path="agent-tests" element={<Navigate to="/dashboard/agents" replace />} />
-          <Route path="voice-library" element={<PlanGate requiredPlan="starter"><VoiceLibraryPage /></PlanGate>} />
-          <Route path="knowledge-base" element={<PlanGate requiredPlan="starter"><KnowledgeBasePage /></PlanGate>} />
-          <Route path="phone" element={<PlanGate requiredPlan="starter"><PhoneNumbersPage /></PlanGate>} />
-          <Route path="phone-numbers" element={<Navigate to="/dashboard/phone" replace />} />
           <Route path="chat-widget" element={<PlanGate requiredPlan="starter"><WebsiteBubblePage /></PlanGate>} />
 
           {/* Free pages */}
           <Route path="integrations" element={<IntegrationsPage />} />
 
           {/* Pro-gated pages */}
-          <Route path="analytics" element={<PlanGate requiredPlan="pro"><AnalyticsPage /></PlanGate>} />
           <Route path="deep-analytics" element={<PlanGate requiredPlan="pro"><DeepAnalyticsPage /></PlanGate>} />
-          <Route path="reminders" element={<PlanGate requiredPlan="pro"><RemindersPage /></PlanGate>} />
-          <Route path="reputation" element={<PlanGate requiredPlan="pro"><ReputationPage /></PlanGate>} />
           <Route path="instant-lead-response" element={<PlanGate requiredPlan="pro"><InstantLeadReplyPage /></PlanGate>} />
           <Route path="website-instant-response" element={<PlanGate requiredPlan="pro"><WebsiteInstantResponsePage /></PlanGate>} />
           <Route path="ad-instant-response" element={<PlanGate requiredPlan="pro"><AdInstantResponsePage /></PlanGate>} />
@@ -468,15 +541,13 @@ const NavigationWrapper: React.FC = () => {
           <Route path="whatsapp" element={<PlanGate requiredPlan="pro"><WhatsappPage /></PlanGate>} />
           <Route path="email" element={<PlanGate requiredPlan="pro"><EmailPage /></PlanGate>} />
 
-          {/* Redirects from old paths to new merged pages */}
+          {/* Legacy path redirects → hub tabs */}
           <Route path="speed-to-lead" element={<Navigate to="/dashboard/leads" replace />} />
-          <Route path="missed-calls" element={<PlanGate requiredPlan="pro"><MissedCallsPage /></PlanGate>} />
           <Route path="lead-reactivation" element={<Navigate to="/dashboard/leads" replace />} />
-          <Route path="call-history" element={<Navigate to="/dashboard/calls" replace />} />
-          <Route path="assistant" element={<Navigate to="/dashboard/calls" replace />} />
-          <Route path="chat-history" element={<Navigate to="/dashboard/messages" replace />} />
-          <Route path="sms-booking" element={<Navigate to="/dashboard/messages" replace />} />
-          <Route path="follow-ups" element={<Navigate to="/dashboard/messages" replace />} />
+          <Route path="call-history" element={<Navigate to="/dashboard/conversations/calls" replace />} />
+          <Route path="assistant" element={<Navigate to="/dashboard/conversations/calls" replace />} />
+          <Route path="chat-history" element={<Navigate to="/dashboard/conversations/messages" replace />} />
+          <Route path="sms-booking" element={<Navigate to="/dashboard/conversations/messages" replace />} />
           <Route path="website-bubble" element={<Navigate to="/dashboard/chat-widget" replace />} />
           <Route path="instant-lead-reply" element={<Navigate to="/dashboard/leads" replace />} />
           <Route path="settings" element={<SettingsLayout />}>
@@ -491,15 +562,18 @@ const NavigationWrapper: React.FC = () => {
             <Route path="activity-log" element={<ActivityLogPage />} />
             <Route path="api-keys" element={<ApiKeysPage />} />
             <Route path="workspace" element={<WorkspacePage />} />
-            <Route path="packages" element={<PackagesPage />} />
+            {/* ponytail: PackagesPage hidden for V1 — fake purchase (no billing wiring). Redirect to plan-billing. Restore once add-on charges wired through PayPal. */}
+            <Route path="packages" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
             {/* Redirects for removed settings pages */}
             <Route path="billing" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
             <Route path="notification-preferences" element={<Navigate to="/dashboard/settings/notifications" replace />} />
-            <Route path="services" element={<Navigate to="/dashboard/settings/general" replace />} />
+            <Route path="services" element={<ServicesSettingsPage />} />
           </Route>
         </Route>
         {/* /setup is the canonical V2 AI-guided onboarding page. */}
         <Route path="/setup" element={<V2SetupPage />} />
+        {/* /start is the website-first cinematic onboarding (additive; /setup untouched). */}
+        <Route path="/start" element={<StartOnboarding />} />
         <Route path="/v2/setup" element={<Navigate to="/setup" replace />} />
         {/* ── V2 shell (opt-in via workspaces.v2_enabled) ─────────────────
             Parallel route surface to /dashboard. V1 stays untouched; this
@@ -621,8 +695,7 @@ const NavigationWrapper: React.FC = () => {
         </Route>
 
 
-        {/* Classic setup is the old V1 form wizard, without the agent-led chat. */}
-        <Route path="/setup/classic" element={<SetupClassic />} />
+        <Route path="/setup/classic" element={<Navigate to="/setup" replace />} />
         <Route path="/setup/agent" element={<Navigate to="/setup" replace />} />
         <Route
           path="/setup/loading"
@@ -642,9 +715,11 @@ const NavigationWrapper: React.FC = () => {
         />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/book-a-call" element={<BookCall />} />
         <Route path="/about" element={<About />} />
+        <Route path="/credits" element={<CreditsPage />} />
         <Route path="/partners" element={<Partners />} />
 
         {/* Speed Test Funnel */}
@@ -652,6 +727,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/speed-test/login" element={<SpeedTestLogin />} />
         <Route path="/speed-test/report" element={<SpeedTestReport />} />
         <Route path="/speed-test/offer" element={<SpeedTestOffer />} />
+
+        {/* Response-time proof widget — distinct from the /speed-test Lighthouse checker above */}
+        <Route path="/response-time-test" element={<ResponseTimeTest />} />
         {/* Old hosted-button payment pages removed; checkout lives in the dashboard now. */}
         <Route path="/payment/pro" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
         <Route path="/payment/elite-starter" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
@@ -661,6 +739,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/lead-magnet/claude-code-overnight-kit" element={<LeadMagnetClaudeCodeOvernightKitPage />} />
         <Route path="/lead-magnet/ai-receptionist-buyers-guide" element={<LeadMagnetAIReceptionistBuyersGuide />} />
         <Route path="/lead-magnet/speed-to-lead-stack" element={<LeadMagnetSpeedToLeadStackPage />} />
+        <Route path="/lead-magnet/intake-agent-playbook" element={<LeadMagnetIntakeAgentPlaybookPage />} />
         <Route path="/after-hours-lead-rescue" element={<AfterHoursLeadRescuePage />} />
         <Route path="/automatic-reviews-agent" element={<AutomaticReviewsAgentPage />} />
         <Route path="/reminders-agent" element={<RemindersAgentPage />} />
@@ -679,6 +758,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/integrations/make" element={<MakeIntegrationPage />} />
         <Route path="/integrations/hubspot" element={<HubSpotIntegrationPage />} />
         <Route path="/integrations/gohighlevel" element={<GoHighLevelIntegrationPage />} />
+        <Route path="/integrations/wix" element={<WixIntegrationPage />} />
+        <Route path="/integrations/squarespace" element={<SquarespaceIntegrationPage />} />
         <Route element={<BlogSchemaWrapper />}>
         <Route path="/blog" element={<BlogCenter />} />
         <Route path="/newsletter" element={<Newsletter />} />
@@ -764,10 +845,13 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/lead-response-scorecard/results" element={<LeadResponseScorecardResults />} />
         <Route path="/seo-audit" element={<SEOAnalyzer />} />
         <Route path="/business-audit" element={<BusinessAuditPage />} />
+        <Route path="/audit/:id" element={<AuditPage />} />
         <Route path="/ai-audit" element={<AIAuditPage />} />
         <Route path="/ai-audit/thank-you" element={<AIAuditThankYouPage />} />
         <Route path="/seo-aeo-audit" element={<SEOAuditPDF />} />
         <Route path="/seo-aeo-audit/thank-you" element={<SEOAuditPDFThankYou />} />
+        <Route path="/website-audit" element={<WebsiteAuditPDF />} />
+        <Route path="/website-audit/thank-you" element={<WebsiteAuditThankYou />} />
         <Route path="/conversion-rate-optimizer" element={<ConversionRateOptimizer />} />
         <Route path="/ai-visibility-check" element={<AIVisibilityCheck />} />
         {/* Feature Pages */}
@@ -785,11 +869,13 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/challenge/winner" element={<ChallengeWinner />} />
         <Route path="/receptionist-demo" element={<ReceptionistDemo />} />
         <Route path="/button-demo" element={<ButtonDemoPage />} />
+        <Route path="/metric-cards-demo" element={<MetricCardsDemoPage />} />
         <Route path="/origin-button-demo" element={<OriginButtonDemoPage />} />
         <Route path="/glow-horizon-demo" element={<GlowHorizonDemoPage />} />
         <Route path="/logo-demo" element={<LogoAnimationDemoPage />} />
         <Route path="/rocker-switch-demo" element={<RockerSwitchDemoPage />} />
         <Route path="/demo" element={<DemoFlowPage />} />
+        <Route path="/prototype/live-call" element={<LiveCallPrototypePage />} />
         <Route path="/agent-architecture" element={<AgentArchitecturePage />} />
         <Route path="/funnel-optimizer" element={<FunnelOptimizer />} />
         <Route path="/funnel-optimiser" element={<FunnelOptimiser />} />
@@ -799,6 +885,9 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/industries/hvac-answering-service" element={<HVACAnsweringServicePage />} />
         <Route path="/industries/plumbing-answering-service" element={<PlumbingAnsweringServicePage />} />
         <Route path="/industries/contractor-answering-service" element={<ContractorAnsweringServicePage />} />
+        <Route path="/industries/dentist-answering-service" element={<DentistAnsweringServicePage />} />
+        <Route path="/industries/lawyer-answering-service" element={<LawyerAnsweringServicePage />} />
+        <Route path="/industries/medspa-answering-service" element={<MedSpaAnsweringServicePage />} />
         {/* Solar Industry Hub */}
         <Route path="/solar" element={<SolarIndustryHub />} />
         {/* Solar Speed-to-Lead Playbook */}
@@ -850,12 +939,14 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/tools/landscaping-seasonal-revenue-calculator" element={<LandscapingSeasonalRevenueCalculator />} />
         {/* All niche tools now served by dynamic route from Supabase */}
         <Route path="/tools/:slug" element={<NicheToolPage />} />
-        <Route path="/voice-agent-setup" element={<VoiceAgentOnboarding />} />
+        {/* V1 wizard retired — /start is the canonical onboarding */}
+        <Route path="/voice-agent-setup" element={<Navigate to="/start" replace />} />
         <Route path="/ai-readiness-scorecard" element={<AiReadinessScorecard />} />
         <Route path="/ai-receptionist-roi" element={<AiReceptionistRoi />} />
         <Route path="/privacy-policy" element={<Privacy />} />
         <Route path="/terms-of-service" element={<Terms />} />
         <Route path="/dpa" element={<DPA />} />
+        <Route path="/law-firm-security" element={<LawFirmSecurityPage />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -873,6 +964,7 @@ const AppRoutes: React.FC = () => {
       <AuthProvider>
         <Router>
           <NavigationWrapper />
+          <TosAcceptanceGate />
         </Router>
       </AuthProvider>
     </Suspense>

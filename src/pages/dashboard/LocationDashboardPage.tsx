@@ -82,7 +82,7 @@ const LocationDashboardPage: React.FC = () => {
   }
 
   if (!location) {
-    return <div className="p-6 text-gray-500">Location not found.</div>;
+    return <div className="p-6 text-gray-500 dark:text-gray-400">Location not found.</div>;
   }
 
   const kpis = [
@@ -96,12 +96,12 @@ const LocationDashboardPage: React.FC = () => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{location.name}</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{location.name}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {[location.address_line1, location.city, location.state].filter(Boolean).join(', ')}
           </p>
         </div>
-        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${location.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+        <span className={`px-3 py-1 text-xs font-semibold rounded-full ${location.is_active ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-[#17171b] text-gray-600 dark:text-gray-400'}`}>
           {location.is_active ? 'Active' : 'Inactive'}
         </span>
       </div>
@@ -124,25 +124,25 @@ const LocationDashboardPage: React.FC = () => {
         ))}
       </div>
 
-      <div className="rounded-xl border border-gray-200 p-6 bg-white">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Location Details</h3>
+      <div className="rounded-xl border border-gray-200 dark:border-[#1e1e24] p-6 bg-white dark:bg-[#111114]">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Location Details</h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
           {location.phone && (
             <div>
-              <span className="text-gray-500">Phone:</span>
-              <span className="ml-2 text-gray-900">{location.phone}</span>
+              <span className="text-gray-500 dark:text-gray-400">Phone:</span>
+              <span className="ml-2 text-gray-900 dark:text-white">{location.phone}</span>
             </div>
           )}
           {location.email && (
             <div>
-              <span className="text-gray-500">Email:</span>
-              <span className="ml-2 text-gray-900">{location.email}</span>
+              <span className="text-gray-500 dark:text-gray-400">Email:</span>
+              <span className="ml-2 text-gray-900 dark:text-white">{location.email}</span>
             </div>
           )}
           {location.timezone && (
             <div>
-              <span className="text-gray-500">Timezone:</span>
-              <span className="ml-2 text-gray-900">{location.timezone}</span>
+              <span className="text-gray-500 dark:text-gray-400">Timezone:</span>
+              <span className="ml-2 text-gray-900 dark:text-white">{location.timezone}</span>
             </div>
           )}
         </div>

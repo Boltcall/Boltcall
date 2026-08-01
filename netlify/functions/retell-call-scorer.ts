@@ -54,7 +54,7 @@ function inferOutcome(call: any): string {
 }
 
 const SCORING_SYSTEM_PROMPT = `You are a voice AI quality analyst for Boltcall, a speed-to-lead platform.
-Score a completed AI receptionist call on 6 dimensions. Return ONLY valid JSON, no markdown.`;
+Score a completed AI receptionist call on 7 dimensions. Return ONLY valid JSON, no markdown.`;
 
 const SCORING_USER_TEMPLATE = `Vertical: {VERTICAL}
 Outcome: {OUTCOME}
@@ -69,7 +69,8 @@ Score each dimension 0.00–1.00 (two decimals). Return JSON:
   "on_script": { "score": 0.00, "notes": "one sentence" },
   "caller_sentiment": { "score": 0.00, "notes": "one sentence" },
   "hallucination_free": { "score": 0.00, "notes": "one sentence" },
-  "latency_ok": { "score": 0.00, "notes": "one sentence" }
+  "latency_ok": { "score": 0.00, "notes": "one sentence" },
+  "urgency_signal": { "score": 0.00, "notes": "one sentence" }
 }
 
 Scoring rules:
@@ -78,7 +79,8 @@ Scoring rules:
 - on_script: Were required disclosures (AI identity where needed) and compliance phrases present?
 - caller_sentiment: End-of-call caller mood trajectory. Positive/neutral = 0.8-1.0. Frustrated/hung-up = 0.0-0.3.
 - hallucination_free: Did agent invent prices, hours, or services not in its knowledge? Any clear invention = 0.0.
-- latency_ok: Did conversation flow naturally without awkward silences or interruptions? Estimate from transcript flow.`;
+- latency_ok: Did conversation flow naturally without awkward silences or interruptions? Estimate from transcript flow.
+- urgency_signal: How urgent/high-stakes is this lead — emergencies, large deal value, "need this today/now" language, safety issues. 0.0 = routine inquiry, 1.0 = drop-everything urgent. This does NOT measure mood (see caller_sentiment) — an angry caller about a routine matter still scores low here.`;
 
 async function scoreCall(
   vertical: string,
@@ -101,7 +103,7 @@ async function scoreCall(
   } catch (err) {
     console.error('[retell-call-scorer] Scoring LLM call failed:', err);
     // Return neutral 0.5 scores so the call is still recorded, not lost
-    const dims = ['booking_attempt', 'objection_handling', 'on_script', 'caller_sentiment', 'hallucination_free', 'latency_ok'];
+    const dims = ['booking_attempt', 'objection_handling', 'on_script', 'caller_sentiment', 'hallucination_free', 'latency_ok', 'urgency_signal'];
     return Object.fromEntries(dims.map(d => [d, { score: 0.5, notes: 'scoring_failed' }]));
   }
 }
@@ -194,19 +196,25 @@ const handler: Handler = async (event) => {
     return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: 'DB write failed' }) };
   }
 
-  // Stamp prompt_version_id if a shadow version is active for this vertical
-  const { data: shadowVersion } = await supabase
-    .from('retell_prompt_versions')
-    .select('id')
-    .eq('vertical', vertical)
-    .eq('status', 'shadowing')
-    .limit(1)
-    .maybeSingle();
+  // Stamp prompt_version_id: call metadata wins (A/B variant arm, set at
+  // call creation), else fall back to the vertical's active shadow version.
+  let stampVersionId: string | null =
+    typeof call.metadata?.prompt_version_id === 'string' ? call.metadata.prompt_version_id : null;
+  if (!stampVersionId) {
+    const { data: shadowVersion } = await supabase
+      .from('retell_prompt_versions')
+      .select('id')
+      .eq('vertical', vertical)
+      .eq('status', 'shadowing')
+      .limit(1)
+      .maybeSingle();
+    stampVersionId = shadowVersion?.id || null;
+  }
 
-  if (shadowVersion?.id) {
+  if (stampVersionId) {
     supabase
       .from('retell_calls')
-      .update({ prompt_version_id: shadowVersion.id })
+      .update({ prompt_version_id: stampVersionId })
       .eq('call_id', callId)
       .then(({ error }) => {
         if (error) console.error('[retell-call-scorer] prompt_version_id stamp failed:', error);

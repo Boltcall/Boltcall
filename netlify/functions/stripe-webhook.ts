@@ -30,6 +30,13 @@ function getInternalSecretHeaders(): Record<string, string> {
 }
 
 const handler: Handler = async (event) => {
+  // Fail loud on missing Supabase env — the module-level client falls back to
+  // empty strings, which would silently drop every subscription/invoice write.
+  if (!(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL) || !process.env.SUPABASE_SERVICE_KEY) {
+    console.error('stripe-webhook misconfigured: SUPABASE_URL or SUPABASE_SERVICE_KEY unset');
+    return { statusCode: 500, body: 'Server misconfigured' };
+  }
+
   const sig = event.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

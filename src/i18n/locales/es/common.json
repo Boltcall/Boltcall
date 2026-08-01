@@ -98,6 +98,10 @@
   "validation.phone": "Ingresa un número de teléfono válido",
 
   "nav.overview": "Resumen",
+  "nav.home": "Inicio",
+  "nav.conversations": "Conversaciones",
+  "nav.yourAi": "Tu IA",
+  "nav.growth": "Crecimiento",
   "nav.leads": "Prospectos",
   "nav.calls": "Llamadas",
   "nav.messages": "Mensajes",
