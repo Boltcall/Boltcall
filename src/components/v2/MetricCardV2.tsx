@@ -22,6 +22,7 @@ interface MetricCardV2Props {
   className?: string;
   compact?: boolean;
   caption?: string;
+  comparisonValue?: number;
 }
 
 const MetricCardV2: React.FC<MetricCardV2Props> = ({
