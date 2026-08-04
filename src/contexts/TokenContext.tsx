@@ -68,20 +68,27 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.error('Error fetching token balance:', error);
       }
 
-      // Auto-create token balance with 50 free credits for new users
+      // Auto-create token balance with 50 free credits. Upsert (not insert)
+      // so concurrent mounts don't race into a 409 on user_id.
       if (!data && !error) {
-        const { data: newBalance, error: insertError } = await supabase
+        const { error: upsertError } = await supabase
           .from('token_balances')
-          .insert({
-            user_id: user.id,
-            balance: 0,
-            bonus_balance: 50,
-            tokens_used_this_period: 0,
-          })
-          .select()
-          .single();
-        if (!insertError && newBalance) {
-          setTokenBalance(newBalance as TokenBalance);
+          .upsert(
+            {
+              user_id: user.id,
+              balance: 0,
+              bonus_balance: 50,
+              tokens_used_this_period: 0,
+            },
+            { onConflict: 'user_id', ignoreDuplicates: true },
+          );
+        if (!upsertError) {
+          const { data: created } = await supabase
+            .from('token_balances')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          setTokenBalance(created as TokenBalance | null);
           return;
         }
       }
