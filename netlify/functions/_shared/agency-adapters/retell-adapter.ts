@@ -567,13 +567,14 @@ export async function provisionPhoneNumber(
     throw new Error(msg);
   }
 
+  // Retell deprecated inbound_agent_id on 2026-03-31 — use inbound_agents array.
   const params: {
     country_code: 'US' | 'CA';
-    inbound_agent_id: string;
+    inbound_agents: Array<{ agent_id: string; weight: number }>;
     area_code?: number;
   } = {
     country_code: country,
-    inbound_agent_id: opts.agent_id,
+    inbound_agents: [{ agent_id: opts.agent_id, weight: 1 }],
   };
   if (opts.area_code) {
     const parsed = Number.parseInt(opts.area_code, 10);

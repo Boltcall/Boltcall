@@ -218,11 +218,14 @@ const handler: Handler = async (event) => {
           if (Number.isFinite(parsed) && parsed >= 100 && parsed <= 999) areaCode = parsed;
         }
 
+        // Retell deprecated single-agent fields on 2026-03-31 — use array form.
         const retellBody: Record<string, any> = {
           country_code: cc === 'US' || cc === 'CA' ? cc : 'US', // Retell currently only takes US|CA
-          inbound_agent_id: inboundAgent.retell_agent_id,
+          inbound_agents: [{ agent_id: inboundAgent.retell_agent_id, weight: 1 }],
         };
-        if (outboundAgent?.retell_agent_id) retellBody.outbound_agent_id = outboundAgent.retell_agent_id;
+        if (outboundAgent?.retell_agent_id) {
+          retellBody.outbound_agents = [{ agent_id: outboundAgent.retell_agent_id, weight: 1 }];
+        }
         if (areaCode) retellBody.area_code = areaCode;
         if (friendly_name) retellBody.nickname = friendly_name;
         else if (workspaceRow.name) retellBody.nickname = workspaceRow.name;
