@@ -56,20 +56,16 @@ function isAuthorizedToolRequest(event: HandlerEvent): boolean {
     return Boolean(provided) && safeEqual(sharedSecret, provided);
   }
 
-  // Fail-open only for true local dev — never on any hosted deploy. Netlify
-  // preview and branch deploys leave NODE_ENV unset, so the old
-  // `NODE_ENV !== 'production'` check silently opened every preview URL to
-  // unauthenticated book_appointment / send_sms / lookup_caller calls. Gate
-  // the bypass on Netlify's CONTEXT env var (`dev` only) so anything hosted
-  // — preview, branch, production — requires a signature or shared secret.
-  const netlifyContext = process.env.CONTEXT || '';
-  const isLocalDev = !netlifyContext || netlifyContext === 'dev';
-  if (isLocalDev && process.env.NODE_ENV !== 'production') {
-    console.warn(
-      '[agent-tools] AUTH BYPASS: request accepted without a valid Retell signature or shared secret because this is local dev (CONTEXT=dev). Set AGENT_TOOLS_SHARED_SECRET (or RETELL_TOOL_SECRET) to lock this down.',
-    );
-    return true;
-  }
+  // Fail-closed. The previous `NODE_ENV !== 'production'` / `CONTEXT=dev`
+  // bypass was intended for local dev, but Netlify Functions runtime does
+  // not reliably expose those env vars — so live prod ended up accepting
+  // unauthenticated book_appointment / send_sms / lookup_caller calls
+  // (confirmed via a live smoke against boltcall.org after the previous
+  // deploy). For local dev, set AGENT_TOOLS_SHARED_SECRET in .env.local
+  // and pass the same value in `x-agent-tools-secret` from your dev harness.
+  console.warn(
+    '[agent-tools] Rejecting request — no valid Retell signature and no shared secret configured.',
+  );
   return false;
 }
 
