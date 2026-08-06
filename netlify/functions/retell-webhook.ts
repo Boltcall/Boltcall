@@ -4,6 +4,7 @@ import { getSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { buildAgentOwnerOrFilter, sanitizeRetellAgentId } from './_shared/lookup-agent-owner';
 
 /**
  * Retell Post-Call Webhook
@@ -217,16 +218,21 @@ const handler: Handler = async (event) => {
     };
   }
 
-  // Verify Retell signature when configured. In dev (no RETELL_API_KEY) or
-  // when Retell sends no signature header, log and continue for local testing.
-  // If the Retell secret exists, a missing signature is a real webhook failure
-  // regardless of NODE_ENV.
+  // Verify Retell signature. Fail-closed: any hosted deploy (RETELL_API_KEY
+  // set OR NODE_ENV=production OR Netlify CONTEXT set) requires both a
+  // signature header and a valid HMAC. Only fully-local dev (no key, no
+  // NODE_ENV, no Netlify context) is allowed to skip a missing signature so
+  // curl-based smoke tests still work.
   const sigResult = verifyRetellSignature(event.body || '', event.headers as Record<string, string | undefined>);
   if (sigResult === 'invalid') {
     console.warn('[retell-webhook] Invalid signature — rejecting request');
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid webhook signature' }) };
   }
-  if (sigResult === 'missing' && (process.env.RETELL_API_KEY || process.env.NODE_ENV === 'production')) {
+  const signatureRequired =
+    !!process.env.RETELL_API_KEY ||
+    process.env.NODE_ENV === 'production' ||
+    !!process.env.CONTEXT;
+  if (sigResult === 'missing' && signatureRequired) {
     console.warn('[retell-webhook] Missing signature while webhook signing is required — rejecting');
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Webhook signature required' }) };
   }
@@ -299,10 +305,15 @@ const handler: Handler = async (event) => {
         // Look up agent owner by direct retell_agent_id column first, then
         // fall back to legacy api_keys.retell_agent_id JSONB path. Newer
         // rows have api_keys = {}, so the JSONB-only filter would miss them.
+        const safeAgentId = sanitizeRetellAgentId(agentId);
+        if (!safeAgentId) {
+          console.warn('[retell-webhook] Rejecting malformed agent_id in completed-call path:', agentId);
+          return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true, reason: 'invalid_agent_id' }) };
+        }
         const { data: agentOwner } = await supabaseForWebhook
           .from('agents')
           .select('user_id')
-          .or(`retell_agent_id.eq.${agentId},api_keys->>retell_agent_id.eq.${agentId}`)
+          .or(buildAgentOwnerOrFilter(safeAgentId))
           .limit(1)
           .maybeSingle();
         if (agentOwner?.user_id) {
@@ -414,10 +425,15 @@ const handler: Handler = async (event) => {
     const supabase = getSupabase();
 
     // Step 1: Look up agent owner — direct column primary, legacy JSONB fallback
+    const safeAgentIdMissed = sanitizeRetellAgentId(agentId);
+    if (!safeAgentIdMissed) {
+      console.warn('[retell-webhook] Rejecting malformed agent_id in missed-call path:', agentId);
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, missed: true, textback: false, reason: 'invalid_agent_id' }) };
+    }
     const { data: agentRow, error: agentError } = await supabase
       .from('agents')
       .select('user_id')
-      .or(`retell_agent_id.eq.${agentId},api_keys->>retell_agent_id.eq.${agentId}`)
+      .or(buildAgentOwnerOrFilter(safeAgentIdMissed))
       .limit(1)
       .maybeSingle();
 

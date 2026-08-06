@@ -56,12 +56,17 @@ function isAuthorizedToolRequest(event: HandlerEvent): boolean {
     return Boolean(provided) && safeEqual(sharedSecret, provided);
   }
 
-  // Fail-open only outside production, and never silently: log loudly so a
-  // misconfigured deploy (no Retell signature verified, no shared secret set)
-  // is obvious in the function logs instead of quietly accepting every request.
-  if (process.env.NODE_ENV !== 'production') {
+  // Fail-open only for true local dev — never on any hosted deploy. Netlify
+  // preview and branch deploys leave NODE_ENV unset, so the old
+  // `NODE_ENV !== 'production'` check silently opened every preview URL to
+  // unauthenticated book_appointment / send_sms / lookup_caller calls. Gate
+  // the bypass on Netlify's CONTEXT env var (`dev` only) so anything hosted
+  // — preview, branch, production — requires a signature or shared secret.
+  const netlifyContext = process.env.CONTEXT || '';
+  const isLocalDev = !netlifyContext || netlifyContext === 'dev';
+  if (isLocalDev && process.env.NODE_ENV !== 'production') {
     console.warn(
-      '[agent-tools] AUTH BYPASS: request accepted without a valid Retell signature or shared secret because NODE_ENV != production. Set AGENT_TOOLS_SHARED_SECRET (or RETELL_TOOL_SECRET) to lock this down.',
+      '[agent-tools] AUTH BYPASS: request accepted without a valid Retell signature or shared secret because this is local dev (CONTEXT=dev). Set AGENT_TOOLS_SHARED_SECRET (or RETELL_TOOL_SECRET) to lock this down.',
     );
     return true;
   }
@@ -754,11 +759,13 @@ async function handleSendSms(
   }
 
   try {
-    // Determine from number
-    let fromNumber = process.env.TWILIO_FROM_NUMBER || '';
-
-    // Try to get the user's Twilio number from Supabase
-    if (userId && !fromNumber) {
+    // Determine from number — always prefer the tenant's own provisioned
+    // line so caller-ID stays correct. Only fall back to TWILIO_FROM_NUMBER
+    // when the tenant has no active number of their own (single-tenant dev,
+    // demo agents). The prior order sent every tenant from the shared env
+    // number as long as it was set, which cross-branded outbound texts.
+    let fromNumber = '';
+    if (userId) {
       const supabase = getSupabase();
       const { data: phoneRow } = await supabase
         .from('phone_numbers')
@@ -772,6 +779,8 @@ async function handleSendSms(
         fromNumber = phoneRow.phone_number;
       }
     }
+
+    if (!fromNumber) fromNumber = process.env.TWILIO_FROM_NUMBER || '';
 
     if (!fromNumber) {
       return 'SMS sending is not configured. Please contact the business directly.';

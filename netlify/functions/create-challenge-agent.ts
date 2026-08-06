@@ -1,8 +1,16 @@
 import { Handler } from '@netlify/functions';
+import { timingSafeEqual } from 'crypto';
 import Retell from 'retell-sdk';
 import { createClient } from '@supabase/supabase-js';
 import { getStrongEnvSecret } from './_shared/signed-token';
 import { withLegacyHandler } from './_shared/runtime-compat';
+
+function safeCompare(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
+}
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -117,7 +125,7 @@ const handler: Handler = async (event) => {
   if (!expectedToken) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Admin API token not configured' }) };
   }
-  if (authHeader !== `Bearer ${expectedToken}`) {
+  if (!authHeader || !safeCompare(authHeader, `Bearer ${expectedToken}`)) {
     return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
   }
 
@@ -187,7 +195,7 @@ const handler: Handler = async (event) => {
       backchannel_words: ['yeah', 'uh-huh', 'mmhmm'],
       backchannel_frequency: 0.6,
       ambient_sound: 'coffee-shop',
-      responsiveness: 1,
+      response_eagerness: 1,
       interruption_sensitivity: 0.8,
       end_call_after_silence_ms: 30000,
       max_call_duration_ms: 60000,

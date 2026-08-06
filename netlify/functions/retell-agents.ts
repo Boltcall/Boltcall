@@ -651,6 +651,17 @@ const handler: Handler = async (event) => {
             }),
           };
         }
+        // Capture the exact locked_at we just wrote so the finally can only
+        // release OUR lock. Without this, a >10-minute-slow provisioning
+        // run could delete the row a second call already acquired after
+        // the stale-timeout kicked in, opening the door to a duplicate
+        // agent from a third concurrent call.
+        const { data: ownLock } = await serviceSupabase
+          .from('provisioning_locks')
+          .select('locked_at')
+          .eq('user_id', userId)
+          .maybeSingle();
+        const ownLockedAt = ownLock?.locked_at || null;
 
         try {
         // Idempotency: the lock only stops concurrent calls — a sequential
@@ -841,45 +852,50 @@ const handler: Handler = async (event) => {
         }
 
         // Step 5: Register agent in Cekura + create test scenarios (don't run yet).
-        // Fire-and-forget — Cekura is best-effort and its 2 sequential network
-        // calls should not add wall-clock time to the client-facing response,
-        // which is the main contributor to this endpoint's timeout risk.
+        // Awaited on purpose: Netlify Functions terminate the moment the
+        // handler returns, so a `void (async () => { ... })()` here was
+        // getting killed mid-flight on cold containers (and its result
+        // could never reach the JSON response body either). Latency cost
+        // is ~2-4s for two sequential fetches — acceptable during a
+        // one-shot onboarding flow. Errors are swallowed so a Cekura
+        // outage still lets the agent finish provisioning.
         const cekuraSetup: { success: boolean } = { success: false };
-        void (async () => {
-          try {
-            const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+        try {
+          const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
-            const registerRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
+          const registerRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
+            body: JSON.stringify({
+              action: 'register_agent',
+              retell_agent_id: agent.agent_id,
+              agent_name: `${body.business_name} AI Receptionist`,
+              phone_number: body.phone_number,
+              language: body.language,
+            }),
+            signal: AbortSignal.timeout(6000),
+          });
+
+          if (registerRes.ok) {
+            const registerData = await registerRes.json();
+            const cekuraAgentId = registerData.cekura_agent_id;
+
+            const evalRes = await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
               body: JSON.stringify({
-                action: 'register_agent',
-                retell_agent_id: agent.agent_id,
+                action: 'create_evaluators',
+                cekura_agent_id: cekuraAgentId,
                 agent_name: `${body.business_name} AI Receptionist`,
-                phone_number: body.phone_number,
-                language: body.language,
+                business_name: body.business_name,
               }),
+              signal: AbortSignal.timeout(6000),
             });
-
-            if (registerRes.ok) {
-              const registerData = await registerRes.json();
-              const cekuraAgentId = registerData.cekura_agent_id;
-
-              await fetch(`${baseUrl}/.netlify/functions/cekura-test`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...getInternalSecretHeaders() },
-                body: JSON.stringify({
-                  action: 'create_evaluators',
-                  cekura_agent_id: cekuraAgentId,
-                  agent_name: `${body.business_name} AI Receptionist`,
-                  business_name: body.business_name,
-                }),
-              });
-            }
-          } catch (testErr) {
-            console.error('Cekura setup failed (non-blocking):', testErr);
+            cekuraSetup.success = evalRes.ok;
           }
-        })();
+        } catch (testErr) {
+          console.error('Cekura setup failed (non-blocking):', testErr);
+        }
 
         // Step 6: Save agent to Supabase agents table + create/link KB folder
         let supabaseAgentId: string | null = null;
@@ -1023,7 +1039,18 @@ const handler: Handler = async (event) => {
           }),
         };
         } finally {
-          await serviceSupabase.from('provisioning_locks').delete().eq('user_id', userId);
+          const lockDelete = serviceSupabase
+            .from('provisioning_locks')
+            .delete()
+            .eq('user_id', userId);
+          if (ownLockedAt) {
+            // Predicate on the exact timestamp we saw at acquire — a lock
+            // reissued to a different concurrent call has a newer
+            // locked_at and won't match.
+            await lockDelete.eq('locked_at', ownLockedAt);
+          } else {
+            await lockDelete;
+          }
         }
       }
 
@@ -1176,9 +1203,30 @@ const handler: Handler = async (event) => {
               max_call_duration_ms: existing.max_call_duration_ms,
               end_call_after_silence_ms: existing.end_call_after_silence_ms,
             } as any);
+            // Refuse to delete the old Retell agent while any phone number
+            // still routes to it — Retell blocks it, and even if it didn't
+            // the drop would break inbound calls until the phone binding
+            // catches up to the new agent id.
+            let phoneStillBound = false;
+            try {
+              const phones = await client.phoneNumber.list();
+              phoneStillBound = (phones as any[]).some((p) => {
+                if (Array.isArray(p.inbound_agents)) {
+                  return p.inbound_agents.some((a: any) => a?.agent_id === row.retell_agent_id);
+                }
+                return p.inbound_agent_id === row.retell_agent_id;
+              });
+            } catch (phoneErr) {
+              console.error(`[migrate_to_azure] phone lookup failed for ${row.retell_agent_id}, refusing to delete:`, phoneErr);
+              phoneStillBound = true;
+            }
+            if (phoneStillBound) {
+              skipped++;
+              results.push({ old_id: row.retell_agent_id, new_id: newAgent.agent_id, status: 'created_new_kept_old_phone_bound' });
+              continue;
+            }
             // Update Supabase with new agent ID
             await sb.from('agents').update({ retell_agent_id: newAgent.agent_id }).eq('id', row.id);
-            // Delete the old agent (no phone number check — callers should verify first)
             await client.agent.delete(row.retell_agent_id);
             updated++;
             results.push({ old_id: row.retell_agent_id, new_id: newAgent.agent_id, status: 'migrated' });
