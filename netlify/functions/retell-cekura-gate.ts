@@ -154,8 +154,12 @@ async function startCekuraRun(promptVersionId: string) {
   const tempLlmId: string = newLlm.llm_id;
   if (!tempLlmId) throw new Error('Retell LLM creation returned no llm_id');
 
-  // Step 2: Register agent in Cekura (text mode via chat_assistant_id)
-  const retellApiKey = process.env.RETELL_API_KEY;
+  // Step 2: Register agent in Cekura (text mode via chat_assistant_id).
+  // Cekura needs a Retell key so its transcript_provider can pull call data.
+  // Prefer a scoped Cekura-only key (RETELL_CEKURA_API_KEY) so a compromise
+  // of Cekura does not hand out our master Retell key; fall back to the
+  // master key only when the scoped one is not set.
+  const retellApiKey = process.env.RETELL_CEKURA_API_KEY || process.env.RETELL_API_KEY;
   const agentName = `benchmark-${version.vertical}-v${Date.now()}`;
 
   let cekuraAgentId: number;

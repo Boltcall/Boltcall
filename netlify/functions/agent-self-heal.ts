@@ -5,6 +5,7 @@ import { chatCompletion } from './_shared/azure-ai';
 import { requireInternalOrMatchingUser, requireUser } from './_shared/user-auth';
 import { userOwnsAgent } from './_shared/require-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { buildAgentOwnerOrFilter, sanitizeRetellAgentId } from './_shared/lookup-agent-owner';
 
 /**
  * Agent Self-Healing Pipeline
@@ -247,10 +248,14 @@ async function createTempChatAgent(
     tempLlmId = newLlm.llm_id;
   } else if (!llmId && engineType === 'custom-llm') {
     const supabase = getServiceSupabase();
+    const safeVoiceAgentId = sanitizeRetellAgentId(voiceAgentId);
+    if (!safeVoiceAgentId) {
+      throw new Error('Invalid voice agent id supplied to self-heal.');
+    }
     const { data: agentRow } = await supabase
       .from('agents')
       .select('system_prompt, name')
-      .or(`retell_agent_id.eq.${voiceAgentId},api_keys->>retell_agent_id.eq.${voiceAgentId}`)
+      .or(buildAgentOwnerOrFilter(safeVoiceAgentId))
       .limit(1)
       .maybeSingle();
 
@@ -443,11 +448,15 @@ async function resolvePromptTarget(
   }
 
   if (voiceAgent.response_engine?.type === 'custom-llm') {
+    const safeHealAgentId = sanitizeRetellAgentId(agentId);
+    if (!safeHealAgentId) {
+      throw new Error('Invalid agent id supplied to self-heal deploy step.');
+    }
     const { data: agentRow, error } = await supabase
       .from('agents')
       .select('id, system_prompt')
       .eq('user_id', userId)
-      .or(`retell_agent_id.eq.${agentId},api_keys->>retell_agent_id.eq.${agentId}`)
+      .or(buildAgentOwnerOrFilter(safeHealAgentId))
       .limit(1)
       .maybeSingle();
 

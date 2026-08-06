@@ -159,7 +159,10 @@ export function createRetellLLM(
     name,
     industry,
     llm_config: {
-      model: 'gpt-5.2',
+      // Matches the model used by netlify/functions/retell-agents.ts when
+      // provisioning Retell-managed LLMs — keep the two in sync so this
+      // template row does not diverge from what production actually ships.
+      model: 'gpt-4o-mini',
       temperature: 0.7,
       max_tokens: 500,
       system_prompt: preset.system_prompt || `You are a professional AI assistant for ${industry} services.`,
