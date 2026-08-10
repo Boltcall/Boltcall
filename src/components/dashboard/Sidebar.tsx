@@ -20,11 +20,14 @@ import {
   Star,
   Plug,
   Settings,
+  Lightbulb,
+  LifeBuoy,
 } from 'lucide-react';
 import NavItem from './NavItem';
 import AgencyNavSection from './AgencyNavSection';
 import ClientPortalNavSection from './ClientPortalNavSection';
 import WorkspaceBrand from './WorkspaceBrand';
+import { HelpPopper } from '@/components/ui/help-popper';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -132,6 +135,38 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <ClientPortalNavSection />
             <AgencyNavSection />
           </nav>
+
+          {/* Footer: help menu, bottom-left like every app that ships one. */}
+          <div className="border-t border-zinc-200 p-3 flex items-center justify-between">
+            <span className="text-[11px] text-zinc-500">Need help?</span>
+            <HelpPopper
+              side="top"
+              align="end"
+              items={[
+                {
+                  icon: <BookOpen />,
+                  label: 'Docs',
+                  external: true,
+                  onSelect: () =>
+                    window.open('https://boltcall.mintlify.app/', '_blank', 'noopener,noreferrer'),
+                },
+                {
+                  icon: <LifeBuoy />,
+                  label: 'Contact us',
+                  onSelect: () => {
+                    window.location.href = '/contact';
+                  },
+                },
+                {
+                  icon: <Lightbulb />,
+                  label: 'Share feedback',
+                  onSelect: () => {
+                    window.location.href = 'mailto:noam@boltcall.org?subject=Boltcall%20feedback';
+                  },
+                },
+              ]}
+            />
+          </div>
         </div>
       </aside>
     </>
