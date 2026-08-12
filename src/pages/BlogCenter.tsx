@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Emergency Plumber Answering Service: <span className="text-blue-600">Capture Every 2am Call</span>',
+    slug: '/blog/emergency-plumber-answering-service',
+    excerpt: 'An emergency plumber answering service responds to urgent calls, qualifies the problem, and moves high-intent homeowners toward a booked service job before a competitor does.',
+    date: 'August 12, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Plumber Missed Call Text Back: <span className="text-blue-600">Recover More Service Jobs</span>',
     slug: '/blog/plumber-missed-call-text-back',
     excerpt: 'A plumber missed call text back workflow keeps emergency and routine callers engaged, qualifies the job, and moves more missed opportunities toward a booked service visit.',
@@ -551,6 +560,7 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Speed-to-Lead for Solar', href: '/solar', tagline: 'How solar installers win on first response.' },
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
   { label: 'Plumber Missed Call Text Back Guide', href: '/blog/plumber-missed-call-text-back', tagline: 'Turn unanswered calls into booked plumbing jobs.' },
+  { label: 'Emergency Plumber Answering Service', href: '/blog/emergency-plumber-answering-service', tagline: 'Capture urgent calls before a competitor does.' },
   { label: 'Missed Call Recovery for Plumbers', href: '/blog/plumber-missed-call-text-back', tagline: 'A practical speed-to-lead workflow for busy crews.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
@@ -743,6 +753,8 @@ const BlogCenter: React.FC = () => {
       </section>
 
       {/* Stats Data Table */}
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Plumbing owners can also read the <Link to="/blog/emergency-plumber-answering-service" className="text-blue-600 hover:underline">emergency plumber answering service guide</Link> for a practical after-hours response workflow.</p>
+
       <section id="stats" className="py-14 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">AI Receptionist: By the Numbers</h2>
