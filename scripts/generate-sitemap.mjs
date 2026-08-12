@@ -144,6 +144,8 @@ const ROUTES = [
   { path: "/blog/never-miss-a-call-after-business-hours",            priority: "0.8", changefreq: "weekly" },
   { path: "/blog/whatsapp-appointment-booking-plumbers",             priority: "0.8", changefreq: "weekly" },
 
+  { path: "/blog/plumber-missed-call-text-back", priority: "0.8", changefreq: "weekly" },
+
   // Blog FAQ / Industry AEO How-To
   { path: "/blog/how-to-set-up-ai-phone-answering-vet-clinic",       priority: "0.8", changefreq: "weekly" },
 

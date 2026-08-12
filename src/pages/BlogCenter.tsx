@@ -33,6 +33,16 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Plumber Missed Call Text Back: <span className="text-blue-600">Recover More Service Jobs</span>',
+    slug: '/blog/plumber-missed-call-text-back',
+    excerpt: 'A plumber missed call text back workflow keeps emergency and routine callers engaged, qualifies the job, and moves more missed opportunities toward a booked service visit.',
+    date: 'August 12, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+
+  {
     title: 'Speed to Lead for Law Firms: <span className="text-blue-600">Win More Cases</span> With Faster Intake',
     slug: '/blog/speed-to-lead-for-law-firms',
     excerpt: 'Law firms that respond first win 78% of cases. Learn the speed-to-lead system that cuts legal intake response time to under 60 seconds and books more consultations 24/7.',
