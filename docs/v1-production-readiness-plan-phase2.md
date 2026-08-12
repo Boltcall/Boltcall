@@ -171,7 +171,7 @@ Build health snapshot (2026-07-05): `tsc --noEmit` ✅ clean · vitest ❌ 155/1
 - [x] **KPI raw counts** — pulled directly against `puszjwovldwgitfpsnfm`:
   - `leads=16`, `callbacks=1`, `retell_calls=0`, `appointments=0`, `business_profiles=14`, `workspaces=18`, `subscriptions=0`.
   - `retell_calls=0` initially flagged as candidate ship-blocker; **cleared 2026-07-29** — see next item.
-- [x] **Retell API key smoke** — `GET /list-agents` HTTP 200, returns real production agents (Boltcall AI Receptionist, Follow-Up Agent, hebrew challenge test, plus per-vertical agents). Key valid.
+- [x] **Retell API key smoke** — `POST /v2/list-agents` (body `{"limit":1,"filter_criteria":{"channel":{"type":"string","op":"eq","value":"voice"}}}`) HTTP 200, returns real production agents (Boltcall AI Receptionist, Follow-Up Agent, hebrew challenge test, plus per-vertical agents). Key valid. (Note: `GET /list-agents` deprecated by Retell 2026-07-31; migrate any lingering probes.)
 - [x] **`retell_calls=0` root-cause** — cleared 2026-07-29. Live probes against prod `retell-webhook`: (1) no signature → 401 `Webhook signature required`, (2) fake signature → 401 `Invalid webhook signature`, (3) valid HMAC signed with `RETELL_API_KEY` → 200 (handler ran, path exercised). Also confirmed Retell agent config: `Rapid Rooter QA AI Receptionist` (`agent_35968112e79b86e897ef99bccc`) `webhook_url` = `https://boltcall.org/.netlify/functions/retell-webhook`. Wiring is correct. Empty table is a state signal (no completed answered calls > 8s on those agents in prod yet — expected pre-revenue), not a code bug. NOT a ship-blocker. Still validate end-to-end via a real answered call (see AIOS task).
 
 ### Still open

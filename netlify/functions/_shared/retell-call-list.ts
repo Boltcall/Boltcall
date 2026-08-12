@@ -57,7 +57,7 @@ export async function listRetellVoiceAgents<T = unknown>(
   do {
     const body: Record<string, unknown> = {
       limit: 100,
-      filter_criteria: { channel: 'voice' },
+      filter_criteria: { channel: { type: 'string', op: 'eq', value: 'voice' } },
     };
     if (pagination_key) body.pagination_key = pagination_key;
 
