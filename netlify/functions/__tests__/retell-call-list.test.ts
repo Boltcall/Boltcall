@@ -87,7 +87,7 @@ describe('Retell call list v5 filters', () => {
     expect(requests[0].url).toBe('https://api.retellai.com/v2/list-agents');
     expect(requests[0].init.method).toBe('POST');
     expect(JSON.parse(String(requests[0].init.body))).toMatchObject({
-      filter_criteria: { channel: 'voice' },
+      filter_criteria: { channel: { type: 'string', op: 'eq', value: 'voice' } },
     });
   });
 
