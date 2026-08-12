@@ -4,10 +4,14 @@ import {
   ArrowRight,
   CalendarCheck2,
   CheckCircle2,
+  Clock,
+  Gift,
   MessageSquare,
   Phone,
+  Shield,
   ShieldCheck,
   Sparkles,
+  TrendingDown,
 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -16,10 +20,37 @@ import AnswerBlock from '../components/seo/AnswerBlock';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import { updateMetaDescription } from '../lib/utils';
 
+// Pain stats — sourced from med-spa halo file (RingBooker, Voxx, Lani AI, industry benchmarks).
+const PAIN_STATS = [
+  { number: '68%', label: 'of med spa inquiries happen outside 9–5', source: 'Voxx' },
+  { number: '15–30 min', label: 'to book with whoever answers first', source: 'Lani AI' },
+  { number: '20–35%', label: 'of inbound med spa calls go unanswered', source: 'industry benchmarks' },
+  { number: '$130k+', label: 'annual revenue lost per 3 missed calls per day', source: 'Lani AI, 2026' },
+];
+
 const HERO_POINTS = [
-  'Book the consultation before the caller Googles the next med spa in town.',
-  'Capture treatment interest, budget signal, and preferred provider on the first touch.',
-  'Cover treatment blocks, evenings, and weekends without adding front-desk headcount.',
+  'Every consult call answered in under 60 seconds — even at 2am, Sunday, or mid-treatment.',
+  'Treatment interest, budget signal, and provider preference captured on the first touch.',
+  'SMS confirmation sent while the caller is still in aesthetic-decision mode.',
+];
+
+// Bonus stack for the Godfather offer.
+const BONUSES = [
+  {
+    title: 'Free intake-script audit',
+    body: 'A 20-minute call where we grade your current phone flow against 8 med spa conversion benchmarks and rewrite the weakest 3 lines.',
+    value: '$500 value',
+  },
+  {
+    title: 'WhatsApp broadcast setup',
+    body: 'We wire re-engagement broadcasts to your dormant patient list so the first month pays for itself before after-hours coverage even matters.',
+    value: '$800 value',
+  },
+  {
+    title: 'First 30 days of after-hours free',
+    body: 'Evenings, weekends, and treatment blocks covered for the first month with zero after-hours upcharge. That block alone recovers a typical missed consult.',
+    value: '$400 value',
+  },
 ];
 
 const CAPABILITIES = [
@@ -158,16 +189,17 @@ export default function MedSpaAnsweringServicePage() {
         <section className="border-b border-gray-100 bg-white">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div className="max-w-3xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
-                Industry Page
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                <Clock className="h-3.5 w-3.5" /> Speed-to-lead for med spas
               </p>
               <h1 className="max-w-4xl text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                Med spa answering service that books the consultation before the next spa does.
+                Book 5 new consultations in the next 14 days — or you don't pay for the month.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-                Boltcall helps med spas answer faster, route treatment inquiries, capture cleaner
-                consultation intake, and move callers toward a booked appointment before they Google
-                the next med spa in town.
+                68% of your consult calls arrive after 5pm, when your front desk is gone. Boltcall
+                picks up in under 60 seconds, captures treatment interest and provider preference,
+                and books the appointment before the caller Googles the next med spa. If we don't
+                book you 5 new consults in 14 days, refund the full month.
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -203,6 +235,34 @@ export default function MedSpaAnsweringServicePage() {
               outcome="That means fewer lost consultations, cleaner intake, and more booked treatments from the same phone volume."
               cta="Boltcall is built for that speed-to-lead workflow."
             />
+          </div>
+        </section>
+
+        {/* PAIN STATS — Sabri: shine a flood light on the problem before the solution */}
+        <section className="border-b border-gray-100 bg-gray-900 text-white">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="max-w-3xl">
+              <p className="inline-flex items-center gap-2 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-red-300">
+                <TrendingDown className="h-3.5 w-3.5" /> The math you already suspect
+              </p>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                Every unanswered call is a $1,500–$5,000 treatment gone to the next spa.
+              </h2>
+            </div>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {PAIN_STATS.map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                  <p className="text-4xl font-bold tracking-tight text-red-300">{stat.number}</p>
+                  <p className="mt-3 text-sm leading-6 text-gray-100">{stat.label}</p>
+                  <p className="mt-3 text-xs uppercase tracking-wider text-gray-400">{stat.source}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-8 max-w-3xl text-base leading-7 text-gray-300">
+              You already spent the ad money to make that phone ring. The industry math says one in
+              three of those rings goes nowhere, and 68% of them arrive when your front desk is off
+              the clock. This is not a marketing problem. It is an answering problem.
+            </p>
           </div>
         </section>
 
@@ -378,6 +438,85 @@ export default function MedSpaAnsweringServicePage() {
                   <p className="mt-3 text-sm leading-7 text-gray-600">{faq.answer}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* GODFATHER OFFER — Sabri steps 10-15: refuseless offer + bonus stack + scarcity + guarantee */}
+        <section className="bg-blue-600 text-white">
+          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+            <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+              <div>
+                <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                  <Gift className="h-3.5 w-3.5" /> The 14-day guarantee
+                </p>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+                  Book 5 new consultations in 14 days — or refund the full month.
+                </h2>
+                <p className="mt-5 text-lg leading-8 text-blue-50">
+                  We install Boltcall on your existing number in a single afternoon. If, 14 days
+                  after go-live, fewer than 5 new consultations have booked directly through
+                  Boltcall, we refund the entire month. No claim form, no fine print.
+                </p>
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                  <Link
+                    to="/book-a-call"
+                    className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50"
+                  >
+                    Claim the 14-day guarantee
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                  <Link
+                    to="/pricing"
+                    className="inline-flex items-center justify-center rounded-lg border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                  >
+                    See pricing first
+                  </Link>
+                </div>
+                <p className="mt-5 inline-flex items-center gap-2 text-sm text-blue-100">
+                  <Shield className="h-4 w-4" /> 5 clinics onboarded per month. 2 spots left in the current window.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur">
+                <h3 className="text-lg font-semibold">You also get, on the house:</h3>
+                <ul className="mt-5 space-y-5">
+                  {BONUSES.map((bonus) => (
+                    <li key={bonus.title} className="rounded-xl bg-white/10 p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-semibold text-white">{bonus.title}</p>
+                        <span className="shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-medium text-white">
+                          {bonus.value}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-blue-50">{bonus.body}</p>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-6 text-sm text-blue-100">
+                  Total bundled value: <span className="font-semibold text-white">$1,700</span>.
+                  Included at zero extra cost this window.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PS — Sabri step 17: TL;DR + cost of doing nothing */}
+        <section className="border-t border-gray-200 bg-white">
+          <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
+            <div className="rounded-2xl border-l-4 border-blue-600 bg-blue-50/60 p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700">
+                P.S. — Read this if you skimmed
+              </p>
+              <p className="mt-4 text-base leading-8 text-gray-800">
+                Every week you wait, roughly 20 to 30 med spa consult calls hit your line after 5pm
+                and go to voicemail. Industry data puts that at $32,400 in direct consult revenue
+                and $259,200 in three-year LTV per year. Boltcall installs in an afternoon, covers
+                you inside 60 seconds, and refunds the month if you don't book 5 new consultations
+                in 14 days. The math either works or you get your money back. There is no third
+                outcome.
+              </p>
             </div>
           </div>
         </section>

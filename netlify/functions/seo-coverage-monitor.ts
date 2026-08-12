@@ -1,4 +1,3 @@
-import { Handler } from '@netlify/functions';
 import { notifyError, notifyInfo } from './_shared/notify';
 
 /**
@@ -52,11 +51,11 @@ async function checkArticle(slug: string): Promise<{ slug: string; problem?: str
   }
 }
 
-export const handler: Handler = async () => {
+export default async () => {
   const sitemapRes = await fetch(`${BASE_URL}/sitemap.xml`, { signal: AbortSignal.timeout(5000) });
   if (!sitemapRes.ok) {
     await notifyError('seo-coverage-monitor', new Error(`sitemap fetch ${sitemapRes.status}`));
-    return { statusCode: 500, body: 'sitemap unreachable' };
+    return new Response('sitemap unreachable', { status: 500 });
   }
   const xml = await sitemapRes.text();
 
@@ -81,10 +80,10 @@ export const handler: Handler = async () => {
 
   if (alerts.length > 0) {
     await notifyError('seo-coverage-monitor', new Error(alerts.join('\n\n')));
-    return { statusCode: 200, body: `alerts=${alerts.length}` };
+    return new Response(`alerts=${alerts.length}`, { status: 200 });
   }
 
   const summary = `seo-coverage OK: sitemap ${daysStale ?? '?'}d fresh, ${sample.length}/${slugs.length} sampled clean`;
   if (process.env.SEO_COVERAGE_INFO === '1') await notifyInfo(summary);
-  return { statusCode: 200, body: summary };
+  return new Response(summary, { status: 200 });
 };

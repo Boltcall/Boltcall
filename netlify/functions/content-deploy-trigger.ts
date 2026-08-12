@@ -1,4 +1,3 @@
-import { Handler } from '@netlify/functions';
 import { notifyError, notifyInfo } from './_shared/notify';
 
 /**
@@ -92,14 +91,14 @@ async function triggerNetlifyBuild(token: string): Promise<void> {
   if (!res.ok) throw new Error(`netlify build trigger ${res.status}: ${await res.text()}`);
 }
 
-export const handler: Handler = async () => {
+export default async () => {
   const token = process.env.NETLIFY_AUTH_TOKEN;
   if (!token) {
     await notifyError(
       'content-deploy-trigger',
       new Error('NETLIFY_AUTH_TOKEN missing in Netlify env — auto-deploy disabled. Set it in Site settings → Environment variables.'),
     );
-    return { statusCode: 500, body: 'missing NETLIFY_AUTH_TOKEN' };
+    return new Response('missing NETLIFY_AUTH_TOKEN', { status: 500 });
   }
 
   try {
@@ -110,15 +109,15 @@ export const handler: Handler = async () => {
 
     const decision = shouldSkipTrigger(deploys, originSha);
     if (decision.skip) {
-      return { statusCode: 200, body: `skip: ${decision.reason}` };
+      return new Response(`skip: ${decision.reason}`, { status: 200 });
     }
 
     await triggerNetlifyBuild(token);
     const msg = `🚀 Auto-deploy triggered: origin/main=${originSha.slice(0, 8)}`;
     await notifyInfo(msg);
-    return { statusCode: 200, body: msg };
+    return new Response(msg, { status: 200 });
   } catch (e: unknown) {
     await notifyError('content-deploy-trigger', e);
-    return { statusCode: 500, body: e instanceof Error ? e.message : String(e) };
+    return new Response(e instanceof Error ? e.message : String(e), { status: 500 });
   }
 };

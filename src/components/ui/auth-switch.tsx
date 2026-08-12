@@ -508,14 +508,18 @@ export default function AuthSwitch({
                       <p className="text-red-500 text-xs text-center">{error}</p>
                     </div>
                   )}
-                  <p className="px-2 text-xs text-gray-400">
-                    By signing up you'll be asked to accept our{" "}
+                  <div className="pt-2">{submitButton("SIGN UP", "Creating account...")}</div>
+                  <p className="px-2 text-[11px] text-gray-400 text-center">
+                    By clicking Sign up, you agree to our{" "}
                     <Link to="/terms-of-service" target="_blank" className="underline">
                       Terms of Service
                     </Link>{" "}
-                    during setup.
+                    and{" "}
+                    <Link to="/privacy-policy" target="_blank" className="underline">
+                      Privacy Policy
+                    </Link>
+                    .
                   </p>
-                  <div className="pt-2">{submitButton("SIGN UP", "Creating account...")}</div>
                 </form>
                 {OAUTH_ENABLED && (
                   <div className="mt-5">

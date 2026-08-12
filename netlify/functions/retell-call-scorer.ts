@@ -4,6 +4,7 @@ import { chatCompletion } from './_shared/azure-ai';
 import { inferVertical } from './_shared/vertical-utils';
 import { hasSharedSecret } from './_shared/user-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { buildAgentOwnerOrFilter, sanitizeRetellAgentId } from './_shared/lookup-agent-owner';
 
 /**
  * retell-call-scorer
@@ -143,11 +144,12 @@ const handler: Handler = async (event) => {
   const retellAgentId: string = call.agent_id || '';
   let agentRow: { id: string; workspace_id: string | null; name: string; description: string | null } | null = null;
 
-  if (retellAgentId) {
+  const safeRetellAgentId = sanitizeRetellAgentId(retellAgentId);
+  if (safeRetellAgentId) {
     const { data } = await supabase
       .from('agents')
       .select('id, workspace_id, name, description')
-      .or(`retell_agent_id.eq.${retellAgentId},api_keys->>retell_agent_id.eq.${retellAgentId}`)
+      .or(buildAgentOwnerOrFilter(safeRetellAgentId))
       .limit(1)
       .maybeSingle();
     agentRow = data || null;

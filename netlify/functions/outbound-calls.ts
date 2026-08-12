@@ -192,12 +192,18 @@ const handler: Handler = async (event) => {
             },
           } as unknown as Parameters<typeof retell.call.createPhoneCall>[0]);
 
-          // Update lead with call ID
+          // Update lead with call ID. Status is 'dialing' — Retell has
+          // accepted the request but the call has not connected yet. The
+          // previous status of 'completed' at this point was wrong: a
+          // failed outbound (busy, no answer, provider error) would leave
+          // the lead flagged as done and never re-queue.
+          // ponytail: add a retell-webhook branch that updates
+          // reactivation_leads.call_status on call_ended when this fires.
           await supabase
             .from('reactivation_leads')
             .update({
               retell_call_id: callResponse.call_id,
-              call_status: 'completed',
+              call_status: 'dialing',
             })
             .eq('id', lead.id);
 

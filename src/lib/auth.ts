@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { TOS_VERSION } from './tosAcceptance';
 
 export interface User {
   id: string;
@@ -80,6 +81,8 @@ export const signup = async (credentials: SignupCredentials): Promise<User> => {
         data: {
           name: credentials.name,
           company: credentials.company,
+          tos_accepted_version: TOS_VERSION,
+          tos_accepted_at: new Date().toISOString(),
         }
       }
     });

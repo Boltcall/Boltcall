@@ -63,10 +63,10 @@ const handler: Handler = async (event) => {
     return redirect(`${FACEBOOK_RETURN_PATH}?fb=missing_user`);
   }
 
-  const appId = process.env.FB_APP_ID;
-  const appSecret = process.env.FB_APP_SECRET;
+  const appId = process.env.FB_APP_ID || process.env.FACEBOOK_APP_ID;
+  const appSecret = process.env.FB_APP_SECRET || process.env.FACEBOOK_APP_SECRET;
   if (!appId || !appSecret) {
-    console.error('Missing FB_APP_ID or FB_APP_SECRET');
+    console.error('Missing FB_APP_ID/FACEBOOK_APP_ID or FB_APP_SECRET/FACEBOOK_APP_SECRET');
     return redirect(`${FACEBOOK_RETURN_PATH}?fb=config_error`);
   }
 

@@ -36,6 +36,10 @@ const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
+// ponytail: password-gated auto-login route — mounted in both dev + prod.
+// Gate password lives in VITE_DEV_LOGIN_GATE build-time env; not real security,
+// just a barrier against random crawlers/bots hitting the endpoint.
+const DevLogin = React.lazy(() => import('../pages/DevLogin'));
 
 // ── Lazy loads — V2 shell (AI-native default, parallel surface to V1) ────
 // V2 is the AI-native redesign that all 12 Day-8 V2 pages compose into.
@@ -432,6 +436,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/glass-demo" element={<GlassDemo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/dev-login" element={<DevLogin />} />
         <Route
           path="/dashboard/*"
           element={

@@ -45,10 +45,10 @@ function handleFacebookVerification(params: Record<string, string | undefined>) 
   const mode = params['hub.mode'];
   const token = params['hub.verify_token'];
   const challenge = params['hub.challenge'];
-  const verifyToken = process.env.FB_WEBHOOK_VERIFY_TOKEN;
+  const verifyToken = process.env.FB_WEBHOOK_VERIFY_TOKEN || process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN;
 
   if (!verifyToken) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'FB_WEBHOOK_VERIFY_TOKEN not configured' }) };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'FB_WEBHOOK_VERIFY_TOKEN/FACEBOOK_WEBHOOK_VERIFY_TOKEN not configured' }) };
   }
 
   if (mode === 'subscribe' && token === verifyToken) {

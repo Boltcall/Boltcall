@@ -56,15 +56,16 @@ function isAuthorizedToolRequest(event: HandlerEvent): boolean {
     return Boolean(provided) && safeEqual(sharedSecret, provided);
   }
 
-  // Fail-open only outside production, and never silently: log loudly so a
-  // misconfigured deploy (no Retell signature verified, no shared secret set)
-  // is obvious in the function logs instead of quietly accepting every request.
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      '[agent-tools] AUTH BYPASS: request accepted without a valid Retell signature or shared secret because NODE_ENV != production. Set AGENT_TOOLS_SHARED_SECRET (or RETELL_TOOL_SECRET) to lock this down.',
-    );
-    return true;
-  }
+  // Fail-closed. The previous `NODE_ENV !== 'production'` / `CONTEXT=dev`
+  // bypass was intended for local dev, but Netlify Functions runtime does
+  // not reliably expose those env vars — so live prod ended up accepting
+  // unauthenticated book_appointment / send_sms / lookup_caller calls
+  // (confirmed via a live smoke against boltcall.org after the previous
+  // deploy). For local dev, set AGENT_TOOLS_SHARED_SECRET in .env.local
+  // and pass the same value in `x-agent-tools-secret` from your dev harness.
+  console.warn(
+    '[agent-tools] Rejecting request — no valid Retell signature and no shared secret configured.',
+  );
   return false;
 }
 
@@ -754,11 +755,13 @@ async function handleSendSms(
   }
 
   try {
-    // Determine from number
-    let fromNumber = process.env.TWILIO_FROM_NUMBER || '';
-
-    // Try to get the user's Twilio number from Supabase
-    if (userId && !fromNumber) {
+    // Determine from number — always prefer the tenant's own provisioned
+    // line so caller-ID stays correct. Only fall back to TWILIO_FROM_NUMBER
+    // when the tenant has no active number of their own (single-tenant dev,
+    // demo agents). The prior order sent every tenant from the shared env
+    // number as long as it was set, which cross-branded outbound texts.
+    let fromNumber = '';
+    if (userId) {
       const supabase = getSupabase();
       const { data: phoneRow } = await supabase
         .from('phone_numbers')
@@ -772,6 +775,8 @@ async function handleSendSms(
         fromNumber = phoneRow.phone_number;
       }
     }
+
+    if (!fromNumber) fromNumber = process.env.TWILIO_FROM_NUMBER || '';
 
     if (!fromNumber) {
       return 'SMS sending is not configured. Please contact the business directly.';
