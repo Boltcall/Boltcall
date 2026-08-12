@@ -33,6 +33,16 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Plumber Missed Call Text Back: <span className="text-blue-600">Recover More Service Jobs</span>',
+    slug: '/blog/plumber-missed-call-text-back',
+    excerpt: 'A plumber missed call text back workflow keeps emergency and routine callers engaged, qualifies the job, and moves more missed opportunities toward a booked service visit.',
+    date: 'August 12, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+
+  {
     title: 'Speed to Lead for Law Firms: <span className="text-blue-600">Win More Cases</span> With Faster Intake',
     slug: '/blog/speed-to-lead-for-law-firms',
     excerpt: 'Law firms that respond first win 78% of cases. Learn the speed-to-lead system that cuts legal intake response time to under 60 seconds and books more consultations 24/7.',
@@ -540,6 +550,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Claude Code Overnight Kit', href: '/lead-magnet/claude-code-overnight-kit', tagline: 'Build agents while you sleep.' },
   { label: 'Speed-to-Lead for Solar', href: '/solar', tagline: 'How solar installers win on first response.' },
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
+  { label: 'Plumber Missed Call Text Back Guide', href: '/blog/plumber-missed-call-text-back', tagline: 'Turn unanswered calls into booked plumbing jobs.' },
+  { label: 'Missed Call Recovery for Plumbers', href: '/blog/plumber-missed-call-text-back', tagline: 'A practical speed-to-lead workflow for busy crews.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
 ];

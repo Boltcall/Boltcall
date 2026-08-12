@@ -35,6 +35,8 @@ export interface ProgressMetricCardProps {
   defaultIndex?: number;
   size?: CardSize;
   showStats?: boolean;
+  showControls?: boolean;
+  headerBadge?: React.ReactNode;
   valueFormatter?: (value: number) => string;
   dateFormatter?: (date: string) => string;
   loading?: boolean;
