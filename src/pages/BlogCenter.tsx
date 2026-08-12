@@ -550,6 +550,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Claude Code Overnight Kit', href: '/lead-magnet/claude-code-overnight-kit', tagline: 'Build agents while you sleep.' },
   { label: 'Speed-to-Lead for Solar', href: '/solar', tagline: 'How solar installers win on first response.' },
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
+  { label: 'Plumber Missed Call Text Back Guide', href: '/blog/plumber-missed-call-text-back', tagline: 'Turn unanswered calls into booked plumbing jobs.' },
+  { label: 'Missed Call Recovery for Plumbers', href: '/blog/plumber-missed-call-text-back', tagline: 'A practical speed-to-lead workflow for busy crews.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
 ];
