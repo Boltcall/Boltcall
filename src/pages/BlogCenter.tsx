@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Electrician Missed Call Answering Service: <span className="text-blue-600">Turn Every Inquiry Into a Job</span>',
+    slug: '/blog/electrician-missed-call-answering-service',
+    excerpt: 'An electrician missed call answering service responds fast, captures the electrical problem, and moves qualified homeowners toward a booked job before another contractor replies.',
+    date: 'August 13, 2026',
+    readTime: '9 min read',
+    category: 'Electrician|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Emergency Plumber Answering Service: <span className="text-blue-600">Capture Every 2am Call</span>',
     slug: '/blog/emergency-plumber-answering-service',
     excerpt: 'An emergency plumber answering service responds to urgent calls, qualifies the problem, and moves high-intent homeowners toward a booked service job before a competitor does.',
@@ -967,4 +976,3 @@ const BlogCenter: React.FC = () => {
 };
 
 export default BlogCenter;
-
