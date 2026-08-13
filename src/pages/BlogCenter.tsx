@@ -763,6 +763,8 @@ const BlogCenter: React.FC = () => {
 
       {/* Stats Data Table */}
       <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Plumbing owners can also read the <Link to="/blog/emergency-plumber-answering-service" className="text-blue-600 hover:underline">emergency plumber answering service guide</Link> for a practical after-hours response workflow.</p>
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Electrical contractors can also read the <Link to="/blog/electrician-missed-call-answering-service" className="text-blue-600 hover:underline">electrician missed call answering service guide</Link> for a faster intake and booking workflow.</p>
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Teams improving response speed can use this <Link to="/blog/electrician-missed-call-answering-service" className="text-blue-600 hover:underline">electrician missed call response playbook</Link> to turn missed inquiries into booked work.</p>
 
       <section id="stats" className="py-14 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
