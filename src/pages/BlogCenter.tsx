@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'HVAC Missed Call Answering Service: <span className="text-blue-600">Book More Service Calls</span>',
+    slug: '/blog/hvac-missed-call-answering-service',
+    excerpt: 'An HVAC missed call answering service responds fast, captures the service need, and moves qualified homeowners toward a booked repair or maintenance visit before another contractor replies.',
+    date: 'August 13, 2026',
+    readTime: '9 min read',
+    category: 'HVAC|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Electrician Missed Call Answering Service: <span className="text-blue-600">Turn Every Inquiry Into a Job</span>',
     slug: '/blog/electrician-missed-call-answering-service',
     excerpt: 'An electrician missed call answering service responds fast, captures the electrical problem, and moves qualified homeowners toward a booked job before another contractor replies.',

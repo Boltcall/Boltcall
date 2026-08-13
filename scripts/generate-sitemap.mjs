@@ -146,6 +146,7 @@ const ROUTES = [
 
   { path: "/blog/plumber-missed-call-text-back", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/emergency-plumber-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/hvac-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/electrician-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
 
   // Blog FAQ / Industry AEO How-To
