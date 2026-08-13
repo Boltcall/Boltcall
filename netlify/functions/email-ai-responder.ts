@@ -6,6 +6,7 @@ import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
 import { requireInternalOrMatchingUser } from './_shared/user-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { scoreText as scoreAiCopy, AI_TEMPLATED_THRESHOLD } from '../../src/lib/aiCopyDetector';
 
 /**
  * Email AI Responder — Generates AI draft responses for inbound email threads.
@@ -99,6 +100,34 @@ const handler: Handler = async (event) => {
         statusCode: 200,
         headers: CORS_HEADERS,
         body: JSON.stringify({ message: 'Draft already exists', status: latestInbound.ai_draft_status }),
+      };
+    }
+
+    // AI-copy detector (Allie K Miller video 2026-08-13 doctrine): if the
+    // inbound scans as boilerplate ChatGPT/Claude output (uniform paragraphs,
+    // tell phrases, contrast pattern, em-dash density), don't spend Claude
+    // tokens drafting a real reply — it's almost certainly a bot / lazy
+    // outbound tool. Mark and stop.
+    const inboundText = String(latestInbound.body_text || '');
+    const aiCopyScore = scoreAiCopy(inboundText);
+    if (aiCopyScore.aiScore >= AI_TEMPLATED_THRESHOLD) {
+      await supabase
+        .from('email_messages')
+        .update({
+          ai_draft_status: 'skipped_templated',
+          ai_draft_generated_at: new Date().toISOString(),
+          ai_template_score: aiCopyScore.aiScore,
+        })
+        .eq('id', latestInbound.id)
+        .eq('user_id', userId);
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+          message: 'Inbound reads as AI-templated; draft skipped',
+          status: 'skipped_templated',
+          ai_score: aiCopyScore.aiScore,
+        }),
       };
     }
 
