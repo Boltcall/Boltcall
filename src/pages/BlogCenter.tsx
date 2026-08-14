@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Speed to Lead for Remodeling Contractors: <span className="text-blue-600">Win More Estimates</span>',
+    slug: '/blog/speed-to-lead-remodeling-contractors',
+    excerpt: 'Speed to lead for remodeling contractors helps teams respond to project inquiries, qualify homeowners, and book more consultations before another contractor gets there first.',
+    date: 'August 14, 2026',
+    readTime: '10 min read',
+    category: 'Remodeling Contractors|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'HVAC Missed Call Answering Service: <span className="text-blue-600">Book More Service Calls</span>',
     slug: '/blog/hvac-missed-call-answering-service',
     excerpt: 'An HVAC missed call answering service responds fast, captures the service need, and moves qualified homeowners toward a booked repair or maintenance visit before another contractor replies.',
