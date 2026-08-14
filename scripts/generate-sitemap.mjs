@@ -149,6 +149,7 @@ const ROUTES = [
   { path: "/blog/hvac-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/speed-to-lead-remodeling-contractors", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/electrician-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/after-hours-electrician-answering-service", priority: "0.8", changefreq: "weekly" },
 
   // Blog FAQ / Industry AEO How-To
   { path: "/blog/how-to-set-up-ai-phone-answering-vet-clinic",       priority: "0.8", changefreq: "weekly" },

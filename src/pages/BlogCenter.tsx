@@ -60,6 +60,15 @@ const blogPosts: BlogPost[] = [
     featured: false,
   },
   {
+    title: 'After-Hours Electrician Answering Service: <span className="text-blue-600">Capture More Night Calls</span>',
+    slug: '/blog/after-hours-electrician-answering-service',
+    excerpt: 'An after-hours electrician answering service responds to urgent electrical calls, captures the job details, and moves qualified homeowners toward a booked service visit before a competitor replies.',
+    date: 'August 14, 2026',
+    readTime: '9 min read',
+    category: 'Electrician|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Emergency Plumber Answering Service: <span className="text-blue-600">Capture Every 2am Call</span>',
     slug: '/blog/emergency-plumber-answering-service',
     excerpt: 'An emergency plumber answering service responds to urgent calls, qualifies the problem, and moves high-intent homeowners toward a booked service job before a competitor does.',
