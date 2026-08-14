@@ -581,6 +581,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Rank on Google Offer', href: '/rank-on-google-offer', tagline: 'Done-for-you SEO + AEO push.' },
   { label: 'Free Website Offer', href: '/free-website', tagline: 'Get a Boltcall-built site at no cost.' },
   { label: 'HVAC missed call answering service', href: '/blog/hvac-missed-call-answering-service', tagline: 'See how faster response turns HVAC calls into booked jobs.' },
+  { label: 'Remodeling contractor lead response guide', href: '/blog/speed-to-lead-remodeling-contractors', tagline: 'Turn renovation inquiries into booked consultations faster.' },
+  { label: 'Speed to lead for remodeling contractors', href: '/blog/speed-to-lead-remodeling-contractors', tagline: 'Build a consistent first response for estimate-ready homeowners.' },
   { label: 'Recover missed HVAC service calls', href: '/blog/hvac-missed-call-answering-service', tagline: 'Use a faster first response to protect paid lead spend.' },
   { label: 'HVAC answering service guide', href: '/industries/hvac-answering-service/', tagline: 'Build a reliable response and booking workflow for HVAC demand.' },
   { label: 'Giveaway', href: '/giveaway', tagline: 'Current Boltcall giveaway.' },
