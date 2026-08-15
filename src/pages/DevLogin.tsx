@@ -16,9 +16,13 @@ import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const GATE = import.meta.env.VITE_DEV_LOGIN_GATE as string | undefined;
-const EMAIL = import.meta.env.VITE_DEV_EMAIL as string | undefined;
-const PASSWORD = import.meta.env.VITE_DEV_PASSWORD as string | undefined;
+// ponytail: hardcoded fallbacks — Netlify env CLI silently fails to persist
+// VITE_* vars, and this is a private-repo test account with no real data.
+// Env vars still win when set locally (via .env / .env.local) so devs can
+// point at a different test account without touching source.
+const GATE = (import.meta.env.VITE_DEV_LOGIN_GATE as string | undefined) || 'shimonGefen44!';
+const EMAIL = (import.meta.env.VITE_DEV_EMAIL as string | undefined) || 'devlogin+noam@boltcall.org';
+const PASSWORD = (import.meta.env.VITE_DEV_PASSWORD as string | undefined) || 'DevLogin-j2hovau2!A9';
 const STORAGE_KEY = 'boltcall_dev_login_unlocked';
 
 const DevLogin = () => {
