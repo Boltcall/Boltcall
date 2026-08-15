@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: "Missed Call Recovery Service: <span className=\"text-blue-600\">Turn Lost Calls Into Booked Jobs</span>",
+    slug: "/blog/missed-call-recovery-service",
+    excerpt: "A missed call recovery service responds instantly, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.",
+    date: "August 15, 2026",
+    readTime: "10 min read",
+    category: "Speed to Lead|How-to",
+    featured: false,
+  },
+  {
     title: 'Missed Call Automation for Contractors: <span className="text-blue-600">Capture More Booked Jobs</span>',
     slug: '/blog/missed-call-automation-contractors',
     excerpt: 'Missed call automation for contractors responds fast, captures the job details, and moves qualified callers toward a booked service visit or estimate before another contractor replies.',

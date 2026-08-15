@@ -108,6 +108,7 @@ const ROUTES = [
   { path: "/ai-guide-for-businesses/level-3-getting-started",   priority: "0.8", changefreq: "monthly" },
 
   // Blog Posts
+  { path: "/blog/missed-call-recovery-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/the-new-reality-for-local-businesses",              priority: "0.8", changefreq: "weekly" },
   { path: "/blog/why-speed-matters",                                 priority: "0.8", changefreq: "weekly" },
   { path: "/blog/complete-guide-to-seo",                             priority: "0.8", changefreq: "weekly" },
