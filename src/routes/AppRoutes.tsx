@@ -146,7 +146,7 @@ const SetupTransitionFallback: React.FC<{ message?: string }> = ({
   <div className="setup-transition-screen relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4 text-center">
     <SetupGradientBackground />
     <div className="relative z-10 space-y-3">
-      <BoltcallLoader className="mx-auto size-10 text-white/80" />
+      <BoltcallLoader className="mx-auto size-16 text-white/80" />
       <p className="text-sm font-medium text-white/72">{message}</p>
     </div>
   </div>
