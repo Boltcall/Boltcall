@@ -464,6 +464,7 @@ const SpeedToLeadPillar: React.FC = () => {
               { href: '/blog/best-ai-receptionist-tools', title: 'Best AI receptionist tools' },
               { href: '/blog/5-signs-you-need-ai-receptionist', title: '5 signs you need an AI receptionist' },
               { href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', title: 'AI chatbot vs live chat: which wins on the phone?' },
+              { href: '/blog/missed-call-recovery-service', title: 'What a missed call recovery service actually does' },
             ].map((item) => (
               <Link
                 key={item.href}
