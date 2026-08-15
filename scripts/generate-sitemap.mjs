@@ -148,6 +148,7 @@ const ROUTES = [
   { path: "/blog/emergency-plumber-answering-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/hvac-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/speed-to-lead-remodeling-contractors", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/missed-call-automation-contractors", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/electrician-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/after-hours-electrician-answering-service", priority: "0.8", changefreq: "weekly" },
 

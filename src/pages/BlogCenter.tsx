@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Missed Call Automation for Contractors: <span className="text-blue-600">Capture More Booked Jobs</span>',
+    slug: '/blog/missed-call-automation-contractors',
+    excerpt: 'Missed call automation for contractors responds fast, captures the job details, and moves qualified callers toward a booked service visit or estimate before another contractor replies.',
+    date: 'August 15, 2026',
+    readTime: '10 min read',
+    category: 'Contractors|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Speed to Lead for Remodeling Contractors: <span className="text-blue-600">Win More Estimates</span>',
     slug: '/blog/speed-to-lead-remodeling-contractors',
     excerpt: 'Speed to lead for remodeling contractors helps teams respond to project inquiries, qualify homeowners, and book more consultations before another contractor gets there first.',
