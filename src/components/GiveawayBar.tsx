@@ -121,3 +121,4 @@ function GiveawayBar({
 }
 
 export { GiveawayBar }
+export default GiveawayBar
