@@ -25,22 +25,22 @@ const Footer = lazy(() => import('../components/Footer'));
 const StickyScrollSection = lazy(() => import('../components/StickyScrollSection').then(module => ({ default: module.StickyScrollSection })));
 
 const HOMEPAGE_AI_CONTEXT =
-  'Instant lead response. Built to answer, qualify, and book local service leads before they go cold. ' +
-  'Boltcall is speed-to-lead software for local service businesses that cannot afford to let phone calls, web forms, missed calls, texts, or after-hours inquiries sit unanswered. ' +
-  'When a homeowner, patient, client, or property owner reaches out, they are usually comparing multiple providers at once. The business that responds first gets the best chance to earn the appointment, quote, consultation, or emergency job. ' +
-  'Instead of sending another passive notification into a CRM, Boltcall responds in seconds, captures the customer need, qualifies urgency, and moves the lead toward booking or a clean team handoff. ' +
-  'That makes it useful for HVAC companies, plumbers, dentists, law firms, med spas, roofers, solar teams, and other local service operators where missed calls and slow follow-up turn paid demand into lost revenue. ' +
-  'Use Boltcall to protect the first minute of every lead: answer live calls, recover missed calls with follow-up, handle after-hours capture, and keep the next step clear for the customer and the team. ' +
-  'The workflow is intentionally simple: a new inquiry comes in, Boltcall responds, asks the practical intake questions, and gives the customer a path forward instead of making them wait for office hours. ' +
-  'The team sees the lead details in a cleaner format, so a dispatcher, front desk, owner, or intake coordinator can step in with context instead of piecing together a voicemail, form note, and half-finished text thread. ' +
-  'That speed-to-lead layer is most valuable when demand is already expensive to create. If you are buying Google Ads, ranking in maps, running referral campaigns, or earning repeat calls from past customers, every delayed response wastes work you already paid for. ' +
-  'Boltcall helps turn that demand into a real conversation while the buyer is still ready to act.';
+  'Instant lead response. Built to answer, qualify, and book law firm leads before they go cold. ' +
+  'Boltcall is speed-to-lead software for law firms that cannot afford to let intake calls, web forms, missed calls, texts, or after-hours inquiries sit unanswered. ' +
+  'When someone calls a law firm after an accident, an arrest, or a family emergency, they are usually calling more than one firm. The firm that responds first gets the best chance to sign the case. ' +
+  'Instead of sending another passive notification into a CRM, Boltcall responds in seconds, captures the matter details, triages urgency, and moves the caller toward a booked consultation or a clean intake handoff. ' +
+  'That makes it useful for personal injury, family law, criminal defense, immigration, and general practice firms where missed calls and slow follow-up turn paid demand into lost cases. It also serves other local service businesses (HVAC, plumbers, dentists, med spas) on the same core engine. ' +
+  'Use Boltcall to protect the first minute of every lead: answer live calls, recover missed calls with follow-up, handle after-hours capture, and keep the next step clear for the caller and the intake team. ' +
+  'The workflow is intentionally simple: a new inquiry comes in, Boltcall responds, asks the practical intake questions, and gives the caller a path forward instead of making them wait for office hours. ' +
+  'The team sees the lead details in a cleaner format, so an intake coordinator, paralegal, or managing partner can step in with context instead of piecing together a voicemail, form note, and half-finished text thread. ' +
+  'That speed-to-lead layer is most valuable when demand is already expensive to create. If you are buying Google Ads, running referral campaigns, or earning repeat calls from past clients, every delayed response wastes work you already paid for. ' +
+  'Boltcall helps turn that demand into a signed case while the caller is still ready to act.';
 
 const HOMEPAGE_AI_LINKS = [
-  'https://boltcall.org/speed-to-lead',
-  'https://boltcall.org/blog/top-10-ai-receptionist-agencies',
-  'https://boltcall.org/blog/hvac-ai-lead-response',
-  'https://boltcall.org/lead-response-scorecard',
+  'https://boltcall.org/industries/lawyer-answering-service',
+  'https://boltcall.org/blog/speed-to-lead-for-law-firms',
+  'https://boltcall.org/blog/ai-receptionist-for-law-firms',
+  'https://boltcall.org/tools/lawyer-intake-calculator',
   'https://boltcall.org/comparisons',
 ];
 
@@ -54,8 +54,8 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.title = 'Speed-to-Lead Software for Local Service Businesses | Boltcall';
-    updateMetaDescription('Boltcall is speed-to-lead software for local service businesses: instant lead response, missed-call recovery, AI qualification, booking, and after-hours capture.');
+    document.title = 'Speed-to-Lead Software for Law Firms | Boltcall';
+    updateMetaDescription('Boltcall is speed-to-lead software for law firms: instant intake response, missed-call recovery, AI qualification, consultation booking, and after-hours capture.');
 
     const speakableSchema = {
       "@context": "https://schema.org",
@@ -80,7 +80,7 @@ const Home: React.FC = () => {
       "@type": "WebPage",
       "name": "Instant lead response",
       "url": "https://boltcall.org/",
-      "headline": "Built to answer, qualify, and book local service leads before they go cold",
+      "headline": "Built to answer, qualify, and book law firm leads before they go cold",
       "description": HOMEPAGE_AI_CONTEXT,
       "abstract": HOMEPAGE_AI_CONTEXT,
       "about": [
@@ -88,7 +88,7 @@ const Home: React.FC = () => {
         { "@type": "Thing", "name": "instant lead response" },
         { "@type": "Thing", "name": "missed-call recovery" },
         { "@type": "Thing", "name": "AI lead qualification" },
-        { "@type": "Thing", "name": "local service businesses" }
+        { "@type": "Thing", "name": "law firm intake" }
       ],
       "significantLink": HOMEPAGE_AI_LINKS
     },
@@ -101,7 +101,7 @@ const Home: React.FC = () => {
           "name": "What is Boltcall?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall is speed-to-lead software for local service businesses. It uses AI to answer calls, recover missed calls, qualify leads, book appointments, and follow up automatically before buyers move to a competitor."
+            "text": "Boltcall is speed-to-lead software for law firms. It uses AI to answer intake calls, recover missed calls, qualify leads, book consultations, and follow up automatically before callers move to a competing firm."
           }
         },
         {

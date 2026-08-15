@@ -86,7 +86,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
           "name": "Which is better for a law firm?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Smith.ai is the stronger choice for law firms that need human agents for complex legal intake, Clio integration, and bilingual support. Boltcall is better for solo attorneys or small practices that want flat-rate AI answering, a website, and speed-to-lead automation without per-call fees."
+            "text": "For solo attorneys and small firms, Boltcall's flat-rate AI intake and under-60-second speed-to-lead response avoids Smith.ai's per-call fees and multi-day setup. Smith.ai is worth considering for larger firms that specifically need Clio integration or human-agent backup for high call volume."
           }
         }
       ]
@@ -138,7 +138,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
     { feature: 'Contract Required', boltcall: 'No', smithai: 'No', boltcallYes: true, smithaiYes: true },
     { feature: 'Per-Call Charges', boltcall: 'None', smithai: 'Yes, $2.10–$2.40/call', boltcallYes: true, smithaiYes: false },
     { feature: 'Integrations', boltcall: 'Growing', smithai: '7,000+ via Zapier', boltcallYes: false, smithaiYes: true },
-    { feature: 'Best For', boltcall: 'Small local businesses', smithai: 'Law firms & enterprises', boltcallYes: true, smithaiYes: true },
+    { feature: 'Best For', boltcall: 'Solo & small law firms, local businesses', smithai: 'Large firms needing human agents', boltcallYes: true, smithaiYes: true },
   ];
 
   return (
@@ -191,7 +191,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
           {/* AEO Direct Answer Block */}
           <div className="speakable-intro bg-blue-50 border-l-4 border-blue-500 p-6 mb-10">
             <p className="text-lg font-medium text-gray-900">
-              <strong>Quick Answer:</strong> Boltcall is better for small local businesses that want flat monthly pricing, an all-in-one platform with AI phone answering, chatbot, website, and speed-to-lead automation starting at $549/month. Smith.ai is better for law firms and enterprises that need hybrid AI-plus-human call handling with 7,000+ integrations, but per-call pricing gets expensive at high volume.
+              <strong>Quick Answer:</strong> Boltcall is better for solo attorneys, small law firms, and local businesses that want flat monthly pricing, an all-in-one platform with AI intake, chatbot, website, and speed-to-lead automation starting at $549/month. Smith.ai is better for large firms and enterprises that specifically need hybrid AI-plus-human call handling with 7,000+ integrations, but per-call pricing gets expensive at high volume.
             </p>
           </div>
 
@@ -397,7 +397,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
                 Smith.ai's core strength is its hybrid model. AI handles the initial greeting and routing, then live North America-based human agents take over for complex calls. This means real people handle nuanced conversations, legal intake, and sensitive situations. Smith.ai employs over 500 agents for this purpose.
               </p>
               <p className="text-lg text-gray-700 mb-6">
-                Boltcall uses pure AI for all call handling. The AI is sophisticated enough for most small business scenarios like appointment booking, FAQ answering, and lead qualification. But it does not escalate to a human operator. For businesses where call complexity is high, such as law firms handling detailed case intake, the human backup is a genuine advantage. For most local businesses, pure AI handles 95% of calls effectively. See our <Link to="/blog/ai-vs-human-receptionist" className="text-blue-600 hover:underline">AI vs human receptionist comparison</Link> for more detail.
+                Boltcall uses pure AI for all call handling, including a legal-specific intake flow built for practice-area triage, urgency screening, and consultation booking, without a human agent escalation. It does not attempt to give legal advice or assess case strength — it screens and books. For very high-volume or high-complexity firms that want a human on standby for edge cases, that's where Smith.ai's hybrid model still has an edge. For most solo and small-firm intake, pure AI handles it end to end. See our <Link to="/blog/ai-vs-human-receptionist" className="text-blue-600 hover:underline">AI vs human receptionist comparison</Link> for more detail.
               </p>
 
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">4. Integration Ecosystem</h3>
@@ -423,7 +423,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
               </h2>
 
               <p className="text-lg text-gray-700 mb-6">
-                Boltcall is the better choice if your business matches any of these criteria. The platform is purpose-built for small local businesses that need maximum automation with predictable costs.
+                Boltcall is the better choice if your business matches any of these criteria. The platform is purpose-built for solo attorneys, small law firms, and local businesses that need maximum automation with predictable costs.
               </p>
 
               <ul className="space-y-4 mb-8">
@@ -487,7 +487,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
                 <li className="flex items-start space-x-3">
                   <CheckCircle className="h-6 w-6 text-green-500 mt-0.5 flex-shrink-0" />
                   <span className="text-lg text-gray-700">
-                    <strong>You are a law firm or professional services firm.</strong> Smith.ai has deep legal integrations with Clio, MyCase, and other legal practice management tools. Their human agents are trained in legal intake, which requires nuance that pure AI may not match.
+                    <strong>Your firm is already built around Clio or MyCase.</strong> Smith.ai has native integrations with those legal practice management tools. Boltcall doesn't connect to them yet — if your intake workflow depends on that integration today, Smith.ai fits without a workaround.
                   </span>
                 </li>
                 <li className="flex items-start space-x-3">
@@ -525,16 +525,16 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
               </h2>
 
               <p className="text-lg text-gray-700 mb-6">
-                For most small local businesses, Boltcall is the better investment. The flat pricing eliminates cost uncertainty. The all-in-one platform replaces multiple tools. And the 24-hour setup guarantee means you stop missing leads immediately. At 200+ calls per month, Boltcall is both cheaper and more feature-rich than Smith.ai.
+                For most solo attorneys, small firms, and local businesses, Boltcall is the better investment. The flat pricing eliminates cost uncertainty. The all-in-one platform replaces multiple tools. And the 24-hour setup guarantee means you stop missing leads immediately. At 200+ calls per month, Boltcall is both cheaper and more feature-rich than Smith.ai.
               </p>
 
               <div className="bg-blue-50 rounded-xl p-6 mb-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Our recommendation:</h3>
                 <p className="text-lg text-gray-700 mb-4">
-                  <strong>Choose Boltcall if</strong> you are a small local business that wants AI phone answering, a website, chatbot, and lead automation in one flat-rate package. Especially if you receive 150+ calls per month.
+                  <strong>Choose Boltcall if</strong> you're a solo attorney, small firm, or local business that wants AI intake, a website, chatbot, and lead automation in one flat-rate package. Especially if you receive 150+ calls per month.
                 </p>
                 <p className="text-lg text-gray-700">
-                  <strong>Choose Smith.ai if</strong> you are a law firm or enterprise that needs human agent backup, deep CRM integrations, and handles complex calls that require a personal touch. Or if you receive fewer than 50 calls per month.
+                  <strong>Choose Smith.ai if</strong> you're already on Clio/MyCase and need that native integration, or need human agent backup for high call volume, or receive fewer than 50 calls per month.
                 </p>
               </div>
 
@@ -578,7 +578,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">Which is better for a law firm?</h3>
                   <p className="text-lg text-gray-700">
-                    Smith.ai is generally the stronger choice for established law firms. It offers native Clio integration, trained human agents for legal intake, bilingual support, and call screening capabilities built specifically for legal practices. Boltcall is better for solo attorneys or small legal practices that want flat-rate pricing, a website, and automated lead follow-up without per-call fees.
+                    Depends on the firm. Boltcall is built for solo attorneys and small legal practices: flat-rate AI intake, no per-call fees, a legal-specific triage flow, and a website and follow-up system in the same platform. Smith.ai is the stronger fit for established firms that specifically need native Clio integration or human agents for very high call volume.
                   </p>
                 </div>
               </div>
@@ -596,7 +596,7 @@ const CompareBoltcallVsSmithAi: React.FC = () => {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-10 text-center text-white">
               <h2 className="text-3xl font-bold mb-4">Ready to See the Difference?</h2>
               <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-                Join hundreds of local businesses that chose Boltcall for flat-rate AI phone answering, lead automation, and a free website. Setup takes 24 hours. No contracts. No per-call fees.
+                Join solo attorneys, small firms, and local businesses that chose Boltcall for flat-rate AI intake, lead automation, and a free website. Setup takes 24 hours. No contracts. No per-call fees.
               </p>
               <Link
                 to="/setup"

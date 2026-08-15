@@ -31,8 +31,8 @@ const PricingPage: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Boltcall Pricing - AI Receptionist Plans & Pricing';
-    updateMetaDescription('Compare Boltcall pricing plans. Choose the perfect AI receptionist plan for your business. Free setup included. View plans now.');
+    document.title = 'Boltcall Pricing - Speed-to-Lead Plans for Law Firms';
+    updateMetaDescription('Compare Boltcall pricing plans for law firms. Choose the plan that fits your intake volume. Free setup included. View plans now.');
 
     // Add canonical link
     let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
@@ -82,7 +82,7 @@ const PricingPage: React.FC = () => {
       "@context": "https://schema.org",
       "@type": "Product",
       "name": "Boltcall AI Receptionist",
-      "description": "AI receptionist that answers calls 24/7, books appointments, captures leads, and sends follow-up texts for local service businesses.",
+      "description": "AI intake system that answers calls 24/7, books consultations, captures leads, and sends follow-up texts for law firms.",
       "url": "https://boltcall.org/pricing",
       "brand": { "@type": "Brand", "name": "Boltcall" },
       "aggregateRating": {
@@ -144,7 +144,7 @@ const PricingPage: React.FC = () => {
           "name": "Does Boltcall pay for itself?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Most businesses recover the full cost of their Boltcall subscription within the first week. The average missed call to a local service business represents $300–$1,500 in lost revenue. At $897/month for the Pro plan, recovering even a handful of additional appointments per month generates 5–10× the subscription cost."
+            "text": "Most firms recover the full cost of their Boltcall subscription within the first week. A single missed or slow-answered intake call can represent a case worth $2,500 or more in lost revenue. At $897/month for the Pro plan, recovering even one additional signed matter per month generates several times the subscription cost."
           }
         },
         {
@@ -201,7 +201,7 @@ const PricingPage: React.FC = () => {
           query="How much does Boltcall cost"
           definition="Boltcall pricing has three tiers: Starter at $549/month (24/7 AI call answering, missed-call text-back, instant lead reply, calendar booking), Pro at $897/month (everything in Starter plus full lead follow-up sequences, SMS conversations, custom AI voice, website widget), and Ultimate at $4,997/month (everything in Pro plus multi-location support, a dedicated account manager, and AI audits)."
           stat="All plans include free setup, no per-minute or per-call fees, no long-term contracts, and a 30-day money-back guarantee."
-          outcome="Most local service businesses recover the full subscription cost within the first week, because a single after-hours emergency call or recovered missed lead is typically worth $300–$1,500 in job revenue."
+          outcome="Most firms recover the full subscription cost within the first week, because a single after-hours intake call or recovered missed lead can be worth $2,500 or more in case value."
           cta="Compare plans below or start free at boltcall.org/setup."
         />
 
@@ -236,10 +236,10 @@ const PricingPage: React.FC = () => {
 
           <div className="space-y-5 text-gray-700 leading-relaxed mb-12">
             <p>
-              The average missed call to a local service business represents $300 to $1,500 in lost revenue when you account for the full customer lifetime value. A plumber who misses an emergency call at 9 pm loses not just one repair job but potentially a $3,000-per-year repeat customer. A dental practice that sends new patients to voicemail loses a $3,200 lifetime value relationship. When you multiply those numbers across the 40 to 60 calls the average small business misses every month, the math becomes stark.
+              The average missed intake call at a law firm represents $2,500 or more in lost case value — often far higher for personal injury matters. A firm that sends a new-matter call to voicemail at 9 pm doesn't just lose that one call; the caller signs with the next firm that picks up. When you multiply that across the after-hours and busy-day calls most firms miss every month, the math becomes stark.
             </p>
             <p>
-              Boltcall's AI receptionist answers every call — during business hours, after hours, on weekends, and on holidays — and converts a significant percentage of those callers into booked appointments. At $897 per month for the Pro plan, recovering even a handful of additional jobs or appointments per month typically generates 5 to 10 times the subscription cost. Most of our customers see positive ROI within 48 hours of going live. If you want to see how your current response time stacks up before committing, run our free <Link to="/lead-response-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">lead response scorecard</Link> or read our <Link to="/speed-to-lead" className="text-indigo-600 hover:text-indigo-700 underline">speed-to-lead guide</Link>.
+              Boltcall answers every intake call — during business hours, after hours, on weekends, and during court or depositions — and converts a significant percentage of those callers into booked consultations. At $897 per month for the Pro plan, recovering even one additional signed matter per month typically generates several times the subscription cost. Most of our customers see positive ROI within 48 hours of going live. If you want to see how your current response time stacks up before committing, run our free <Link to="/lead-response-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">lead response scorecard</Link> or read our <Link to="/speed-to-lead" className="text-indigo-600 hover:text-indigo-700 underline">speed-to-lead guide</Link>.
             </p>
             <p>
               Beyond call answering, every plan includes automated appointment reminders that reduce no-shows by an average of 40%, SMS follow-up sequences that re-engage leads who expressed interest but didn't book, and post-appointment review requests that build your Google rating over time. These features compound each other — more calls answered means more appointments booked, better reminders mean fewer empty slots, and better reviews mean more inbound calls. Boltcall is not a single tool; it is a complete revenue recovery system.
@@ -303,7 +303,7 @@ const PricingPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Used by 500+ local businesses</span>
+              <span>Used by 500+ businesses</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -394,7 +394,7 @@ const PricingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Does Boltcall pay for itself?</h3>
               <p className="text-gray-700 leading-relaxed">
-                Most businesses recover the full cost within the first week. The average missed call to a local service business represents $300–$1,500 in lost revenue. At $897/month for the Pro plan, recovering even a handful of additional appointments per month generates 5–10× the subscription cost. We break down the math with real customer case studies on our <Link to="/blog" className="text-indigo-600 hover:text-indigo-700 underline">blog</Link>.
+                Most firms recover the full cost within the first week. A single missed intake call can represent a case worth $2,500 or more in lost revenue. At $897/month for the Pro plan, recovering even one additional signed matter per month generates several times the subscription cost. We break down the math with real customer case studies on our <Link to="/blog" className="text-indigo-600 hover:text-indigo-700 underline">blog</Link>.
               </p>
             </div>
 
