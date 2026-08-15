@@ -33,6 +33,69 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: "Missed Call Recovery Service: <span className=\"text-blue-600\">Turn Lost Calls Into Booked Jobs</span>",
+    slug: "/blog/missed-call-recovery-service",
+    excerpt: "A missed call recovery service responds instantly, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.",
+    date: "August 15, 2026",
+    readTime: "10 min read",
+    category: "Speed to Lead|How-to",
+    featured: false,
+  },
+  {
+    title: 'Missed Call Automation for Contractors: <span className="text-blue-600">Capture More Booked Jobs</span>',
+    slug: '/blog/missed-call-automation-contractors',
+    excerpt: 'Missed call automation for contractors responds fast, captures the job details, and moves qualified callers toward a booked service visit or estimate before another contractor replies.',
+    date: 'August 15, 2026',
+    readTime: '10 min read',
+    category: 'Contractors|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Speed to Lead for Remodeling Contractors: <span className="text-blue-600">Win More Estimates</span>',
+    slug: '/blog/speed-to-lead-remodeling-contractors',
+    excerpt: 'Speed to lead for remodeling contractors helps teams respond to project inquiries, qualify homeowners, and book more consultations before another contractor gets there first.',
+    date: 'August 14, 2026',
+    readTime: '10 min read',
+    category: 'Remodeling Contractors|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'HVAC Missed Call Answering Service: <span className="text-blue-600">Book More Service Calls</span>',
+    slug: '/blog/hvac-missed-call-answering-service',
+    excerpt: 'An HVAC missed call answering service responds fast, captures the service need, and moves qualified homeowners toward a booked repair or maintenance visit before another contractor replies.',
+    date: 'August 13, 2026',
+    readTime: '9 min read',
+    category: 'HVAC|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Electrician Missed Call Answering Service: <span className="text-blue-600">Turn Every Inquiry Into a Job</span>',
+    slug: '/blog/electrician-missed-call-answering-service',
+    excerpt: 'An electrician missed call answering service responds fast, captures the electrical problem, and moves qualified homeowners toward a booked job before another contractor replies.',
+    date: 'August 13, 2026',
+    readTime: '9 min read',
+    category: 'Electrician|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'After-Hours Electrician Answering Service: <span className="text-blue-600">Capture More Night Calls</span>',
+    slug: '/blog/after-hours-electrician-answering-service',
+    excerpt: 'An after-hours electrician answering service responds to urgent electrical calls, captures the job details, and moves qualified homeowners toward a booked service visit before a competitor replies.',
+    date: 'August 14, 2026',
+    readTime: '9 min read',
+    category: 'Electrician|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Emergency Plumber Answering Service: <span className="text-blue-600">Capture Every 2am Call</span>',
+    slug: '/blog/emergency-plumber-answering-service',
+    excerpt: 'An emergency plumber answering service responds to urgent calls, qualifies the problem, and moves high-intent homeowners toward a booked service job before a competitor does.',
+    date: 'August 12, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Plumber Missed Call Text Back: <span className="text-blue-600">Recover More Service Jobs</span>',
     slug: '/blog/plumber-missed-call-text-back',
     excerpt: 'A plumber missed call text back workflow keeps emergency and routine callers engaged, qualifies the job, and moves more missed opportunities toward a booked service visit.',
@@ -544,6 +607,11 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Voice Agent Setup', href: '/start', tagline: 'Walkthrough for your first AI voice agent.' },
   { label: 'Rank on Google Offer', href: '/rank-on-google-offer', tagline: 'Done-for-you SEO + AEO push.' },
   { label: 'Free Website Offer', href: '/free-website', tagline: 'Get a Boltcall-built site at no cost.' },
+  { label: 'HVAC missed call answering service', href: '/blog/hvac-missed-call-answering-service', tagline: 'See how faster response turns HVAC calls into booked jobs.' },
+  { label: 'Remodeling contractor lead response guide', href: '/blog/speed-to-lead-remodeling-contractors', tagline: 'Turn renovation inquiries into booked consultations faster.' },
+  { label: 'Speed to lead for remodeling contractors', href: '/blog/speed-to-lead-remodeling-contractors', tagline: 'Build a consistent first response for estimate-ready homeowners.' },
+  { label: 'Recover missed HVAC service calls', href: '/blog/hvac-missed-call-answering-service', tagline: 'Use a faster first response to protect paid lead spend.' },
+  { label: 'HVAC answering service guide', href: '/industries/hvac-answering-service/', tagline: 'Build a reliable response and booking workflow for HVAC demand.' },
   { label: 'Giveaway', href: '/giveaway', tagline: 'Current Boltcall giveaway.' },
   { label: 'Speed Test Offer', href: '/speed-test/offer', tagline: 'See your speed-to-lead score, then unlock the upgrade offer.' },
   { label: "AI Receptionist Buyer's Guide", href: '/lead-magnet/ai-receptionist-buyers-guide', tagline: 'Vendor checklist + pricing benchmarks.' },
@@ -551,7 +619,12 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Speed-to-Lead for Solar', href: '/solar', tagline: 'How solar installers win on first response.' },
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
   { label: 'Plumber Missed Call Text Back Guide', href: '/blog/plumber-missed-call-text-back', tagline: 'Turn unanswered calls into booked plumbing jobs.' },
+  { label: 'Emergency Plumber Answering Service', href: '/blog/emergency-plumber-answering-service', tagline: 'Capture urgent calls before a competitor does.' },
   { label: 'Missed Call Recovery for Plumbers', href: '/blog/plumber-missed-call-text-back', tagline: 'A practical speed-to-lead workflow for busy crews.' },
+  { label: 'Missed call automation for contractors', href: '/blog/missed-call-automation-contractors', tagline: 'Keep high-intent callers engaged until the job is booked.' },
+  { label: 'Contractor missed-call response guide', href: '/blog/missed-call-automation-contractors', tagline: 'Turn unanswered calls into qualified service opportunities.' },
+  { label: 'Missed call recovery service guide', href: '/blog/missed-call-recovery-service', tagline: 'Recover high-intent calls before a competitor books the job.' },
+  { label: 'Missed call recovery workflow', href: '/blog/missed-call-recovery-service', tagline: 'Build a faster response for calls your team cannot answer.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
 ];
@@ -743,6 +816,12 @@ const BlogCenter: React.FC = () => {
       </section>
 
       {/* Stats Data Table */}
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Plumbing owners can also read the <Link to="/blog/emergency-plumber-answering-service" className="text-blue-600 hover:underline">emergency plumber answering service guide</Link> for a practical after-hours response workflow.</p>
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Electrical contractors can also read the <Link to="/blog/electrician-missed-call-answering-service" className="text-blue-600 hover:underline">electrician missed call answering service guide</Link> for a faster intake and booking workflow.</p>
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Teams improving response speed can use this <Link to="/blog/electrician-missed-call-answering-service" className="text-blue-600 hover:underline">electrician missed call response playbook</Link> to turn missed inquiries into booked work.</p>
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">Electricians handling night and weekend demand can also read the <Link to="/blog/after-hours-electrician-answering-service" className="text-blue-600 hover:underline">after-hours electrician answering service guide</Link> for safe triage and faster booking.</p>
+      <p className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 text-sm text-gray-600">If your office closes before the leads do, use the <Link to="/blog/after-hours-electrician-answering-service" className="text-blue-600 hover:underline">after-hours electrician answering service playbook</Link> to protect more high-intent calls.</p>
+
       <section id="stats" className="py-14 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">AI Receptionist: By the Numbers</h2>
@@ -955,4 +1034,3 @@ const BlogCenter: React.FC = () => {
 };
 
 export default BlogCenter;
-

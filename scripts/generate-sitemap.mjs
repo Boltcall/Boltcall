@@ -108,6 +108,7 @@ const ROUTES = [
   { path: "/ai-guide-for-businesses/level-3-getting-started",   priority: "0.8", changefreq: "monthly" },
 
   // Blog Posts
+  { path: "/blog/missed-call-recovery-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/the-new-reality-for-local-businesses",              priority: "0.8", changefreq: "weekly" },
   { path: "/blog/why-speed-matters",                                 priority: "0.8", changefreq: "weekly" },
   { path: "/blog/complete-guide-to-seo",                             priority: "0.8", changefreq: "weekly" },
@@ -145,6 +146,12 @@ const ROUTES = [
   { path: "/blog/whatsapp-appointment-booking-plumbers",             priority: "0.8", changefreq: "weekly" },
 
   { path: "/blog/plumber-missed-call-text-back", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/emergency-plumber-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/hvac-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/speed-to-lead-remodeling-contractors", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/missed-call-automation-contractors", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/electrician-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/after-hours-electrician-answering-service", priority: "0.8", changefreq: "weekly" },
 
   // Blog FAQ / Industry AEO How-To
   { path: "/blog/how-to-set-up-ai-phone-answering-vet-clinic",       priority: "0.8", changefreq: "weekly" },

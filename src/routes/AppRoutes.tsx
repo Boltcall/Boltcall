@@ -770,6 +770,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/newsletter" element={<Newsletter />} />
         <Route path="/blog/the-new-reality-for-local-businesses" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/why-speed-matters" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/electrician-missed-call-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/after-hours-electrician-answering-service" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/plumber-missed-call-text-back" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/complete-guide-to-seo" element={<CanonicalBlogArticlePage />} />
         <Route path="/ai-guide-for-businesses" element={<BlogAIGuide />} />
@@ -823,6 +825,11 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/after-hours-lead-response-home-services" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/ai-receptionist-med-spas" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/solar-ai-lead-response" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/missed-call-recovery-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/emergency-plumber-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/hvac-missed-call-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/speed-to-lead-remodeling-contractors" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/missed-call-automation-contractors" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/:slug" element={<AeoMarkdownArticlePage />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />

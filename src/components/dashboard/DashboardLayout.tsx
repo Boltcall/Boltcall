@@ -22,7 +22,19 @@ import {
   Crown,
   Globe,
   Zap,
-  TrendingUp,
+  // Flat sidebar icons (restore of pre-hub nav)
+  Inbox,
+  PhoneCall,
+  PhoneMissed,
+  Mic,
+  MessageCircle,
+  Mail,
+  Volume2,
+  BookOpen,
+  Phone,
+  BarChart3,
+  Star,
+  Plug,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -342,13 +354,31 @@ const DashboardLayout: React.FC = () => {
     }
   }, []);
 
-  // MAIN — 5 hubs (P1 Hick's law: max 6 top-level items)
+  // MAIN — flat 20-item nav (restored from pre-hub-consolidation UX).
+  // Deep-links straight to each hub-tab so no redirect flash on click.
+  // Labels stay literal here (not t(…)) since the hub keys don't cover every item.
+  const icon = (I: React.ComponentType<{ className?: string }>) => (
+    <I className="w-3.5 h-3.5 scale-[0.95]" />
+  );
   const navItemsMain = [
-    { to: '/dashboard', label: t('nav.home'), icon: <LayoutDashboard className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/leads', label: t('nav.leads'), icon: <Zap className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/conversations', label: t('nav.conversations'), icon: <MessageSquare className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/your-ai', label: t('nav.yourAi'), icon: <Bot className="w-3.5 h-3.5 scale-[0.95]" /> },
-    { to: '/dashboard/growth', label: t('nav.growth'), icon: <TrendingUp className="w-3.5 h-3.5 scale-[0.95]" /> },
+    { to: '/dashboard', label: 'Home', icon: icon(LayoutDashboard) },
+    { to: '/dashboard/leads', label: 'Leads', icon: icon(Inbox) },
+    { to: '/dashboard/conversations/calls', label: 'Calls', icon: icon(PhoneCall) },
+    { to: '/dashboard/conversations/missed', label: 'Missed Calls', icon: icon(PhoneMissed) },
+    { to: '/dashboard/conversations/messages', label: 'Text Messages', icon: icon(MessageSquare) },
+    { to: '/dashboard/growth/reminders', label: 'Reminders', icon: icon(Bell) },
+    { to: '/dashboard/ai-receptionist', label: 'Voice Receptionist', icon: icon(Mic) },
+    { to: '/dashboard/sms', label: 'SMS', icon: icon(MessageSquare) },
+    { to: '/dashboard/whatsapp', label: 'WhatsApp', icon: icon(MessageCircle) },
+    { to: '/dashboard/email', label: 'Email', icon: icon(Mail) },
+    { to: '/dashboard/chat-widget', label: 'Website Chat', icon: icon(Globe) },
+    { to: '/dashboard/your-ai/personality', label: 'Agents', icon: icon(Bot) },
+    { to: '/dashboard/your-ai/voice', label: 'Voice Library', icon: icon(Volume2) },
+    { to: '/dashboard/your-ai/knowledge', label: 'Knowledge Base', icon: icon(BookOpen) },
+    { to: '/dashboard/your-ai/phone', label: 'Phone Numbers', icon: icon(Phone) },
+    { to: '/dashboard/growth/analytics', label: 'Analytics', icon: icon(BarChart3) },
+    { to: '/dashboard/growth/reputation', label: 'Reputation', icon: icon(Star) },
+    { to: '/dashboard/integrations', label: 'Integrations', icon: icon(Plug) },
   ];
 
   const navItemsFooter = [
