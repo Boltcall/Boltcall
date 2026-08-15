@@ -72,22 +72,7 @@ const AUDITS = [
 ];
 
 const INDUSTRY_TOOLS = [
-  { title: 'Plumber Revenue Calculator',           href: '/tools/plumber-revenue-calculator',         icon: Wrench },
-  { title: 'HVAC Overflow Calculator',             href: '/tools/hvac-overflow-calculator',           icon: HardHat },
-  { title: 'Roofing Missed-Lead Calculator',       href: '/tools/roofing-missed-lead-calculator',     icon: HardHat },
-  { title: 'Solar Profit Calculator',              href: '/tools/solar-profit-calculator',            icon: Calculator },
-  { title: 'Solar Quote Generator',                href: '/tools/solar-quote-generator',              icon: FileText },
-  { title: 'Solar Sales Closer',                   href: '/tools/solar-sales-closer',                 icon: Sparkles },
-  { title: 'Dentist Chair Calculator',             href: '/tools/dentist-chair-calculator',           icon: Stethoscope },
-  { title: 'Med Spa Rebooking Calculator',         href: '/tools/medspa-rebooking-calculator',        icon: Stethoscope },
-  { title: 'Vet Clinic Revenue Calculator',        href: '/tools/vet-clinic-revenue-calculator',      icon: Stethoscope },
-  { title: 'Chiropractor Patient Recovery',        href: '/tools/chiropractor-patient-recovery-calculator', icon: Stethoscope },
   { title: 'Lawyer Intake Calculator',             href: '/tools/lawyer-intake-calculator',           icon: Scale },
-  { title: 'Insurance Lead-Response Scorecard',    href: '/tools/insurance-lead-response-scorecard',  icon: ClipboardCheck },
-  { title: 'Auto Repair Missed-Call Calculator',   href: '/tools/auto-repair-missed-call-calculator', icon: Wrench },
-  { title: 'Cleaning Service Booking Calculator',  href: '/tools/cleaning-service-booking-calculator', icon: Calculator },
-  { title: 'Real Estate Speed Scorecard',          href: '/tools/real-estate-speed-scorecard',        icon: Gauge },
-  { title: 'Landscaping Seasonal Revenue',         href: '/tools/landscaping-seasonal-revenue-calculator', icon: Calculator },
   { title: '5-Minute Response Playbook',           href: '/tools/5-minute-response-playbook',         icon: Zap },
 ];
 

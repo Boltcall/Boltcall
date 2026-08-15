@@ -72,33 +72,13 @@ const ROUTES = [
   { path: "/ai-visibility-check",                                priority: "0.8", changefreq: "monthly" },
   { path: "/ai-readiness-scorecard",                             priority: "0.8", changefreq: "monthly" },
   { path: "/ai-receptionist-roi",                                priority: "0.8", changefreq: "monthly" },
-  { path: "/industries/hvac-answering-service",                  priority: "0.9", changefreq: "monthly" },
-  { path: "/industries/plumbing-answering-service",              priority: "0.9", changefreq: "monthly" },
-  { path: "/industries/contractor-answering-service",            priority: "0.9", changefreq: "monthly" },
-  { path: "/industries/dentist-answering-service",               priority: "0.9", changefreq: "monthly" },
   { path: "/industries/lawyer-answering-service",                priority: "0.9", changefreq: "monthly" },
-  { path: "/industries/medspa-answering-service",                priority: "0.9", changefreq: "monthly" },
   // /voice-agent-setup is a private multi-step wizard creating billable
   // Retell + Twilio resources — noindex'd at the page level, not for SEO.
-  { path: "/solar",                                               priority: "0.9", changefreq: "monthly" },
-  { path: "/solar-speed-playbook",                               priority: "0.8", changefreq: "monthly" },
-  { path: "/solar-benchmark",                                    priority: "0.8", changefreq: "monthly" },
-  { path: "/solar-benchmark-2026",                              priority: "0.9", changefreq: "monthly" },
-  { path: "/solar-roi-calculator",                              priority: "0.8", changefreq: "monthly" },
-  { path: "/solar-speed-score",                                 priority: "0.8", changefreq: "monthly" },
   { path: "/funnel-optimizer",                                   priority: "0.7", changefreq: "monthly" },
   { path: "/rank-on-google-offer",                               priority: "0.7", changefreq: "monthly" },
   // Industry Tools
   { path: "/tools/5-minute-response-playbook",                   priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/vet-clinic-revenue-calculator",                priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/dentist-chair-calculator",                     priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/hvac-overflow-calculator",                     priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/medspa-rebooking-calculator",                  priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/plumber-revenue-calculator",                   priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/real-estate-speed-scorecard",                  priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/solar-profit-calculator",                      priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/solar-quote-generator",                        priority: "0.8", changefreq: "monthly" },
-  { path: "/tools/solar-sales-closer",                           priority: "0.8", changefreq: "monthly" },
 
   // Blog Index & AI Guide
   { path: "/blog",                                               priority: "0.9", changefreq: "weekly"  },
@@ -117,8 +97,6 @@ const ROUTES = [
   { path: "/blog/ai-answering-service-small-business",               priority: "0.8", changefreq: "weekly" },
   { path: "/blog/is-ai-receptionist-worth-it",                       priority: "0.8", changefreq: "weekly" },
   { path: "/blog/how-to-make-ai-receptionist",                       priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/hvac-ai-lead-response",                             priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/ai-appointment-scheduling-hvac",                    priority: "0.8", changefreq: "weekly" },
   { path: "/blog/setup-instant-lead-reply",                          priority: "0.8", changefreq: "weekly" },
   { path: "/blog/how-to-schedule-text",                              priority: "0.8", changefreq: "weekly" },
   { path: "/blog/automatic-google-reviews",                          priority: "0.8", changefreq: "weekly" },
@@ -130,31 +108,14 @@ const ROUTES = [
   { path: "/blog/ai-receptionist-cost-pricing",                      priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-vs-human-receptionist",                          priority: "0.8", changefreq: "weekly" },
   { path: "/blog/best-ai-receptionist-small-business",               priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/ai-phone-answering-plumbers",                       priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/ai-phone-answering-dentists",                       priority: "0.8", changefreq: "weekly" },
   { path: "/blog/best-after-hours-answering-service",                priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-chatbot-vs-live-chat-phone-comparison",          priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/ai-receptionist-for-plumbers",                      priority: "0.8", changefreq: "weekly" },
   { path: "/blog/missed-calls-statistics-local-business-2026",       priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/best-ai-receptionist-home-services",                priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-agent-for-small-business-24-7-call-answering",   priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/roofing-company-stop-losing-leads-missed-calls",    priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/home-service-google-ads-lead-follow-up",            priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/best-ai-answering-service-dental-medical-practice", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/after-hours-lead-response-home-services",           priority: "0.8", changefreq: "weekly" },
   { path: "/blog/never-miss-a-call-after-business-hours",            priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/whatsapp-appointment-booking-plumbers",             priority: "0.8", changefreq: "weekly" },
 
-  { path: "/blog/plumber-missed-call-text-back", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/emergency-plumber-answering-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/hvac-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/speed-to-lead-remodeling-contractors", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/missed-call-automation-contractors", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/electrician-missed-call-answering-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/after-hours-electrician-answering-service", priority: "0.8", changefreq: "weekly" },
 
   // Blog FAQ / Industry AEO How-To
-  { path: "/blog/how-to-set-up-ai-phone-answering-vet-clinic",       priority: "0.8", changefreq: "weekly" },
 
   // Comparisons Hub
   { path: "/comparisons",                                        priority: "0.8", changefreq: "monthly" },
@@ -186,22 +147,11 @@ const ROUTES = [
   { path: "/blog/answering-service-scheduling",                 priority: "0.7", changefreq: "monthly" },
   { path: "/blog/benefits-of-outsourced-reception-services",    priority: "0.7", changefreq: "monthly" },
   { path: "/blog/google-reviews-automation-local-business",     priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/solar-ai-lead-response",                       priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/dental-ai-lead-response",                      priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-for-dentists",                 priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-med-spas",                     priority: "0.8", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-for-law-firms",                priority: "0.8", changefreq: "monthly" },
   { path: "/blog/speed-to-lead-for-law-firms",                  priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-real-estate-agents",           priority: "0.8", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-worth-it-roi",                 priority: "0.8", changefreq: "monthly" },
   { path: "/blog/ai-chatbot-vs-live-chat-phone-answering",      priority: "0.7", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-dentist-faq",                  priority: "0.7", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-hvac-faq",                     priority: "0.7", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-lawyer-faq",                   priority: "0.7", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-plumber-faq",                  priority: "0.7", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-solar-faq",                    priority: "0.7", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-vet-faq",                      priority: "0.7", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-medspa-faq",                   priority: "0.7", changefreq: "monthly" },
 
   // Product + landing pages
   { path: "/agent-architecture",                                priority: "0.7", changefreq: "monthly" },
@@ -221,13 +171,7 @@ const ROUTES = [
   { path: "/challenge",                                         priority: "0.6", changefreq: "monthly" },
 
   // Industry calculators
-  { path: "/tools/auto-repair-missed-call-calculator",          priority: "0.7", changefreq: "monthly" },
-  { path: "/tools/chiropractor-patient-recovery-calculator",    priority: "0.7", changefreq: "monthly" },
-  { path: "/tools/cleaning-service-booking-calculator",         priority: "0.7", changefreq: "monthly" },
-  { path: "/tools/insurance-lead-response-scorecard",           priority: "0.7", changefreq: "monthly" },
-  { path: "/tools/landscaping-seasonal-revenue-calculator",     priority: "0.7", changefreq: "monthly" },
   { path: "/tools/lawyer-intake-calculator",                    priority: "0.7", changefreq: "monthly" },
-  { path: "/tools/roofing-missed-lead-calculator",              priority: "0.7", changefreq: "monthly" },
 ];
 
 // Canonicalize: ensure trailing slash on every path so sitemap URLs match

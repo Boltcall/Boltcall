@@ -264,38 +264,11 @@ const RankOnGoogleOfferPage = React.lazy(() => import('../pages/RankOnGoogleOffe
 const NicheToolPage = React.lazy(() => import('../pages/NicheToolPage'));
 const FunnelOptimizer = React.lazy(() => import('../pages/FunnelOptimizer'));
 const FunnelOptimiser = React.lazy(() => import('../pages/FunnelOptimiser'));
-const HVACAnsweringServicePage = React.lazy(() => import('../pages/HVACAnsweringServicePage'));
-const PlumbingAnsweringServicePage = React.lazy(() => import('../pages/PlumbingAnsweringServicePage'));
-const ContractorAnsweringServicePage = React.lazy(() => import('../pages/ContractorAnsweringServicePage'));
-const DentistAnsweringServicePage = React.lazy(() => import('../pages/DentistAnsweringServicePage'));
 const LawyerAnsweringServicePage = React.lazy(() => import('../pages/LawyerAnsweringServicePage'));
-const MedSpaAnsweringServicePage = React.lazy(() => import('../pages/MedSpaAnsweringServicePage'));
-const SolarIndustryHub = React.lazy(() => import('../pages/SolarIndustryHub'));
-const SolarSpeedToLeadPlaybook = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybook'));
-const SolarSpeedToLeadPlaybookThankYou = React.lazy(() => import('../pages/SolarSpeedToLeadPlaybookThankYou'));
-const SolarBenchmarkPage = React.lazy(() => import('../pages/SolarBenchmarkPage'));
 const AiReadinessScorecard = React.lazy(() => import('../pages/AiReadinessScorecard'));
 const AiReceptionistRoi = React.lazy(() => import('../pages/AiReceptionistRoi'));
 const FiveMinuteResponsePlaybook = React.lazy(() => import('../pages/FiveMinuteResponsePlaybook'));
-const VetClinicRevenueCalculator = React.lazy(() => import('../pages/VetClinicRevenueCalculator'));
-const ChiropractorPatientRecoveryCalculator = React.lazy(() => import('../pages/ChiropractorPatientRecoveryCalculator'));
-const DentistChairCalculator = React.lazy(() => import('../pages/DentistChairCalculator'));
-const HVACOverflowCalculator = React.lazy(() => import('../pages/HVACOverflowCalculator'));
-const AutoRepairMissedCallCalculator = React.lazy(() => import('../pages/AutoRepairMissedCallCalculator'));
-const RoofingMissedLeadCalculator = React.lazy(() => import('../pages/RoofingMissedLeadCalculator'));
 const LawyerIntakeCalculator = React.lazy(() => import('../pages/LawyerIntakeCalculator'));
-const MedSpaRebookingCalculator = React.lazy(() => import('../pages/MedSpaRebookingCalculator'));
-const PlumberRevenueCalculator = React.lazy(() => import('../pages/PlumberRevenueCalculator'));
-const RealEstateSpeedScorecard = React.lazy(() => import('../pages/RealEstateSpeedScorecard'));
-const InsuranceLeadResponseScorecard = React.lazy(() => import('../pages/InsuranceLeadResponseScorecard'));
-const CleaningServiceBookingCalculator = React.lazy(() => import('../pages/CleaningServiceBookingCalculator'));
-const LandscapingSeasonalRevenueCalculator = React.lazy(() => import('../pages/LandscapingSeasonalRevenueCalculator'));
-const SolarProfitCalculator = React.lazy(() => import('../pages/SolarProfitCalculator'));
-const SolarQuoteGenerator = React.lazy(() => import('../pages/SolarQuoteGenerator'));
-const SolarSalesCloser = React.lazy(() => import('../pages/SolarSalesCloser'));
-const SolarROICalculator = React.lazy(() => import('../pages/SolarROICalculator'));
-const SolarSpeedScoreQuiz = React.lazy(() => import('../pages/SolarSpeedScoreQuiz'));
-const SolarBenchmark2026 = React.lazy(() => import('../pages/SolarBenchmark2026'));
 
 // ── Lazy loads — Speed Test funnel ───────────────────────────────────────
 const SpeedTestLanding = React.lazy(() => import('../pages/speed-test/SpeedTestLanding'));
@@ -770,9 +743,6 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/newsletter" element={<Newsletter />} />
         <Route path="/blog/the-new-reality-for-local-businesses" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/why-speed-matters" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/electrician-missed-call-answering-service" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/after-hours-electrician-answering-service" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/plumber-missed-call-text-back" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/complete-guide-to-seo" element={<CanonicalBlogArticlePage />} />
         <Route path="/ai-guide-for-businesses" element={<BlogAIGuide />} />
         <Route path="/ai-guide-for-businesses/level-1-understanding-ai" element={<BlogAIGuideStep1 />} />
@@ -784,10 +754,6 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/is-ai-receptionist-worth-it" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/how-to-make-ai-receptionist" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/instant-lead-reply-guide" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/hvac-ai-lead-response" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/dental-ai-lead-response" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/ai-receptionist-real-estate-agents" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/ai-appointment-scheduling-hvac" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/setup-instant-lead-reply" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/how-instant-lead-reply-works" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/how-to-schedule-text" element={<CanonicalBlogArticlePage />} />
@@ -807,29 +773,15 @@ const NavigationWrapper: React.FC = () => {
             <Route path="/blog/ai-vs-human-receptionist" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/ai-chatbot-vs-live-chat-phone-answering" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/best-ai-receptionist-small-business" element={<CanonicalBlogArticlePage />} />
-            <Route path="/blog/ai-phone-answering-plumbers" element={<CanonicalBlogArticlePage />} />
             {/* <Route path="/blog/is-ai-receptionist-worth-it" element={<IsAiReceptionistWorthIt />} /> */}
             {/* <Route path="/blog/google-reviews-automation-local-business" element={<GoogleReviewsAutomationGuide />} /> */}
             <Route path="/blog/what-is-ai-receptionist-guide" element={<CanonicalBlogArticlePage />} />
-            <Route path="/blog/ai-phone-answering-dentists" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/best-after-hours-answering-service" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/ai-chatbot-vs-live-chat-phone-comparison" element={<CanonicalBlogArticlePage />} />
-            <Route path="/blog/ai-receptionist-for-plumbers" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/ai-receptionist-worth-it-roi" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/missed-calls-statistics-local-business-2026" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/best-ai-receptionist-home-services" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/ai-agent-for-small-business-24-7-call-answering" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/roofing-company-stop-losing-leads-missed-calls" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/home-service-google-ads-lead-follow-up" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/best-ai-answering-service-dental-medical-practice" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/after-hours-lead-response-home-services" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/ai-receptionist-med-spas" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/solar-ai-lead-response" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/missed-call-recovery-service" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/emergency-plumber-answering-service" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/hvac-missed-call-answering-service" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/speed-to-lead-remodeling-contractors" element={<CanonicalBlogArticlePage />} />
-        <Route path="/blog/missed-call-automation-contractors" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/:slug" element={<AeoMarkdownArticlePage />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />
@@ -895,61 +847,25 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/strike-ai" element={<Strike />} />
         <Route path="/drhazak" element={<DrHazakLandingPage />} />
         <Route path="/rank-on-google-offer" element={<RankOnGoogleOfferPage />} />
-        <Route path="/industries/hvac-answering-service" element={<HVACAnsweringServicePage />} />
-        <Route path="/industries/plumbing-answering-service" element={<PlumbingAnsweringServicePage />} />
-        <Route path="/industries/contractor-answering-service" element={<ContractorAnsweringServicePage />} />
-        <Route path="/industries/dentist-answering-service" element={<DentistAnsweringServicePage />} />
         <Route path="/industries/lawyer-answering-service" element={<LawyerAnsweringServicePage />} />
-        <Route path="/industries/medspa-answering-service" element={<MedSpaAnsweringServicePage />} />
         {/* Solar Industry Hub */}
-        <Route path="/solar" element={<SolarIndustryHub />} />
         {/* Solar Speed-to-Lead Playbook */}
-        <Route path="/solar-speed-playbook" element={<SolarSpeedToLeadPlaybook />} />
-        <Route path="/solar-speed-playbook/thank-you" element={<SolarSpeedToLeadPlaybookThankYou />} />
         {/* Solar Speed-to-Lead Benchmark */}
-        <Route path="/solar-benchmark" element={<SolarBenchmarkPage />} />
         {/* 5-Minute Response Playbook lead magnet */}
         <Route path="/tools/5-minute-response-playbook" element={<FiveMinuteResponsePlaybook />} />
         {/* Vet Clinic Revenue Calculator */}
-        <Route path="/tools/vet-clinic-revenue-calculator" element={<VetClinicRevenueCalculator />} />
         {/* Chiropractor Patient Recovery Calculator */}
-        <Route path="/tools/chiropractor-patient-recovery-calculator" element={<ChiropractorPatientRecoveryCalculator />} />
         {/* Auto Repair Missed Call Calculator */}
-        <Route path="/tools/auto-repair-missed-call-calculator" element={<AutoRepairMissedCallCalculator />} />
-        <Route path="/tools/roofing-missed-lead-calculator" element={<RoofingMissedLeadCalculator />} />
         {/* Industry FAQ AEO pages + Vet Clinic How-To */}
         <Route element={<BlogSchemaWrapper />}>
-          <Route path="/blog/ai-receptionist-hvac-faq" element={<CanonicalBlogArticlePage />} />
-          <Route path="/blog/ai-receptionist-dentist-faq" element={<CanonicalBlogArticlePage />} />
-          <Route path="/blog/ai-receptionist-plumber-faq" element={<CanonicalBlogArticlePage />} />
           <Route path="/blog/ai-receptionist-lawyer-faq" element={<CanonicalBlogArticlePage />} />
-          <Route path="/blog/ai-receptionist-medspa-faq" element={<CanonicalBlogArticlePage />} />
-          <Route path="/blog/ai-receptionist-solar-faq" element={<CanonicalBlogArticlePage />} />
-          <Route path="/blog/ai-receptionist-vet-faq" element={<CanonicalBlogArticlePage />} />
-          <Route path="/blog/how-to-set-up-ai-phone-answering-vet-clinic" element={<CanonicalBlogArticlePage />} />
                 <Route path="/blog/never-miss-a-call-after-business-hours" element={<CanonicalBlogArticlePage />} />
-                <Route path="/blog/whatsapp-appointment-booking-plumbers" element={<CanonicalBlogArticlePage />} />
-                <Route path="/blog/ai-receptionist-for-dentists" element={<CanonicalBlogArticlePage />} />
                 <Route path="/blog/ai-receptionist-for-law-firms" element={<CanonicalBlogArticlePage />} />
                 <Route path="/blog/speed-to-lead-for-law-firms" element={<CanonicalBlogArticlePage />} />
         </Route>
         {/* Industry-specific calculators */}
-        <Route path="/tools/dentist-chair-calculator" element={<DentistChairCalculator />} />
-        <Route path="/tools/hvac-overflow-calculator" element={<HVACOverflowCalculator />} />
         <Route path="/tools/lawyer-intake-calculator" element={<LawyerIntakeCalculator />} />
-        <Route path="/tools/medspa-rebooking-calculator" element={<MedSpaRebookingCalculator />} />
-        <Route path="/tools/plumber-revenue-calculator" element={<PlumberRevenueCalculator />} />
-        <Route path="/tools/real-estate-speed-scorecard" element={<RealEstateSpeedScorecard />} />
-        <Route path="/tools/insurance-lead-response-scorecard" element={<InsuranceLeadResponseScorecard />} />
-        <Route path="/tools/cleaning-service-booking-calculator" element={<CleaningServiceBookingCalculator />} />
-        <Route path="/tools/solar-profit-calculator" element={<SolarProfitCalculator />} />
-        <Route path="/tools/solar-quote-generator" element={<SolarQuoteGenerator />} />
-        <Route path="/tools/solar-sales-closer" element={<SolarSalesCloser />} />
-        <Route path="/solar-roi-calculator" element={<SolarROICalculator />} />
-        <Route path="/solar-speed-score" element={<SolarSpeedScoreQuiz />} />
-        <Route path="/solar-benchmark-2026" element={<SolarBenchmark2026 />} />
         {/* Landscaping Seasonal Revenue Calculator */}
-        <Route path="/tools/landscaping-seasonal-revenue-calculator" element={<LandscapingSeasonalRevenueCalculator />} />
         {/* All niche tools now served by dynamic route from Supabase */}
         <Route path="/tools/:slug" element={<NicheToolPage />} />
         {/* V1 wizard retired — /start is the canonical onboarding */}

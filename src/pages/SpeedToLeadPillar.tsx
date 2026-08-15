@@ -321,13 +321,9 @@ const SpeedToLeadPillar: React.FC = () => {
             <Link to="/blog/best-after-hours-answering-service" className="text-blue-600 hover:underline">
               best after-hours answering service
             </Link>
-            {' '}options. For paid-traffic businesses bleeding leads at night, read our guide to{' '}
-            <Link to="/blog/home-service-google-ads-lead-follow-up" className="text-blue-600 hover:underline">
-              Google Ads lead follow-up for home services
-            </Link>
-            {' '}and{' '}
-            <Link to="/blog/after-hours-lead-response-home-services" className="text-blue-600 hover:underline">
-              after-hours lead response for home services
+            {' '}options. For paid-traffic law firms bleeding leads at night, see{' '}
+            <Link to="/industries/lawyer-answering-service" className="text-blue-600 hover:underline">
+              lawyer answering service
             </Link>.
           </p>
         </motion.section>
@@ -441,15 +437,10 @@ const SpeedToLeadPillar: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-3">By Industry</h3>
           <div className="grid md:grid-cols-2 gap-3 mb-7">
             {[
-              { href: '/blog/hvac-ai-lead-response', title: 'HVAC AI lead response' },
-              { href: '/blog/ai-appointment-scheduling-hvac', title: 'AI appointment scheduling for HVAC' },
-              { href: '/blog/ai-receptionist-for-plumbers', title: 'AI receptionist for plumbers' },
-              { href: '/blog/whatsapp-appointment-booking-plumbers', title: 'WhatsApp appointment booking for plumbers' },
-              { href: '/blog/roofing-company-stop-losing-leads-missed-calls', title: 'Stop losing leads from missed calls (roofing)' },
-              { href: '/blog/ai-phone-answering-dentists', title: 'AI phone answering for dentists' },
-              { href: '/blog/best-ai-answering-service-dental-medical-practice', title: 'Best AI answering service for dental and medical practices' },
-              { href: '/blog/best-ai-receptionist-home-services', title: 'Best AI receptionist for home services' },
-              { href: '/blog/how-to-set-up-ai-phone-answering-vet-clinic', title: 'AI phone answering for vet clinics' },
+              { href: '/industries/lawyer-answering-service', title: 'Lawyer answering service' },
+              { href: '/blog/ai-receptionist-for-law-firms', title: 'AI receptionist for law firms' },
+              { href: '/blog/speed-to-lead-for-law-firms', title: 'Speed to lead for law firms' },
+              { href: '/tools/lawyer-intake-calculator', title: 'Lawyer intake calculator' },
             ].map((item) => (
               <Link
                 key={item.href}

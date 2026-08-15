@@ -177,7 +177,7 @@ const Hero: React.FC = () => {
             </motion.h1>
 
             <motion.p
-              className={`text-base md:text-xl text-text-muted mb-8 max-w-2xl px-2 md:px-0 leading-relaxed ${isRtl ? 'mr-0 md:mr-auto md:ml-0' : 'mx-auto'}`}
+              className={`text-base md:text-xl text-text-muted mb-8 max-w-2xl px-2 md:px-0 leading-relaxed whitespace-pre-line ${isRtl ? 'mr-0 md:mr-auto md:ml-0' : 'mx-auto'}`}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 24 }}
               transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.25 }}
