@@ -1,33 +1,123 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Banner } from "@/components/ui/banner"
+import { Button } from "@/components/ui/button"
+import { Gift, X } from "lucide-react"
+import { useEffect, useState } from "react"
 
-const GiveawayBar: React.FC = () => {
-  const { t } = useTranslation('marketing');
+interface GiveawayBarProps {
+  endDate: Date
+  title?: string
+  description?: string
+  ctaLabel?: string
+  onCtaClick?: () => void
+}
+
+interface TimeLeft {
+  days: number
+  hours: number
+  minutes: number
+  seconds: number
+  isExpired: boolean
+}
+
+function GiveawayBar({
+  endDate,
+  title = "Giveaway is live!",
+  description = "Enter now before time runs out.",
+  ctaLabel = "Enter now",
+  onCtaClick,
+}: GiveawayBarProps) {
+  const [isVisible, setIsVisible] = useState(true)
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    isExpired: false,
+  })
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = endDate.getTime() - Date.now()
+
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true })
+        return
+      }
+
+      setTimeLeft({
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((difference % (1000 * 60)) / 1000),
+        isExpired: false,
+      })
+    }
+
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+    return () => clearInterval(timer)
+  }, [endDate])
+
+  if (!isVisible || timeLeft.isExpired) return null
+
   return (
-    <Link to="/giveaway" className="block">
-      <div className="bg-blue-600 text-white w-full cursor-pointer shadow-none drop-shadow-none ring-0 border-none outline-none" style={{ contain: 'layout style', boxShadow: 'none' }}>
-        <div className="relative z-10">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pr-14 md:pr-4 lg:pr-8">
-            <div className="flex items-center justify-center py-1 gap-2 sm:gap-3">
-              <div className="flex items-center space-x-1 sm:space-x-3">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
-                  <span className="font-bold text-xs sm:text-sm text-white">{t('giveawayBar.breakOurAi')}</span>
-                  <span className="text-[10px] sm:text-xs lg:text-sm text-white/80">
-                    {t('giveawayBar.crack')} <strong className="text-white">{t('giveawayBar.freeWebsite')}</strong>.
+    <Banner variant="muted" className="dark text-foreground">
+      <div className="flex w-full gap-2 md:items-center">
+        <div className="flex grow gap-3 md:items-center">
+          <div
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 max-md:mt-0.5"
+            aria-hidden="true"
+          >
+            <Gift className="opacity-80" size={16} strokeWidth={2} />
+          </div>
+          <div className="flex grow flex-col justify-between gap-3 md:flex-row md:items-center">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium">{title}</p>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+            <div className="flex gap-3 max-md:flex-wrap">
+              <div className="flex items-center divide-x divide-primary-foreground rounded-lg bg-primary/15 text-sm tabular-nums">
+                {timeLeft.days > 0 && (
+                  <span className="flex h-8 items-center justify-center p-2">
+                    {timeLeft.days}
+                    <span className="text-muted-foreground">d</span>
                   </span>
-                </div>
+                )}
+                <span className="flex h-8 items-center justify-center p-2">
+                  {timeLeft.hours.toString().padStart(2, "0")}
+                  <span className="text-muted-foreground">h</span>
+                </span>
+                <span className="flex h-8 items-center justify-center p-2">
+                  {timeLeft.minutes.toString().padStart(2, "0")}
+                  <span className="text-muted-foreground">m</span>
+                </span>
+                <span className="flex h-8 items-center justify-center p-2">
+                  {timeLeft.seconds.toString().padStart(2, "0")}
+                  <span className="text-muted-foreground">s</span>
+                </span>
               </div>
-
-              <span className="bg-black hover:bg-gray-900 transition-colors text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-lg whitespace-nowrap">
-                {t('giveawayBar.tryNow')}
-              </span>
+              <Button size="sm" className="text-sm" onClick={onCtaClick}>
+                {ctaLabel}
+              </Button>
             </div>
           </div>
         </div>
+        <Button
+          variant="ghost"
+          className="group -my-1.5 -me-2 size-8 shrink-0 p-0 hover:bg-transparent"
+          onClick={() => setIsVisible(false)}
+          aria-label="Close banner"
+        >
+          <X
+            size={16}
+            strokeWidth={2}
+            className="opacity-60 transition-opacity group-hover:opacity-100"
+            aria-hidden="true"
+          />
+        </Button>
       </div>
-    </Link>
-  );
-};
+    </Banner>
+  )
+}
 
-export default GiveawayBar;
+export { GiveawayBar }
