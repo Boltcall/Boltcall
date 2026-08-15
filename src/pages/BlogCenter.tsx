@@ -623,6 +623,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Missed Call Recovery for Plumbers', href: '/blog/plumber-missed-call-text-back', tagline: 'A practical speed-to-lead workflow for busy crews.' },
   { label: 'Missed call automation for contractors', href: '/blog/missed-call-automation-contractors', tagline: 'Keep high-intent callers engaged until the job is booked.' },
   { label: 'Contractor missed-call response guide', href: '/blog/missed-call-automation-contractors', tagline: 'Turn unanswered calls into qualified service opportunities.' },
+  { label: 'Missed call recovery service guide', href: '/blog/missed-call-recovery-service', tagline: 'Recover high-intent calls before a competitor books the job.' },
+  { label: 'Missed call recovery workflow', href: '/blog/missed-call-recovery-service', tagline: 'Build a faster response for calls your team cannot answer.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
 ];
