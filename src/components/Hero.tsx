@@ -1,7 +1,7 @@
 ﻿import React, { useState, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
-import { Phone, Calendar, MessageSquare, Users, Star, Megaphone } from 'lucide-react';
+import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
 
@@ -14,11 +14,20 @@ const ModalVideo = React.lazy(() => import('./ModalVideo'));
 
 const Hero: React.FC = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [auditUrl, setAuditUrl] = useState('');
   const { t } = useTranslation('marketing');
   const dir = useDirection();
   const isRtl = dir === 'rtl';
+  const navigate = useNavigate();
 
   const rotatingWords = t('hero.rotatingWords', { returnObjects: true }) as string[];
+
+  const handleAuditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = auditUrl.trim();
+    if (!trimmed) return;
+    navigate(`/website-audit?url=${encodeURIComponent(trimmed)}`);
+  };
 
   return (
     <>
@@ -195,6 +204,31 @@ const Hero: React.FC = () => {
                 {t('hero.seeHowItWorks')}
               </button>
             </motion.div>
+
+            <motion.form
+              onSubmit={handleAuditSubmit}
+              className={`flex flex-col sm:flex-row gap-3 max-w-xl mt-2 ${isRtl ? 'mx-0' : 'mx-auto'} ${isRtl ? '' : 'justify-center'}`}
+              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24 }}
+              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.55 }}
+            >
+              <input
+                type="text"
+                inputMode="url"
+                value={auditUrl}
+                onChange={(e) => setAuditUrl(e.target.value)}
+                placeholder="yourwebsite.com"
+                aria-label="Your website URL"
+                className="flex-1 min-w-0 px-4 py-3 rounded-lg border-2 border-black bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 whitespace-nowrap"
+              >
+                Get My Free Audit <ArrowRight className="w-4 h-4" />
+              </button>
+            </motion.form>
+            <p className="text-xs text-text-muted mt-2">Free report: how fast your site proves you respond, scored against local-service peers.</p>
 
           </div>
         </div>

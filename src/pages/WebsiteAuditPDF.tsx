@@ -11,7 +11,7 @@ import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import FAQ from '../components/FAQ';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 
 const LEAD_ENDPOINT = '/.netlify/functions/website-audit-lead';
@@ -61,8 +61,9 @@ const WebsiteAuditPDF: React.FC = () => {
   ]);
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState(() => searchParams.get('url') || '');
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
