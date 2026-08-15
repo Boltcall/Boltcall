@@ -345,38 +345,22 @@ const AIReceptionistPage: React.FC = () => {
               </div>
 
               <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Home Services Business</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Law Firm</h3>
                 <p className="text-gray-600 leading-relaxed mb-3">
-                  A home services company was missing calls during service appointments when staff were 
-                  on-site. The AI receptionist now handles all incoming calls, schedules service appointments, 
-                  provides quotes, and even handles emergency calls. This resulted in 50% more bookings and 
-                  eliminated the need for a dedicated call center.
+                  A law firm was missing new-matter calls during depositions and court appearances.
+                  The AI receptionist now handles all incoming intake calls, screens case type and
+                  urgency, and books consultations, so no call sits in voicemail while attorneys are
+                  unavailable.
                 </p>
                 <p className="text-gray-600 leading-relaxed">
-                  The system can provide service area information, explain different service packages, 
-                  schedule appointments based on technician availability, and send confirmation messages 
-                  with service details. For emergency calls, it can immediately route to the appropriate 
-                  technician or schedule urgent appointments.
+                  The system can screen practice area, capture incident or matter details, route
+                  urgent calls (arrests, custody emergencies, deadline-sensitive filings), and confirm
+                  the next step by text while the caller is still deciding which firm to hire.
                 </p>
                 <p className="text-gray-600 leading-relaxed mt-3">
                   For the main category page built around this buyer intent, see{' '}
-                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/contractor-answering-service">
-                    contractor answering service
-                  </Link>
-                  .
-                </p>
-                <p className="text-gray-600 leading-relaxed mt-3">
-                  Vertical-specific category pages:{' '}
-                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/dentist-answering-service">
-                    dentist answering service
-                  </Link>
-                  ,{' '}
                   <Link className="font-semibold text-blue-700 hover:underline" to="/industries/lawyer-answering-service">
                     lawyer answering service
-                  </Link>
-                  , and{' '}
-                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/medspa-answering-service">
-                    med spa answering service
                   </Link>
                   .
                 </p>
@@ -708,22 +692,13 @@ const AIReceptionistPage: React.FC = () => {
                 <p className="text-sm text-gray-600">Quick diagnostic for busy owners.</p>
               </Link>
               <Link
-                to="/blog/best-ai-receptionist-home-services"
-                className="block bg-white rounded-lg p-5 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition"
-              >
-                <h3 className="text-base font-semibold text-gray-900 mb-1">
-                  Best AI receptionist for home services
-                </h3>
-                <p className="text-sm text-gray-600">HVAC, plumbing, roofing, electrical.</p>
-              </Link>
-              <Link
-                to="/blog/best-ai-answering-service-dental-medical-practice"
+                to="/industries/lawyer-answering-service"
                 className="block bg-white rounded-lg p-5 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition md:col-span-2"
               >
                 <h3 className="text-base font-semibold text-gray-900 mb-1">
-                  Best AI answering service for dental and medical practices
+                  Lawyer answering service
                 </h3>
-                <p className="text-sm text-gray-600">HIPAA-aware patterns and intake flows.</p>
+                <p className="text-sm text-gray-600">Legal-specific intake, urgency triage, and consultation booking.</p>
               </Link>
             </div>
 

@@ -537,9 +537,9 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                     View pricing <ArrowRight className="ml-1 h-4 w-4" />
                   </span>
                 </Link>
-                <Link to="/blog/ai-phone-answering-dentists" className="group block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">AI Phone Answering for Dentists</h3>
-                  <p className="text-gray-600 text-sm">How dental practices use AI receptionists to capture more patients.</p>
+                <Link to="/industries/lawyer-answering-service" className="group block bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">Lawyer Answering Service</h3>
+                  <p className="text-gray-600 text-sm">How law firms use AI intake to capture more retained clients.</p>
                   <span className="text-blue-600 text-sm font-medium mt-3 inline-flex items-center">
                     Read more <ArrowRight className="ml-1 h-4 w-4" />
                   </span>

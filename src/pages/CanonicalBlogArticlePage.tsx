@@ -69,8 +69,6 @@ interface BusinessProfile {
 
 const homepageLinkTargets = new Set([
   '/blog/top-10-ai-receptionist-agencies',
-  '/blog/hvac-ai-lead-response',
-  '/blog/best-ai-receptionist-home-services',
   '/blog/best-ai-receptionist-tools',
 ]);
 
@@ -84,10 +82,6 @@ const titleOverrides: Record<string, string> = {
   '/blog/is-ai-receptionist-worth-it': 'Is an AI Receptionist Worth It?',
   '/blog/how-to-make-ai-receptionist': 'How to Make an AI Receptionist',
   '/blog/instant-lead-reply-guide': 'What Instant Lead Reply Means',
-  '/blog/hvac-ai-lead-response': 'How HVAC Companies Book More Calls with AI Lead Response',
-  '/blog/dental-ai-lead-response': 'AI Lead Response for Dental Offices',
-  '/blog/ai-receptionist-real-estate-agents': 'AI Receptionist for Real Estate Agents',
-  '/blog/ai-appointment-scheduling-hvac': 'AI Appointment Scheduling for HVAC',
   '/blog/setup-instant-lead-reply': 'How to Set Up Instant Lead Reply',
   '/blog/how-instant-lead-reply-works': 'How Instant Lead Reply Works',
   '/blog/how-to-schedule-text': 'How to Schedule Appointments by Text',
@@ -105,33 +99,14 @@ const titleOverrides: Record<string, string> = {
   '/blog/ai-vs-human-receptionist': 'AI vs Human Receptionist',
   '/blog/ai-chatbot-vs-live-chat-phone-answering': 'AI Chatbot vs Live Chat vs Phone Answering',
   '/blog/best-ai-receptionist-small-business': 'Best AI Receptionist for Small Business',
-  '/blog/ai-phone-answering-plumbers': 'AI Phone Answering for Plumbers',
   '/blog/what-is-ai-receptionist-guide': 'What Is an AI Receptionist?',
-  '/blog/ai-phone-answering-dentists': 'AI Phone Answering for Dentists',
   '/blog/best-after-hours-answering-service': 'Best After-Hours Answering Service',
   '/blog/ai-chatbot-vs-live-chat-phone-comparison': 'AI Chatbot vs Live Chat vs Phone Answering',
-  '/blog/ai-receptionist-for-plumbers': 'AI Receptionist for Plumbers: 2026 Speed-to-Lead Guide',
   '/blog/ai-receptionist-worth-it-roi': 'AI Receptionist ROI Guide',
   '/blog/missed-calls-statistics-local-business-2026': 'Missed Call Statistics for Local Businesses',
-  '/blog/best-ai-receptionist-home-services': 'Best AI Receptionist for Home Services',
   '/blog/ai-agent-for-small-business-24-7-call-answering': 'AI Agent for 24/7 Call Answering',
-  '/blog/roofing-company-stop-losing-leads-missed-calls': 'How Roofing Companies Stop Losing Missed-Call Leads',
-  '/blog/home-service-google-ads-lead-follow-up': 'Home Service Google Ads Lead Follow-Up',
-  '/blog/best-ai-answering-service-dental-medical-practice': 'Best AI Answering Service for Dental and Medical Practices',
-  '/blog/after-hours-lead-response-home-services': 'After-Hours Lead Response for Home Services',
-  '/blog/ai-receptionist-med-spas': 'AI Receptionist for Med Spas',
-  '/blog/solar-ai-lead-response': 'Solar AI Lead Response',
-  '/blog/ai-receptionist-hvac-faq': 'AI Receptionist for HVAC FAQ',
-  '/blog/ai-receptionist-dentist-faq': 'AI Receptionist for Dentists FAQ',
-  '/blog/ai-receptionist-plumber-faq': 'AI Receptionist for Plumbers FAQ',
   '/blog/ai-receptionist-lawyer-faq': 'AI Receptionist for Lawyers FAQ',
-  '/blog/ai-receptionist-medspa-faq': 'AI Receptionist for Med Spas FAQ',
-  '/blog/ai-receptionist-solar-faq': 'AI Receptionist for Solar FAQ',
-  '/blog/ai-receptionist-vet-faq': 'AI Receptionist for Vets FAQ',
-  '/blog/how-to-set-up-ai-phone-answering-vet-clinic': 'How to Set Up AI Phone Answering for a Vet Clinic',
   '/blog/never-miss-a-call-after-business-hours': 'Never Miss a Call After Business Hours',
-  '/blog/whatsapp-appointment-booking-plumbers': 'WhatsApp Appointment Booking for Plumbers',
-  '/blog/ai-receptionist-for-dentists': 'AI Receptionist for Dentists',
   '/blog/ai-receptionist-for-law-firms': 'AI Receptionist for Law Firms: Speed-to-Lead Intake Guide',
   '/blog/speed-to-lead-for-law-firms': 'Speed to Lead for Law Firms',
 };
@@ -734,7 +709,6 @@ function pageSpecificSections(path: string): BlogSection[] {
     ];
   }
 
-  if (path === '/blog/ai-receptionist-for-plumbers') {
     return [
       {
         title: '2026 Plumber Buying Criteria',

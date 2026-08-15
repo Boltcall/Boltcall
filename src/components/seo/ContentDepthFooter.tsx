@@ -17,7 +17,6 @@ const exactRoutes = new Set([
   '/seo-audit',
   '/seo-aeo-audit',
   '/free-website',
-  '/solar-speed-playbook',
   '/funnel-optimizer',
   '/ai-readiness-scorecard',
   '/rank-on-google-offer',
