@@ -35,7 +35,7 @@ const blogPosts: BlogPost[] = [
   {
     title: 'Missed Call Text Back Service: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
     slug: '/blog/missed-call-text-back-service',
-    excerpt: 'A missed call text back service responds instantly, captures the customer's need, and moves qualified prospects toward a booked job before a competitor replies.',
+    excerpt: "A missed call text back service responds instantly, captures the customer's need, and moves qualified prospects toward a booked job before a competitor replies.",
     date: 'August 16, 2026',
     readTime: '10 min read',
     category: 'Speed to Lead|How-to',
