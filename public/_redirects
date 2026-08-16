@@ -145,7 +145,6 @@ https://boltcall.netlify.app/* https://boltcall.org/:splat  301!
 
 # Phase 4 prune (2026-08-15): merge conflict cleanup — daily-blog-publisher
 # kept adding non-legal niche content while this pivot branch was in flight.
-/blog/emergency-plumber-answering-service  /blog  301!
 /blog/hvac-missed-call-answering-service  /blog  301!
 /blog/speed-to-lead-remodeling-contractors  /blog  301!
 /blog/missed-call-automation-contractors  /blog  301!
