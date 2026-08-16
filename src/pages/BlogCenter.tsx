@@ -460,6 +460,9 @@ const BlogCenter: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 text-center mb-4">AI Business Tips &amp; Guides</h1>
           <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">Expert insights on AI receptionists, lead capture, and growing your local business.</p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Learn how a missed call text back service recovers leads</Link> before they choose another provider.
+          </p>
 
           {/* Search Spotlight */}
           <div className="flex justify-center">
@@ -596,6 +599,9 @@ const BlogCenter: React.FC = () => {
             </table>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">Sources: Harvard Business Review, Lead Response Management study, BrightLocal.</p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Explore the missed call text back service workflow</Link> for local businesses.
+          </p>
         </div>
       </section>
 
