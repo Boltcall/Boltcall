@@ -1,7 +1,7 @@
 ﻿import React, { useState, Suspense } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
-import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight } from 'lucide-react';
+import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight, Mail, Clock, Zap, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
 
@@ -130,6 +130,66 @@ const Hero: React.FC = () => {
               </motion.div>
             </FloatingElement>
 
+            {/* Top-center-left edge — Clock (speed) */}
+            <FloatingElement depth={2} className="top-[6%] left-[38%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.45 }}
+              >
+                <div className="rotate-[8deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
+                    <Clock className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Top-center-right edge — Zap (instant) */}
+            <FloatingElement depth={2} className="top-[6%] left-[62%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.60 }}
+              >
+                <div className="-rotate-[10deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
+                    <Zap className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Far bottom-left — Mail */}
+            <FloatingElement depth={3} className="top-[78%] left-[10%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.75 }}
+              >
+                <div className="rotate-[5deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
+                    <Mail className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Far bottom-right — CheckCircle (booked) */}
+            <FloatingElement depth={3} className="top-[75%] left-[90%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.90 }}
+              >
+                <div className="-rotate-[6deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
+                    <CheckCircle className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
           </Floating>
         </div>
 
@@ -185,29 +245,9 @@ const Hero: React.FC = () => {
               {t('hero.subtitle')}
             </motion.p>
 
-            <motion.div
-              className={`flex flex-col gap-4 mb-4 ${isRtl ? 'items-stretch sm:flex-row-reverse sm:justify-end sm:items-center' : 'justify-center items-center sm:flex-row'}`}
-              animate={{ opacity: 1, y: 0 }}
-              initial={{ opacity: 0, y: 24 }}
-              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.40 }}
-            >
-              <Link
-                to="/signup?redirect=/setup"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
-              >
-                {t('hero.startFree')}
-              </Link>
-              <button
-                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-900 font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
-              >
-                {t('hero.seeHowItWorks')}
-              </button>
-            </motion.div>
-
             <motion.form
               onSubmit={handleAuditSubmit}
-              className={`flex flex-col sm:flex-row gap-3 max-w-xl mt-2 ${isRtl ? 'mx-0' : 'mx-auto'} ${isRtl ? '' : 'justify-center'}`}
+              className={`flex items-center gap-1 max-w-xl p-1.5 rounded-full border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000] mt-2 ${isRtl ? 'mx-0' : 'mx-auto'}`}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 24 }}
               transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.55 }}
@@ -219,16 +259,17 @@ const Hero: React.FC = () => {
                 onChange={(e) => setAuditUrl(e.target.value)}
                 placeholder="yourwebsite.com"
                 aria-label="Your website URL"
-                className="flex-1 min-w-0 px-4 py-3 rounded-lg border-2 border-black bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="flex-1 min-w-0 px-4 py-2 bg-transparent text-gray-900 placeholder:text-gray-400 focus:outline-none"
               />
               <button
                 type="submit"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors duration-200 whitespace-nowrap"
               >
-                Get My Free Audit <ArrowRight className="w-4 h-4" />
+                <span className="sm:hidden">Get Audit</span>
+                <span className="hidden sm:inline">Get My Free Audit</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </motion.form>
-            <p className="text-xs text-text-muted mt-2">Free report: how fast your site proves you respond, scored against local-service peers.</p>
 
           </div>
         </div>

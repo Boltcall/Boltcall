@@ -33,6 +33,24 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Missed Call Text Back Service: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
+    slug: '/blog/missed-call-text-back-service',
+    excerpt: "A missed call text back service responds instantly, captures the customer's need, and moves qualified prospects toward a booked job before a competitor replies.",
+    date: 'August 16, 2026',
+    readTime: '10 min read',
+    category: 'Speed to Lead|How-to',
+    featured: false,
+  },
+  {
+    title: 'Emergency Plumber Answering Service: <span className="text-blue-600">Capture Every 2am Call</span>',
+    slug: '/blog/emergency-plumber-answering-service',
+    excerpt: 'An emergency plumber answering service responds fast, captures the job details, and moves urgent callers toward a booked plumbing job before a competitor replies.',
+    date: 'August 16, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: "Missed Call Recovery Service: <span className=\"text-blue-600\">Turn Lost Calls Into Booked Jobs</span>",
     slug: "/blog/missed-call-recovery-service",
     excerpt: "A missed call recovery service responds instantly, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.",
@@ -352,6 +370,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Claude Code Overnight Kit', href: '/lead-magnet/claude-code-overnight-kit', tagline: 'Build agents while you sleep.' },
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
   { label: 'Missed call recovery service guide', href: '/blog/missed-call-recovery-service', tagline: 'Recover high-intent calls before a competitor books the job.' },
+  { label: 'Emergency plumber answering service guide', href: '/blog/emergency-plumber-answering-service', tagline: 'Capture urgent plumbing calls before a competitor replies.' },
+  { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
 ];
@@ -440,6 +460,9 @@ const BlogCenter: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 text-center mb-4">AI Business Tips &amp; Guides</h1>
           <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">Expert insights on AI receptionists, lead capture, and growing your local business.</p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Learn how a missed call text back service recovers leads</Link> before they choose another provider.
+          </p>
 
           {/* Search Spotlight */}
           <div className="flex justify-center">
@@ -576,6 +599,9 @@ const BlogCenter: React.FC = () => {
             </table>
           </div>
           <p className="text-xs text-gray-400 mt-3 text-center">Sources: Harvard Business Review, Lead Response Management study, BrightLocal.</p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Explore the missed call text back service workflow</Link> for local businesses.
+          </p>
         </div>
       </section>
 
