@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Emergency Plumber Answering Service: <span className="text-blue-600">Capture Every 2am Call</span>',
+    slug: '/blog/emergency-plumber-answering-service',
+    excerpt: 'An emergency plumber answering service responds fast, captures the job details, and moves urgent callers toward a booked plumbing job before a competitor replies.',
+    date: 'August 16, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: "Missed Call Recovery Service: <span className=\"text-blue-600\">Turn Lost Calls Into Booked Jobs</span>",
     slug: "/blog/missed-call-recovery-service",
     excerpt: "A missed call recovery service responds instantly, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.",
@@ -352,6 +361,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Claude Code Overnight Kit', href: '/lead-magnet/claude-code-overnight-kit', tagline: 'Build agents while you sleep.' },
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
   { label: 'Missed call recovery service guide', href: '/blog/missed-call-recovery-service', tagline: 'Recover high-intent calls before a competitor books the job.' },
+  { label: 'Emergency plumber answering service guide', href: '/blog/emergency-plumber-answering-service', tagline: 'Capture urgent plumbing calls before a competitor replies.' },
+  { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
 ];
