@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Missed Call Text Back Service: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
+    slug: '/blog/missed-call-text-back-service',
+    excerpt: 'A missed call text back service responds instantly, captures the customer's need, and moves qualified prospects toward a booked job before a competitor replies.',
+    date: 'August 16, 2026',
+    readTime: '10 min read',
+    category: 'Speed to Lead|How-to',
+    featured: false,
+  },
+  {
     title: 'Emergency Plumber Answering Service: <span className="text-blue-600">Capture Every 2am Call</span>',
     slug: '/blog/emergency-plumber-answering-service',
     excerpt: 'An emergency plumber answering service responds fast, captures the job details, and moves urgent callers toward a booked plumbing job before a competitor replies.',
