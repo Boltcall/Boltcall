@@ -7,14 +7,9 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 
 const PHONE_RE = /^\+[1-9]\d{7,14}$/;
 const NAME_RE = /^[\p{L}\p{N} .,'-]{2,120}$/u;
-const INDUSTRIES = new Set([
-  'law-firm',
-  'roofers',
-  'hvac',
-  'plumbers',
-  'dental',
-  'med-spa',
-]);
+// ponytail: was 6 industries; homepage demo is law-firm only now. Kept as a
+// Set (not a bare string compare) so re-adding a vertical later is a 1-line diff.
+const INDUSTRIES = new Set(['law-firm']);
 const DEMO_IP_WINDOW_SECONDS = 60 * 60;
 const DEMO_IP_MAX_ATTEMPTS = 5;
 const DEMO_PHONE_WINDOW_SECONDS = 60 * 60;
@@ -31,36 +26,6 @@ const DEMO_PROFILES: Record<string, {
     niche: 'law firm',
     location: 'Austin, Texas',
     services: 'personal injury consultations, family law, estate planning, and case evaluations',
-  },
-  roofers: {
-    businessName: 'Apex Roofing Co.',
-    niche: 'roofing company',
-    location: 'Austin, Texas',
-    services: 'roof inspections, storm damage repair, roof replacement, and emergency tarping',
-  },
-  hvac: {
-    businessName: 'Comfort First HVAC',
-    niche: 'HVAC company',
-    location: 'Austin, Texas',
-    services: 'AC repair and replacement, heating service, tune-ups, and emergency no-cooling calls',
-  },
-  plumbers: {
-    businessName: 'Precision Plumbing',
-    niche: 'plumbing company',
-    location: 'Austin, Texas',
-    services: 'emergency leak repair, drain cleaning, water heaters, and fixture repairs',
-  },
-  dental: {
-    businessName: 'Bright Smile Dental',
-    niche: 'dental practice',
-    location: 'Austin, Texas',
-    services: 'new patient exams, cleanings, emergency dental visits, and cosmetic dentistry consultations',
-  },
-  'med-spa': {
-    businessName: 'Luma Med Spa',
-    niche: 'medical spa',
-    location: 'Austin, Texas',
-    services: 'Botox and fillers, laser treatments, facials, body contouring, and skincare consultations',
   },
 };
 
