@@ -1,33 +1,16 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import SiriOrb from "@/components/ui/siri-orb";
 
-type DemoIndustryId =
-  | "law-firm"
-  | "roofers"
-  | "hvac"
-  | "plumbers"
-  | "dental"
-  | "med-spa";
+// ponytail: single-industry demo now that Boltcall targets law firms only.
+// Was a 6-industry picker (roofers/hvac/plumbers/dental/med-spa); dropped the
+// selector UI since a picker with one option is dead weight. Add back an
+// industry list + pill/select UI if a second vertical demo is ever needed.
+const DEMO_INDUSTRY = "law-firm";
 
 type RequestState = "idle" | "loading" | "success" | "error";
-
-type DemoIndustry = {
-  id: DemoIndustryId;
-  label: string;
-};
-
-const DEMO_INDUSTRIES: DemoIndustry[] = [
-  { id: "law-firm", label: "Law Firm" },
-  { id: "roofers", label: "Roofers" },
-  { id: "hvac", label: "HVAC" },
-  { id: "plumbers", label: "Plumbers" },
-  { id: "dental", label: "Dental" },
-  { id: "med-spa", label: "Med Spa" },
-];
 
 function getRequestErrorMessage(status: number | undefined) {
   if (status === 400) {
@@ -59,16 +42,10 @@ function DemoField({
 }
 
 const BentoCard = () => {
-  const [industry, setIndustry] = useState<DemoIndustryId>("law-firm");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [requestState, setRequestState] = useState<RequestState>("idle");
   const [message, setMessage] = useState("");
-
-  const activeIndustry = useMemo(
-    () => DEMO_INDUSTRIES.find((item) => item.id === industry) ?? DEMO_INDUSTRIES[0],
-    [industry],
-  );
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,7 +56,7 @@ const BentoCard = () => {
       const response = await fetch("/.netlify/functions/homepage-demo-call", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ industry, name, phone }),
+        body: JSON.stringify({ industry: DEMO_INDUSTRY, name, phone }),
       });
 
       if (!response.ok) {
@@ -89,7 +66,7 @@ const BentoCard = () => {
       const payload = await response.json().catch(() => ({}));
 
       setRequestState("success");
-      setMessage(`Calling ${payload.phone || phone} now. ${activeIndustry.label} demo selected.`);
+      setMessage(`Calling ${payload.phone || phone} now. Law firm intake demo selected.`);
     } catch (error) {
       setRequestState("error");
       setMessage(
@@ -116,30 +93,8 @@ const BentoCard = () => {
               />
 
               <p className="mt-4 text-[13px] leading-5 text-[#51607b] sm:mt-5 sm:text-sm sm:leading-6">
-                Pick an industry and Boltcall will route the demo to the right voice flow.
+                Hear how Boltcall answers a new-matter call for a law firm, live.
               </p>
-
-              <div className="mt-4 flex flex-wrap justify-center gap-1.5 sm:mt-5 sm:gap-2">
-                {DEMO_INDUSTRIES.map((item) => {
-                  const isActive = item.id === industry;
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setIndustry(item.id)}
-                      className={cn(
-                        "inline-flex h-8 items-center justify-center rounded-full px-2.5 text-[11px] font-semibold tracking-[-0.02em] transition-colors sm:h-9 sm:px-3 sm:text-[12px]",
-                        isActive
-                          ? "bg-[#4369eb] text-white shadow-[0_8px_18px_rgba(67,105,235,0.2)]"
-                          : "bg-white text-[#13233f] hover:bg-[#eef1f7]",
-                      )}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           </div>
 
@@ -154,22 +109,6 @@ const BentoCard = () => {
             </div>
 
             <form className="mt-8 grid gap-5 sm:grid-cols-2" onSubmit={handleSubmit}>
-              <DemoField label="Industry">
-                <select
-                  value={industry}
-                  onChange={(event) => setIndustry(event.target.value as DemoIndustryId)}
-                  className="w-full bg-transparent text-[17px] font-medium tracking-[-0.04em] text-[#13233f] outline-none"
-                >
-                  {DEMO_INDUSTRIES.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </DemoField>
-
-              <div className="hidden sm:block" />
-
               <DemoField label="Name">
                 <Input
                   type="text"

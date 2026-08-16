@@ -111,7 +111,6 @@ describe('homepage-demo-call', () => {
     process.env.RETELL_DEMO_FROM_NUMBER = '+15550001111';
     process.env.RETELL_DEMO_AGENT_MAP = JSON.stringify({
       'law-firm': 'agent-law',
-      roofers: 'agent-roof',
     });
     process.env.RETELL_DEMO_AGENT_ID = 'agent-default';
   });
@@ -145,7 +144,7 @@ describe('homepage-demo-call', () => {
 
   it('blocks the fourth request for the same phone number inside the rate-limit window', async () => {
     const body = {
-      industry: 'roofers',
+      industry: 'law-firm',
       name: 'Noam Yakoby',
       phone: '+15551234567',
     };
@@ -191,28 +190,16 @@ describe('homepage-demo-call', () => {
     }));
   });
 
-  it.each([
-    ['roofers', 'Apex Roofing Co.', 'roofing company'],
-    ['hvac', 'Comfort First HVAC', 'HVAC company'],
-    ['plumbers', 'Precision Plumbing', 'plumbing company'],
-    ['dental', 'Bright Smile Dental', 'dental practice'],
-    ['med-spa', 'Luma Med Spa', 'medical spa'],
-  ])('uses the %s receptionist profile', async (industry, businessName, niche) => {
+  it('rejects an industry outside the law-firm-only demo', async () => {
     const response = await handler(
       makeEvent({
-        industry,
+        industry: 'roofers',
         name: 'Noam Yakoby',
         phone: '+15551234567',
       }),
       {} as any,
     );
 
-    expect(response.statusCode).toBe(200);
-    expect(retellCreatePhoneCall).toHaveBeenCalledWith(expect.objectContaining({
-      retell_llm_dynamic_variables: expect.objectContaining({
-        business_name: businessName,
-        niche,
-      }),
-    }));
+    expect(response.statusCode).toBe(400);
   });
 });
