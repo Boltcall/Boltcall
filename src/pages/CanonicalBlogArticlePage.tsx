@@ -15,7 +15,7 @@ import { updateMetaDescription } from '../lib/utils';
 import { createArticleSchema, createBreadcrumbSchema, createFAQSchema, injectSchemas } from '../lib/schema';
 import { getAbsoluteBlogPreviewImage, updateBlogPreviewMeta } from '../lib/blogPreviewImages';
 import seoAutopilotOverrides from '../content/seo-autopilot-overrides.json';
-import { applySeoAutopilotOverride, type SeoAutopilotOverride } from '../lib/seoAutopilotOverride';
+import { answerBoxFromOverride, applySeoAutopilotOverride, type SeoAutopilotOverride } from '../lib/seoAutopilotOverride';
 
 type BlogIntent = 'how-to' | 'comparison' | 'buyer' | 'industry' | 'cost' | 'stats' | 'faq' | 'explainer';
 
@@ -851,6 +851,10 @@ export default function CanonicalBlogArticlePage() {
   const { pathname } = useLocation();
   const headings = useTableOfContents();
   const article = useMemo(() => buildArticle(pathname), [pathname]);
+  const answerBox = useMemo(
+    () => answerBoxFromOverride((seoAutopilotOverrides as Record<string, SeoAutopilotOverride>)[article.path]),
+    [article.path],
+  );
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -924,6 +928,27 @@ export default function CanonicalBlogArticlePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
         <div className="flex gap-8">
           <article className="flex-1 max-w-4xl">
+            {answerBox ? (
+              <section className="mb-10 rounded-xl border border-blue-100 bg-blue-50/60 p-6 md:p-8">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{answerBox.title}</h2>
+                <div className="space-y-4">
+                  {answerBox.paragraphs.map((paragraph) => (
+                    <p key={paragraph} className="text-lg leading-8 text-gray-800">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+                {answerBox.links.length > 0 ? (
+                  <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
+                    {answerBox.links.map((link) => (
+                      <Link key={link.href} to={link.href} className="font-semibold text-blue-600 hover:underline">
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
             <div className="mb-12">
               <p className="speakable-intro text-xl text-gray-700 leading-relaxed font-medium">
                 {article.intro}
@@ -974,7 +999,7 @@ export default function CanonicalBlogArticlePage() {
           </article>
 
           <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-32">
+            <div className="sticky top-24">
               <TableOfContents
                 headings={headings}
                 socialLinks={[
