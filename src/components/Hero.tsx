@@ -1,5 +1,5 @@
 ﻿import React, { useState, Suspense } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
 import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -185,26 +185,6 @@ const Hero: React.FC = () => {
               {t('hero.subtitle')}
             </motion.p>
 
-            <motion.div
-              className={`flex flex-col gap-4 mb-4 ${isRtl ? 'items-stretch sm:flex-row-reverse sm:justify-end sm:items-center' : 'justify-center items-center sm:flex-row'}`}
-              animate={{ opacity: 1, y: 0 }}
-              initial={{ opacity: 0, y: 24 }}
-              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.40 }}
-            >
-              <Link
-                to="/signup?redirect=/setup"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
-              >
-                {t('hero.startFree')}
-              </Link>
-              <button
-                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-gray-900 font-bold rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
-              >
-                {t('hero.seeHowItWorks')}
-              </button>
-            </motion.div>
-
             <motion.form
               onSubmit={handleAuditSubmit}
               className={`flex flex-col sm:flex-row gap-3 max-w-xl mt-2 ${isRtl ? 'mx-0' : 'mx-auto'} ${isRtl ? '' : 'justify-center'}`}
@@ -228,7 +208,6 @@ const Hero: React.FC = () => {
                 Get My Free Audit <ArrowRight className="w-4 h-4" />
               </button>
             </motion.form>
-            <p className="text-xs text-text-muted mt-2">Free report: how fast your site proves you respond, scored against local-service peers.</p>
 
           </div>
         </div>
