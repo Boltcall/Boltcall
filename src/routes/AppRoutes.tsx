@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { useTranslation } from 'react-i18next';
 import { useLenis } from '../hooks/useLenis';
 import ErrorBoundary from '../components/ErrorBoundary';
+import { BoltcallLoader } from '../components/ui/boltcall-loader';
 import AuthRedirectRecovery from '../components/auth/AuthRedirectRecovery';
 import { readPendingAuthRedirect } from '../lib/authRedirect';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,6 +25,7 @@ import AeoGlobalIntro from '../components/seo/AeoGlobalIntro';
 // ── Eager loads (critical path — homepage only) ─────────────────────────
 import Home from '../pages/Home';
 import GlassDemo from '../pages/GlassDemo';
+import LoadingDemo from '../pages/LoadingDemo';
 import BlogSchemaWrapper from '../components/BlogSchemaWrapper';
 import SetupLoading from '../pages/SetupLoading';
 import { SetupGradientBackground } from '../components/setup/SetupGradientBackground';
@@ -144,7 +146,7 @@ const SetupTransitionFallback: React.FC<{ message?: string }> = ({
   <div className="setup-transition-screen relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#050507] px-4 text-center">
     <SetupGradientBackground />
     <div className="relative z-10 space-y-3">
-      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-white/80" />
+      <BoltcallLoader className="mx-auto size-16 text-white/80" />
       <p className="text-sm font-medium text-white/72">{message}</p>
     </div>
   </div>
@@ -407,6 +409,7 @@ const NavigationWrapper: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/glass-demo" element={<GlassDemo />} />
+        <Route path="/loading-demo" element={<LoadingDemo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dev-login" element={<DevLogin />} />
