@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import { useAnimationFrame } from "framer-motion";
@@ -76,8 +77,17 @@ const Floating = ({
     });
   });
 
+  // ponytail: without this memo, every re-render of any ancestor (e.g. typing
+  // in a sibling input) creates a new context value, re-firing every
+  // FloatingElement's registration effect and resetting its eased position
+  // back toward {0,0} — visible as a twitch on every keystroke.
+  const contextValue = useMemo(
+    () => ({ registerElement, unregisterElement }),
+    [registerElement, unregisterElement]
+  );
+
   return (
-    <FloatingContext.Provider value={{ registerElement, unregisterElement }}>
+    <FloatingContext.Provider value={contextValue}>
       <div
         ref={containerRef}
         className={cn("absolute top-0 left-0 w-full h-full", className)}
