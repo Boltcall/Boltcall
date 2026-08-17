@@ -380,6 +380,7 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
   { label: 'Missed call recovery service guide', href: '/blog/missed-call-recovery-service', tagline: 'Recover high-intent calls before a competitor books the job.' },
   { label: 'Emergency plumber answering service guide', href: '/blog/emergency-plumber-answering-service', tagline: 'Capture urgent plumbing calls before a competitor replies.' },
+  { label: 'Home service lead response time guide', href: '/blog/home-service-lead-response-time', tagline: 'Measure response speed and turn more inquiries into booked jobs.' },
   { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
@@ -471,6 +472,9 @@ const BlogCenter: React.FC = () => {
           <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">Expert insights on AI receptionists, lead capture, and growing your local business.</p>
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Learn how a missed call text back service recovers leads</Link> before they choose another provider.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/home-service-lead-response-time" className="text-blue-600 hover:underline">Read the home service lead response time guide</Link> to turn more inquiries into booked jobs.
           </p>
 
           {/* Search Spotlight */}
