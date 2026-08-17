@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Home Service Lead Response Time: <span className="text-blue-600">Turn Fast Replies Into Booked Jobs</span>',
+    slug: '/blog/home-service-lead-response-time',
+    excerpt: 'Home service lead response time determines whether a high-intent customer calls you back or hires the competitor who replied first. Build a faster response path that turns more inquiries into booked jobs.',
+    date: 'August 17, 2026',
+    readTime: '10 min read',
+    category: 'Home Services|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Missed Call Text Back Service: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
     slug: '/blog/missed-call-text-back-service',
     excerpt: "A missed call text back service responds instantly, captures the customer's need, and moves qualified prospects toward a booked job before a competitor replies.",
