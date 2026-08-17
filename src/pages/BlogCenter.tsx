@@ -42,6 +42,15 @@ const blogPosts: BlogPost[] = [
     featured: false,
   },
   {
+    title: 'Roofing Missed Call Answering Service: <span className="text-blue-600">Capture Every Storm Lead</span>',
+    slug: '/blog/roofing-missed-call-answering-service',
+    excerpt: 'A roofing missed call answering service responds while crews are on roofs, captures the damage details, and moves qualified homeowners toward a booked inspection before a competitor replies.',
+    date: 'August 17, 2026',
+    readTime: '9 min read',
+    category: 'Roofing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Missed Call Text Back Service: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
     slug: '/blog/missed-call-text-back-service',
     excerpt: "A missed call text back service responds instantly, captures the customer's need, and moves qualified prospects toward a booked job before a competitor replies.",
