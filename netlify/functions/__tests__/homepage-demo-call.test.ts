@@ -109,22 +109,15 @@ describe('homepage-demo-call', () => {
     retellListPhoneNumbers.mockResolvedValue({ items: [] });
     process.env.RETELL_API_KEY = 'retell-key';
     process.env.RETELL_DEMO_FROM_NUMBER = '+15550001111';
-    process.env.RETELL_DEMO_AGENT_MAP = JSON.stringify({
-      'personal-injury': 'agent-personal-injury',
-      'family-law': 'agent-family-law',
-      'criminal-defense': 'agent-criminal-defense',
-      immigration: 'agent-immigration',
-      'estate-planning': 'agent-estate-planning',
-    });
     process.env.RETELL_DEMO_AGENT_ID = 'agent-default';
   });
 
   it.each([
-    ['personal-injury', 'agent-personal-injury', 'Coastal Injury Law', 'personal injury law firm'],
-    ['family-law', 'agent-family-law', 'Whitfield Family Law', 'family law firm'],
-    ['criminal-defense', 'agent-criminal-defense', 'Marsh Criminal Defense', 'criminal defense law firm'],
-    ['immigration', 'agent-immigration', 'Reyes Immigration Law', 'immigration law firm'],
-    ['estate-planning', 'agent-estate-planning', 'Sable Estate Partners', 'estate planning law firm'],
+    ['personal-injury', 'agent_dc65693011247320f6939914a9', 'Coastal Injury Law', 'personal injury law firm'],
+    ['family-law', 'agent_8454db06837a8433a037add7a1', 'Whitfield Family Law', 'family law firm'],
+    ['criminal-defense', 'agent_100e3b977b6f01d04628e87c8e', 'Marsh Criminal Defense', 'criminal defense law firm'],
+    ['immigration', 'agent_d72a93866b171096cd8f90b4bd', 'Reyes Immigration Law', 'immigration law firm'],
+    ['estate-planning', 'agent_4b34e746c40f5d7ca522af8b6e', 'Sable Estate Partners', 'estate planning law firm'],
   ])('uses the mapped agent and profile for %s', async (industry, agentId, businessName, niche) => {
     const response = await handler(
       makeEvent({
