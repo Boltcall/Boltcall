@@ -485,6 +485,9 @@ const BlogCenter: React.FC = () => {
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/home-service-lead-response-time" className="text-blue-600 hover:underline">Read the home service lead response time guide</Link> to turn more inquiries into booked jobs.
           </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">Read the roofing missed call answering service guide</Link> to capture storm leads while crews are busy.
+          </p>
 
           {/* Search Spotlight */}
           <div className="flex justify-center">
@@ -623,6 +626,9 @@ const BlogCenter: React.FC = () => {
           <p className="text-xs text-gray-400 mt-3 text-center">Sources: Harvard Business Review, Lead Response Management study, BrightLocal.</p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Explore the missed call text back service workflow</Link> for local businesses.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">See the roofing missed call answering service workflow</Link> for storm-driven demand.
           </p>
         </div>
       </section>
