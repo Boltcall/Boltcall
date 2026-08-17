@@ -41,6 +41,32 @@ describe('BentoCard', () => {
     expect(screen.getByRole('button', { name: /Get a call/i })).toBeInTheDocument();
   });
 
+  it('renders all 5 practice-area options and sends the selected one', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ phone: '+15551234567' }),
+    }));
+
+    render(<BentoCard />);
+
+    const labels = ['Personal Injury', 'Family Law', 'Criminal Defense', 'Immigration', 'Estate Planning'];
+    for (const label of labels) {
+      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    }
+
+    fireEvent.click(screen.getByRole('button', { name: 'Family Law' }));
+    fireEvent.change(screen.getByLabelText('Your name'), { target: { value: 'Noam Yakoby' } });
+    fireEvent.change(screen.getByLabelText('+15551234567'), { target: { value: '+15551234567' } });
+    fireEvent.submit(screen.getByRole('button', { name: /Get a call/i }).closest('form')!);
+
+    await screen.findByText(/Family Law demo selected\./i);
+
+    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+    const [, options] = fetchMock.mock.calls[0];
+    expect(JSON.parse(options.body).industry).toBe('family-law');
+  });
+
   it('shows a polished fallback instead of a backend configuration error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: false,

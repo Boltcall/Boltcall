@@ -110,15 +110,25 @@ describe('homepage-demo-call', () => {
     process.env.RETELL_API_KEY = 'retell-key';
     process.env.RETELL_DEMO_FROM_NUMBER = '+15550001111';
     process.env.RETELL_DEMO_AGENT_MAP = JSON.stringify({
-      'law-firm': 'agent-law',
+      'personal-injury': 'agent-personal-injury',
+      'family-law': 'agent-family-law',
+      'criminal-defense': 'agent-criminal-defense',
+      immigration: 'agent-immigration',
+      'estate-planning': 'agent-estate-planning',
     });
     process.env.RETELL_DEMO_AGENT_ID = 'agent-default';
   });
 
-  it('uses the mapped agent for the selected industry', async () => {
+  it.each([
+    ['personal-injury', 'agent-personal-injury', 'Coastal Injury Law', 'personal injury law firm'],
+    ['family-law', 'agent-family-law', 'Whitfield Family Law', 'family law firm'],
+    ['criminal-defense', 'agent-criminal-defense', 'Marsh Criminal Defense', 'criminal defense law firm'],
+    ['immigration', 'agent-immigration', 'Reyes Immigration Law', 'immigration law firm'],
+    ['estate-planning', 'agent-estate-planning', 'Sable Estate Partners', 'estate planning law firm'],
+  ])('uses the mapped agent and profile for %s', async (industry, agentId, businessName, niche) => {
     const response = await handler(
       makeEvent({
-        industry: 'law-firm',
+        industry,
         name: 'Noam Yakoby',
         phone: '+15551234567',
       }),
@@ -129,22 +139,22 @@ describe('homepage-demo-call', () => {
     expect(retellCreatePhoneCall).toHaveBeenCalledWith(expect.objectContaining({
       from_number: '+15550001111',
       to_number: '+15551234567',
-      agent_id: 'agent-law',
+      agent_id: agentId,
       retell_llm_dynamic_variables: expect.objectContaining({
-        business_name: 'Harrison & Cole Law',
-        niche: 'law firm',
+        business_name: businessName,
+        niche,
         location: 'Austin, Texas',
       }),
       metadata: expect.objectContaining({
         source: 'homepage_demo',
-        industry: 'law-firm',
+        industry,
       }),
     }));
   });
 
   it('blocks the fourth request for the same phone number inside the rate-limit window', async () => {
     const body = {
-      industry: 'law-firm',
+      industry: 'personal-injury',
       name: 'Noam Yakoby',
       phone: '+15551234567',
     };
@@ -177,7 +187,7 @@ describe('homepage-demo-call', () => {
 
     const response = await handler(
       makeEvent({
-        industry: 'law-firm',
+        industry: 'personal-injury',
         name: 'Noam Yakoby',
         phone: '+15551234567',
       }),
@@ -190,7 +200,7 @@ describe('homepage-demo-call', () => {
     }));
   });
 
-  it('rejects an industry outside the law-firm-only demo', async () => {
+  it('rejects an industry outside the 5 law-firm niches', async () => {
     const response = await handler(
       makeEvent({
         industry: 'roofers',
