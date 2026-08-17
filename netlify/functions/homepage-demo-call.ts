@@ -60,6 +60,19 @@ const DEMO_PROFILES: Record<string, {
   },
 };
 
+// ponytail: these are fixed Retell resource IDs tied to the 5 prompts each
+// agent was provisioned with (scripts/provision-law-firm-demo-agents.mjs),
+// not secrets — hardcoding them avoids env-var bloat. Was RETELL_DEMO_AGENT_MAP
+// (JSON env var); that pushed total prod env vars over AWS Lambda's 4KB
+// function-config limit and silently broke this function's deploy.
+const DEMO_AGENT_IDS: Record<string, string> = {
+  'personal-injury': 'agent_dc65693011247320f6939914a9',
+  'family-law': 'agent_8454db06837a8433a037add7a1',
+  'criminal-defense': 'agent_100e3b977b6f01d04628e87c8e',
+  immigration: 'agent_d72a93866b171096cd8f90b4bd',
+  'estate-planning': 'agent_4b34e746c40f5d7ca522af8b6e',
+};
+
 function clean(value: unknown, maxLength: number): string {
   return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
 }
@@ -73,23 +86,6 @@ function normalizePhone(value: unknown): string {
   if (normalized.startsWith('00')) return `+${normalized.slice(2)}`;
   if (/^\d+$/.test(normalized)) return `+${normalized}`;
   return normalized;
-}
-
-function parseAgentMap(value: string | undefined): Record<string, string> {
-  if (!value) return {};
-
-  try {
-    const parsed = JSON.parse(value) as Record<string, unknown>;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-
-    return Object.fromEntries(
-      Object.entries(parsed).filter(
-        ([key, agentId]) => typeof key === 'string' && typeof agentId === 'string' && key && agentId,
-      ),
-    ) as Record<string, string>;
-  } catch {
-    return {};
-  }
 }
 
 async function resolveDemoFromNumber(client: Retell): Promise<string> {
@@ -124,7 +120,6 @@ const handler: Handler = async (event) => {
     process.env.RETELL_DEMO_FROM_NUMBER || process.env.RETELL_PHONE_NUMBER,
     30,
   );
-  const agentMap = parseAgentMap(process.env.RETELL_DEMO_AGENT_MAP);
   const fallbackAgentId = clean(process.env.RETELL_DEMO_AGENT_ID, 160);
 
   if (!retellApiKey) {
@@ -152,7 +147,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Enter a valid phone number in international format' }) };
   }
 
-  const agentId = clean(agentMap[industry], 160) || fallbackAgentId;
+  const agentId = clean(DEMO_AGENT_IDS[industry], 160) || fallbackAgentId;
   if (!agentId) {
     return {
       statusCode: 503,
