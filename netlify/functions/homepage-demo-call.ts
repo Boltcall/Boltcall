@@ -7,9 +7,16 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 
 const PHONE_RE = /^\+[1-9]\d{7,14}$/;
 const NAME_RE = /^[\p{L}\p{N} .,'-]{2,120}$/u;
-// ponytail: was 6 industries; homepage demo is law-firm only now. Kept as a
-// Set (not a bare string compare) so re-adding a vertical later is a 1-line diff.
-const INDUSTRIES = new Set(['law-firm']);
+// 5 law-firm practice-area niches, each wired to its own dedicated Retell
+// agent (see scripts/provision-law-firm-demo-agents.mjs) instead of one
+// generic law-firm agent with swapped variables.
+const INDUSTRIES = new Set([
+  'personal-injury',
+  'family-law',
+  'criminal-defense',
+  'immigration',
+  'estate-planning',
+]);
 const DEMO_IP_WINDOW_SECONDS = 60 * 60;
 const DEMO_IP_MAX_ATTEMPTS = 5;
 const DEMO_PHONE_WINDOW_SECONDS = 60 * 60;
@@ -21,11 +28,35 @@ const DEMO_PROFILES: Record<string, {
   location: string;
   services: string;
 }> = {
-  'law-firm': {
-    businessName: 'Harrison & Cole Law',
-    niche: 'law firm',
+  'personal-injury': {
+    businessName: 'Coastal Injury Law',
+    niche: 'personal injury law firm',
     location: 'Austin, Texas',
-    services: 'personal injury consultations, family law, estate planning, and case evaluations',
+    services: 'car accidents, slip and fall, workplace injuries, and wrongful death cases',
+  },
+  'family-law': {
+    businessName: 'Whitfield Family Law',
+    niche: 'family law firm',
+    location: 'Austin, Texas',
+    services: 'divorce, child custody, support modifications, and domestic partnerships',
+  },
+  'criminal-defense': {
+    businessName: 'Marsh Criminal Defense',
+    niche: 'criminal defense law firm',
+    location: 'Austin, Texas',
+    services: 'DUI, misdemeanors, felony charges, and bail hearings',
+  },
+  immigration: {
+    businessName: 'Reyes Immigration Law',
+    niche: 'immigration law firm',
+    location: 'Austin, Texas',
+    services: 'visa applications, deportation defense, and USCIS petitions',
+  },
+  'estate-planning': {
+    businessName: 'Sable Estate Partners',
+    niche: 'estate planning law firm',
+    location: 'Austin, Texas',
+    services: 'wills, trusts, powers of attorney, and probate',
   },
 };
 
