@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Solar Lead Response Time: <span className="text-blue-600">Turn Solar Inquiries Into Booked Consultations</span>',
+    slug: '/blog/solar-lead-response-time',
+    excerpt: 'Solar lead response time determines whether a homeowner schedules with your installation team or the competitor who replies first. Build a faster path from inquiry to qualified, booked consultation.',
+    date: 'August 18, 2026',
+    readTime: '10 min read',
+    category: 'Solar|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Missed Call Automation for Contractors: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
     slug: '/blog/missed-call-automation-contractors',
     excerpt: 'Missed call automation for contractors responds while crews are working, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.',
@@ -497,6 +506,9 @@ const BlogCenter: React.FC = () => {
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">Read the roofing missed call answering service guide</Link> to capture storm leads while crews are busy.
           </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Read the solar lead response time guide</Link> to turn homeowner inquiries into booked consultations.
+          </p>
 
           {/* Search Spotlight */}
           <div className="flex justify-center">
@@ -638,6 +650,7 @@ const BlogCenter: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">See the roofing missed call answering service workflow</Link> for storm-driven demand.
+            <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Use the solar lead response time guide</Link> when improving consultation follow-up.
           </p>
         </div>
       </section>
