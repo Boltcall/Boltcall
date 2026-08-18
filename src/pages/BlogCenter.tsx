@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Missed Call Automation for Contractors: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
+    slug: '/blog/missed-call-automation-contractors',
+    excerpt: 'Missed call automation for contractors responds while crews are working, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.',
+    date: 'August 18, 2026',
+    readTime: '10 min read',
+    category: 'Contractors|Speed to Lead|How-to',
+    featured: false,
+  },
+  {
     title: 'Home Service Lead Response Time: <span className="text-blue-600">Turn Fast Replies Into Booked Jobs</span>',
     slug: '/blog/home-service-lead-response-time',
     excerpt: 'Home service lead response time determines whether a high-intent customer calls you back or hires the competitor who replied first. Build a faster response path that turns more inquiries into booked jobs.',
