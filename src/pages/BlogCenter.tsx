@@ -509,6 +509,9 @@ const BlogCenter: React.FC = () => {
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Read the solar lead response time guide</Link> to turn homeowner inquiries into booked consultations.
           </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/missed-call-automation-contractors" className="text-blue-600 hover:underline">Read the missed call automation guide for contractors</Link> to recover leads while crews are working.
+          </p>
 
           {/* Search Spotlight */}
           <div className="flex justify-center">
@@ -651,6 +654,7 @@ const BlogCenter: React.FC = () => {
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">See the roofing missed call answering service workflow</Link> for storm-driven demand.
             <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Use the solar lead response time guide</Link> when improving consultation follow-up.
+            <Link to="/blog/missed-call-automation-contractors" className="text-blue-600 hover:underline">Review missed call automation for contractors</Link> before rebuilding a callback queue.
           </p>
         </div>
       </section>
