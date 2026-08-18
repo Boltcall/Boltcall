@@ -27,6 +27,10 @@
       {
         "label": "Read the speed-to-lead guide",
         "href": "/speed-to-lead/"
+      },
+      {
+        "label": "Read the missed call automation for contractors guide",
+        "href": "/blog/missed-call-automation-contractors"
       }
     ],
     "updated_at": "2026-08-17",
@@ -55,6 +59,10 @@
       {
         "label": "Read the home service lead response time guide",
         "href": "/blog/home-service-lead-response-time"
+      },
+      {
+        "label": "Read the missed call automation for contractors guide",
+        "href": "/blog/missed-call-automation-contractors"
       }
     ],
     "updated_at": "2026-08-17",
