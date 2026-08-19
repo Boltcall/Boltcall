@@ -426,6 +426,7 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Missed call recovery service guide', href: '/blog/missed-call-recovery-service', tagline: 'Recover high-intent calls before a competitor books the job.' },
   { label: 'Emergency plumber answering service guide', href: '/blog/emergency-plumber-answering-service', tagline: 'Capture urgent plumbing calls before a competitor replies.' },
   { label: 'Home service lead response time guide', href: '/blog/home-service-lead-response-time', tagline: 'Measure response speed and turn more inquiries into booked jobs.' },
+  { label: 'Electrician lead response time guide', href: '/blog/electrician-lead-response-time', tagline: 'Capture urgent electrical inquiries before a competitor replies.' },
   { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
@@ -529,6 +530,9 @@ const BlogCenter: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/missed-call-automation-contractors" className="text-blue-600 hover:underline">Read the missed call automation guide for contractors</Link> to recover leads while crews are working.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/electrician-lead-response-time" className="text-blue-600 hover:underline">Read the electrician lead response time guide</Link> to turn urgent electrical inquiries into booked jobs.
           </p>
 
           {/* Search Spotlight */}
