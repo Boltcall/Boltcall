@@ -60,6 +60,15 @@ const blogPosts: BlogPost[] = [
     featured: false,
   },
   {
+    title: 'HVAC Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
+    slug: '/blog/hvac-lead-response-time',
+    excerpt: 'HVAC lead response time decides whether a homeowner waits for your team or calls the contractor who answers first. Build a faster path from urgent inquiry to booked service visit.',
+    date: 'August 19, 2026',
+    readTime: '10 min read',
+    category: 'HVAC|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Roofing Missed Call Answering Service: <span className="text-blue-600">Capture Every Storm Lead</span>',
     slug: '/blog/roofing-missed-call-answering-service',
     excerpt: 'A roofing missed call answering service responds while crews are on roofs, captures the damage details, and moves qualified homeowners toward a booked inspection before a competitor replies.',
