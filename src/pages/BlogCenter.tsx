@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Electrician Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
+    slug: '/blog/electrician-lead-response-time',
+    excerpt: 'Electrician lead response time determines whether a homeowner hires your crew or the competitor who replies first. Build a faster path from electrical inquiry to qualified, booked work.',
+    date: 'August 19, 2026',
+    readTime: '10 min read',
+    category: 'Electrical|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Solar Lead Response Time: <span className="text-blue-600">Turn Solar Inquiries Into Booked Consultations</span>',
     slug: '/blog/solar-lead-response-time',
     excerpt: 'Solar lead response time determines whether a homeowner schedules with your installation team or the competitor who replies first. Build a faster path from inquiry to qualified, booked consultation.',

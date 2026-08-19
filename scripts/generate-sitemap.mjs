@@ -90,6 +90,7 @@ const ROUTES = [
   // Blog Posts
   { path: "/blog/missed-call-text-back-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/emergency-plumber-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/electrician-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/missed-call-recovery-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/missed-call-automation-contractors", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/home-service-lead-response-time", priority: "0.8", changefreq: "weekly" },
