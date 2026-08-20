@@ -447,6 +447,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Electrician lead response time guide', href: '/blog/electrician-lead-response-time', tagline: 'Capture urgent electrical inquiries before a competitor replies.' },
   { label: 'HVAC lead response time guide', href: '/blog/hvac-lead-response-time', tagline: 'Capture urgent HVAC inquiries before a competitor replies.' },
   { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
+  { label: 'Plumbing lead response time guide', href: '/blog/plumbing-lead-response-time', tagline: 'Turn urgent plumbing inquiries into booked jobs.' },
+  { label: 'Plumbing speed-to-lead audit', href: '/blog/plumbing-lead-response-time#speed-to-lead-audit', tagline: 'Find the response delays costing your crew work.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
   { label: 'Commercial cleaning lead response time guide', href: '/blog/commercial-cleaning-lead-response-time', tagline: 'Turn property-management inquiries into booked walkthroughs.' },
