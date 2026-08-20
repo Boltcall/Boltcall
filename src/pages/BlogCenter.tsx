@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Commercial Cleaning Lead Response Time: <span className="text-blue-600">Capture More Recurring Contracts</span>',
+    slug: '/blog/commercial-cleaning-lead-response-time',
+    excerpt: 'Commercial cleaning lead response time determines whether a property manager books your team or the competitor who replies first. Respond faster, qualify the scope, and turn more inquiries into booked walkthroughs and recurring contracts.',
+    date: 'August 20, 2026',
+    readTime: '9 min read',
+    category: 'Commercial Cleaning|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Electrician Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
     slug: '/blog/electrician-lead-response-time',
     excerpt: 'Electrician lead response time determines whether a homeowner hires your crew or the competitor who replies first. Build a faster path from electrical inquiry to qualified, booked work.',
