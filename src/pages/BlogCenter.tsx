@@ -114,6 +114,15 @@ const blogPosts: BlogPost[] = [
     featured: false,
   },
   {
+    title: 'Plumbing Lead Response Time: <span className="text-blue-600">Turn More Calls Into Booked Jobs</span>',
+    slug: '/blog/plumbing-lead-response-time',
+    excerpt: 'Plumbing lead response time determines whether a homeowner books your crew or the competitor who replies first. Build a faster path from urgent inquiry to qualified, booked work.',
+    date: 'August 20, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: "Missed Call Recovery Service: <span className=\"text-blue-600\">Turn Lost Calls Into Booked Jobs</span>",
     slug: "/blog/missed-call-recovery-service",
     excerpt: "A missed call recovery service responds instantly, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.",
