@@ -440,6 +440,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
+  { label: 'Commercial cleaning lead response time guide', href: '/blog/commercial-cleaning-lead-response-time', tagline: 'Turn property-management inquiries into booked walkthroughs.' },
+  { label: 'Commercial cleaning speed-to-lead audit', href: '/blog/commercial-cleaning-lead-response-time#speed-to-lead-audit', tagline: 'Build a faster path from quote request to recurring contract.' },
 ];
 
 const BlogCenter: React.FC = () => {
