@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { updateMetaDescription } from '../lib/utils';
+import { createServiceSchema } from '../lib/schema';
 import { motion } from 'framer-motion';
 import { Search, BookOpen, AlertTriangle, Phone, HelpCircle, ArrowRight, FileText, Clock, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -133,10 +134,25 @@ const HelpCenter: React.FC = () => {
     });
     document.head.appendChild(speakableSchema);
 
+    // Service — Searchable AEO audit flags this page as missing a Service entity.
+    const serviceSchema = document.createElement('script');
+    serviceSchema.type = 'application/ld+json';
+    serviceSchema.id = 'help-service-schema';
+    serviceSchema.text = JSON.stringify(
+      createServiceSchema({
+        name: 'Boltcall Help Center: Setup Guides, FAQs & Troubleshooting',
+        description:
+          'Boltcall speed-to-lead answering + booking service for local operators. Every inbound lead answered instantly and booked automatically.',
+        url: '/help-center',
+      })
+    );
+    document.head.appendChild(serviceSchema);
+
     return () => {
       document.getElementById('help-faq-schema')?.remove();
       document.getElementById('help-howto-schema')?.remove();
       document.getElementById('help-speakable-schema')?.remove();
+      document.getElementById('help-service-schema')?.remove();
     };
   }, []);
 
