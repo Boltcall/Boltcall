@@ -725,6 +725,9 @@ const BlogCenter: React.FC = () => {
             <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Explore the missed call text back service workflow</Link> for local businesses.
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/garage-door-lead-response-time" className="text-blue-600 hover:underline">Apply the garage door lead response time playbook</Link> when improving after-hours repair intake.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">See the roofing missed call answering service workflow</Link> for storm-driven demand.
             <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Use the solar lead response time guide</Link> when improving consultation follow-up.
             <Link to="/blog/missed-call-automation-contractors" className="text-blue-600 hover:underline">Review missed call automation for contractors</Link> before rebuilding a callback queue.
