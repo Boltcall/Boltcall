@@ -582,6 +582,9 @@ const BlogCenter: React.FC = () => {
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/lead-response-time-benchmark" className="text-blue-600 hover:underline">Use the lead response time benchmark</Link> to set a reply standard before a prospect chooses another provider.
           </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/garage-door-lead-response-time" className="text-blue-600 hover:underline">Read the garage door lead response time guide</Link> to turn urgent repair inquiries into booked jobs.
+          </p>
 
           {/* Search Spotlight */}
           <div className="flex justify-center">
