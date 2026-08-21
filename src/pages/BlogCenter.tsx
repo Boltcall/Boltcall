@@ -460,6 +460,7 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Plumbing speed-to-lead audit', href: '/blog/plumbing-lead-response-time#speed-to-lead-audit', tagline: 'Find the response delays costing your crew work.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
+  { label: 'Lead response time benchmark', href: '/blog/lead-response-time-benchmark', tagline: 'Set a practical reply standard and turn more inquiries into booked jobs.' },
   { label: 'Commercial cleaning lead response time guide', href: '/blog/commercial-cleaning-lead-response-time', tagline: 'Turn property-management inquiries into booked walkthroughs.' },
   { label: 'Commercial cleaning speed-to-lead audit', href: '/blog/commercial-cleaning-lead-response-time#speed-to-lead-audit', tagline: 'Build a faster path from quote request to recurring contract.' },
 ];
@@ -568,6 +569,9 @@ const BlogCenter: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/hvac-lead-response-time" className="text-blue-600 hover:underline">Read the HVAC lead response time guide</Link> to turn urgent service calls into booked jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/lead-response-time-benchmark" className="text-blue-600 hover:underline">Use the lead response time benchmark</Link> to set a reply standard before a prospect chooses another provider.
           </p>
 
           {/* Search Spotlight */}
