@@ -122,6 +122,7 @@ const ROUTES = [
   { path: "/blog/missed-calls-statistics-local-business-2026",       priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-agent-for-small-business-24-7-call-answering",   priority: "0.8", changefreq: "weekly" },
   { path: "/blog/never-miss-a-call-after-business-hours",            priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/lead-response-time-benchmark",                      priority: "0.8", changefreq: "weekly" },
 
 
   // Blog FAQ / Industry AEO How-To

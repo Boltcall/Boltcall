@@ -794,6 +794,7 @@ const NavigationWrapper: React.FC = () => {
             <Route path="/blog/missed-calls-statistics-local-business-2026" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/ai-agent-for-small-business-24-7-call-answering" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/missed-call-recovery-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/lead-response-time-benchmark" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/:slug" element={<AeoMarkdownArticlePage />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />

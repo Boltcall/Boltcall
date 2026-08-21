@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Lead Response Time Benchmark: <span className="text-blue-600">How Fast Should Your Business Reply?</span>',
+    slug: '/blog/lead-response-time-benchmark',
+    excerpt: 'A lead response time benchmark gives local service businesses a practical standard for replying before a prospect calls the next provider. Build a faster path from first inquiry to qualified, booked work.',
+    date: 'August 21, 2026',
+    readTime: '10 min read',
+    category: 'Speed to Lead|How-to',
+    featured: false,
+  },
+  {
     title: 'Commercial Cleaning Lead Response Time: <span className="text-blue-600">Capture More Recurring Contracts</span>',
     slug: '/blog/commercial-cleaning-lead-response-time',
     excerpt: 'Commercial cleaning lead response time determines whether a property manager books your team or the competitor who replies first. Respond faster, qualify the scope, and turn more inquiries into booked walkthroughs and recurring contracts.',
