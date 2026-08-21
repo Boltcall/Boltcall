@@ -242,8 +242,9 @@ function MarkdownBody({ body, initialSectionNumber = 0 }: { body: string; initia
       const text = normalizeHeading(trimmed.slice(3));
       sectionNumber += 1;
       nodes.push(
-        <h2 key={nodes.length} id={slugify(text)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14">
-          {text}
+        <h2 key={nodes.length} id={slugify(text)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14 flex items-baseline gap-4">
+          <span aria-hidden="true" className="toc-index shrink-0 text-3xl md:text-4xl font-bold text-blue-500">{String(sectionNumber).padStart(2, '0')}</span>
+          <span>{text}</span>
         </h2>,
       );
     } else if (trimmed.startsWith('### ')) {
@@ -370,8 +371,9 @@ export default function AeoMarkdownArticlePage() {
             )}
 
             <section className="mb-12">
-              <h2 id="key-takeaways" className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Key Takeaways
+              <h2 id="key-takeaways" className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-baseline gap-4">
+                <span aria-hidden="true" className="toc-index shrink-0 text-3xl md:text-4xl font-bold text-blue-500">01</span>
+                <span>Key Takeaways</span>
               </h2>
               <ul className="list-disc pl-6 space-y-3 text-lg leading-8 text-gray-700">
                 {prepared.keyTakeaways.map((takeaway) => (
