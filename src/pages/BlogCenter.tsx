@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Garage Door Lead Response Time: <span className="text-blue-600">Capture More Emergency Calls</span>',
+    slug: '/blog/garage-door-lead-response-time',
+    excerpt: 'Garage door lead response time determines whether a homeowner books your team or the competitor who replies first. Respond faster, qualify the repair, and turn urgent inquiries into booked jobs.',
+    date: 'August 21, 2026',
+    readTime: '10 min read',
+    category: 'Garage Doors|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Lead Response Time Benchmark: <span className="text-blue-600">How Fast Should Your Business Reply?</span>',
     slug: '/blog/lead-response-time-benchmark',
     excerpt: 'A lead response time benchmark gives local service businesses a practical standard for replying before a prospect calls the next provider. Build a faster path from first inquiry to qualified, booked work.',

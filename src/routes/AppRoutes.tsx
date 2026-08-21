@@ -743,6 +743,7 @@ const NavigationWrapper: React.FC = () => {
         <Route element={<BlogSchemaWrapper />}>
         <Route path="/blog" element={<BlogCenter />} />
         <Route path="/newsletter" element={<Newsletter />} />
+        <Route path="/blog/garage-door-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/the-new-reality-for-local-businesses" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/why-speed-matters" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/complete-guide-to-seo" element={<CanonicalBlogArticlePage />} />
