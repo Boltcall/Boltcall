@@ -763,12 +763,13 @@ function slugify(text: string) {
     .replace(/^-+|-+$/g, '');
 }
 
-// Section headings are intentionally unnumbered — the tiny mono index read as
-// a visual artifact next to text-4xl titles; the TOC carries the structure.
-function NumberedHeading({ children }: { index: number; children: string }) {
+function NumberedHeading({ index, children }: { index: number; children: string }) {
   return (
-    <h2 id={slugify(children)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14">
-      {children}
+    <h2 id={slugify(children)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14 flex items-baseline gap-4">
+      <span aria-hidden="true" className="toc-index shrink-0 text-3xl md:text-4xl font-bold text-blue-500">
+        {String(index).padStart(2, '0')}
+      </span>
+      <span>{children}</span>
     </h2>
   );
 }
