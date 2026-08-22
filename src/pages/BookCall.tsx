@@ -100,7 +100,7 @@ const PREP = [
 const BookCall: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Book a Strategy Call | Boltcall AI Receptionist';
+    document.title = 'Book a Strategy Call | Boltcall Speed-to-Lead';
     updateMetaDescription(
       'Book a 15-minute strategy call with Boltcall. We map your lead flow, calculate missed revenue, and hand you a 30-day plan to automate replies, bookings, and follow-ups.'
     );

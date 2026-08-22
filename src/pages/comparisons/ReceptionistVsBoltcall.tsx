@@ -99,8 +99,8 @@ const ReceptionistVsBoltcall: React.FC = () => {
     productSchema.text = JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Product',
-      name: 'Boltcall AI Receptionist',
-      description: 'AI receptionist replacement for local service businesses. Answers calls 24/7, costs 90 percent less than a full-time human receptionist.',
+      name: 'Boltcall Speed-to-Lead',
+      description: 'Speed-to-lead answering service for local service businesses — a human-receptionist replacement that answers calls 24/7, costs 90 percent less than a full-time human receptionist.',
       brand: { '@type': 'Brand', name: 'Boltcall' },
       offers: {
         '@type': 'AggregateOffer',

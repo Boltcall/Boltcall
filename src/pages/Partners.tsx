@@ -132,7 +132,7 @@ const Partners: React.FC = () => {
     window.scrollTo(0, 0);
     document.title = 'Partner Program — Earn Recurring Revenue | Boltcall';
     updateMetaDescription(
-      'Join the Boltcall Partner Program. Refer clients, earn recurring commissions, and grow your agency revenue with AI receptionist solutions.',
+      'Join the Boltcall Partner Program. Refer clients, earn recurring commissions, and grow your agency revenue with speed-to-lead solutions.',
     );
 
     let link = document.querySelector("link[rel='canonical']") as HTMLLinkElement;

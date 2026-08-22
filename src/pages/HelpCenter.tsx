@@ -18,7 +18,7 @@ interface HelpCategory {
 // AEO best practice: short, declarative, self-contained answers AI engines
 // can quote directly. Each "quick answer" is a one-sentence factual claim.
 const QUICK_ANSWERS = [
-  { q: 'What is Boltcall?', a: 'Boltcall is an AI receptionist platform for local service businesses that answers every inbound call 24/7, books appointments, and texts back missed callers within seconds.' },
+  { q: 'What is Boltcall?', a: 'Boltcall is a speed-to-lead platform for local service businesses that answers every inbound call 24/7, books appointments, and texts back missed callers within seconds — the first business to respond usually wins the job.' },
   { q: 'How fast does setup take?', a: 'Most businesses go live within 30 minutes: connect a phone number, paste in your services and FAQs, choose a voice tone, and the AI starts answering calls.' },
   { q: 'Does Boltcall replace a human receptionist?', a: 'Boltcall replaces a human receptionist for phone-driven workflows (answering, booking, qualifying), but transfers complex or in-person situations to your team automatically.' },
   { q: 'What does Boltcall cost?', a: 'Boltcall plans start at $497 per month for Starter and $649 per month for Pro. Both include unlimited AI call answering with no per-minute fees.' },
@@ -299,7 +299,7 @@ const HelpCenter: React.FC = () => {
         {/* Lead answer — AEO best practice: a self-contained 40-60 word
             definition that AI engines and AI Overviews can quote verbatim. */}
         <p className="speakable-answer text-gray-700 text-center max-w-4xl mx-auto mb-10 text-lg leading-relaxed">
-          The Boltcall Help Center is the support hub for the Boltcall AI receptionist platform. It answers the most common setup, configuration, and troubleshooting questions for local service businesses: how to launch your first AI agent, forward your phone number, integrate Cal.com or Google Calendar, fix call-quality issues, and manage billing. Most setups complete in 30 minutes.
+          The Boltcall Help Center is the support hub for Boltcall's speed-to-lead platform. It answers the most common setup, configuration, and troubleshooting questions for local service businesses: how to launch your first AI agent, forward your phone number, integrate Cal.com or Google Calendar, fix call-quality issues, and manage billing. Most setups complete in 30 minutes.
         </p>
 
         {/* Quick Answers — short citable Q&A pairs, ideal for AI Overview
