@@ -1,7 +1,7 @@
 ﻿import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
-import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight, Mail, Clock, Zap, CheckCircle, Rocket, Target } from 'lucide-react';
+import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight, Mail, Clock, Zap, CheckCircle, Rocket, Target, TrendingUp, Headphones } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
 
@@ -215,6 +215,36 @@ const Hero: React.FC = () => {
                 <div className="-rotate-[8deg] hover:scale-105 transition-transform duration-200">
                   <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
                     <Target className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Bottom-center-left — TrendingUp (growth) */}
+            <FloatingElement depth={2} className="top-[88%] left-[35%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 2.35 }}
+              >
+                <div className="rotate-[10deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
+                    <TrendingUp className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Bottom-center-right — Headphones (support) */}
+            <FloatingElement depth={2.5} className="top-[85%] left-[65%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 2.50 }}
+              >
+                <div className="-rotate-[7deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
+                    <Headphones className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
                   </div>
                 </div>
               </motion.div>
