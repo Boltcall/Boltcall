@@ -598,6 +598,9 @@ const BlogCenter: React.FC = () => {
             <Link to="/blog/hvac-lead-response-time" className="text-blue-600 hover:underline">Read the HVAC lead response time guide</Link> to turn urgent service calls into booked jobs.
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/hvac-answering-service" className="text-blue-600 hover:underline">Read the HVAC answering service guide</Link> to capture high-intent calls while your team is busy.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/lead-response-time-benchmark" className="text-blue-600 hover:underline">Use the lead response time benchmark</Link> to set a reply standard before a prospect chooses another provider.
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
@@ -747,6 +750,9 @@ const BlogCenter: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/garage-door-lead-response-time" className="text-blue-600 hover:underline">Apply the garage door lead response time playbook</Link> when improving after-hours repair intake.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/hvac-answering-service" className="text-blue-600 hover:underline">Use the HVAC answering service workflow</Link> to turn missed calls into qualified service opportunities.
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/pest-control-lead-response-time" className="text-blue-600 hover:underline">Apply the pest control lead response time playbook</Link> when improving after-hours treatment intake.
