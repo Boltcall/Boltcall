@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Pest Control Lead Response Time: <span className="text-blue-600">Turn New Inquiries Into Scheduled Treatments</span>',
+    slug: '/blog/pest-control-lead-response-time',
+    excerpt: 'Pest control lead response time determines whether a homeowner books your team or the competitor who replies first. Respond quickly, qualify the issue, and turn urgent pest inquiries into scheduled treatments.',
+    date: 'August 22, 2026',
+    readTime: '10 min read',
+    category: 'Pest Control|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Garage Door Lead Response Time: <span className="text-blue-600">Capture More Emergency Calls</span>',
     slug: '/blog/garage-door-lead-response-time',
     excerpt: 'Garage door lead response time determines whether a homeowner books your team or the competitor who replies first. Respond faster, qualify the repair, and turn urgent inquiries into booked jobs.',
@@ -585,6 +594,9 @@ const BlogCenter: React.FC = () => {
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/garage-door-lead-response-time" className="text-blue-600 hover:underline">Read the garage door lead response time guide</Link> to turn urgent repair inquiries into booked jobs.
           </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/pest-control-lead-response-time" className="text-blue-600 hover:underline">Read the pest control lead response time guide</Link> to turn urgent treatment inquiries into scheduled jobs.
+          </p>
 
           {/* Search Spotlight */}
           <div className="flex justify-center">
@@ -726,6 +738,9 @@ const BlogCenter: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/garage-door-lead-response-time" className="text-blue-600 hover:underline">Apply the garage door lead response time playbook</Link> when improving after-hours repair intake.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/pest-control-lead-response-time" className="text-blue-600 hover:underline">Apply the pest control lead response time playbook</Link> when improving after-hours treatment intake.
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">See the roofing missed call answering service workflow</Link> for storm-driven demand.
