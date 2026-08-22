@@ -106,7 +106,7 @@ const CRMInstantLeadReplyVsBoltcall: React.FC = () => {
           className="mb-16"
         >
           <p className="text-lg text-gray-700 leading-relaxed mb-6">
-            Most CRMs offer some form of automated lead response, but how do they compare to Boltcall's Instant Lead Reply? This comparison breaks down the key differences in response speed, intelligence, multi-channel capabilities, and overall effectiveness.
+            Businesses lose the job when a lead sits unanswered — the first business to respond usually wins it. Most CRMs only automate follow-up after a human gets to the lead; Boltcall answers and books it the moment it comes in. This comparison breaks down the key differences in response speed, intelligence, multi-channel capabilities, and overall effectiveness.
           </p>
         </motion.section>
 

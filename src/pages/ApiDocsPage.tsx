@@ -568,6 +568,9 @@ const ApiDocsPage: React.FC = () => {
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                 Integrate AI voice agents, calls, leads, and messaging into your apps with our simple REST API.
               </p>
+              <p className="text-base text-gray-600 mb-8 max-w-2xl mx-auto">
+                This documentation is a complete guide to integrating Boltcall's REST API — authenticate with a key, trigger AI voice agents, and manage calls, leads, and messaging directly from your own systems.
+              </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   to="/setup"
@@ -600,7 +603,7 @@ const ApiDocsPage: React.FC = () => {
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-start gap-3">
               <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-              <span>Quick Start</span>
+              <span>How to Get Started with the Boltcall API</span>
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6 mb-10">
@@ -655,7 +658,7 @@ const ApiDocsPage: React.FC = () => {
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-start gap-3">
               <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-              <span>Authentication</span>
+              <span>Understanding API Authentication Methods</span>
             </h2>
 
             <div className="space-y-6">

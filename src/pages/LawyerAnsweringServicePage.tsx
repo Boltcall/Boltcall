@@ -19,6 +19,7 @@ import FinalCTA from '../components/FinalCTA';
 import AnswerBlock from '../components/seo/AnswerBlock';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import { updateMetaDescription } from '../lib/utils';
+import { createServiceSchema } from '../lib/schema';
 
 // Pain stats — sourced from law-firm halo file (natlawreview, ClaireAI, Talkroute, Telewizard, Voxx).
 const PAIN_STATS = [
@@ -172,6 +173,12 @@ export default function LawyerAnsweringServicePage() {
         },
       })),
     },
+    createServiceSchema({
+      name: 'Lawyer Answering Service | Boltcall',
+      description:
+        'Legal answering service for firms that need faster intake response, cleaner case screening, and more booked consultations.',
+      url: '/industries/lawyer-answering-service',
+    }),
   ]);
 
   useEffect(() => {
