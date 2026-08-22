@@ -1,4 +1,6 @@
 const BLOG_PREVIEW_BASE = '/images/blog/previews';
+const BLOG_BODY_BASE = '/images/blog/body';
+export const BLOG_BODY_IMAGE_LABELS = ['Key stat', 'How it works', 'Boltcall in action'] as const;
 
 export function blogPreviewKey(pathname: string) {
   const clean = pathname
@@ -18,6 +20,12 @@ export function getBlogPreviewImage(pathname: string) {
 
 export function getAbsoluteBlogPreviewImage(pathname: string) {
   return `https://boltcall.org${getBlogPreviewImage(pathname)}`;
+}
+
+// slot is 1, 2, or 3 — matches the 3 images generate-blog-body-images.mjs
+// writes per post (see BLOG_BODY_IMAGE_LABELS for what each slot depicts).
+export function getBlogBodyImage(pathname: string, slot: 1 | 2 | 3) {
+  return `${BLOG_BODY_BASE}/${blogPreviewKey(pathname)}-${slot}.svg`;
 }
 
 export function updateBlogPreviewMeta(pathname: string, title: string, description: string) {

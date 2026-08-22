@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { Fragment, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
@@ -10,6 +10,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import TableOfContents from '../components/TableOfContents';
 import BlogClosingCta from '../components/blog/BlogClosingCta';
 import BlogRelatedArticles from '../components/blog/BlogRelatedArticles';
+import BlogInlineImage from '../components/blog/BlogInlineImage';
 import { useTableOfContents } from '../hooks/useTableOfContents';
 import { updateMetaDescription } from '../lib/utils';
 import { createArticleSchema, createBreadcrumbSchema, createFAQSchema, injectSchemas } from '../lib/schema';
@@ -765,11 +766,11 @@ function slugify(text: string) {
 
 function NumberedHeading({ index, children }: { index: number; children: string }) {
   return (
-    <h2 id={slugify(children)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14 flex items-baseline gap-4">
-      <span aria-hidden="true" className="toc-index shrink-0 text-3xl md:text-4xl font-bold text-blue-500">
+    <h2 id={slugify(children)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14 flex items-start gap-4">
+      <span aria-hidden="true" className="toc-index shrink-0 text-5xl md:text-6xl font-black leading-none text-blue-500 tabular-nums">
         {String(index).padStart(2, '0')}
       </span>
-      <span>{children}</span>
+      <span className="pt-1 md:pt-2">{children}</span>
     </h2>
   );
 }
@@ -928,6 +929,13 @@ export default function CanonicalBlogArticlePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
         <div className="flex gap-8">
           <article className="flex-1 max-w-4xl">
+            {article.sections[0] && (
+              <section className="mb-10">
+                <NumberedHeading index={1}>{article.sections[0].title}</NumberedHeading>
+                <SectionBody section={article.sections[0]} />
+              </section>
+            )}
+
             {answerBox ? (
               <section className="mb-10 rounded-xl border border-blue-100 bg-blue-50/60 p-6 md:p-8">
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{answerBox.title}</h2>
@@ -964,12 +972,23 @@ export default function CanonicalBlogArticlePage() {
               )}
             </div>
 
-            {article.sections.map((section, index) => (
-              <section key={section.title} className="mb-12">
-                <NumberedHeading index={index + 1}>{section.title}</NumberedHeading>
-                <SectionBody section={section} />
-              </section>
-            ))}
+            <BlogInlineImage pathname={article.path} slot={1} />
+
+            {(() => {
+              const remaining = article.sections.slice(1);
+              const midPos = Math.floor(remaining.length / 2);
+              return remaining.map((section, i) => (
+                <Fragment key={section.title}>
+                  <section className="mb-12">
+                    <NumberedHeading index={i + 2}>{section.title}</NumberedHeading>
+                    <SectionBody section={section} />
+                  </section>
+                  {i === midPos && <BlogInlineImage pathname={article.path} slot={2} />}
+                </Fragment>
+              ));
+            })()}
+
+            <BlogInlineImage pathname={article.path} slot={3} />
 
             <section className="mb-12">
               <NumberedHeading index={article.sections.length + 1}>FAQs</NumberedHeading>

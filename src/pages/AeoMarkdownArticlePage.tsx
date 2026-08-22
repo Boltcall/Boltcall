@@ -9,6 +9,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import TableOfContents from '../components/TableOfContents';
 import BlogClosingCta from '../components/blog/BlogClosingCta';
 import BlogRelatedArticles from '../components/blog/BlogRelatedArticles';
+import BlogInlineImage from '../components/blog/BlogInlineImage';
 import { useTableOfContents } from '../hooks/useTableOfContents';
 import { updateMetaDescription } from '../lib/utils';
 import { getAbsoluteBlogPreviewImage, updateBlogPreviewMeta } from '../lib/blogPreviewImages';
@@ -181,7 +182,7 @@ function prepareBody(body: string, faqs: AeoFaq[], articleTitle: string, targetQ
   return prepared;
 }
 
-function MarkdownBody({ body, initialSectionNumber = 0 }: { body: string; initialSectionNumber?: number }) {
+function MarkdownBody({ body, pathname, initialSectionNumber = 0 }: { body: string; pathname: string; initialSectionNumber?: number }) {
   const lines = body.split(/\r?\n/);
   const nodes = [];
   let listItems: string[] = [];
@@ -242,9 +243,9 @@ function MarkdownBody({ body, initialSectionNumber = 0 }: { body: string; initia
       const text = normalizeHeading(trimmed.slice(3));
       sectionNumber += 1;
       nodes.push(
-        <h2 key={nodes.length} id={slugify(text)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14 flex items-baseline gap-4">
-          <span aria-hidden="true" className="toc-index shrink-0 text-3xl md:text-4xl font-bold text-blue-500">{String(sectionNumber).padStart(2, '0')}</span>
-          <span>{text}</span>
+        <h2 key={nodes.length} id={slugify(text)} className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 mt-14 flex items-start gap-4">
+          <span aria-hidden="true" className="toc-index shrink-0 text-5xl md:text-6xl font-black leading-none text-blue-500 tabular-nums">{String(sectionNumber).padStart(2, '0')}</span>
+          <span className="pt-1 md:pt-2">{text}</span>
         </h2>,
       );
     } else if (trimmed.startsWith('### ')) {
@@ -263,6 +264,8 @@ function MarkdownBody({ body, initialSectionNumber = 0 }: { body: string; initia
   }
 
   flushList();
+  const midpoint = Math.floor(nodes.length / 2);
+  nodes.splice(midpoint, 0, <BlogInlineImage key="body-image-2" pathname={pathname} slot={2} />);
   return <div className="space-y-5">{nodes}</div>;
 }
 
@@ -370,10 +373,10 @@ export default function AeoMarkdownArticlePage() {
               </div>
             )}
 
-            <section className="mb-12">
-              <h2 id="key-takeaways" className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-baseline gap-4">
-                <span aria-hidden="true" className="toc-index shrink-0 text-3xl md:text-4xl font-bold text-blue-500">01</span>
-                <span>Key Takeaways</span>
+            <section className="mb-10">
+              <h2 id="key-takeaways" className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-start gap-4">
+                <span aria-hidden="true" className="toc-index shrink-0 text-5xl md:text-6xl font-black leading-none text-blue-500 tabular-nums">01</span>
+                <span className="pt-1 md:pt-2">Key Takeaways</span>
               </h2>
               <ul className="list-disc pl-6 space-y-3 text-lg leading-8 text-gray-700">
                 {prepared.keyTakeaways.map((takeaway) => (
@@ -382,7 +385,11 @@ export default function AeoMarkdownArticlePage() {
               </ul>
             </section>
 
-            <MarkdownBody body={prepared.body} initialSectionNumber={1} />
+            <BlogInlineImage pathname={article.route} slot={1} />
+
+            <MarkdownBody body={prepared.body} pathname={article.route} initialSectionNumber={1} />
+
+            <BlogInlineImage pathname={article.route} slot={3} />
 
             <BlogClosingCta />
             <BlogRelatedArticles />
