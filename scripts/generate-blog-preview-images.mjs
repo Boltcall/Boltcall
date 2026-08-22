@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { keyFromPath, listBlogPosts, stripHtml } from './lib/blog-post-index.mjs';
 
 const outputDir = join('public', 'images', 'blog', 'previews');
 
@@ -9,37 +10,6 @@ function escapeXml(value) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-}
-
-function stripHtml(value) {
-  return value.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-}
-
-function titleCase(value) {
-  return value
-    .split('-')
-    .filter(Boolean)
-    .map((word) => {
-      if (['ai', 'seo', 'roi', 'sms', 'crm', 'hvac', 'faq'].includes(word)) return word.toUpperCase();
-      if (word === 'vs') return 'vs';
-      return `${word.slice(0, 1).toUpperCase()}${word.slice(1)}`;
-    })
-    .join(' ');
-}
-
-function keyFromPath(pathname) {
-  return pathname
-    .replace(/^https?:\/\/[^/]+/i, '')
-    .replace(/\/$/, '')
-    .replace(/^\//, '')
-    .replace(/[^a-z0-9]+/gi, '-')
-    .replace(/^-+|-+$/g, '')
-    .toLowerCase();
-}
-
-function titleFromPath(pathname) {
-  const slug = pathname.replace(/\/$/, '').split('/').filter(Boolean).at(-1) || 'blog';
-  return titleCase(slug);
 }
 
 function wrapText(text, maxChars, maxLines) {
@@ -132,51 +102,16 @@ function svgFor({ pathname, title }) {
 `;
 }
 
-function extractBlogCenterPosts() {
-  const source = readFileSync(join('src', 'pages', 'BlogCenter.tsx'), 'utf8');
-  const posts = [];
-  const entryMatches = source.matchAll(/\{\s*title:\s*'([\s\S]*?)',\s*slug:\s*'([^']+)'/g);
-  for (const match of entryMatches) {
-    posts.push({ title: stripHtml(match[1].replace(/\\'/g, "'")), pathname: match[2] });
-  }
-  return posts;
-}
-
-function extractRoutePosts() {
-  const source = readFileSync(join('src', 'routes', 'AppRoutes.tsx'), 'utf8').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
-  return [...source.matchAll(/<Route\s+path="(\/blog\/[^":]+)"/g)].map((match) => ({
-    pathname: match[1],
-    title: titleFromPath(match[1]),
-  }));
-}
-
-function extractMarkdownPosts() {
-  const contentDir = join('src', 'content', 'aeo');
-  if (!existsSync(contentDir)) return [];
-  return readdirSync(contentDir)
-    .filter((file) => file.endsWith('.md'))
-    .map((file) => {
-      const body = readFileSync(join(contentDir, file), 'utf8');
-      const title = body.match(/^title:\s*"?([^"\n]+)"?/m)?.[1] || titleFromPath(file.replace(/\.md$/, ''));
-      const slug = body.match(/^slug:\s*([^\n]+)/m)?.[1]?.trim() || file.replace(/\.md$/, '');
-      return { pathname: `/blog/${slug}`, title };
-    });
-}
-
 function main() {
   mkdirSync(outputDir, { recursive: true });
+  const posts = listBlogPosts();
 
-  const postsByPath = new Map();
-  for (const post of [...extractRoutePosts(), ...extractMarkdownPosts(), ...extractBlogCenterPosts()]) {
-    postsByPath.set(post.pathname.replace(/\/$/, ''), post);
-  }
-
-  for (const post of postsByPath.values()) {
+  for (const post of posts) {
     const filename = `${keyFromPath(post.pathname)}.svg`;
     writeFileSync(join(outputDir, filename), svgFor(post), 'utf8');
   }
 
-  console.log(`Generated ${postsByPath.size} blog preview images in ${outputDir}`);
+  console.log(`Generated ${posts.length} blog preview images in ${outputDir}`);
 }
 
 main();
