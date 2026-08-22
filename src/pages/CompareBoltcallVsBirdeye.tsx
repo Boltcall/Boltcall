@@ -194,7 +194,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
           className="bg-blue-50 border-l-4 border-blue-600 rounded-r-lg p-6 mb-12"
         >
           <p className="text-lg text-gray-800 leading-relaxed font-medium">
-            <strong>Quick answer:</strong> Boltcall is an AI receptionist platform that answers calls, captures leads, and automates follow-ups for local businesses at $549/month. Birdeye is a reputation management platform focused on reviews, listings, and customer experience starting at $299/month. Choose Boltcall for AI phone answering and speed-to-lead. Choose Birdeye for review management at scale.
+            <strong>Quick answer:</strong> Boltcall is a speed-to-lead platform that answers calls, captures leads, and automates follow-ups for local businesses at $549/month. Birdeye is a reputation management platform focused on reviews, listings, and customer experience starting at $299/month. Choose Boltcall for AI phone answering and speed-to-lead. Choose Birdeye for review management at scale.
           </p>
         </motion.div>
 
@@ -409,7 +409,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
               This is the category where the two platforms diverge most sharply.
             </p>
             <p>
-              Boltcall's AI receptionist is the core product. It answers phone calls in a natural, conversational voice. It understands context, meaning it knows your services, your pricing, your availability, and your FAQs. It qualifies callers by asking the right questions, books appointments directly into your calendar, sends instant follow-up texts to the caller, and notifies you in real time via Telegram or SMS. The entire interaction happens in under 60 seconds from the moment the phone rings to a booked appointment.
+              Boltcall's speed-to-lead answering is the core product. It answers phone calls in a natural, conversational voice. It understands context, meaning it knows your services, your pricing, your availability, and your FAQs. It qualifies callers by asking the right questions, books appointments directly into your calendar, sends instant follow-up texts to the caller, and notifies you in real time via Telegram or SMS. The entire interaction happens in under 60 seconds from the moment the phone rings to a booked appointment.
             </p>
             <p>
               Boltcall also includes an AI chatbot that lives on your website, handling inquiries, capturing lead info, and pushing visitors toward booking. The chatbot and phone receptionist share the same knowledge base, so callers and website visitors get consistent answers.

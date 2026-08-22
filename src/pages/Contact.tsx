@@ -41,7 +41,7 @@ const Contact: React.FC = () => {
 
   useEffect(() => {
     document.title = 'Contact Boltcall - Get in Touch with Our Team';
-    updateMetaDescription('Get in touch with Boltcall. Contact our team for AI receptionist support, sales questions, or general inquiries. We\'re here to help.');
+    updateMetaDescription('Get in touch with Boltcall. Contact our team for speed-to-lead setup support, sales questions, or general inquiries. We\'re here to help.');
 
     const breadcrumbSchema = {
       "@context": "https://schema.org",

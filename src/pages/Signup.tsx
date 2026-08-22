@@ -9,7 +9,7 @@ const Signup: React.FC = () => {
 
   useEffect(() => {
     document.title = 'Sign Up for Boltcall - Start Your Free Trial Today';
-    updateMetaDescription('Sign up for Boltcall and start your free trial. Get AI receptionist with free setup in 5 minutes. No credit card required. Join now.');
+    updateMetaDescription('Sign up for Boltcall and start your free trial. Get speed-to-lead answering with free setup in 5 minutes. No credit card required. Join now.');
   }, []);
 
   if (!isLoading && isAuthenticated) {

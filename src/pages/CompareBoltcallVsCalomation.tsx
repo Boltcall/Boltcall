@@ -190,7 +190,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
           className="bg-blue-50 border-l-4 border-blue-600 rounded-r-xl p-6 mb-12 mt-4"
         >
           <p className="text-gray-800 text-lg leading-relaxed font-medium">
-            <strong>Quick answer:</strong> Boltcall and Calomation are both AI receptionist platforms for local businesses. Boltcall offers transparent pricing starting at $549/month with a free website, 24-hour setup guarantee, and full AI automation suite. Calomation uses quote-based pricing with no public rates. Both offer AI phone answering, but Boltcall includes more features at a known price point.
+            <strong>Quick answer:</strong> Boltcall and Calomation are both AI phone-answering platforms for local businesses. Boltcall offers transparent pricing starting at $549/month with a free website, 24-hour setup guarantee, and full speed-to-lead automation suite. Calomation uses quote-based pricing with no public rates. Both offer AI phone answering, but Boltcall includes more features at a known price point.
           </p>
         </motion.div>
 

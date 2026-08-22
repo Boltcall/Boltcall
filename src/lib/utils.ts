@@ -27,7 +27,7 @@ export function updateMetaDescription(description: string) {
   const trimmedDescription = description.length > 160 
     ? description.substring(0, 157) + '...'
     : description.length < 50
-    ? description + ' ' + 'Learn more about Boltcall AI receptionist services for your business.'
+    ? description + ' ' + 'Learn more about Boltcall speed-to-lead services for your business.'
     : description;
 
   // Update standard meta description
