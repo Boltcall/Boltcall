@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'HVAC Answering Service: <span className="text-blue-600">Capture Every High-Intent Call</span>',
+    slug: '/blog/hvac-answering-service',
+    excerpt: 'An HVAC answering service responds when your team is busy, qualifies urgent heating and cooling inquiries, and moves more homeowners toward a booked service visit before a competitor replies.',
+    date: 'August 22, 2026',
+    readTime: '10 min read',
+    category: 'HVAC|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Pest Control Lead Response Time: <span className="text-blue-600">Turn New Inquiries Into Scheduled Treatments</span>',
     slug: '/blog/pest-control-lead-response-time',
     excerpt: 'Pest control lead response time determines whether a homeowner books your team or the competitor who replies first. Respond quickly, qualify the issue, and turn urgent pest inquiries into scheduled treatments.',
