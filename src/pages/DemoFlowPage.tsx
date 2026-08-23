@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MessageSquare, Megaphone, Globe, Calendar, Bell, PhoneForwarded, Bot, ArrowRightLeft } from 'lucide-react';
 import { updateMetaDescription } from '../lib/utils';
+import { createServiceSchema } from '../lib/schema';
+import { useSchemaInjector } from '../hooks/useSchemaInjector';
 
 /* ─── SVG defs shared by both layouts ──────────────────────────────────── */
 const SvgDefs: React.FC = () => (
@@ -194,6 +196,15 @@ type Source = { icon: React.ReactNode; label: string; sub: string };
 
 const DemoFlowPage: React.FC = () => {
   const [layout, setLayout] = useState<'horizontal' | 'vertical'>('horizontal');
+
+  useSchemaInjector([
+    createServiceSchema({
+      name: 'How Boltcall Works | Demo',
+      description:
+        'Boltcall speed-to-lead answering + booking service for local operators. Every inbound lead answered instantly and booked automatically.',
+      url: '/demo',
+    }),
+  ]);
 
   useEffect(() => {
     document.title = 'How Boltcall Works | Demo';

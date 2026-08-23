@@ -81,8 +81,8 @@ const PricingPage: React.FC = () => {
     {
       "@context": "https://schema.org",
       "@type": "Product",
-      "name": "Boltcall AI Receptionist",
-      "description": "AI intake system that answers calls 24/7, books consultations, captures leads, and sends follow-up texts for law firms.",
+      "name": "Boltcall Speed-to-Lead",
+      "description": "Speed-to-lead system that answers calls 24/7, books consultations, captures leads, and sends follow-up texts for law firms.",
       "url": "https://boltcall.org/pricing",
       "brand": { "@type": "Brand", "name": "Boltcall" },
       "aggregateRating": {
@@ -176,9 +176,9 @@ const PricingPage: React.FC = () => {
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Boltcall Pricing — AI Receptionist Plans",
+      "name": "Boltcall Pricing — Speed-to-Lead Plans",
       "url": "https://boltcall.org/pricing",
-      "description": "Compare Boltcall pricing plans. AI receptionist starting at $549/month. Free setup included.",
+      "description": "Compare Boltcall pricing plans. Speed-to-lead software starting at $549/month. Free setup included.",
       "datePublished": SITE_DATE_PUBLISHED,
       "dateModified": SITE_DATE_MODIFIED,
       "publisher": DEFAULT_PUBLISHER,

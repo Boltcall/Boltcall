@@ -163,7 +163,7 @@ const Home: React.FC = () => {
       "@type": "SoftwareApplication",
       "name": "Boltcall",
       "applicationCategory": "BusinessApplication",
-      "applicationSubCategory": "Speed-to-Lead / AI Receptionist",
+      "applicationSubCategory": "Speed-to-Lead Software",
       "operatingSystem": "Web",
       "url": "https://boltcall.org",
       "inLanguage": "en-US",

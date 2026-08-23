@@ -10,8 +10,8 @@ import GiveawayBar from '../components/GiveawayBar';
 const Comparisons: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'AI Receptionist Comparisons & Alternatives | Boltcall';
-    updateMetaDescription('Compare Boltcall AI receptionist with alternatives. See how Boltcall compares to traditional answering services. View now.');
+    document.title = 'Boltcall Comparisons & Alternatives | Speed-to-Lead Software';
+    updateMetaDescription('Compare Boltcall\'s speed-to-lead software with alternatives. See how Boltcall compares to traditional answering services. View now.');
 
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';
@@ -49,7 +49,7 @@ const Comparisons: React.FC = () => {
   const competitors = [
     {
       title: 'Boltcall vs <span class="text-blue-600">GoHighLevel</span>',
-      description: 'Compare Boltcall\'s AI receptionist with GoHighLevel\'s all-in-one marketing platform. See which delivers better ROI for local businesses.',
+      description: 'Compare Boltcall\'s speed-to-lead software with GoHighLevel\'s all-in-one marketing platform. See which delivers better ROI for local businesses.',
       href: '/compare/boltcall-vs-gohighlevel',
       category: 'CRM Platform',
       date: 'April 8, 2026',
@@ -73,7 +73,7 @@ const Comparisons: React.FC = () => {
     },
     {
       title: 'Boltcall vs <span class="text-blue-600">Smith.ai</span>',
-      description: 'Compare Boltcall\'s AI receptionist with Smith.ai\'s virtual receptionist and intake services.',
+      description: 'Compare Boltcall\'s speed-to-lead software with Smith.ai\'s virtual receptionist and intake services.',
       href: '/compare/boltcall-vs-smith-ai',
       category: 'Virtual Receptionist',
       date: 'April 8, 2026',

@@ -60,6 +60,7 @@ const ROUTES = [
   '/lead-magnet/ai-receptionist-buyers-guide',
   '/lead-magnet/speed-to-lead-stack',
   '/lead-magnet/intake-agent-playbook',
+  '/lead-magnet/vanishing-client-report',
   '/after-hours-lead-rescue',
   '/automatic-reviews-agent',
   '/reminders-agent',

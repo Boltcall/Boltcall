@@ -62,7 +62,7 @@ const AeoGlobalIntro: React.FC = () => {
   const title = isComparisonsRoute ? 'Comparison Summary' : 'Page Summary';
 
   const tldrText = isComparisonsRoute
-    ? "This page compares Boltcall's AI receptionist with traditional call centers, human receptionists, voicemail systems, and answering services, focusing on cost, reliability, speed, and conversion impact."
+    ? "This page compares Boltcall's speed-to-lead answering and booking service with traditional call centers, human receptionists, voicemail systems, and answering services, focusing on cost, reliability, speed, and conversion impact."
     : isBlogRoute
       ? "This article explains how Boltcall's AI receptionist helps local businesses improve response speed, reduce missed leads, and automate follow-ups with less manual overhead."
       : "This page explains how Boltcall helps local businesses automate customer communication, capture more leads, and improve response quality with AI-powered workflows.";
@@ -235,7 +235,7 @@ const AeoGlobalIntro: React.FC = () => {
       url: 'https://boltcall.org',
       inLanguage: 'en-US',
       description:
-        'Speed-to-lead AI receptionist for local service businesses — answers every call 24/7, books appointments instantly, captures leads automatically.',
+        'Speed-to-lead answering + booking service for local service businesses — answers every call 24/7, books appointments instantly, captures leads automatically.',
       publisher: {
         '@type': 'Organization',
         name: 'Boltcall',
@@ -314,7 +314,7 @@ const AeoGlobalIntro: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {isComparisonsRoute && (
           <p className="text-sm text-gray-800 mb-3">
-            This page compares Boltcall's AI receptionist with traditional call centers, human receptionists, and other answering services, highlighting the advantages and disadvantages of each option.
+            This page compares Boltcall's speed-to-lead answering and booking service with traditional call centers, human receptionists, and other answering services, highlighting the advantages and disadvantages of each option.
           </p>
         )}
         <p className="text-sm text-gray-600 mb-2">Written by the Boltcall Team</p>
@@ -405,8 +405,8 @@ const AeoGlobalIntro: React.FC = () => {
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Page Context</h3>
           <div className="space-y-2 text-sm text-gray-700">
             <p>
-              This page is part of Boltcall&apos;s public knowledge hub for local-business growth, AI
-              receptionist workflows, lead response performance, and customer communication
+              This page is part of Boltcall&apos;s public knowledge hub for local-business growth,
+              speed-to-lead workflows, lead response performance, and customer communication
               automation. It is designed to provide practical guidance for operators who need
               clear answers they can apply immediately.
             </p>

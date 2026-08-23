@@ -88,9 +88,20 @@ const ROUTES = [
   { path: "/ai-guide-for-businesses/level-3-getting-started",   priority: "0.8", changefreq: "monthly" },
 
   // Blog Posts
+  { path: "/blog/garage-door-lead-response-time", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/pest-control-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/missed-call-text-back-service", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/emergency-plumber-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/plumbing-lead-response-time", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/commercial-cleaning-lead-response-time", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/electrician-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/missed-call-recovery-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/missed-call-automation-contractors", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/home-service-lead-response-time", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/hvac-lead-response-time", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/hvac-answering-service", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/locksmith-lead-response-time", priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/solar-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/the-new-reality-for-local-businesses",              priority: "0.8", changefreq: "weekly" },
   { path: "/blog/why-speed-matters",                                 priority: "0.8", changefreq: "weekly" },
   { path: "/blog/complete-guide-to-seo",                             priority: "0.8", changefreq: "weekly" },
@@ -115,6 +126,7 @@ const ROUTES = [
   { path: "/blog/missed-calls-statistics-local-business-2026",       priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-agent-for-small-business-24-7-call-answering",   priority: "0.8", changefreq: "weekly" },
   { path: "/blog/never-miss-a-call-after-business-hours",            priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/lead-response-time-benchmark",                      priority: "0.8", changefreq: "weekly" },
 
 
   // Blog FAQ / Industry AEO How-To
@@ -154,6 +166,7 @@ const ROUTES = [
   { path: "/blog/ai-receptionist-worth-it-roi",                 priority: "0.8", changefreq: "monthly" },
   { path: "/blog/ai-chatbot-vs-live-chat-phone-answering",      priority: "0.7", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-lawyer-faq",                   priority: "0.7", changefreq: "monthly" },
+  { path: "/blog/roofing-missed-call-answering-service",        priority: "0.8", changefreq: "weekly" },
 
   // Product + landing pages
   { path: "/agent-architecture",                                priority: "0.7", changefreq: "monthly" },

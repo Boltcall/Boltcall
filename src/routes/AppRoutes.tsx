@@ -244,6 +244,7 @@ const LeadMagnetClaudeCodeOvernightKitPage = React.lazy(() => import('../pages/L
 const LeadMagnetAIReceptionistBuyersGuide = React.lazy(() => import('../pages/LeadMagnetAIReceptionistBuyersGuide'));
 const LeadMagnetSpeedToLeadStackPage = React.lazy(() => import('../pages/LeadMagnetSpeedToLeadStackPage'));
 const LeadMagnetIntakeAgentPlaybookPage = React.lazy(() => import('../pages/LeadMagnetIntakeAgentPlaybookPage'));
+const LeadMagnetVanishingClientReportPage = React.lazy(() => import('../pages/LeadMagnetVanishingClientReportPage'));
 const AfterHoursLeadRescuePage = React.lazy(() => import('../pages/AfterHoursLeadRescuePage'));
 const AutomaticReviewsAgentPage = React.lazy(() => import('../pages/AutomaticReviewsAgentPage'));
 const RemindersAgentPage = React.lazy(() => import('../pages/RemindersAgentPage'));
@@ -721,6 +722,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/lead-magnet/ai-receptionist-buyers-guide" element={<LeadMagnetAIReceptionistBuyersGuide />} />
         <Route path="/lead-magnet/speed-to-lead-stack" element={<LeadMagnetSpeedToLeadStackPage />} />
         <Route path="/lead-magnet/intake-agent-playbook" element={<LeadMagnetIntakeAgentPlaybookPage />} />
+        <Route path="/lead-magnet/vanishing-client-report" element={<LeadMagnetVanishingClientReportPage />} />
         <Route path="/after-hours-lead-rescue" element={<AfterHoursLeadRescuePage />} />
         <Route path="/automatic-reviews-agent" element={<AutomaticReviewsAgentPage />} />
         <Route path="/reminders-agent" element={<RemindersAgentPage />} />
@@ -744,11 +746,23 @@ const NavigationWrapper: React.FC = () => {
         <Route element={<BlogSchemaWrapper />}>
         <Route path="/blog" element={<BlogCenter />} />
         <Route path="/newsletter" element={<Newsletter />} />
+        <Route path="/blog/garage-door-lead-response-time" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/pest-control-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/the-new-reality-for-local-businesses" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/why-speed-matters" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/complete-guide-to-seo" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/emergency-plumber-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/plumbing-lead-response-time" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/commercial-cleaning-lead-response-time" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/electrician-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/missed-call-text-back-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/home-service-lead-response-time" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/hvac-lead-response-time" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/hvac-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/locksmith-lead-response-time" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/missed-call-automation-contractors" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/roofing-missed-call-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/solar-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/ai-guide-for-businesses" element={<BlogAIGuide />} />
         <Route path="/ai-guide-for-businesses/level-1-understanding-ai" element={<BlogAIGuideStep1 />} />
         <Route path="/ai-guide-for-businesses/level-2-choosing-ai-tools" element={<BlogAIGuideStep2 />} />
@@ -787,6 +801,7 @@ const NavigationWrapper: React.FC = () => {
             <Route path="/blog/missed-calls-statistics-local-business-2026" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/ai-agent-for-small-business-24-7-call-answering" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/missed-call-recovery-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/lead-response-time-benchmark" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/:slug" element={<AeoMarkdownArticlePage />} />
         </Route>
         <Route path="/comparisons" element={<Comparisons />} />

@@ -16,7 +16,7 @@ const ComingSoon: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = 'Coming Soon - Join the Boltcall Waitlist Today';
-    updateMetaDescription('Join the Boltcall waitlist. Be first to access new AI receptionist features and exclusive offers. Sign up now.');
+    updateMetaDescription('Join the Boltcall waitlist. Be first to access new speed-to-lead features and exclusive offers. Sign up now.');
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,7 +86,7 @@ const ComingSoon: React.FC = () => {
             </h1>
             
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              We're working hard to bring you the best AI receptionist experience. 
+              We're working hard to bring you the best speed-to-lead experience.
               Join our waitlist to be the first to know when we launch and get early access.
             </p>
 
@@ -230,7 +230,7 @@ const ComingSoon: React.FC = () => {
             What to Expect
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Get ready for an AI receptionist platform that transforms how you handle customer communication
+            Get ready for a speed-to-lead platform that transforms how you handle customer communication
           </p>
         </motion.div>
 

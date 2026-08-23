@@ -612,7 +612,7 @@ const Documentation: React.FC = () => {
             <div className="mt-12 bg-blue-50 border border-blue-200 rounded-xl p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-2">TL;DR</h2>
               <p className="text-gray-700">
-                Boltcall is an AI receptionist platform for local businesses. Set up your account in minutes, connect your phone system (Twilio, Vonage), sync your calendar (Google Calendar, Outlook), configure your AI voice and conversation flow, and start capturing leads 24/7. Boltcall handles calls, SMS, WhatsApp, appointment booking, lead qualification, and automated follow-ups — all from one dashboard.
+                Boltcall is a speed-to-lead platform for local businesses. Set up your account in minutes, connect your phone system (Twilio, Vonage), sync your calendar (Google Calendar, Outlook), configure your AI voice and conversation flow, and start capturing leads 24/7. Boltcall handles calls, SMS, WhatsApp, appointment booking, lead qualification, and automated follow-ups — all from one dashboard.
               </p>
             </div>
 

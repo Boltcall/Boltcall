@@ -47,7 +47,7 @@ const Terms: React.FC = () => {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <div className="flex items-start gap-4 mb-4">
             <div className="p-2 bg-blue-50 rounded-lg shrink-0"><FileText className="w-5 h-5 text-blue-600" /></div>
-            <h2 className="text-2xl font-bold text-gray-900">1. Agreement</h2>
+            <h2 className="text-2xl font-bold text-gray-900">1. User Agreement for Boltcall Services</h2>
           </div>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
             <p>These Terms of Service ("Terms") govern your access to and use of Boltcall's speed-to-lead platform, AI voice agents, automated messaging, and related services (collectively, the "Service"). By creating an account or using the Service, you agree to these Terms.</p>
@@ -61,7 +61,7 @@ const Terms: React.FC = () => {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <div className="flex items-start gap-4 mb-4">
             <div className="p-2 bg-purple-50 rounded-lg shrink-0"><Globe className="w-5 h-5 text-purple-600" /></div>
-            <h2 className="text-2xl font-bold text-gray-900">2. Service Description</h2>
+            <h2 className="text-2xl font-bold text-gray-900">2. Overview of Boltcall's Speed-to-Lead Service</h2>
           </div>
           <div className="text-gray-700 text-sm leading-relaxed space-y-3">
             <p>Boltcall provides a software-as-a-service ("SaaS") platform that includes: AI voice agents that answer inbound calls 24/7; automated SMS, WhatsApp, and email follow-up sequences; appointment booking and calendar integration; lead capture and CRM functionality; and analytics dashboards.</p>

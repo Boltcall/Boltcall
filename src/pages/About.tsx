@@ -11,8 +11,8 @@ import Button from '../components/ui/Button';
 const About: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'About Boltcall - AI Receptionist Solutions | Boltcall';
-    updateMetaDescription('Discover Boltcall: AI-powered solutions helping local businesses thrive. Learn our mission, values, and how we revolutionize customer communication.');
+    document.title = 'About Boltcall - Speed-to-Lead Solutions | Boltcall';
+    updateMetaDescription('Discover Boltcall: speed-to-lead software helping local businesses win the job by responding first. Learn our mission, values, and how we automate customer communication.');
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';
     bcScript.id = 'breadcrumb-jsonld';
@@ -110,12 +110,13 @@ const About: React.FC = () => {
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <Phone className="w-5 h-5 text-blue-600" strokeWidth={2.5} />
-                  AI Receptionist Services
+                  Speed-to-Lead Service
                 </h3>
                 <p className="text-gray-700 leading-relaxed">
-                  We provide intelligent AI receptionists that answer calls 24/7, handle customer 
-                  inquiries, schedule appointments, and qualify leads—all automatically. Our AI 
-                  never sleeps, never gets tired, and never misses a call.
+                  We answer calls 24/7, handle customer inquiries, schedule appointments, and
+                  qualify leads—all automatically, the moment a lead comes in. The first business
+                  to respond usually wins the job; Boltcall never sleeps, never gets tired, and
+                  never misses a call.
                 </p>
               </div>
               

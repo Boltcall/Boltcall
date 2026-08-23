@@ -33,6 +33,114 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Locksmith Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
+    slug: '/blog/locksmith-lead-response-time',
+    excerpt: 'Locksmith lead response time determines whether a stranded driver, locked-out homeowner, or property manager calls your team or the competitor who replies first. Respond instantly, qualify the job, and turn urgent demand into booked work.',
+    date: 'August 23, 2026',
+    readTime: '10 min read',
+    category: 'Locksmith|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'HVAC Answering Service: <span className="text-blue-600">Capture Every High-Intent Call</span>',
+    slug: '/blog/hvac-answering-service',
+    excerpt: 'An HVAC answering service responds when your team is busy, qualifies urgent heating and cooling inquiries, and moves more homeowners toward a booked service visit before a competitor replies.',
+    date: 'August 22, 2026',
+    readTime: '10 min read',
+    category: 'HVAC|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Pest Control Lead Response Time: <span className="text-blue-600">Turn New Inquiries Into Scheduled Treatments</span>',
+    slug: '/blog/pest-control-lead-response-time',
+    excerpt: 'Pest control lead response time determines whether a homeowner books your team or the competitor who replies first. Respond quickly, qualify the issue, and turn urgent pest inquiries into scheduled treatments.',
+    date: 'August 22, 2026',
+    readTime: '10 min read',
+    category: 'Pest Control|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Garage Door Lead Response Time: <span className="text-blue-600">Capture More Emergency Calls</span>',
+    slug: '/blog/garage-door-lead-response-time',
+    excerpt: 'Garage door lead response time determines whether a homeowner books your team or the competitor who replies first. Respond faster, qualify the repair, and turn urgent inquiries into booked jobs.',
+    date: 'August 21, 2026',
+    readTime: '10 min read',
+    category: 'Garage Doors|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Lead Response Time Benchmark: <span className="text-blue-600">How Fast Should Your Business Reply?</span>',
+    slug: '/blog/lead-response-time-benchmark',
+    excerpt: 'A lead response time benchmark gives local service businesses a practical standard for replying before a prospect calls the next provider. Build a faster path from first inquiry to qualified, booked work.',
+    date: 'August 21, 2026',
+    readTime: '10 min read',
+    category: 'Speed to Lead|How-to',
+    featured: false,
+  },
+  {
+    title: 'Commercial Cleaning Lead Response Time: <span className="text-blue-600">Capture More Recurring Contracts</span>',
+    slug: '/blog/commercial-cleaning-lead-response-time',
+    excerpt: 'Commercial cleaning lead response time determines whether a property manager books your team or the competitor who replies first. Respond faster, qualify the scope, and turn more inquiries into booked walkthroughs and recurring contracts.',
+    date: 'August 20, 2026',
+    readTime: '9 min read',
+    category: 'Commercial Cleaning|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Electrician Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
+    slug: '/blog/electrician-lead-response-time',
+    excerpt: 'Electrician lead response time determines whether a homeowner hires your crew or the competitor who replies first. Build a faster path from electrical inquiry to qualified, booked work.',
+    date: 'August 19, 2026',
+    readTime: '10 min read',
+    category: 'Electrical|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Solar Lead Response Time: <span className="text-blue-600">Turn Solar Inquiries Into Booked Consultations</span>',
+    slug: '/blog/solar-lead-response-time',
+    excerpt: 'Solar lead response time determines whether a homeowner schedules with your installation team or the competitor who replies first. Build a faster path from inquiry to qualified, booked consultation.',
+    date: 'August 18, 2026',
+    readTime: '10 min read',
+    category: 'Solar|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Missed Call Automation for Contractors: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
+    slug: '/blog/missed-call-automation-contractors',
+    excerpt: 'Missed call automation for contractors responds while crews are working, captures the customer’s need, and moves qualified callers toward a booked job before a competitor replies.',
+    date: 'August 18, 2026',
+    readTime: '10 min read',
+    category: 'Contractors|Speed to Lead|How-to',
+    featured: false,
+  },
+  {
+    title: 'Home Service Lead Response Time: <span className="text-blue-600">Turn Fast Replies Into Booked Jobs</span>',
+    slug: '/blog/home-service-lead-response-time',
+    excerpt: 'Home service lead response time determines whether a high-intent customer calls you back or hires the competitor who replied first. Build a faster response path that turns more inquiries into booked jobs.',
+    date: 'August 17, 2026',
+    readTime: '10 min read',
+    category: 'Home Services|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'HVAC Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
+    slug: '/blog/hvac-lead-response-time',
+    excerpt: 'HVAC lead response time decides whether a homeowner waits for your team or calls the contractor who answers first. Build a faster path from urgent inquiry to booked service visit.',
+    date: 'August 19, 2026',
+    readTime: '10 min read',
+    category: 'HVAC|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Roofing Missed Call Answering Service: <span className="text-blue-600">Capture Every Storm Lead</span>',
+    slug: '/blog/roofing-missed-call-answering-service',
+    excerpt: 'A roofing missed call answering service responds while crews are on roofs, captures the damage details, and moves qualified homeowners toward a booked inspection before a competitor replies.',
+    date: 'August 17, 2026',
+    readTime: '9 min read',
+    category: 'Roofing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Missed Call Text Back Service: <span className="text-blue-600">Turn Lost Calls Into Booked Jobs</span>',
     slug: '/blog/missed-call-text-back-service',
     excerpt: "A missed call text back service responds instantly, captures the customer's need, and moves qualified prospects toward a booked job before a competitor replies.",
@@ -46,6 +154,15 @@ const blogPosts: BlogPost[] = [
     slug: '/blog/emergency-plumber-answering-service',
     excerpt: 'An emergency plumber answering service responds fast, captures the job details, and moves urgent callers toward a booked plumbing job before a competitor replies.',
     date: 'August 16, 2026',
+    readTime: '9 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Plumbing Lead Response Time: <span className="text-blue-600">Turn More Calls Into Booked Jobs</span>',
+    slug: '/blog/plumbing-lead-response-time',
+    excerpt: 'Plumbing lead response time determines whether a homeowner books your crew or the competitor who replies first. Build a faster path from urgent inquiry to qualified, booked work.',
+    date: 'August 20, 2026',
     readTime: '9 min read',
     category: 'Plumbing|Speed to Lead|Industry Guide',
     featured: false,
@@ -371,9 +488,17 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Setup Instant Lead Reply', href: '/blog/setup-instant-lead-reply', tagline: 'Step-by-step blueprint.' },
   { label: 'Missed call recovery service guide', href: '/blog/missed-call-recovery-service', tagline: 'Recover high-intent calls before a competitor books the job.' },
   { label: 'Emergency plumber answering service guide', href: '/blog/emergency-plumber-answering-service', tagline: 'Capture urgent plumbing calls before a competitor replies.' },
+  { label: 'Home service lead response time guide', href: '/blog/home-service-lead-response-time', tagline: 'Measure response speed and turn more inquiries into booked jobs.' },
+  { label: 'Electrician lead response time guide', href: '/blog/electrician-lead-response-time', tagline: 'Capture urgent electrical inquiries before a competitor replies.' },
+  { label: 'HVAC lead response time guide', href: '/blog/hvac-lead-response-time', tagline: 'Capture urgent HVAC inquiries before a competitor replies.' },
   { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
+  { label: 'Plumbing lead response time guide', href: '/blog/plumbing-lead-response-time', tagline: 'Turn urgent plumbing inquiries into booked jobs.' },
+  { label: 'Plumbing speed-to-lead audit', href: '/blog/plumbing-lead-response-time#speed-to-lead-audit', tagline: 'Find the response delays costing your crew work.' },
   { label: 'AI Chatbot vs Live-Chat (Phone Comparison)', href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', tagline: 'Which channel wins for your stage.' },
   { label: 'Build a Gemini Gem Business Assistant', href: '/blog/create-gemini-gem-business-assistant', tagline: 'Custom Gemini assistant in 20 minutes.' },
+  { label: 'Lead response time benchmark', href: '/blog/lead-response-time-benchmark', tagline: 'Set a practical reply standard and turn more inquiries into booked jobs.' },
+  { label: 'Commercial cleaning lead response time guide', href: '/blog/commercial-cleaning-lead-response-time', tagline: 'Turn property-management inquiries into booked walkthroughs.' },
+  { label: 'Commercial cleaning speed-to-lead audit', href: '/blog/commercial-cleaning-lead-response-time#speed-to-lead-audit', tagline: 'Build a faster path from quote request to recurring contract.' },
 ];
 
 const BlogCenter: React.FC = () => {
@@ -462,6 +587,36 @@ const BlogCenter: React.FC = () => {
           <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">Expert insights on AI receptionists, lead capture, and growing your local business.</p>
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Learn how a missed call text back service recovers leads</Link> before they choose another provider.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/home-service-lead-response-time" className="text-blue-600 hover:underline">Read the home service lead response time guide</Link> to turn more inquiries into booked jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">Read the roofing missed call answering service guide</Link> to capture storm leads while crews are busy.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Read the solar lead response time guide</Link> to turn homeowner inquiries into booked consultations.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/missed-call-automation-contractors" className="text-blue-600 hover:underline">Read the missed call automation guide for contractors</Link> to recover leads while crews are working.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/electrician-lead-response-time" className="text-blue-600 hover:underline">Read the electrician lead response time guide</Link> to turn urgent electrical inquiries into booked jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/hvac-lead-response-time" className="text-blue-600 hover:underline">Read the HVAC lead response time guide</Link> to turn urgent service calls into booked jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/hvac-answering-service" className="text-blue-600 hover:underline">Read the HVAC answering service guide</Link> to capture high-intent calls while your team is busy.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/lead-response-time-benchmark" className="text-blue-600 hover:underline">Use the lead response time benchmark</Link> to set a reply standard before a prospect chooses another provider.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/garage-door-lead-response-time" className="text-blue-600 hover:underline">Read the garage door lead response time guide</Link> to turn urgent repair inquiries into booked jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/pest-control-lead-response-time" className="text-blue-600 hover:underline">Read the pest control lead response time guide</Link> to turn urgent treatment inquiries into scheduled jobs.
           </p>
 
           {/* Search Spotlight */}
@@ -601,6 +756,20 @@ const BlogCenter: React.FC = () => {
           <p className="text-xs text-gray-400 mt-3 text-center">Sources: Harvard Business Review, Lead Response Management study, BrightLocal.</p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Explore the missed call text back service workflow</Link> for local businesses.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/garage-door-lead-response-time" className="text-blue-600 hover:underline">Apply the garage door lead response time playbook</Link> when improving after-hours repair intake.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/hvac-answering-service" className="text-blue-600 hover:underline">Use the HVAC answering service workflow</Link> to turn missed calls into qualified service opportunities.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/pest-control-lead-response-time" className="text-blue-600 hover:underline">Apply the pest control lead response time playbook</Link> when improving after-hours treatment intake.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">See the roofing missed call answering service workflow</Link> for storm-driven demand.
+            <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Use the solar lead response time guide</Link> when improving consultation follow-up.
+            <Link to="/blog/missed-call-automation-contractors" className="text-blue-600 hover:underline">Review missed call automation for contractors</Link> before rebuilding a callback queue.
           </p>
         </div>
       </section>
