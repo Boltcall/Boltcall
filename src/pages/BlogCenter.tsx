@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Locksmith Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
+    slug: '/blog/locksmith-lead-response-time',
+    excerpt: 'Locksmith lead response time determines whether a stranded driver, locked-out homeowner, or property manager calls your team or the competitor who replies first. Respond instantly, qualify the job, and turn urgent demand into booked work.',
+    date: 'August 23, 2026',
+    readTime: '10 min read',
+    category: 'Locksmith|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'HVAC Answering Service: <span className="text-blue-600">Capture Every High-Intent Call</span>',
     slug: '/blog/hvac-answering-service',
     excerpt: 'An HVAC answering service responds when your team is busy, qualifies urgent heating and cooling inquiries, and moves more homeowners toward a booked service visit before a competitor replies.',
