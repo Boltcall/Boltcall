@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Speed to Lead for Plumbers: <span className="text-blue-600">Turn Every Inquiry Into Booked Work</span>',
+    slug: '/blog/speed-to-lead-for-plumbers',
+    excerpt: 'Speed to lead for plumbers determines whether a homeowner books your team or the competitor who replies first. Respond instantly, qualify the job, and turn urgent demand into booked plumbing work.',
+    date: 'August 23, 2026',
+    readTime: '10 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Locksmith Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
     slug: '/blog/locksmith-lead-response-time',
     excerpt: 'Locksmith lead response time determines whether a stranded driver, locked-out homeowner, or property manager calls your team or the competitor who replies first. Respond instantly, qualify the job, and turn urgent demand into booked work.',
