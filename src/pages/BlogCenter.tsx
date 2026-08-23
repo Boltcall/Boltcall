@@ -491,6 +491,7 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Home service lead response time guide', href: '/blog/home-service-lead-response-time', tagline: 'Measure response speed and turn more inquiries into booked jobs.' },
   { label: 'Electrician lead response time guide', href: '/blog/electrician-lead-response-time', tagline: 'Capture urgent electrical inquiries before a competitor replies.' },
   { label: 'HVAC lead response time guide', href: '/blog/hvac-lead-response-time', tagline: 'Capture urgent HVAC inquiries before a competitor replies.' },
+  { label: 'Locksmith lead response time guide', href: '/blog/locksmith-lead-response-time', tagline: 'Turn urgent lockout calls into booked jobs before a competitor replies.' },
   { label: 'After-hours plumbing lead response', href: '/blog/emergency-plumber-answering-service', tagline: 'Turn 2am plumbing demand into an owned next step.' },
   { label: 'Plumbing lead response time guide', href: '/blog/plumbing-lead-response-time', tagline: 'Turn urgent plumbing inquiries into booked jobs.' },
   { label: 'Plumbing speed-to-lead audit', href: '/blog/plumbing-lead-response-time#speed-to-lead-audit', tagline: 'Find the response delays costing your crew work.' },
@@ -770,6 +771,9 @@ const BlogCenter: React.FC = () => {
             <Link to="/blog/roofing-missed-call-answering-service" className="text-blue-600 hover:underline">See the roofing missed call answering service workflow</Link> for storm-driven demand.
             <Link to="/blog/solar-lead-response-time" className="text-blue-600 hover:underline">Use the solar lead response time guide</Link> when improving consultation follow-up.
             <Link to="/blog/missed-call-automation-contractors" className="text-blue-600 hover:underline">Review missed call automation for contractors</Link> before rebuilding a callback queue.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/locksmith-lead-response-time" className="text-blue-600 hover:underline">Read the locksmith lead response time guide</Link> when improving urgent lockout intake.
           </p>
         </div>
       </section>
