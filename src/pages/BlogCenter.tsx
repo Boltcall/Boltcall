@@ -599,6 +599,12 @@ const BlogCenter: React.FC = () => {
             <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Learn how a missed call text back service recovers leads</Link> before they choose another provider.
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/speed-to-lead-for-plumbers" className="text-blue-600 hover:underline">Read the speed to lead for plumbers guide</Link> to turn urgent service inquiries into booked jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/speed-to-lead-for-plumbers" className="text-blue-600 hover:underline">See the plumbing speed-to-lead playbook</Link> when your team is handling calls in the field.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/home-service-lead-response-time" className="text-blue-600 hover:underline">Read the home service lead response time guide</Link> to turn more inquiries into booked jobs.
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
