@@ -169,6 +169,7 @@ const ROUTES = [
   { path: "/blog/ai-chatbot-vs-live-chat-phone-answering",      priority: "0.7", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-lawyer-faq",                   priority: "0.7", changefreq: "monthly" },
   { path: "/blog/roofing-missed-call-answering-service",        priority: "0.8", changefreq: "weekly" },
+  { path: "/blog/commercial-roofing-lead-response-time",        priority: "0.8", changefreq: "weekly" },
 
   // Product + landing pages
   { path: "/agent-architecture",                                priority: "0.7", changefreq: "monthly" },

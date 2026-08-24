@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Commercial Roofing Lead Response Time: <span className="text-blue-600">Win More Bids Before Competitors Reply</span>',
+    slug: '/blog/commercial-roofing-lead-response-time',
+    excerpt: 'Commercial roofing lead response time determines whether a property manager schedules your inspection or sends the project to another contractor. Respond fast, qualify the opportunity, and move more commercial roofing inquiries toward booked site visits and bids.',
+    date: 'August 24, 2026',
+    readTime: '10 min read',
+    category: 'Commercial Roofing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Missed Call Text Back Small Business: <span className="text-blue-600">Recover Leads Before They Move On</span>',
     slug: '/blog/missed-call-text-back-small-business',
     excerpt: 'Missed call text back for small business gives every new caller a useful response when the team cannot pick up. Capture the reason for the call, qualify the opportunity, and move more missed calls toward booked work.',
