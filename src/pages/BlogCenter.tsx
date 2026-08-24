@@ -33,6 +33,15 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Missed Call Text Back Small Business: <span className="text-blue-600">Recover Leads Before They Move On</span>',
+    slug: '/blog/missed-call-text-back-small-business',
+    excerpt: 'Missed call text back for small business gives every new caller a useful response when the team cannot pick up. Capture the reason for the call, qualify the opportunity, and move more missed calls toward booked work.',
+    date: 'August 24, 2026',
+    readTime: '10 min read',
+    category: 'Speed to Lead|How-to',
+    featured: false,
+  },
+  {
     title: 'Speed to Lead for Plumbers: <span className="text-blue-600">Turn Every Inquiry Into Booked Work</span>',
     slug: '/blog/speed-to-lead-for-plumbers',
     excerpt: 'Speed to lead for plumbers determines whether a homeowner books your team or the competitor who replies first. Respond instantly, qualify the job, and turn urgent demand into booked plumbing work.',
