@@ -1,7 +1,7 @@
 ﻿import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, LayoutGroup } from 'framer-motion';
-import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight, Mail, Clock, Zap, CheckCircle, Rocket, Target } from 'lucide-react';
+import { Phone, Calendar, MessageSquare, Users, Star, Megaphone, ArrowRight, Mail, Clock, Zap, CheckCircle, Rocket, Target, TrendingUp, Headphones } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
 
@@ -40,29 +40,14 @@ const Hero: React.FC = () => {
         <div className="absolute inset-0 w-full h-full pointer-events-none hidden md:block" dir="ltr">
           <Floating sensitivity={-0.5} className="h-full">
 
-            {/* Top-left — Phone */}
-            <FloatingElement depth={0.5} className="top-[26%] left-[17%] md:top-[28%] md:left-[19%]">
+            {/* Row 1 — Users (left) / Calendar (right) */}
+            <FloatingElement depth={1.5} className="top-[9%] left-[14%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.55 }}
               >
-                <div className="-rotate-[3deg] hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
-                    <Phone className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </motion.div>
-            </FloatingElement>
-
-            {/* Top-left large — Users */}
-            <FloatingElement depth={1} className="top-[12%] left-[13%] md:top-[14%] md:left-[15%]">
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.70 }}
-              >
-                <div className="-rotate-12 hover:scale-105 transition-transform duration-200">
+                <div className="-rotate-[8deg] hover:scale-105 transition-transform duration-200">
                   <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
                     <Users className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
@@ -70,29 +55,13 @@ const Hero: React.FC = () => {
               </motion.div>
             </FloatingElement>
 
-            {/* Bottom-left — MessageSquare */}
-            <FloatingElement depth={4} className="top-[60%] left-[17%] md:top-[52%] md:left-[21%]">
+            <FloatingElement depth={1.5} className="top-[9%] left-[86%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.85 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.62 }}
               >
-                <div className="-rotate-[4deg] hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
-                    <MessageSquare className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </motion.div>
-            </FloatingElement>
-
-            {/* Top-right — Calendar */}
-            <FloatingElement depth={2} className="top-[10%] left-[81%] md:top-[14%] md:left-[79%]">
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.00 }}
-              >
-                <div className="rotate-[6deg] hover:scale-105 transition-transform duration-200">
+                <div className="rotate-[8deg] hover:scale-105 transition-transform duration-200">
                   <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
                     <Calendar className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
@@ -100,44 +69,14 @@ const Hero: React.FC = () => {
               </motion.div>
             </FloatingElement>
 
-            {/* Middle-right — Star */}
-            <FloatingElement depth={1} className="top-[56%] left-[71%] md:top-[48%] md:left-[69%]">
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.15 }}
-              >
-                <div className="rotate-[14deg] hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
-                    <Star className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </motion.div>
-            </FloatingElement>
-
-            {/* Upper-right — Megaphone (ad) */}
-            <FloatingElement depth={3} className="top-[36%] left-[83%] md:top-[34%] md:left-[83%]">
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.30 }}
-              >
-                <div className="-rotate-[5deg] hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
-                    <Megaphone className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </motion.div>
-            </FloatingElement>
-
-            {/* Top-center-left edge — Clock (speed) */}
+            {/* Row 2 — Clock (left) / Zap (right) */}
             <FloatingElement depth={2} className="top-[19%] left-[32%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.45 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.70 }}
               >
-                <div className="rotate-[8deg] hover:scale-105 transition-transform duration-200">
+                <div className="-rotate-[9deg] hover:scale-105 transition-transform duration-200">
                   <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
                     <Clock className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
@@ -145,14 +84,13 @@ const Hero: React.FC = () => {
               </motion.div>
             </FloatingElement>
 
-            {/* Top-center-right edge — Zap (instant) */}
             <FloatingElement depth={2} className="top-[19%] left-[68%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.60 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.77 }}
               >
-                <div className="-rotate-[10deg] hover:scale-105 transition-transform duration-200">
+                <div className="rotate-[9deg] hover:scale-105 transition-transform duration-200">
                   <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
                     <Zap className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
@@ -160,14 +98,101 @@ const Hero: React.FC = () => {
               </motion.div>
             </FloatingElement>
 
-            {/* Far bottom-left — Mail */}
-            <FloatingElement depth={3} className="top-[78%] left-[10%]">
+            {/* Row 3 — Phone (left) / Target (right) */}
+            <FloatingElement depth={1} className="top-[23%] left-[18%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.75 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.85 }}
+              >
+                <div className="-rotate-[6deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Phone className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            <FloatingElement depth={1} className="top-[23%] left-[82%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.92 }}
+              >
+                <div className="rotate-[6deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Target className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Row 4 — Rocket (left) / Megaphone (right) */}
+            <FloatingElement depth={2.2} className="top-[39%] left-[10%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.00 }}
+              >
+                <div className="-rotate-[7deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Rocket className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            <FloatingElement depth={2.2} className="top-[39%] left-[90%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.07 }}
+              >
+                <div className="rotate-[7deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Megaphone className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Row 5 — MessageSquare (left) / Star (right) */}
+            <FloatingElement depth={2.5} className="top-[58%] left-[20%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.15 }}
+              >
+                <div className="-rotate-[5deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <MessageSquare className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            <FloatingElement depth={2.5} className="top-[58%] left-[80%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.22 }}
               >
                 <div className="rotate-[5deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Star className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            {/* Row 6 — Mail (left) / CheckCircle (right) */}
+            <FloatingElement depth={3} className="top-[76%] left-[10%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.30 }}
+              >
+                <div className="-rotate-[6deg] hover:scale-105 transition-transform duration-200">
                   <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
                     <Mail className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
@@ -175,14 +200,13 @@ const Hero: React.FC = () => {
               </motion.div>
             </FloatingElement>
 
-            {/* Far bottom-right — CheckCircle (booked) */}
-            <FloatingElement depth={3} className="top-[75%] left-[90%]">
+            <FloatingElement depth={3} className="top-[76%] left-[90%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.90 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.37 }}
               >
-                <div className="-rotate-[6deg] hover:scale-105 transition-transform duration-200">
+                <div className="rotate-[6deg] hover:scale-105 transition-transform duration-200">
                   <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
                     <CheckCircle className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
@@ -190,31 +214,30 @@ const Hero: React.FC = () => {
               </motion.div>
             </FloatingElement>
 
-            {/* Far left mid — Rocket (speed) */}
-            <FloatingElement depth={1.5} className="top-[42%] left-[5%]">
+            {/* Row 7 — TrendingUp (left) / Headphones (right) */}
+            <FloatingElement depth={2.2} className="top-[87%] left-[35%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 2.05 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.45 }}
               >
-                <div className="rotate-[9deg] hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
-                    <Rocket className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                <div className="-rotate-[9deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <TrendingUp className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
                 </div>
               </motion.div>
             </FloatingElement>
 
-            {/* Far right upper — Target (conversion) */}
-            <FloatingElement depth={1.5} className="top-[20%] left-[93%]">
+            <FloatingElement depth={2.2} className="top-[87%] left-[65%]">
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 2.20 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 1.52 }}
               >
-                <div className="-rotate-[8deg] hover:scale-105 transition-transform duration-200">
-                  <div className="flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-2xl md:rounded-3xl shadow-xl bg-white border border-gray-100">
-                    <Target className="w-6 h-6 md:w-10 md:h-10 text-blue-600" strokeWidth={2.5} />
+                <div className="rotate-[9deg] hover:scale-105 transition-transform duration-200">
+                  <div className="flex items-center justify-center w-9 h-9 md:w-14 md:h-14 rounded-xl md:rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Headphones className="w-5 h-5 md:w-7 md:h-7 text-blue-600" strokeWidth={2.5} />
                   </div>
                 </div>
               </motion.div>
@@ -293,11 +316,11 @@ const Hero: React.FC = () => {
               />
               <button
                 type="submit"
-                aria-label="Get My Free Audit"
-                title="Get My Free Audit"
-                className="shrink-0 inline-flex items-center justify-center w-11 h-11 aspect-square bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors duration-200"
+                className="shrink-0 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors duration-200 whitespace-nowrap"
               >
-                <ArrowRight className="w-5 h-5" />
+                <span className="sm:hidden">Get Audit</span>
+                <span className="hidden sm:inline">Get My Free Audit</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             </motion.form>
 
