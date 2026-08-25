@@ -3,16 +3,18 @@ import { updateMetaDescription } from '../lib/utils';
 import { createServiceSchema, injectSchemas } from '../lib/schema';
 import { motion } from 'framer-motion';
 import {
-  Globe, Building2, AlertCircle, Loader, Mail,
-  FileText, Gauge, MousePointerClick, Smartphone, CheckCircle2, Loader2,
+  Globe, Building2, AlertCircle, Loader, Mail, Phone,
+  FileText, Gauge, MousePointerClick, Smartphone, CheckCircle2, Loader2, ArrowLeft,
 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import FAQ from '../components/FAQ';
 import Breadcrumbs from '../components/Breadcrumbs';
+import DropdownComponent from '../components/ui/dropdown-01';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
+import { INDUSTRY_OPTIONS } from '../lib/setup/onboarding';
 
 const LEAD_ENDPOINT = '/.netlify/functions/website-audit-lead';
 
@@ -63,9 +65,12 @@ const WebsiteAuditPDF: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const [step, setStep] = useState<1 | 2>(1);
   const [url, setUrl] = useState(() => searchParams.get('url') || '');
   const [companyName, setCompanyName] = useState('');
+  const [industry, setIndustry] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [error, setError] = useState('');
@@ -112,14 +117,28 @@ const WebsiteAuditPDF: React.FC = () => {
   }, [isAnalyzing]);
 
   const validateEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  const validatePhone = (value: string): boolean => /^[0-9+()\-.\s]{7,20}$/.test(value);
+
+  const handleNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!companyName.trim()) { setError('Please enter your company name'); return; }
+    if (!url.trim()) { setError('Please enter your website URL'); return; }
+    if (!industry) { setError('Please select your industry'); return; }
+    setStep(2);
+  };
+
+  const handleBack = () => {
+    setError('');
+    setStep(1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!companyName.trim()) { setError('Please enter your company name'); return; }
-    if (!url.trim()) { setError('Please enter your website URL'); return; }
     if (!email.trim() || !validateEmail(email.trim())) { setError('Please enter a valid email address'); return; }
+    if (!phone.trim() || !validatePhone(phone.trim())) { setError('Please enter a valid phone number'); return; }
 
     setIsAnalyzing(true);
     setLoadingStepIndex(0);
@@ -131,7 +150,9 @@ const WebsiteAuditPDF: React.FC = () => {
         body: JSON.stringify({
           companyName: companyName.trim(),
           url: url.trim(),
+          industry,
           email: email.trim(),
+          phone: phone.trim(),
         }),
       });
 
@@ -278,85 +299,156 @@ const WebsiteAuditPDF: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 md:p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-1 text-center">Get Your Free Audit</h2>
-            <p className="text-sm text-gray-500 mb-6 text-center">Enter your details and we'll deliver a PDF to your inbox</p>
+            <p className="text-sm text-gray-500 mb-4 text-center">
+              {step === 1 ? "Tell us about your business" : "Where should we send your report?"}
+            </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="audit-company" className="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
-                <div className="relative">
-                  <Building2 className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    id="audit-company"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="Riverside Family Dental"
-                    className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    disabled={isAnalyzing}
-                  />
-                </div>
+            {/* 2-step progress */}
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs font-medium text-gray-500">Step {step} of 2</span>
+                <span className="text-xs text-gray-400">{step === 1 ? '50%' : '100%'}</span>
               </div>
-
-              <div>
-                <label htmlFor="audit-url" className="block text-sm font-medium text-gray-700 mb-1.5">Website URL</label>
-                <div className="relative">
-                  <Globe className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    id="audit-url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://example.com"
-                    className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    disabled={isAnalyzing}
-                  />
-                </div>
+              <div className="w-full bg-gray-200 rounded-full h-1">
+                <motion.div
+                  className="bg-blue-600 h-1 rounded-full"
+                  initial={false}
+                  animate={{ width: step === 1 ? '50%' : '100%' }}
+                  transition={{ duration: 0.3 }}
+                />
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="audit-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="email"
-                    id="audit-email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
-                    disabled={isAnalyzing}
-                  />
+            {step === 1 && (
+              <motion.form key="step1" onSubmit={handleNext} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="space-y-4">
+                <div>
+                  <label htmlFor="audit-company" className="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
+                  <div className="relative">
+                    <Building2 className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      id="audit-company"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Riverside Family Dental"
+                      className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-gray-400 mt-1.5">Your branded PDF report will be sent to this email</p>
-              </div>
 
-              {error && (
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                  <p className="text-red-800 text-sm">{error}</p>
-                </motion.div>
-              )}
+                <div>
+                  <label htmlFor="audit-industry" className="block text-sm font-medium text-gray-700 mb-1.5">Industry</label>
+                  <DropdownComponent options={[...INDUSTRY_OPTIONS]} value={industry} onChange={setIndustry} placeholder="Select your industry" required />
+                </div>
 
-              <button
-                type="submit"
-                disabled={isAnalyzing || !companyName.trim() || !url.trim() || !email.trim()}
-                className="w-full py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-semibold text-base"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader className="w-5 h-5 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="w-5 h-5" />
-                    Get My Free Audit
-                  </>
+                <div>
+                  <label htmlFor="audit-url" className="block text-sm font-medium text-gray-700 mb-1.5">Website URL</label>
+                  <div className="relative">
+                    <Globe className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      id="audit-url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://example.com"
+                      className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <p className="text-red-800 text-sm">{error}</p>
+                  </motion.div>
                 )}
-              </button>
 
-              <p className="text-xs text-center text-gray-400">Free · No credit card · Delivered to your inbox</p>
-            </form>
+                <button
+                  type="submit"
+                  disabled={!companyName.trim() || !url.trim() || !industry}
+                  className="w-full py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-semibold text-base"
+                >
+                  Continue
+                </button>
+              </motion.form>
+            )}
+
+            {step === 2 && (
+              <motion.form key="step2" onSubmit={handleSubmit} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="space-y-4">
+                <div>
+                  <label htmlFor="audit-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="email"
+                      id="audit-email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@company.com"
+                      className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                      disabled={isAnalyzing}
+                      autoFocus
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1.5">Your branded PDF report will be sent to this email</p>
+                </div>
+
+                <div>
+                  <label htmlFor="audit-phone" className="block text-sm font-medium text-gray-700 mb-1.5">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      id="audit-phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="(555) 123-4567"
+                      className="w-full pl-12 pr-4 py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                      disabled={isAnalyzing}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1.5">In case we spot something worth a quick call</p>
+                </div>
+
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <p className="text-red-800 text-sm">{error}</p>
+                  </motion.div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    disabled={isAnalyzing}
+                    className="px-4 py-4 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 disabled:opacity-50 transition-colors flex items-center justify-center"
+                    aria-label="Back"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isAnalyzing || !email.trim() || !phone.trim()}
+                    className="flex-1 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 font-semibold text-base"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader className="w-5 h-5 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-5 h-5" />
+                        Get My Free Audit
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <p className="text-xs text-center text-gray-400">Free · No credit card · Delivered to your inbox</p>
+              </motion.form>
+            )}
           </div>
         </motion.div>
       </section>
