@@ -1738,6 +1738,22 @@ input:checked+.switch-left+.switch-right::before {
   body { font-size: 15px; }
 }
 
+/* The hero headline opts out of the global mobile h1 clamps above — it is the
+   page's lead statement, not body-copy heading, so it scales with the viewport
+   instead of collapsing to 26px. Capped so "NEVER MISS" never overflows. */
+@media (max-width: 768px) {
+  #hero h1.hero-headline {
+    font-size: clamp(34px, 12vw, 52px) !important;
+    line-height: 1.08;
+  }
+
+  /* The global `section` padding rule above collapses the hero's own pb-32 to
+     48px, which leaves no room under the audit form for the floating icons. */
+  #hero {
+    padding-bottom: 120px !important;
+  }
+}
+
 /* ====== Touch Target Enforcement ====== */
 @media (max-width: 768px) {
   button, [role="button"], input[type="submit"], input[type="button"] {
