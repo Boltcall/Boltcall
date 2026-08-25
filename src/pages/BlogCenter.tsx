@@ -527,6 +527,8 @@ const moreFromBoltcall: { label: string; href: string; tagline: string }[] = [
   { label: 'Lead response time benchmark', href: '/blog/lead-response-time-benchmark', tagline: 'Set a practical reply standard and turn more inquiries into booked jobs.' },
   { label: 'Commercial cleaning lead response time guide', href: '/blog/commercial-cleaning-lead-response-time', tagline: 'Turn property-management inquiries into booked walkthroughs.' },
   { label: 'Commercial cleaning speed-to-lead audit', href: '/blog/commercial-cleaning-lead-response-time#speed-to-lead-audit', tagline: 'Build a faster path from quote request to recurring contract.' },
+  { label: 'Commercial roofing lead response time guide', href: '/blog/commercial-roofing-lead-response-time', tagline: 'Win more bids by replying before another contractor does.' },
+  { label: 'Missed call text back for small business', href: '/blog/missed-call-text-back-small-business', tagline: 'Give every missed caller a useful reply before they move on.' },
 ];
 
 const BlogCenter: React.FC = () => {
@@ -651,6 +653,9 @@ const BlogCenter: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/pest-control-lead-response-time" className="text-blue-600 hover:underline">Read the pest control lead response time guide</Link> to turn urgent treatment inquiries into scheduled jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/commercial-roofing-lead-response-time" className="text-blue-600 hover:underline">Read the commercial roofing lead response time guide</Link> to turn property-manager inquiries into booked site visits.
           </p>
 
           {/* Search Spotlight */}
@@ -807,6 +812,9 @@ const BlogCenter: React.FC = () => {
           </p>
           <p className="text-sm text-gray-500 text-center mt-4">
             <Link to="/blog/locksmith-lead-response-time" className="text-blue-600 hover:underline">Read the locksmith lead response time guide</Link> when improving urgent lockout intake.
+          </p>
+          <p className="text-sm text-gray-500 text-center mt-4">
+            <Link to="/blog/missed-call-text-back-small-business" className="text-blue-600 hover:underline">Apply the missed call text back playbook for small business</Link> when the team cannot pick up.
           </p>
         </div>
       </section>
