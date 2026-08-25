@@ -33,6 +33,33 @@ const FILTER_TABS = [
 
 const blogPosts: BlogPost[] = [
   {
+    title: 'Commercial Roofing Lead Response Time: <span className="text-blue-600">Win More Bids Before Competitors Reply</span>',
+    slug: '/blog/commercial-roofing-lead-response-time',
+    excerpt: 'Commercial roofing lead response time determines whether a property manager schedules your inspection or sends the project to another contractor. Respond fast, qualify the opportunity, and move more commercial roofing inquiries toward booked site visits and bids.',
+    date: 'August 24, 2026',
+    readTime: '10 min read',
+    category: 'Commercial Roofing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
+    title: 'Missed Call Text Back Small Business: <span className="text-blue-600">Recover Leads Before They Move On</span>',
+    slug: '/blog/missed-call-text-back-small-business',
+    excerpt: 'Missed call text back for small business gives every new caller a useful response when the team cannot pick up. Capture the reason for the call, qualify the opportunity, and move more missed calls toward booked work.',
+    date: 'August 24, 2026',
+    readTime: '10 min read',
+    category: 'Speed to Lead|How-to',
+    featured: false,
+  },
+  {
+    title: 'Speed to Lead for Plumbers: <span className="text-blue-600">Turn Every Inquiry Into Booked Work</span>',
+    slug: '/blog/speed-to-lead-for-plumbers',
+    excerpt: 'Speed to lead for plumbers determines whether a homeowner books your team or the competitor who replies first. Respond instantly, qualify the job, and turn urgent demand into booked plumbing work.',
+    date: 'August 23, 2026',
+    readTime: '10 min read',
+    category: 'Plumbing|Speed to Lead|Industry Guide',
+    featured: false,
+  },
+  {
     title: 'Locksmith Lead Response Time: <span className="text-blue-600">Turn Urgent Calls Into Booked Jobs</span>',
     slug: '/blog/locksmith-lead-response-time',
     excerpt: 'Locksmith lead response time determines whether a stranded driver, locked-out homeowner, or property manager calls your team or the competitor who replies first. Respond instantly, qualify the job, and turn urgent demand into booked work.',
@@ -588,6 +615,12 @@ const BlogCenter: React.FC = () => {
           <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">Expert insights on AI receptionists, lead capture, and growing your local business.</p>
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/missed-call-text-back-service" className="text-blue-600 hover:underline">Learn how a missed call text back service recovers leads</Link> before they choose another provider.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/speed-to-lead-for-plumbers" className="text-blue-600 hover:underline">Read the speed to lead for plumbers guide</Link> to turn urgent service inquiries into booked jobs.
+          </p>
+          <p className="text-sm text-gray-500 text-center mb-2">
+            <Link to="/blog/speed-to-lead-for-plumbers" className="text-blue-600 hover:underline">See the plumbing speed-to-lead playbook</Link> when your team is handling calls in the field.
           </p>
           <p className="text-sm text-gray-500 text-center mb-2">
             <Link to="/blog/home-service-lead-response-time" className="text-blue-600 hover:underline">Read the home service lead response time guide</Link> to turn more inquiries into booked jobs.

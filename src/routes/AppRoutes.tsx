@@ -752,16 +752,19 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/blog/why-speed-matters" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/complete-guide-to-seo" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/emergency-plumber-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/speed-to-lead-for-plumbers" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/plumbing-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/commercial-cleaning-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/electrician-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/missed-call-text-back-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/missed-call-text-back-small-business" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/home-service-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/hvac-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/hvac-answering-service" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/locksmith-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/missed-call-automation-contractors" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/roofing-missed-call-answering-service" element={<CanonicalBlogArticlePage />} />
+        <Route path="/blog/commercial-roofing-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/blog/solar-lead-response-time" element={<CanonicalBlogArticlePage />} />
         <Route path="/ai-guide-for-businesses" element={<BlogAIGuide />} />
         <Route path="/ai-guide-for-businesses/level-1-understanding-ai" element={<BlogAIGuideStep1 />} />
