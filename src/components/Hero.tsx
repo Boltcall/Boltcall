@@ -246,6 +246,83 @@ const Hero: React.FC = () => {
           </Floating>
         </div>
 
+        {/* Mobile-only floating icons — a lighter 5-icon set that stays clear of the copy */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none md:hidden" dir="ltr">
+          <Floating sensitivity={-0.5} className="h-full">
+
+            <FloatingElement depth={1.2} className="top-[16%] left-[5%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.55 }}
+              >
+                <div className="-rotate-[8deg]">
+                  <div className="flex items-center justify-center w-11 h-11 rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Phone className="w-6 h-6 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            <FloatingElement depth={1.2} className="top-[15%] left-[78%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.65 }}
+              >
+                <div className="rotate-[8deg]">
+                  <div className="flex items-center justify-center w-11 h-11 rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Zap className="w-6 h-6 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            <FloatingElement depth={2} className="top-[79%] left-[6%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.75 }}
+              >
+                <div className="-rotate-[7deg]">
+                  <div className="flex items-center justify-center w-11 h-11 rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Calendar className="w-6 h-6 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            <FloatingElement depth={2.4} className="top-[87%] left-[44%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.85 }}
+              >
+                <div className="rotate-[6deg]">
+                  <div className="flex items-center justify-center w-11 h-11 rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <MessageSquare className="w-6 h-6 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+            <FloatingElement depth={2} className="top-[78%] left-[78%]">
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.95 }}
+              >
+                <div className="rotate-[7deg]">
+                  <div className="flex items-center justify-center w-11 h-11 rounded-2xl shadow-xl bg-white border border-gray-100">
+                    <Star className="w-6 h-6 text-blue-600" strokeWidth={2.5} />
+                  </div>
+                </div>
+              </motion.div>
+            </FloatingElement>
+
+          </Floating>
+        </div>
+
         {/* Subtle center grid */}
         <div
           className="absolute inset-0 z-0 pointer-events-none opacity-60"
@@ -265,7 +342,7 @@ const Hero: React.FC = () => {
           <div className={`relative z-10 pt-32 md:pt-44 lg:pt-52 pb-12 ${isRtl ? 'text-right md:max-w-4xl md:ml-auto' : 'text-center'}`}>
 
             <motion.h1
-              className={`text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-text-main flex flex-col leading-tight space-y-1 md:space-y-2 mb-6 ${isRtl ? 'items-end justify-end' : 'items-center justify-center'}`}
+              className={`hero-headline text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-text-main flex flex-col leading-tight space-y-1 md:space-y-2 mb-6 ${isRtl ? 'items-end justify-end' : 'items-center justify-center'}`}
               style={{ fontFamily: "'Sora', sans-serif" }}
               animate={{ opacity: 1, y: 0 }}
               initial={{ opacity: 0, y: 24 }}
