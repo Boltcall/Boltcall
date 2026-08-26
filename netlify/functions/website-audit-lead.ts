@@ -7,6 +7,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 
 const COMPANY_RE = /^[\p{L}\p{N} .,'&-]{2,150}$/u;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[0-9+()\-.\s]{7,20}$/;
 const IP_WINDOW_SECONDS = 60 * 60;
 const IP_MAX_ATTEMPTS = 10;
 
@@ -49,10 +50,14 @@ const handler: Handler = async (event) => {
   const companyName = clean(body.companyName, 150);
   const email = clean(body.email, 190).toLowerCase();
   const url = normalizeUrl(clean(body.url, 500));
+  const phone = clean(body.phone, 30);
+  const industry = clean(body.industry, 50);
 
   if (!COMPANY_RE.test(companyName)) return json(headers, 400, { error: 'Enter a valid company name' });
   if (!EMAIL_RE.test(email)) return json(headers, 400, { error: 'Enter a valid email' });
   if (!url) return json(headers, 400, { error: 'Enter a valid website URL' });
+  if (!PHONE_RE.test(phone)) return json(headers, 400, { error: 'Enter a valid phone number' });
+  if (!industry) return json(headers, 400, { error: 'Select your industry' });
 
   const supabase = getServiceSupabase();
   const ip = getClientIp(event.headers as Record<string, string | undefined>);
@@ -78,6 +83,8 @@ const handler: Handler = async (event) => {
     company_name: companyName,
     email,
     url,
+    phone,
+    industry,
     source: 'website_audit',
   });
 
@@ -86,7 +93,7 @@ const handler: Handler = async (event) => {
     return json(headers, 500, { error: 'Could not save your details right now' });
   }
 
-  notifyInfo(`🔍 Website audit lead: ${companyName} · ${email} · ${url}`).catch(
+  notifyInfo(`🔍 Website audit lead: ${companyName} (${industry}) · ${email} · ${phone} · ${url}`).catch(
     (e) => console.error('[website-audit-lead] notify failed:', e),
   );
 
@@ -95,7 +102,7 @@ const handler: Handler = async (event) => {
     fetch(modalUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ companyName, url, email }),
+      body: JSON.stringify({ companyName, url, email, phone, industry }),
     }).catch((e) => console.error('[website-audit-lead] report generation trigger failed:', e));
   }
 
