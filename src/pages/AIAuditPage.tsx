@@ -11,6 +11,7 @@ import Button from '../components/ui/Button';
 import DropdownComponent from '../components/ui/dropdown-01';
 import { useNavigate } from 'react-router-dom';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
+import { MONTHLY_LEADS_OPTIONS, JOB_VALUE_OPTIONS } from '../lib/leadQualifiers';
 
 // ── Option lists ──
 const industryOptions = [
@@ -29,21 +30,6 @@ const industryOptions = [
   { value: 'Insurance', label: 'Insurance' },
   { value: 'Accounting', label: 'Accounting' },
   { value: 'Other', label: 'Other' },
-];
-
-const monthlyLeadsOptions = [
-  { value: '0-10', label: '0 – 10' },
-  { value: '10-50', label: '10 – 50' },
-  { value: '50-100', label: '50 – 100' },
-  { value: '100+', label: '100+' },
-];
-
-const ltvOptions = [
-  { value: 'Under $500', label: 'Under $500' },
-  { value: '$500-$2K', label: '$500 – $2,000' },
-  { value: '$2K-$5K', label: '$2,000 – $5,000' },
-  { value: '$5K-$10K', label: '$5,000 – $10,000' },
-  { value: '$10K+', label: '$10,000+' },
 ];
 
 const adminHoursOptions = [
@@ -625,7 +611,7 @@ const AIAuditPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 mb-2">Estimated monthly leads/inquiries *</label>
-                  <DropdownComponent options={monthlyLeadsOptions} value={monthlyLeads} onChange={setMonthlyLeads} placeholder="Select range" required />
+                  <DropdownComponent options={[...MONTHLY_LEADS_OPTIONS]} value={monthlyLeads} onChange={setMonthlyLeads} placeholder="Select range" required />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 mb-3">Do you have an after-hours answering system? *</label>
@@ -651,7 +637,7 @@ const AIAuditPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 mb-2">Average customer lifetime value *</label>
-                  <DropdownComponent options={ltvOptions} value={customerLtv} onChange={setCustomerLtv} placeholder="Select range" required />
+                  <DropdownComponent options={[...JOB_VALUE_OPTIONS]} value={customerLtv} onChange={setCustomerLtv} placeholder="Select range" required />
                 </div>
               </div>
             </motion.div>

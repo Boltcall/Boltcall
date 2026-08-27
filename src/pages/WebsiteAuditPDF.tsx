@@ -15,6 +15,7 @@ import DropdownComponent from '../components/ui/dropdown-01';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import { INDUSTRY_OPTIONS } from '../lib/setup/onboarding';
+import { MONTHLY_LEADS_OPTIONS, JOB_VALUE_OPTIONS } from '../lib/leadQualifiers';
 
 const LEAD_ENDPOINT = '/.netlify/functions/website-audit-lead';
 
@@ -25,6 +26,39 @@ const loadingSteps = [
   { icon: Smartphone, text: 'Checking mobile first-screen...' },
   { icon: FileText, text: 'Writing your branded PDF...' },
 ];
+
+// Tap-to-pick tiles. Two taps beats open/scroll/select/close on mobile, and these
+// are short fixed lists — a dropdown would only hide the options.
+const TileGroup: React.FC<{
+  legend: string;
+  options: ReadonlyArray<{ value: string; label: string }>;
+  value: string;
+  onChange: (v: string) => void;
+}> = ({ legend, options, value, onChange }) => (
+  <fieldset>
+    <legend className="block text-sm font-medium text-gray-700 mb-2">{legend}</legend>
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {options.map((opt) => {
+        const selected = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            aria-pressed={selected}
+            className={`py-3 px-3 rounded-lg border text-sm font-medium transition-colors ${
+              selected
+                ? 'border-blue-600 bg-blue-50 text-blue-700'
+                : 'border-gray-300 bg-white text-gray-700 hover:border-blue-400'
+            }`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  </fieldset>
+);
 
 const WebsiteAuditPDF: React.FC = () => {
   useSchemaInjector([
@@ -65,10 +99,12 @@ const WebsiteAuditPDF: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [url, setUrl] = useState(() => searchParams.get('url') || '');
   const [companyName, setCompanyName] = useState('');
   const [industry, setIndustry] = useState('');
+  const [monthlyLeads, setMonthlyLeads] = useState('');
+  const [avgJobValue, setAvgJobValue] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -119,7 +155,7 @@ const WebsiteAuditPDF: React.FC = () => {
   const validateEmail = (value: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   const validatePhone = (value: string): boolean => /^[0-9+()\-.\s]{7,20}$/.test(value);
 
-  const handleNext = (e: React.FormEvent) => {
+  const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!companyName.trim()) { setError('Please enter your company name'); return; }
@@ -128,9 +164,17 @@ const WebsiteAuditPDF: React.FC = () => {
     setStep(2);
   };
 
+  const handleStep2 = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!monthlyLeads) { setError('Pick roughly how many leads you get a month'); return; }
+    if (!avgJobValue) { setError('Pick your average job value'); return; }
+    setStep(3);
+  };
+
   const handleBack = () => {
     setError('');
-    setStep(1);
+    setStep((s) => (s === 3 ? 2 : 1));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,6 +195,8 @@ const WebsiteAuditPDF: React.FC = () => {
           companyName: companyName.trim(),
           url: url.trim(),
           industry,
+          monthlyLeads,
+          avgJobValue,
           email: email.trim(),
           phone: phone.trim(),
         }),
@@ -300,27 +346,31 @@ const WebsiteAuditPDF: React.FC = () => {
           <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 md:p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-1 text-center">Get Your Free Audit</h2>
             <p className="text-sm text-gray-500 mb-4 text-center">
-              {step === 1 ? "Tell us about your business" : "Where should we send your report?"}
+              {step === 1
+                ? 'Tell us about your business'
+                : step === 2
+                  ? 'So we can price what those missed leads cost you'
+                  : 'Where should we send your report?'}
             </p>
 
-            {/* 2-step progress */}
+            {/* 3-step progress */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-1.5">
-                <span className="text-xs font-medium text-gray-500">Step {step} of 2</span>
-                <span className="text-xs text-gray-400">{step === 1 ? '50%' : '100%'}</span>
+                <span className="text-xs font-medium text-gray-500">Step {step} of 3</span>
+                <span className="text-xs text-gray-400">{Math.round((step / 3) * 100)}%</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-1">
                 <motion.div
                   className="bg-blue-600 h-1 rounded-full"
                   initial={false}
-                  animate={{ width: step === 1 ? '50%' : '100%' }}
+                  animate={{ width: `${(step / 3) * 100}%` }}
                   transition={{ duration: 0.3 }}
                 />
               </div>
             </div>
 
             {step === 1 && (
-              <motion.form key="step1" onSubmit={handleNext} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="space-y-4">
+              <motion.form key="step1" onSubmit={handleStep1} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="space-y-4">
                 <div>
                   <label htmlFor="audit-company" className="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
                   <div className="relative">
@@ -374,7 +424,59 @@ const WebsiteAuditPDF: React.FC = () => {
             )}
 
             {step === 2 && (
-              <motion.form key="step2" onSubmit={handleSubmit} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="space-y-4">
+              <motion.form key="step2" onSubmit={handleStep2} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="space-y-5">
+                <TileGroup
+                  legend="Roughly how many leads or calls do you get a month?"
+                  options={MONTHLY_LEADS_OPTIONS}
+                  value={monthlyLeads}
+                  onChange={setMonthlyLeads}
+                />
+
+                <TileGroup
+                  legend="What's your average job worth?"
+                  options={JOB_VALUE_OPTIONS}
+                  value={avgJobValue}
+                  onChange={setAvgJobValue}
+                />
+
+                <p className="text-xs text-gray-400">
+                  We multiply these two to show what your unanswered leads cost per month. Ballpark is fine.
+                </p>
+
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                    <p className="text-red-800 text-sm">{error}</p>
+                  </motion.div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="px-4 py-4 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+                    aria-label="Back"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!monthlyLeads || !avgJobValue}
+                    className="flex-1 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold text-base"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </motion.form>
+            )}
+
+            {step === 3 && (
+              <motion.form key="step3" onSubmit={handleSubmit} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="space-y-4">
+                <p className="text-xs text-gray-500 bg-white border border-gray-200 rounded-lg p-3 leading-relaxed">
+                  <span className="font-semibold text-gray-700">Please note:</span> one free audit per email address every
+                  7 days. Your report stays available for 7 days, then it's deleted.
+                </p>
+
                 <div>
                   <label htmlFor="audit-email" className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
                   <div className="relative">
