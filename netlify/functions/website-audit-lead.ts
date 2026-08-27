@@ -4,6 +4,8 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { notifyInfo } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
+// Same source of truth as the form. If these drift, valid submissions get rejected.
+import { MONTHLY_LEADS_VALUES, JOB_VALUE_VALUES } from '../../src/lib/leadQualifiers';
 
 const COMPANY_RE = /^[\p{L}\p{N} .,'&-]{2,150}$/u;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -52,12 +54,16 @@ const handler: Handler = async (event) => {
   const url = normalizeUrl(clean(body.url, 500));
   const phone = clean(body.phone, 30);
   const industry = clean(body.industry, 50);
+  const monthlyLeads = clean(body.monthlyLeads, 20);
+  const avgJobValue = clean(body.avgJobValue, 20);
 
   if (!COMPANY_RE.test(companyName)) return json(headers, 400, { error: 'Enter a valid company name' });
   if (!EMAIL_RE.test(email)) return json(headers, 400, { error: 'Enter a valid email' });
   if (!url) return json(headers, 400, { error: 'Enter a valid website URL' });
   if (!PHONE_RE.test(phone)) return json(headers, 400, { error: 'Enter a valid phone number' });
   if (!industry) return json(headers, 400, { error: 'Select your industry' });
+  if (!MONTHLY_LEADS_VALUES.includes(monthlyLeads)) return json(headers, 400, { error: 'Select your monthly lead volume' });
+  if (!JOB_VALUE_VALUES.includes(avgJobValue)) return json(headers, 400, { error: 'Select your average job value' });
 
   const supabase = getServiceSupabase();
   const ip = getClientIp(event.headers as Record<string, string | undefined>);
@@ -85,6 +91,8 @@ const handler: Handler = async (event) => {
     url,
     phone,
     industry,
+    monthly_leads: monthlyLeads,
+    avg_job_value: avgJobValue,
     source: 'website_audit',
   });
 
@@ -93,16 +101,16 @@ const handler: Handler = async (event) => {
     return json(headers, 500, { error: 'Could not save your details right now' });
   }
 
-  notifyInfo(`🔍 Website audit lead: ${companyName} (${industry}) · ${email} · ${phone} · ${url}`).catch(
-    (e) => console.error('[website-audit-lead] notify failed:', e),
-  );
+  notifyInfo(
+    `🔍 Website audit lead: ${companyName} (${industry}) · ${email} · ${phone} · ${url} · ${monthlyLeads} leads/mo · ${avgJobValue}/job`,
+  ).catch((e) => console.error('[website-audit-lead] notify failed:', e));
 
   const modalUrl = process.env.WEBSITE_AUDIT_MODAL_URL;
   if (modalUrl) {
     fetch(modalUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ companyName, url, email, phone, industry }),
+      body: JSON.stringify({ companyName, url, email, phone, industry, monthlyLeads, avgJobValue }),
     }).catch((e) => console.error('[website-audit-lead] report generation trigger failed:', e));
   }
 
