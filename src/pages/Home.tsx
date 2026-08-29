@@ -257,6 +257,52 @@ const Home: React.FC = () => {
             </LazySection>
           </div>
 
+          {/* How Boltcall compares — internal-link section, added 2026-08-29 per
+              SEO audit. Homepage was 25 of 31 total site clicks; the 6 compare
+              pages all rank top-10 with 0% CTR. Cheapest path to a second
+              traffic cluster is linking them from the highest-authority page.
+              ponytail: plain <section> with 6 links, no new component. */}
+          <section className="relative bg-white py-16 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-950 mb-3">
+                  How Boltcall compares
+                </h2>
+                <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+                  Weighing Boltcall against another platform? Here's the honest read on how each stacks up for law firm intake and speed-to-lead response.
+                </p>
+              </div>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { slug: 'boltcall-vs-podium', name: 'Podium', angle: 'The speed-to-lead alternative to an all-in-one comms hub.' },
+                  { slug: 'boltcall-vs-gohighlevel', name: 'GoHighLevel', angle: 'A simpler speed-to-lead alternative to a full CRM stack.' },
+                  { slug: 'boltcall-vs-smith-ai', name: 'Smith.ai', angle: 'AI legal intake at a fraction of the per-call cost.' },
+                  { slug: 'boltcall-vs-birdeye', name: 'Birdeye', angle: 'Speed-to-lead vs reputation-management focus — which wins.' },
+                  { slug: 'boltcall-vs-goodcall', name: 'GoodCall', angle: 'AI receptionist head-to-head for law firms.' },
+                  { slug: 'boltcall-vs-lindy', name: 'Lindy', angle: 'Purpose-built intake vs a generalist AI assistant.' },
+                ].map((c) => (
+                  <li key={c.slug}>
+                    <a
+                      href={`/compare/${c.slug}/`}
+                      className="block h-full rounded-xl border border-gray-200 bg-white p-5 hover:border-blue-500 hover:shadow-md transition"
+                    >
+                      <div className="flex items-baseline justify-between mb-2">
+                        <span className="text-lg font-semibold text-gray-950">Boltcall vs {c.name}</span>
+                        <span className="text-xs font-medium text-blue-600" aria-hidden="true">→</span>
+                      </div>
+                      <p className="text-sm text-gray-600 leading-snug">{c.angle}</p>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-center mt-6 text-sm">
+                <a href="/comparisons/" className="text-blue-600 hover:text-blue-700 font-medium">
+                  See all comparisons →
+                </a>
+              </p>
+            </div>
+          </section>
+
           <div className="relative bg-white -mb-16">
             <LazySection rootMargin="400px" minHeight="400px">
               <Suspense fallback={<div className="min-h-[400px]" />}>

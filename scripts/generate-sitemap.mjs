@@ -88,22 +88,14 @@ const ROUTES = [
   { path: "/ai-guide-for-businesses/level-3-getting-started",   priority: "0.8", changefreq: "monthly" },
 
   // Blog Posts
-  { path: "/blog/garage-door-lead-response-time", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/pest-control-lead-response-time", priority: "0.8", changefreq: "weekly" },
+  // Pruned 2026-08-29 (audit round 2): removed the {industry}-lead-response-time
+  // cluster — GSC showed the whole cluster as "Discovered - currently not
+  // indexed" / "URL unknown to Google" for 90+ days. Google was triaging them
+  // as low-value dupes and refusing to crawl. Pages still exist for direct
+  // traffic; just stopped asking Google to prioritize crawling them.
+  // Also removed non-legal industry blog stubs post-Phase-3/4 pivot.
   { path: "/blog/missed-call-text-back-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/missed-call-text-back-small-business", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/emergency-plumber-answering-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/speed-to-lead-for-plumbers", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/plumbing-lead-response-time", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/commercial-cleaning-lead-response-time", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/electrician-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/missed-call-recovery-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/missed-call-automation-contractors", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/home-service-lead-response-time", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/hvac-lead-response-time", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/hvac-answering-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/locksmith-lead-response-time", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/solar-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/the-new-reality-for-local-businesses",              priority: "0.8", changefreq: "weekly" },
   { path: "/blog/why-speed-matters",                                 priority: "0.8", changefreq: "weekly" },
   { path: "/blog/complete-guide-to-seo",                             priority: "0.8", changefreq: "weekly" },
@@ -128,7 +120,6 @@ const ROUTES = [
   { path: "/blog/missed-calls-statistics-local-business-2026",       priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-agent-for-small-business-24-7-call-answering",   priority: "0.8", changefreq: "weekly" },
   { path: "/blog/never-miss-a-call-after-business-hours",            priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/lead-response-time-benchmark",                      priority: "0.8", changefreq: "weekly" },
 
 
   // Blog FAQ / Industry AEO How-To
@@ -146,18 +137,19 @@ const ROUTES = [
   { path: "/compare/boltcall-vs-lindy",                         priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-convin",                        priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-soundhound",                    priority: "0.8", changefreq: "monthly" },
-  { path: "/compare/boltcall-vs-emitrr",                        priority: "0.8", changefreq: "monthly" },
-  { path: "/compare/boltcall-vs-calomation",                    priority: "0.8", changefreq: "monthly" },
+  // Pruned 2026-08-29 (audit round 2): boltcall-vs-emitrr, boltcall-vs-calomation,
+  // comparisons/{call-centers,crm,voicemail}-vs-boltcall — all 301'd in
+  // public/_redirects to /comparisons hub. Sitemap should never list
+  // redirected URLs (inflates the "submitted" count, wastes crawl budget).
   { path: "/compare/podium-alternatives",                       priority: "0.8", changefreq: "monthly" },
-  { path: "/comparisons/call-centers-vs-boltcall",              priority: "0.8", changefreq: "monthly" },
-  { path: "/comparisons/crm-vs-boltcall",                       priority: "0.8", changefreq: "monthly" },
-  { path: "/comparisons/voicemail-vs-boltcall",                 priority: "0.8", changefreq: "monthly" },
 
   // Live blog posts previously flagged by scripts/audit-sitemap-diff.mjs
+  // 2026-08-29 audit round 2 prune: /is-ai-receptionist-worth-it was
+  // listed twice (dup on line 113 too); ai-receptionist-worth-it-roi,
+  // ai-chatbot-vs-live-chat-phone-answering, how-instant-lead-reply-works,
+  // instant-lead-reply-guide are all 301'd in _redirects; commercial-roofing-
+  // lead-response-time falls under the deprecated -lead-response-time cluster.
   { path: "/blog/what-is-ai-receptionist-guide",                priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/is-ai-receptionist-worth-it",                  priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/how-instant-lead-reply-works",                 priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/instant-lead-reply-guide",                     priority: "0.8", changefreq: "monthly" },
   { path: "/blog/phone-call-scripts",                           priority: "0.7", changefreq: "monthly" },
   { path: "/blog/tips-for-professional-telephone-etiquette",    priority: "0.7", changefreq: "monthly" },
   { path: "/blog/answering-service-scheduling",                 priority: "0.7", changefreq: "monthly" },
@@ -165,11 +157,8 @@ const ROUTES = [
   { path: "/blog/google-reviews-automation-local-business",     priority: "0.8", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-for-law-firms",                priority: "0.8", changefreq: "monthly" },
   { path: "/blog/speed-to-lead-for-law-firms",                  priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-worth-it-roi",                 priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/ai-chatbot-vs-live-chat-phone-answering",      priority: "0.7", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-lawyer-faq",                   priority: "0.7", changefreq: "monthly" },
   { path: "/blog/roofing-missed-call-answering-service",        priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/commercial-roofing-lead-response-time",        priority: "0.8", changefreq: "weekly" },
 
   // Product + landing pages
   { path: "/agent-architecture",                                priority: "0.7", changefreq: "monthly" },
