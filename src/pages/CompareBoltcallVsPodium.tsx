@@ -14,7 +14,7 @@ import { SITE_DATE_MODIFIED } from '../lib/seoConstants';
 
 const PUBLISH_DATE = '2026-05-06';
 const MODIFIED_DATE = SITE_DATE_MODIFIED;
-const TITLE = 'Boltcall vs Podium: Speed-to-Lead vs Comms Hub (2026)';
+const TITLE = 'Boltcall vs Podium: The Speed-to-Lead Alternative for Law Firms (2026)';
 const DESCRIPTION = 'Boltcall vs Podium compared honestly. Speed-to-lead specialist vs all-in-one communication hub. See which fits your local business in 2026.';
 
 const CompareBoltcallVsPodium: React.FC = () => {
