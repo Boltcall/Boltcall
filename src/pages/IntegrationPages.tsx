@@ -313,10 +313,16 @@ function useMeta(title: string, description: string) {
 }
 
 function JsonLd({ value }: { value: unknown }) {
+  // Escape "</script" so a JSON string containing example HTML (e.g. the
+  // Squarespace HowTo step showing a snippet to paste) cannot terminate the
+  // outer <script> tag mid-JSON. Without this, block 7 on
+  // /integrations/squarespace/ prerendered as invalid JSON — Rich Results
+  // reported "Bad escape sequence" per the 2026-08-29 audit.
+  const escaped = JSON.stringify(value).replace(/<\/script/gi, '<\\/script');
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(value) }}
+      dangerouslySetInnerHTML={{ __html: escaped }}
     />
   );
 }

@@ -23,7 +23,7 @@ const FreeWebsitePage: React.FC = () => {
   });
 
   useEffect(() => {
-    document.title = 'Get Your Free Professional Website - Boltcall';
+    document.title = 'Free Professional Website for Law Firms — Delivered in 5 Days | Boltcall';
     updateMetaDescription('Fill out our form to get a free professional website for your business. Modern design, fast loading, and SEO optimized. Apply now.');
 
     const breadcrumbSchema = {

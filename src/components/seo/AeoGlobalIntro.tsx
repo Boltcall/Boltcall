@@ -6,20 +6,23 @@ const AeoGlobalIntro: React.FC = () => {
   const location = useLocation();
   const path = location.pathname;
   const [footerPortalHost, setFooterPortalHost] = useState<HTMLElement | false | null>(null);
+  // Ponytail: this map used to overwrite document.title client-side AFTER
+  // the page's own useEffect had set it — for CTR-outlier pages (compare/*,
+  // pricing, giveaway) it silently reverted the good title to a generic
+  // "Boltcall vs X Comparison" one. Removed the 3 entries the 2026-08-29
+  // audit fixed (podium, birdeye, smith-ai) so page-level titles win; the
+  // rest kept until a per-page title exists.
   const titleOverrides: Record<string, string> = {
     '/compare/boltcall-vs-calomation': 'Boltcall vs Calomation Comparison | Boltcall',
     '/blog/speed-to-lead-local-business': 'Speed to Lead for Local Businesses | Boltcall',
-    '/compare/boltcall-vs-birdeye': 'Boltcall vs Birdeye Comparison | Boltcall',
     '/blog/best-ai-receptionist-small-business': 'Best AI Receptionist for Small Business | Boltcall',
     '/challenge': 'Break Our AI Challenge | Boltcall',
     '/blog/best-after-hours-answering-service': 'Best After Hours Answering Service | Boltcall',
     '/blog/ai-receptionist-lawyer-faq': 'AI Receptionist for Law Firms FAQ | Boltcall',
     '/business-audit': 'Free Business Audit Tool | Boltcall',
-    '/compare/boltcall-vs-smith-ai': 'Boltcall vs Smith.ai Comparison | Boltcall',
     '/blog/ai-chatbot-vs-live-chat-phone-comparison': 'AI Chatbot vs Live Chat vs Phone | Boltcall',
     '/blog/missed-calls-statistics-local-business-2026': 'Missed Calls Statistics 2026 | Boltcall',
     '/blog/ai-receptionist-worth-it-roi': 'Is AI Receptionist Worth It? ROI | Boltcall',
-    '/compare/boltcall-vs-podium': 'Boltcall vs Podium Comparison | Boltcall',
     '/funnel-optimizer': 'Free Funnel Optimizer | Boltcall',
     '/blog/ai-chatbot-vs-live-chat-phone-answering': 'AI Chatbot vs Live Chat vs Phone Calls | Boltcall',
     '/compare/boltcall-vs-emitrr': 'Boltcall vs Emitrr Comparison | Boltcall',
@@ -219,52 +222,10 @@ const AeoGlobalIntro: React.FC = () => {
     };
   }, [path, shouldShow]);
 
-  // Global WebSite + SearchAction schema — injected on every route.
-  // Signals to Google and AI Mode that boltcall.org has internal search.
-  // Triggers Google sitelinks search box + helps AI engines surface
-  // search-driven citations.
-  useEffect(() => {
-    const websiteSchemaId = 'aeo-global-website-schema';
-    const existing = document.getElementById(websiteSchemaId);
-    if (existing) existing.remove();
-
-    const websiteSchema = {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'Boltcall',
-      url: 'https://boltcall.org',
-      inLanguage: 'en-US',
-      description:
-        'Speed-to-lead answering + booking service for local service businesses — answers every call 24/7, books appointments instantly, captures leads automatically.',
-      publisher: {
-        '@type': 'Organization',
-        name: 'Boltcall',
-        url: 'https://boltcall.org',
-        logo: {
-          '@type': 'ImageObject',
-          url: 'https://boltcall.org/logo.png',
-        },
-      },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: 'https://boltcall.org/blog?q={search_term_string}',
-        },
-        'query-input': 'required name=search_term_string',
-      },
-    };
-
-    const script = document.createElement('script');
-    script.id = websiteSchemaId;
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify(websiteSchema);
-    document.head.appendChild(script);
-
-    return () => {
-      script.remove();
-    };
-  }, [path]);
+  // WebSite + SearchAction schema now lives in index.html only (single source
+  // of truth, inherited by every prerendered page). Duplicate injection here
+  // caused every page to emit WebSite twice — a schema-spam signal per the
+  // 2026-08-29 audit. Removed. ponytail: dedup once, do not re-inject.
 
   useEffect(() => {
     if (!serviceSchemaRoutes.has(path)) {
