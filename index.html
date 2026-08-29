@@ -81,87 +81,15 @@
       }
     }
     </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Boltcall",
-      "url": "https://boltcall.org",
-      "logo": "https://boltcall.org/boltcall_full_logo.png",
-      "description": "Boltcall is a speed-to-lead platform: the first business to respond wins the job, and Boltcall makes that automatic with 24/7 call answering, automated follow-ups, and appointment reminders.",
-      "sameAs": [
-        "https://www.facebook.com/profile.php?id=61582307818752",
-        "https://x.com/boltcallteam",
-        "https://www.linkedin.com/company/boltcall"
-      ],
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "Customer Service",
-        "availableLanguage": "English"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Boltcall",
-      "applicationCategory": "BusinessApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "AI-powered speed-to-lead software — answers every lead instantly, books appointments, and follows up automatically for local businesses.",
-      "operatingSystem": "Web",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "1"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What exactly Boltcall offers?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Boltcall gives local businesses a complete AI system that handles all the stuff that keeps slipping through the cracks. It replies to new leads in seconds, answers calls and messages, books appointments directly on your calendar, and follows up automatically so no one gets forgotten. It also sends reminders, updates you in real time, and keeps conversations moving even when you're busy or closed."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can it transfer the call to a real person?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Set live-transfer rules (e.g., during business hours, hot leads only). If no one answers, it books or takes a voicemail and alerts you."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How good is the call quality and voice?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Natural and clear. You pick a voice and tone (friendly, calm, formal). We keep replies short so calls feel human, not robotic."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can it use my current phone number?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. You can forward your existing number to your AI receptionist, or buy a new number inside the app and start fresh."
-          }
-        }
-      ]
-    }
-    </script>
-    
+    <!-- Organization + SoftwareApplication + FAQPage schema previously lived
+         here as static blocks emitted on every route. They duplicated
+         per-page emissions (Home.tsx, PricingPage.tsx, Layout, etc), so
+         every prerendered page carried each @type 2-3× — a schema-spam
+         signal per the 2026-08-29 audit. Removed. Per-page components are
+         now the single source of truth; pages that don't emit their own
+         still get WebPage/BreadcrumbList/Service from route wrappers.
+         ponytail: dedup once, do not re-emit at the template layer. -->
+
     <!-- Critical inline styles: ensures blank page has correct background/font before
          the async CSS bundle loads. Prevents flash of unstyled content on first paint. -->
     <style>
