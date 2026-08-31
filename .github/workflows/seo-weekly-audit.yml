@@ -35,32 +35,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    # Official Playwright image — Chromium + all deps pre-installed. Prior
+    # runs failed with "Executable doesn't exist at .../chromium-1140/..."
+    # when using ubuntu-latest + npx install; container avoids the whole
+    # class of problem. Version pinned to playwright package version below.
+    container:
+      image: mcr.microsoft.com/playwright:v1.48.2-jammy
+      options: --user 1001
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install Playwright
+      - name: Install Playwright (same version as image)
         run: |
-          npm install --no-save --no-audit --no-fund playwright@1.48
-          npx playwright install --with-deps chromium
+          npm install --no-save --no-audit --no-fund playwright@1.48.2
 
       - name: Run weekly audit
         id: audit
         continue-on-error: true
-        run: node scripts/seo-weekly-audit.mjs
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+        run: node scripts/seo-weekly-audit.mjs
 
       - name: Commit baseline + report
-        if: always()
+        if: always() && hashFiles('.seo-baseline/latest.json') != ''
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config user.name  "seo-audit-bot"
           git config user.email "seo-audit-bot@users.noreply.github.com"
           git add .seo-baseline/ || true
@@ -72,7 +75,7 @@ jobs:
           fi
 
       - name: Upload audit report artifact
-        if: always()
+        if: always() && hashFiles('.seo-baseline/latest.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: seo-audit-report
@@ -81,8 +84,10 @@ jobs:
             .seo-baseline/latest-report.md
           retention-days: 90
 
+      # Only fires when the audit reported a real regression AND wrote a
+      # report file. A crash (exit 2, no file) shouldn't spam an empty issue.
       - name: Open / update regression issue
-        if: steps.audit.outcome == 'failure'
+        if: steps.audit.outcome == 'failure' && hashFiles('.seo-baseline/latest-report.md') != ''
         uses: actions/github-script@v7
         with:
           script: |
@@ -117,5 +122,5 @@ jobs:
             }
 
       - name: Fail if audit regressed
-        if: steps.audit.outcome == 'failure'
+        if: steps.audit.outcome == 'failure' && hashFiles('.seo-baseline/latest-report.md') != ''
         run: exit 1
