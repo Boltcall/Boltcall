@@ -133,7 +133,7 @@ const Home: React.FC = () => {
           "name": "How does the speed-to-lead system work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall's speed-to-lead system automatically responds to every new lead within seconds — answering calls, replying to web form submissions, and sending follow-up texts without any human action required. Research shows the first business to respond wins the customer 78% of the time. Boltcall makes that response automatic and instant, even at 2am on weekends."
+            "text": "Boltcall answers every new lead within seconds — picking up calls, replying to web forms, and texting follow-ups with no human action. The first business to respond wins the customer 78% of the time, including at 2am."
           }
         }
       ]

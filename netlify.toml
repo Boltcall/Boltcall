@@ -123,9 +123,14 @@
   status = 200
   force = true
 
+# SPA catch-all. Points at the noindex shell, NOT /index.html: prerendered pages
+# are static files that Netlify serves before this rule ever runs, so anything
+# reaching here is either a client-only route (dashboard/auth/setup, all
+# robots-disallowed) or a URL that does not exist. Serving /index.html here made
+# every unmatched URL a byte-identical, indexable homepage clone.
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/spa-fallback.html"
   status = 200
 
 [build.environment]

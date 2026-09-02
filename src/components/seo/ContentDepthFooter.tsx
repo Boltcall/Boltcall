@@ -13,6 +13,7 @@ const exactRoutes = new Set([
   '/ai-visibility-check',
   '/speed-test',
   '/business-audit',
+  '/website-audit',
   '/ai-revenue-audit',
   '/seo-audit',
   '/seo-aeo-audit',

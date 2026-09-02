@@ -39,7 +39,30 @@ const EXCLUDE_PREFIXES = [
   '/challenge/call', '/challenge/winner',
   // Post-submit results screens.
   '/lead-response-scorecard/results', '/ai-revenue-calculator/results',
+  // Dev tooling and funnel entry points -- live routes, deliberately not indexed.
+  '/dev-login', '/loading-demo', '/start',
+  // Thin internal architecture diagram -- deliberately not indexed.
+  '/agent-architecture',
+  // Client-side <Navigate> to /pricing -- a redirect _redirects cannot see.
+  '/free-website-package/pricing',
 ];
+
+/**
+ * Every path that public/_redirects sends somewhere else. Those Route entries
+ * often still exist so the client can resolve deep links, but the canonical URL
+ * is the redirect target -- a sitemap must never list a URL that redirects.
+ * Parsed rather than hardcoded so new redirects are excluded automatically.
+ */
+const REDIRECT_SOURCES = new Set(
+  readFileSync(resolve(ROOT, 'public/_redirects'), 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => line.split(/\s+/))
+    .filter((parts) => parts.length >= 2 && /^3\d\d!?$/.test(parts[2] ?? '301'))
+    .map((parts) => parts[0].replace(/\/$/, ''))
+    .filter((from) => from.startsWith('/') && !from.includes('*') && !from.includes(':')),
+);
 
 const EXCLUDE_SUFFIXES = ['/thank-you'];
 
@@ -53,6 +76,7 @@ function normalize(p) {
 }
 
 function isExcluded(norm) {
+  if (REDIRECT_SOURCES.has(norm)) return true;
   if (EXCLUDE_PREFIXES.some((p) => norm === p || norm.startsWith(p + '/'))) return true;
   if (EXCLUDE_SUFFIXES.some((s) => norm.endsWith(s))) return true;
   // Exclude deeper /speed-test/* sub-routes but let /speed-test through.
@@ -61,7 +85,14 @@ function isExcluded(norm) {
 }
 
 function extractAppRoutes() {
-  const src = readFileSync(resolve(ROOT, 'src/routes/AppRoutes.tsx'), 'utf8');
+  const raw = readFileSync(resolve(ROOT, 'src/routes/AppRoutes.tsx'), 'utf8');
+  // Strip comments first. A commented-out <Route> is a DELETED page, but the
+  // bare regex matched inside comments and counted it as live -- which let a
+  // dead URL sit in sitemap.xml while this audit reported everything in sync.
+  const src = raw
+    .replace(/\{\s*\/\*[\s\S]*?\*\/\s*\}/g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
   const rx = /<Route\s+path\s*=\s*"([^"]+)"/g;
   const out = new Set();
   let m;
@@ -125,9 +156,20 @@ const report = {
   stalePathsInPrerender: prerenderNotInLive,
 };
 
-console.log(JSON.stringify(report, null, 2));
-
 const brokenSubset = liveNotInSitemap.length + liveNotInPrerender.length + sitemapNotInLive.length + prerenderNotInLive.length;
+
 if (brokenSubset > 0) {
+  console.log(JSON.stringify(report, null, 2));
+}
+
+if (brokenSubset > 0) {
+  console.error(
+    '\nsitemap/prerender drift: ' + brokenSubset + ' route(s) out of sync.\n' +
+    'Every live public route must appear in BOTH scripts/generate-sitemap.mjs\n' +
+    'and scripts/prerender.mjs. A route in the sitemap but not prerendered is\n' +
+    'served as an SPA shell and reads as a dead or duplicate page to Google.',
+  );
   process.exit(1);
 }
+
+console.log(`sitemap/prerender audit OK - ${live.size} live routes in sync.`);

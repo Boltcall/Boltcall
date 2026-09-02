@@ -58,6 +58,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'SEO Audit', labelHe: 'בדיקת SEO', href: '/seo-audit' },
       { label: 'SEO + AEO Audit', labelHe: 'בדיקת SEO + AEO', href: '/seo-aeo-audit' },
       { label: 'Business Audit', labelHe: 'בדיקת עסק', href: '/business-audit' },
+      { label: 'Website Audit', labelHe: 'בדיקת אתר', href: '/website-audit' },
       { label: 'AI Visibility Check', labelHe: 'בדיקת נראות AI', href: '/ai-visibility-check' },
       { label: 'Website Health Check', labelHe: 'בדיקת בריאות אתר', href: '/speed-test' },
       { label: 'Speed Test Offer', labelHe: 'הצעת בדיקת מהירות', href: '/speed-test/offer' },
@@ -65,7 +66,6 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'AI Readiness Scorecard', labelHe: 'כרטיס מוכנות ל-AI', href: '/ai-readiness-scorecard' },
       { label: 'Lead Response Scorecard', labelHe: 'כרטיס תגובה ללידים', href: '/lead-response-scorecard' },
       { label: 'AI Revenue Audit', labelHe: 'בדיקת הכנסות מ-AI', href: '/ai-revenue-audit' },
-      { label: 'AI Revenue Calculator', labelHe: 'מחשבון הכנסות מ-AI', href: '/ai-revenue-calculator' },
       { label: 'AI Receptionist ROI Calculator', labelHe: 'מחשבון ROI לקבלת פנים AI', href: '/ai-receptionist-roi' },
       { label: 'Funnel Optimizer', labelHe: 'מייעל משפך', href: '/funnel-optimizer' },
       { label: 'Conversion Rate Optimizer', labelHe: 'מייעל שיעור המרה', href: '/conversion-rate-optimizer' },
@@ -109,6 +109,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'All Lead Magnets', labelHe: 'כל מגנטי הלידים', href: '/lead-magnet' },
       { label: "AI Receptionist Buyer's Guide", labelHe: 'מדריך רכישה לקבלת פנים AI', href: '/lead-magnet/ai-receptionist-buyers-guide' },
       { label: 'Claude Code Overnight Kit', labelHe: 'ערכת Claude Code ללילה', href: '/lead-magnet/claude-code-overnight-kit' },
+      { label: 'The Vanishing Client Report', labelHe: 'דוח הלקוח הנעלם', href: '/lead-magnet/vanishing-client-report' },
     ],
     company: [
       { label: 'About', labelHe: 'אודות', href: '/about' },

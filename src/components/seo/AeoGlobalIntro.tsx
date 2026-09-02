@@ -40,6 +40,7 @@ const AeoGlobalIntro: React.FC = () => {
     '/ai-visibility-check',
     '/speed-test',
     '/business-audit',
+  '/website-audit',
     '/pricing',
     '/features/instant-form-reply',
     '/features/sms-booking-assistant',
