@@ -184,9 +184,9 @@ const handler: Handler = async (event) => {
     // global Twilio numbers, total leads/workspaces across all tenants), so
     // gate it behind the admin email. Any non-admin caller would otherwise
     // see cross-tenant aggregate data.
-    const adminEmails = (process.env.ADMIN_EMAILS || 'noamyakoby6@gmail.com')
+    const adminEmails = (process.env.ADMIN_EMAILS || '')
       .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-    if (!authUser.email || !adminEmails.includes(authUser.email.toLowerCase())) {
+    if (adminEmails.length === 0 || !authUser.email || !adminEmails.includes(authUser.email.toLowerCase())) {
       return { statusCode: 403, headers, body: JSON.stringify({ error: 'Admin only' }) };
     }
 
