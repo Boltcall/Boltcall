@@ -6,6 +6,7 @@ const verifyFacebookSignatureMock = vi.hoisted(() => vi.fn(() => 'valid'));
 
 vi.mock('../_shared/token-utils', () => ({
   getSupabase: getSupabaseMock,
+  getServiceSupabase: getSupabaseMock,
 }));
 
 vi.mock('../_shared/lead-response-service', () => ({
@@ -32,7 +33,7 @@ vi.mock('retell-sdk', () => ({
   default: class MockRetell {},
 }));
 
-function makeFacebookLeadgenEvent() {
+function makeFacebookLeadgenEvent(leadgenId = '1234567890') {
   return {
     httpMethod: 'POST',
     headers: { 'x-hub-signature-256': 'sha256=test-signature' },
@@ -43,7 +44,7 @@ function makeFacebookLeadgenEvent() {
           changes: [
             {
               field: 'leadgen',
-              value: { leadgen_id: 'leadgen-1', page_id: 'page-1' },
+              value: { leadgen_id: leadgenId, page_id: 'page-1' },
             },
           ],
         },
@@ -112,12 +113,22 @@ describe('lead-webhook Facebook leadgen', () => {
           email: 'maya@example.com',
           phone: '+15551112222',
           raw_data: expect.objectContaining({
-            leadgen_id: 'leadgen-1',
+            leadgen_id: '1234567890',
             page_id: 'page-1',
           }),
         }),
       }),
       expect.any(Object),
     );
+  });
+
+  it('rejects non-numeric leadgen ids before touching the Graph API', async () => {
+    const { testHandler: handler } = await import('../lead-webhook');
+
+    const res = await handler(makeFacebookLeadgenEvent('me/accounts?x='), {} as any);
+
+    expect(res.statusCode).toBe(200);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(handleInboundLeadMock).not.toHaveBeenCalled();
   });
 });
