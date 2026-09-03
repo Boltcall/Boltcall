@@ -53,7 +53,6 @@ const ROUTES = [
   '/demo',
   '/prototype/live-call',
   '/drhazak',
-  '/agent-architecture',
   // Lead magnets
   '/lead-magnet',
   '/lead-magnet/claude-code-overnight-kit',
@@ -70,16 +69,14 @@ const ROUTES = [
   '/ai-revenue-audit',
   '/ai-visibility-check',
   '/business-audit',
+  '/website-audit',
   '/ai-audit',
   '/seo-aeo-audit',
   '/conversion-rate-optimizer',
   '/funnel-optimizer',
   '/strike-ai',
   '/rank-on-google-offer',
-  '/ai-revenue-calculator',
   '/funnel-optimiser',
-  '/free-website-package',
-  '/free-website-package/pricing',
   '/industries/lawyer-answering-service',
   '/ai-readiness-scorecard',
   '/ai-receptionist-roi',
@@ -133,7 +130,6 @@ const ROUTES = [
   '/blog/setup-instant-lead-reply',
   '/blog/how-to-schedule-text',
   '/blog/automatic-google-reviews',
-  '/blog/google-reviews-automation-local-business',
   '/blog/benefits-of-outsourced-reception-services',
   '/blog/phone-call-scripts',
   '/blog/understanding-live-answering-service-costs',
@@ -156,6 +152,27 @@ const ROUTES = [
   '/blog/ai-answering-service-small-business',
   // Industry FAQ blog posts
   '/blog/ai-receptionist-lawyer-faq',
+  // Response-time / missed-call blog posts. These are live routes listed in
+  // sitemap.xml but were never prerendered, so Netlify served them from the SPA
+  // fallback instead of real HTML. Audited 2026-09-02.
+  '/blog/commercial-cleaning-lead-response-time',
+  '/blog/commercial-roofing-lead-response-time',
+  '/blog/electrician-lead-response-time',
+  '/blog/emergency-plumber-answering-service',
+  '/blog/garage-door-lead-response-time',
+  '/blog/home-service-lead-response-time',
+  '/blog/hvac-answering-service',
+  '/blog/hvac-lead-response-time',
+  '/blog/lead-response-time-benchmark',
+  '/blog/locksmith-lead-response-time',
+  '/blog/missed-call-recovery-service',
+  '/blog/missed-call-text-back-service',
+  '/blog/missed-call-text-back-small-business',
+  '/blog/pest-control-lead-response-time',
+  '/blog/plumbing-lead-response-time',
+  '/blog/roofing-missed-call-answering-service',
+  '/blog/solar-lead-response-time',
+  '/blog/speed-to-lead-for-plumbers',
   // Industry calculator tools
   '/tools/5-minute-response-playbook',
   '/tools/lawyer-intake-calculator',
@@ -248,6 +265,38 @@ async function prerender() {
   }
 
   console.log(`Prerendering ${routesToRender.length} routes...\n`);
+
+  // Snapshot the raw Vite shell BEFORE the '/' route overwrites dist/index.html
+  // with prerendered homepage HTML. Netlify's SPA catch-all serves this file, so
+  // without it every unmatched URL returned a byte-identical, indexable copy of
+  // the homepage (soft 404). The shell is noindex: real pages are static files
+  // that never hit the fallback, and the client-only routes that do (dashboard,
+  // auth, setup) are all robots-disallowed anyway.
+  try {
+    const shell = await readFile(join(DIST, 'index.html'), 'utf-8');
+    const fallbackPath = join(DIST, 'spa-fallback.html');
+    // Only a raw Vite shell has an empty #root. If prerender is re-run without a
+    // fresh `vite build`, dist/index.html is already the rendered homepage --
+    // snapshotting that would recreate the homepage-clone bug this fixes.
+    const isRawShell = /<div id="root">\s*<\/div>/.test(shell);
+
+    if (isRawShell) {
+      const noindexShell = shell
+        .replace(/<meta[^>]+name="robots"[^>]*>/gi, '')
+        .replace('</head>', '<meta name="robots" content="noindex, follow"></head>');
+      await writeFile(fallbackPath, noindexShell);
+      console.log('Wrote dist/spa-fallback.html (noindex SPA shell)');
+    } else if (existsSync(fallbackPath)) {
+      console.log('Keeping existing dist/spa-fallback.html (dist/index.html is already prerendered)');
+    } else {
+      console.error('dist/index.html is already prerendered and no spa-fallback.html exists. Run `vite build` first.');
+      process.exit(1);
+    }
+  } catch (err) {
+    console.error(`Could not write spa-fallback.html: ${err.message}`);
+    process.exit(1);
+  }
+
 
   const server = await startServer();
   // Resolve Chromium executable — use @sparticuz/chromium on CI, local Chrome otherwise

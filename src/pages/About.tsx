@@ -22,7 +22,7 @@ const About: React.FC = () => {
     const personScript = document.createElement('script');
     personScript.type = 'application/ld+json';
     personScript.id = 'person-schema';
-    personScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "Person", "name": "Boltcall Team", "url": "https://boltcall.org/about", "worksFor": {"@type": "Organization", "name": "Boltcall", "url": "https://boltcall.org"}});
+    personScript.text = JSON.stringify({"@context": "https://schema.org", "@type": "Person", "@id": "https://boltcall.org/about#noam", "name": "Noam Jacoby", "jobTitle": "Founder", "url": "https://boltcall.org/about", "worksFor": {"@type": "Organization", "name": "Boltcall", "url": "https://boltcall.org"}});
     document.head.appendChild(personScript);
     return () => { document.getElementById('breadcrumb-jsonld')?.remove(); };
   }, []);

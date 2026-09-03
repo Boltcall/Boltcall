@@ -31,6 +31,13 @@ const FEATURED = [
     tag: 'Comparison guide',
   },
   {
+    title: 'The Vanishing Client Report',
+    href: '/lead-magnet/vanishing-client-report',
+    icon: FileText,
+    summary: 'Where inbound leads go quiet between first contact and booked call, what each silent lead costs, and the follow-up sequence that brings them back.',
+    tag: 'Report',
+  },
+  {
     title: 'The Speed-to-Lead Stack',
     href: '/lead-magnet/speed-to-lead-stack',
     icon: Zap,

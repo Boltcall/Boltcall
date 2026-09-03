@@ -551,7 +551,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
                   
                   <p>This example shows why HVAC companies see such strong AI receptionist ROI—high per-call values and significant missed call volumes create compelling business cases.</p>
                   
-                  <p>Use our <Link to="/ai-revenue-calculator" className="text-blue-600 hover:underline">AI Revenue Calculator</Link> to run your specific numbers and see projected ROI for your business.</p>
+                  <p>Use our <Link to="/ai-revenue-audit" className="text-blue-600 hover:underline">AI Revenue Calculator</Link> to run your specific numbers and see projected ROI for your business.</p>
                 </motion.section>
 
                 {/* CTA */}
@@ -567,7 +567,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
                     Use our free calculator to see exactly how much revenue an AI receptionist could recover for your business.
                   </p>
                   <Link
-                    to="/ai-revenue-calculator"
+                    to="/ai-revenue-audit"
                     className="inline-flex items-center gap-2 bg-white text-blue-600 font-semibold px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors"
                   >
                     Calculate Your ROI <ArrowRight className="w-4 h-4" />

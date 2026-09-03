@@ -24,13 +24,32 @@ interface FAQItem {
   answer: string;
 }
 
+/**
+ * Canonical founder entity. Article.author and Organization.founder both point
+ * at this @id so search and AI models resolve a single person rather than
+ * duplicate unlinked nodes. Unattributed content reads as low-trust.
+ *
+ * NOTE: `sameAs` is intentionally empty until real profile URLs are supplied.
+ * A wrong sameAs is worse than none -- it links the entity to the wrong person.
+ */
+export const FOUNDER_ID = 'https://boltcall.org/about#noam';
+
+export const founderPerson = {
+  '@type': 'Person',
+  '@id': FOUNDER_ID,
+  name: 'Noam Jacoby',
+  jobTitle: 'Founder',
+  url: 'https://boltcall.org/about',
+  worksFor: { '@type': 'Organization', name: 'Boltcall', url: 'https://boltcall.org' },
+} as const;
+
 export function createArticleSchema(config: ArticleConfig) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: config.headline,
     description: config.description,
-    author: { '@type': 'Organization', name: 'Boltcall', url: 'https://boltcall.org' },
+    author: founderPerson,
     publisher: {
       '@type': 'Organization',
       name: 'Boltcall',

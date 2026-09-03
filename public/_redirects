@@ -29,7 +29,19 @@ https://boltcall.netlify.app/* https://boltcall.org/:splat  301!
 /sitemap.xml  /sitemap.xml  200!
 /robots.txt   /robots.txt   200!
 /index.amp.html  /index.amp.html  200!
-/*            /index.html   200
+# Duplicate content consolidation (2026-09-02 audit): each pair served
+# byte-identical copy under two URLs, both self-canonical, splitting ranking
+# signal. Survivor is the more-linked URL. Exact match only -- child routes
+# (/ai-revenue-calculator/results) still resolve.
+/ai-revenue-calculator   /ai-revenue-audit  301!
+/free-website-package    /free-website      301!
+
+# Route was commented out in AppRoutes.tsx (page deleted) but stayed in the
+# sitemap, so the URL served an indexable homepage clone. 2026-09-02 audit.
+/blog/google-reviews-automation-local-business  /blog  301!
+
+# SPA catch-all -> noindex shell (see netlify.toml for rationale).
+/*            /spa-fallback.html   200
 
 # Phase 3 prune (2026-08-15): law-firm pivot — removed non-legal vertical pages.
 # Redirect old niche URLs to closest law-firm/generic survivor, preserve link equity.

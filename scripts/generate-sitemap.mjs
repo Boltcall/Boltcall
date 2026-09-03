@@ -1,4 +1,5 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync, statSync } from "fs";
+import { execFileSync } from "child_process";
 import { resolve, dirname } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 
@@ -56,6 +57,7 @@ const ROUTES = [
   { path: "/lead-magnet",                                        priority: "0.8", changefreq: "weekly"  },
   { path: "/lead-magnet/claude-code-overnight-kit",              priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/ai-receptionist-buyers-guide",           priority: "0.7", changefreq: "monthly" },
+  { path: "/lead-magnet/vanishing-client-report",                    priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/intake-agent-playbook",                   priority: "0.7", changefreq: "monthly" },
   { path: "/after-hours-lead-rescue",                            priority: "0.8", changefreq: "monthly" },
   { path: "/automatic-reviews-agent",                            priority: "0.8", changefreq: "monthly" },
@@ -65,6 +67,7 @@ const ROUTES = [
   { path: "/ai-revenue-audit",                                   priority: "0.8", changefreq: "weekly"  },
   { path: "/lead-response-scorecard",                            priority: "0.8", changefreq: "weekly"  },
   { path: "/seo-audit",                                          priority: "0.8", changefreq: "weekly"  },
+  { path: "/website-audit",                                          priority: "0.7", changefreq: "monthly" },
   { path: "/business-audit",                                     priority: "0.8", changefreq: "weekly"  },
   { path: "/ai-audit",                                           priority: "0.8", changefreq: "weekly"  },
   { path: "/seo-aeo-audit",                                      priority: "0.8", changefreq: "monthly" },
@@ -98,7 +101,6 @@ const ROUTES = [
   { path: "/blog/commercial-cleaning-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/electrician-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/missed-call-recovery-service", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/missed-call-automation-contractors", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/home-service-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/hvac-lead-response-time", priority: "0.8", changefreq: "weekly" },
   { path: "/blog/hvac-answering-service", priority: "0.8", changefreq: "weekly" },
@@ -146,40 +148,26 @@ const ROUTES = [
   { path: "/compare/boltcall-vs-lindy",                         priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-convin",                        priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-soundhound",                    priority: "0.8", changefreq: "monthly" },
-  { path: "/compare/boltcall-vs-emitrr",                        priority: "0.8", changefreq: "monthly" },
-  { path: "/compare/boltcall-vs-calomation",                    priority: "0.8", changefreq: "monthly" },
   { path: "/compare/podium-alternatives",                       priority: "0.8", changefreq: "monthly" },
-  { path: "/comparisons/call-centers-vs-boltcall",              priority: "0.8", changefreq: "monthly" },
-  { path: "/comparisons/crm-vs-boltcall",                       priority: "0.8", changefreq: "monthly" },
-  { path: "/comparisons/voicemail-vs-boltcall",                 priority: "0.8", changefreq: "monthly" },
 
   // Live blog posts previously flagged by scripts/audit-sitemap-diff.mjs
   { path: "/blog/what-is-ai-receptionist-guide",                priority: "0.8", changefreq: "monthly" },
   { path: "/blog/is-ai-receptionist-worth-it",                  priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/how-instant-lead-reply-works",                 priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/instant-lead-reply-guide",                     priority: "0.8", changefreq: "monthly" },
   { path: "/blog/phone-call-scripts",                           priority: "0.7", changefreq: "monthly" },
   { path: "/blog/tips-for-professional-telephone-etiquette",    priority: "0.7", changefreq: "monthly" },
   { path: "/blog/answering-service-scheduling",                 priority: "0.7", changefreq: "monthly" },
   { path: "/blog/benefits-of-outsourced-reception-services",    priority: "0.7", changefreq: "monthly" },
-  { path: "/blog/google-reviews-automation-local-business",     priority: "0.8", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-for-law-firms",                priority: "0.8", changefreq: "monthly" },
   { path: "/blog/speed-to-lead-for-law-firms",                  priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/ai-receptionist-worth-it-roi",                 priority: "0.8", changefreq: "monthly" },
-  { path: "/blog/ai-chatbot-vs-live-chat-phone-answering",      priority: "0.7", changefreq: "monthly" },
   { path: "/blog/ai-receptionist-lawyer-faq",                   priority: "0.7", changefreq: "monthly" },
   { path: "/blog/roofing-missed-call-answering-service",        priority: "0.8", changefreq: "weekly" },
   { path: "/blog/commercial-roofing-lead-response-time",        priority: "0.8", changefreq: "weekly" },
 
   // Product + landing pages
-  { path: "/agent-architecture",                                priority: "0.7", changefreq: "monthly" },
   { path: "/ai-agent-comparison",                               priority: "0.8", changefreq: "monthly" },
-  { path: "/ai-revenue-calculator",                             priority: "0.8", changefreq: "monthly" },
   { path: "/demo",                                              priority: "0.7", changefreq: "monthly" },
   { path: "/dpa",                                               priority: "0.5", changefreq: "yearly"  },
   { path: "/law-firm-security",                                 priority: "0.5", changefreq: "yearly"  },
-  { path: "/free-website-package",                              priority: "0.7", changefreq: "monthly" },
-  { path: "/free-website-package/pricing",                      priority: "0.6", changefreq: "monthly" },
   { path: "/funnel-optimiser",                                  priority: "0.6", changefreq: "monthly" },
   { path: "/newsletter",                                        priority: "0.6", changefreq: "monthly" },
   { path: "/personal-injury",                                   priority: "0.7", changefreq: "monthly" },
@@ -227,13 +215,32 @@ export function publishedAeoRoutesFromContentDir(contentDir = resolve(__dirname,
         priority: "0.8",
         changefreq: "weekly",
         status: frontmatter.status || "draft",
+        lastmod: lastModifiedDate(resolve(contentDir, entry.name)),
       };
     })
     .filter((route) => route.status === "published")
     .map(({ status, ...route }) => route);
 }
 
-export function buildSitemapXml({ today = TODAY, contentDir = resolve(__dirname, "../src/content/aeo") } = {}) {
+/** Real last-edit date for a file: git commit date, falling back to mtime. */
+function lastModifiedDate(filePath) {
+  try {
+    const out = execFileSync("git", ["log", "-1", "--format=%cs", "--", filePath], {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    if (out) return out;
+  } catch {
+    // not a git checkout, or file untracked -- fall through to mtime
+  }
+  try {
+    return statSync(filePath).mtime.toISOString().split("T")[0];
+  } catch {
+    return null;
+  }
+}
+
+export function buildSitemapXml({ contentDir = resolve(__dirname, "../src/content/aeo") } = {}) {
   const byPath = new Map();
   for (const route of [...ROUTES, ...publishedAeoRoutesFromContentDir(contentDir)]) {
     byPath.set(canonicalPath(route.path), { ...route, path: canonicalPath(route.path) });
@@ -244,8 +251,8 @@ export function buildSitemapXml({ today = TODAY, contentDir = resolve(__dirname,
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${routes.map(
   (r) => `  <url>
-    <loc>${BASE_URL}${r.path}</loc>
-    <lastmod>${today}</lastmod>
+    <loc>${BASE_URL}${r.path}</loc>${r.lastmod ? `
+    <lastmod>${r.lastmod}</lastmod>` : ""}
     <changefreq>${r.changefreq}</changefreq>
     <priority>${r.priority}</priority>
   </url>`
