@@ -17,6 +17,23 @@ const handler: Handler = async (event) => {
     return { statusCode: 405, body: '' };
   }
 
+  // CSP report-uri (netlify.toml Content-Security-Policy-Report-Only) posts
+  // application/csp-report. Log only — no Telegram; violations are noisy by design.
+  const contentType = event.headers['content-type'] || event.headers['Content-Type'] || '';
+  if (contentType.includes('csp-report')) {
+    try {
+      const report = JSON.parse(event.body || '{}')['csp-report'] || {};
+      console.log('[csp-report]', JSON.stringify({
+        document: String(report['document-uri'] || '').slice(0, 300),
+        directive: String(report['effective-directive'] || report['violated-directive'] || '').slice(0, 100),
+        blocked: String(report['blocked-uri'] || '').slice(0, 300),
+      }));
+    } catch {
+      /* malformed report — ignore */
+    }
+    return { statusCode: 204, body: '' };
+  }
+
   try {
     const { message, stack, context, url, userId, userEmail, severity, metadata } = JSON.parse(event.body || '{}');
     if (!message || typeof message !== 'string') {
