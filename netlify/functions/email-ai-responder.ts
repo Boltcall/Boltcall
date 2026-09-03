@@ -434,4 +434,4 @@ async function sendViaOutlook(
 }
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

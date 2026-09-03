@@ -1533,4 +1533,4 @@ async function runWithConcurrency<T, R>(
 }
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

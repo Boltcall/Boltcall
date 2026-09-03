@@ -405,4 +405,4 @@ Generate a reply to the latest customer message and qualify the lead.`;
 };
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

@@ -866,4 +866,4 @@ function numberFrom(p: Record<string, unknown>, k: string): number | null {
 }
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

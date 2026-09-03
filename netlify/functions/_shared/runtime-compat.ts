@@ -1,4 +1,5 @@
 import type { Context, Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
+import { getV2CorsHeaders } from './cors-v2';
 
 function toCanonicalHeaderName(header: string) {
   return header
@@ -95,10 +96,24 @@ function toModernResponse(result: HandlerResponse) {
   });
 }
 
+// strictCors: authed endpoints keep their module-level `'Access-Control-Allow-Origin': '*'`
+// constant for backwards compatibility, but the wire response echoes only an
+// allowlisted origin (cors-v2), so a foreign page can't read authed responses.
+function applyStrictCors(result: HandlerResponse, request: Request): HandlerResponse {
+  const key = Object.keys(result.headers ?? {}).find(
+    (k) => k.toLowerCase() === 'access-control-allow-origin' && result.headers?.[k] === '*',
+  );
+  if (!key) return result;
+  const { echoedOrigin } = getV2CorsHeaders(request.headers.get('origin'));
+  // Copy — handlers share a module-level headers object; never mutate it.
+  return { ...result, headers: { ...result.headers, [key]: echoedOrigin, Vary: 'Origin' } };
+}
+
 // Bridge the repo's legacy Handler-event functions onto Netlify's current Request/Response runtime.
-export function withLegacyHandler(handler: Handler) {
+export function withLegacyHandler(handler: Handler, options: { strictCors?: boolean } = {}) {
   return async (request: Request, context: Context) => {
-    const result = await handler(await toLegacyEvent(request, context), {} as never);
-    return toModernResponse(result ?? { statusCode: 204, body: '' });
+    let result = (await handler(await toLegacyEvent(request, context), {} as never)) ?? { statusCode: 204, body: '' };
+    if (options.strictCors) result = applyStrictCors(result, request);
+    return toModernResponse(result);
   };
 }
