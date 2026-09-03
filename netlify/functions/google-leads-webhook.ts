@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import Retell from 'retell-sdk';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { handleInboundLead } from './_shared/lead-response-service';
 import { notifyError } from './_shared/notify';
@@ -191,7 +191,7 @@ function buildSyncCrm() {
 
 // ─── handler ──────────────────────────────────────────────────────────────
 
-async function resolveRateLimitedUser(supabase: ReturnType<typeof getSupabase>, googleKey: string): Promise<
+async function resolveRateLimitedUser(supabase: ReturnType<typeof getServiceSupabase>, googleKey: string): Promise<
   | { ok: true; userId: string }
   | { ok: false; response: ReturnType<typeof unauthorized> | ReturnType<typeof serverError> | ReturnType<typeof tooManyRequests> }
 > {
@@ -216,7 +216,7 @@ async function resolveRateLimitedUser(supabase: ReturnType<typeof getSupabase>, 
   return { ok: true, userId: String(row.user_id) };
 }
 
-async function recordGoogleTestPing(supabase: ReturnType<typeof getSupabase>, userId: string) {
+async function recordGoogleTestPing(supabase: ReturnType<typeof getServiceSupabase>, userId: string) {
   const now = new Date().toISOString();
   const { error } = await supabase
     .from('business_features')
@@ -254,7 +254,7 @@ const handler: Handler = async (event) => {
     return unauthorized('Missing google_key');
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // 1. Resolve workspace by google_key through the atomic rate-limit RPC.
   //    Don't leak whether the key exists or not; invalid keys still get the

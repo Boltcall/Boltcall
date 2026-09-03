@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, getServiceSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
@@ -65,7 +65,7 @@ const handler: Handler = async (event) => {
   }
 
   const company = await lookupCompany(ip);
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Dedup: one row per fingerprint per UTC day
   const today = new Date().toISOString().slice(0, 10);

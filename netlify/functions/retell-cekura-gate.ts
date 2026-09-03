@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
@@ -115,7 +115,7 @@ function hasBlockingFailure(failedReasons: string[]): string | null {
 // ─── Action: start ───────────────────────────────────────────────────────────
 
 async function startCekuraRun(promptVersionId: string) {
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   const { data: version, error: pvErr } = await supabase
     .from('retell_prompt_versions')
@@ -238,7 +238,7 @@ async function startCekuraRun(promptVersionId: string) {
 // ─── Action: check ───────────────────────────────────────────────────────────
 
 async function checkCekuraRun(promptVersionId: string) {
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   const { data: version, error: pvErr } = await supabase
     .from('retell_prompt_versions')

@@ -7,7 +7,7 @@
  */
 
 import { createHash } from 'crypto';
-import { getSupabase } from './token-utils';
+import { getServiceSupabase } from './token-utils';
 
 export interface ApiKeyValidation {
   valid: boolean;
@@ -53,7 +53,7 @@ export async function validateApiKey(rawKey: string): Promise<ApiKeyValidation> 
   }
 
   const keyHash = hashKey(rawKey);
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   const { data, error } = await supabase
     .from('api_keys')

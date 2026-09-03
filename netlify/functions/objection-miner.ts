@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -185,7 +185,7 @@ const handler: Handler = async (event) => {
     }
   } catch { /* ignore */ }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const since = new Date(Date.now() - 7 * 86400000).toISOString();
 
   // 1. Lost calls in the window

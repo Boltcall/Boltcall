@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { requireAuth, getUserAgentIds } from './_shared/require-auth';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
 const headers = {
@@ -19,7 +19,7 @@ const handler: Handler = async (event) => {
   if (!auth.ok) return auth.response;
   const { userId } = auth;
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const userAgentIds = await getUserAgentIds(userId);
   const ownedSet = new Set(userAgentIds);
 

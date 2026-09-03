@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { notifyError } from './_shared/notify';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { generateEmbedding } from './_shared/azure-ai';
 import { requireAuth } from './_shared/require-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -125,7 +125,7 @@ const handler: Handler = async (event) => {
     const { action } = body;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const userId = authedUserId;
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
 
     // ─── SEARCH: Vector similarity search ───────────────────────────
     if (action === 'search') {

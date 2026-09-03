@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
@@ -97,7 +97,7 @@ const handler: Handler = async (event) => {
     }
   } catch { /* ignore parse errors for GET */ }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const now = new Date();
 
   // Find all shadowing versions where at least 48 h have passed

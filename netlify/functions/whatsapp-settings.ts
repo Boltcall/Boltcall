@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import * as crypto from 'crypto';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
@@ -61,7 +61,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'userId and action required' }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Verify auth: Supabase JWT from Authorization header, sub must match userId
   const authHeader = event.headers.authorization || event.headers.Authorization;

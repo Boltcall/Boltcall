@@ -10,6 +10,7 @@ vi.mock('../_shared/notify', () => ({
 
 vi.mock('../_shared/token-utils', () => ({
   getSupabase: getSupabaseMock,
+  getServiceSupabase: getSupabaseMock,
 }));
 
 vi.mock('../_shared/fire-webhooks', () => ({

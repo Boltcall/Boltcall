@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, getServiceSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
@@ -49,7 +49,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, action: 'rate_limited' }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Row may not exist yet — campaign_lead_uid is supposed to be pre-inserted
   // by the Instantly side (cold-email:create-campaign Phase 9), but in case

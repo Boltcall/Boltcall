@@ -15,6 +15,7 @@ vi.mock('../_shared/require-auth', () => ({
 
 vi.mock('../_shared/token-utils', () => ({
   getSupabase: getSupabaseMock,
+  getServiceSupabase: getSupabaseMock,
 }));
 
 vi.mock('../_shared/azure-ai', () => ({

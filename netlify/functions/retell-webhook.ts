@@ -1,6 +1,6 @@
 import { Handler } from '@netlify/functions';
 import { notifyError } from './_shared/notify';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -170,7 +170,7 @@ async function correlateResponseTimeDemo(call: any): Promise<void> {
   const callId = call.call_id;
   if (!callId) return;
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const { data: demo } = await supabase
     .from('response_time_demos')
     .select('id, email, dialed_at, status')
@@ -301,7 +301,7 @@ const handler: Handler = async (event) => {
 
       // Fire call_completed webhook for non-missed calls
       if (call.call_status === 'ended' && (call.duration_ms || 0) > 0) {
-        const supabaseForWebhook = getSupabase();
+        const supabaseForWebhook = getServiceSupabase();
         // Look up agent owner by direct retell_agent_id column first, then
         // fall back to legacy api_keys.retell_agent_id JSONB path. Newer
         // rows have api_keys = {}, so the JSONB-only filter would miss them.
@@ -342,7 +342,7 @@ const handler: Handler = async (event) => {
 
           // Create a lead and sync to connected CRMs (fire-and-forget)
           if (call.from_number) {
-            const supabaseForLead = getSupabase();
+            const supabaseForLead = getServiceSupabase();
             await supabaseForLead
               .from('leads')
               .insert({
@@ -422,7 +422,7 @@ const handler: Handler = async (event) => {
       };
     }
 
-    const supabase = getSupabase();
+    const supabase = getServiceSupabase();
 
     // Step 1: Look up agent owner — direct column primary, legacy JSONB fallback
     const safeAgentIdMissed = sanitizeRetellAgentId(agentId);
