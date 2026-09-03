@@ -20,6 +20,9 @@ vi.mock('../_shared/token-utils', () => ({
   getSupabase: () => ({
     from: fromMock,
   }),
+  getServiceSupabase: () => ({
+    from: fromMock,
+  }),
 }));
 
 function makePost(body: Record<string, unknown>) {
