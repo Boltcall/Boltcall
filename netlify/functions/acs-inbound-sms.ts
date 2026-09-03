@@ -1,4 +1,5 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
+import { maskPhone } from './_shared/redact-secrets';
 import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
 import { notifyError } from './_shared/notify';
@@ -98,7 +99,7 @@ const handler: Handler = async (event) => {
 
     if (!from || !body) continue;
 
-    console.log(`[acs-inbound-sms] From: ${from}, To: ${to}, Body: ${body.slice(0, 100)}`);
+    console.log(`[acs-inbound-sms] From: ${maskPhone(from)}, To: ${to}`);
 
     try {
       // Look up which user owns the receiving phone number

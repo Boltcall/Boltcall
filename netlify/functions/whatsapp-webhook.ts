@@ -1,4 +1,5 @@
 import { Handler } from '@netlify/functions';
+import { maskPhone } from './_shared/redact-secrets';
 import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
 import { notifyError } from './_shared/notify';
@@ -129,7 +130,7 @@ const handler: Handler = async (event) => {
           const waMessageId = message.id;
 
           if (!validatePhone(from)) {
-            console.warn('[whatsapp-webhook] Invalid from phone, skipping:', from);
+            console.warn('[whatsapp-webhook] Invalid from phone, skipping:', maskPhone(from));
             continue;
           }
 

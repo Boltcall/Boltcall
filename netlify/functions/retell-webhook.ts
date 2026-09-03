@@ -1,4 +1,5 @@
 import { Handler } from '@netlify/functions';
+import { maskPhone } from './_shared/redact-secrets';
 import { notifyError } from './_shared/notify';
 import { getServiceSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
@@ -328,7 +329,7 @@ const handler: Handler = async (event) => {
               .eq('status', 'active')
               .then(({ error }) => {
                 if (error) console.error('[retell-webhook] Failed to cancel enrollments on answer:', error);
-                else console.log(`[retell-webhook] Cancelled follow-up enrollments for answered call: ${answeredPhone}`);
+                else console.log(`[retell-webhook] Cancelled follow-up enrollments for answered call: ${maskPhone(answeredPhone)}`);
               });
           }
 
@@ -411,7 +412,7 @@ const handler: Handler = async (event) => {
       };
     }
 
-    console.log(`[retell-webhook] Missed call detected: ${call.call_id}, from=${callerPhone}, status=${call.call_status}, duration=${call.duration_ms}ms`);
+    console.log(`[retell-webhook] Missed call detected: ${call.call_id}, from=${maskPhone(callerPhone)}, status=${call.call_status}, duration=${call.duration_ms}ms`);
 
     if (!callerPhone) {
       console.log('[retell-webhook] No caller phone number, skipping text-back');
@@ -594,7 +595,7 @@ const handler: Handler = async (event) => {
             .maybeSingle();
 
           if (activeEnrollment) {
-            console.log(`[retell-webhook] Skipping enrollment — active enrollment already exists for ${callerPhone}`);
+            console.log(`[retell-webhook] Skipping enrollment — active enrollment already exists for ${maskPhone(callerPhone)}`);
             sequenceControlledTextback = true;
           } else {
           for (const seq of sequences) {
@@ -689,7 +690,7 @@ const handler: Handler = async (event) => {
               if ((enrollmentError as { code?: string }).code === '23505') {
                 // Lost the race to a concurrent webhook — the winner's
                 // enrollment owns the follow-up. Not an error.
-                console.log(`[retell-webhook] Enrollment race lost for ${callerPhone} (unique index) — skipping`);
+                console.log(`[retell-webhook] Enrollment race lost for ${maskPhone(callerPhone)} (unique index) — skipping`);
                 sequenceControlledTextback = true;
                 continue;
               }
@@ -704,7 +705,7 @@ const handler: Handler = async (event) => {
             sequenceControlledTextback = true;
           }
           if (sequenceEnrollmentCount > 0) {
-            console.log(`[retell-webhook] Auto-enrolled ${callerPhone} in ${sequenceEnrollmentCount} ${triggerType} sequence(s)`);
+            console.log(`[retell-webhook] Auto-enrolled ${maskPhone(callerPhone)} in ${sequenceEnrollmentCount} ${triggerType} sequence(s)`);
           }
           }
         }
@@ -799,7 +800,7 @@ const handler: Handler = async (event) => {
     }
 
     if (recentTextback) {
-      console.log(`[retell-webhook] Text-back deduped — recent message already exists for ${callerPhone}`);
+      console.log(`[retell-webhook] Text-back deduped — recent message already exists for ${maskPhone(callerPhone)}`);
       return {
         statusCode: 200,
         headers,
@@ -842,7 +843,7 @@ const handler: Handler = async (event) => {
       };
     }
 
-    console.log(`[retell-webhook] Text-back scheduled for ${callerPhone} at ${scheduledFor}`);
+    console.log(`[retell-webhook] Text-back scheduled for ${maskPhone(callerPhone)} at ${scheduledFor}`);
 
     return {
       statusCode: 200,
