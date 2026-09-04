@@ -416,4 +416,4 @@ function buildThreadId(phone1: string, phone2: string): string {
 }
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

@@ -152,4 +152,4 @@ const handler: Handler = async (event) => {
 };
 
 export { handler };
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });
