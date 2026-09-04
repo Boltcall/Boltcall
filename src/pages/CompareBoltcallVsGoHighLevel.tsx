@@ -13,7 +13,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 const CompareBoltcallVsGoHighLevel: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Boltcall vs GoHighLevel: Simple AI vs All-in-One CRM (2026)';
+    document.title = 'Boltcall vs GoHighLevel: The Simpler Speed-to-Lead Alternative (2026)';
     updateMetaDescription("Boltcall vs GoHighLevel compared for local businesses. See why small businesses choose Boltcall's simple AI receptionist over GHL's complex CRM platform.");
 
     // Article schema

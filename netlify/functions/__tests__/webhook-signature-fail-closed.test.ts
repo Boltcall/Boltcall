@@ -6,6 +6,7 @@ const verifyTwilioSignatureMock = vi.hoisted(() => vi.fn(() => 'valid'));
 
 vi.mock('../_shared/token-utils', () => ({
   getSupabase: getSupabaseMock,
+  getServiceSupabase: getSupabaseMock,
 }));
 
 vi.mock('../_shared/verify-signatures', () => ({

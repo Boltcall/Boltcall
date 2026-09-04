@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
+import { getServiceSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
@@ -88,7 +88,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'messageId and userId required' }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Verify auth: internal webhook calls bypass JWT using a shared secret header;
   // all other callers must supply a valid Supabase Bearer JWT.
@@ -405,4 +405,4 @@ Generate a reply to the latest customer message and qualify the lead.`;
 };
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

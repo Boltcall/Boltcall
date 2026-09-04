@@ -56,6 +56,7 @@ const mockSupabase = {
 
 vi.mock('../_shared/token-utils', () => ({
   getSupabase: () => mockSupabase,
+  getServiceSupabase: () => mockSupabase,
 }));
 
 vi.mock('../_shared/lead-response-service', () => ({

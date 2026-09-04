@@ -1,5 +1,5 @@
 import { Handler, schedule } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { getValidAccessToken, shouldSkipSender, type EmailAccount } from './_shared/email-token-refresh';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { appendChatMessage } from './_shared/chats-sync';
@@ -464,7 +464,7 @@ const emailPoller: Handler = async (event) => {
   }
 
   const startTime = Date.now();
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Fetch active accounts, oldest-polled first
   const { data: accounts, error } = await supabase

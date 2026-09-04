@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -195,7 +195,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'prompt_version_id required' }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // ── 1. Fetch the proposed version ────────────────────────────────────────
   const { data: proposed, error: pvErr } = await supabase

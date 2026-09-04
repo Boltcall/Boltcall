@@ -52,7 +52,17 @@ function Hero() {
 
           <div className="flex gap-4 flex-col items-start w-full">
 
-            <h1 className="text-3xl md:text-5xl lg:text-6xl max-w-4xl tracking-tighter font-bold text-text-main flex items-center justify-start gap-2 ml-4 md:ml-8 flex-nowrap">
+            {/* Semantic H1 for search engines + screen readers. Rendered
+                off-screen; the animated visual title below is decorative
+                (aria-hidden). Prior to 2026-08-29 the animated H1 was the
+                only H1 on the page and rendered as "NEVER MISSA CALLCALL"
+                (concatenated split letters + all 5 rotating words) in
+                prerendered HTML — an unreadable ranking signal per audit. */}
+            <h1 className="sr-only">
+              Speed-to-lead software for law firms. Answer every intake call, book every consultation, win every retainer.
+            </h1>
+
+            <div aria-hidden="true" className="text-3xl md:text-5xl lg:text-6xl max-w-4xl tracking-tighter font-bold text-text-main flex items-center justify-start gap-2 ml-4 md:ml-8 flex-nowrap">
 
               <motion.span
                 initial={{ opacity: 0, x: -20 }}
@@ -122,7 +132,7 @@ function Hero() {
 
               </span>
 
-            </h1>
+            </div>
 
           </div>
 

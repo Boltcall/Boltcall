@@ -40,6 +40,20 @@ https://boltcall.netlify.app/* https://boltcall.org/:splat  301!
 # sitemap, so the URL served an indexable homepage clone. 2026-09-02 audit.
 /blog/google-reviews-automation-local-business  /blog  301!
 
+# SEO fix (2026-08-29): bare route stubs that used to catch homepage HTML via
+# the SPA fallback (audit surfaced these as soft-404 dupes of / — likely cause
+# of the 2026-06-13 impressions collapse). Route them to real destinations.
+/features       /features/ai-receptionist   301!
+/how-it-works   /                            301!
+/faq            /                            301!
+
+# Any /blog/<unknown-slug>/ has no prerendered file — Netlify's file-system
+# check runs BEFORE this rule, so real posts still serve normally; only
+# unknown slugs fall through to a 404-status SPA shell. Fixes mass
+# duplicate-content indexing of homepage under every dead blog URL.
+/blog/*         /spa-fallback.html           404
+
+
 # SPA catch-all -> noindex shell (see netlify.toml for rationale).
 /*            /spa-fallback.html   200
 

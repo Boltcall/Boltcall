@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions';
 import OpenAI, { AzureOpenAI } from 'openai';
 import Retell from 'retell-sdk';
-import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { chatCompletion, getAzureDeployment } from './_shared/azure-ai';
 import { requireMatchingUser } from './_shared/user-auth';
@@ -273,7 +273,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
 const LANG_TO_LOCALE: Record<string, string> = { en: 'en-US', he: 'he-IL', es: 'es-ES' };
 
 async function getBusinessContext(userId: string) {
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const context: any = { userId };
 
   try {
@@ -335,7 +335,7 @@ function contextToString(ctx: any): string {
 
 // ── Tool execution (unchanged from original) ──
 async function executeTool(name: string, args: any, ctx: any): Promise<{ result: string; actionTaken?: string }> {
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const retell = getRetell();
   const agent = ctx.agents?.[0];
 

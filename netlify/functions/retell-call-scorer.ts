@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { chatCompletion } from './_shared/azure-ai';
 import { inferVertical } from './_shared/vertical-utils';
 import { hasSharedSecret } from './_shared/user-auth';
@@ -138,7 +138,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, excluded: true, reason }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Look up the Boltcall agent row by Retell agent_id
   const retellAgentId: string = call.agent_id || '';

@@ -1,4 +1,5 @@
 import { Handler } from '@netlify/functions';
+import { maskPhone } from './_shared/redact-secrets';
 import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
 import { verifyTwilioSignature } from './_shared/verify-signatures';
@@ -74,7 +75,7 @@ const handler: Handler = async (event) => {
       };
     }
 
-    console.log(`[twilio-inbound-sms] From: ${from}, To: ${to}, Body: ${body.slice(0, 100)}`);
+    console.log(`[twilio-inbound-sms] From: ${maskPhone(from)}, To: ${to}`);
 
     // Look up which user owns the receiving phone number
     const { data: phoneRow } = await supabase
@@ -167,7 +168,7 @@ const handler: Handler = async (event) => {
         console.error('[twilio-inbound-sms] Opt-out processing failed:', optErr);
         await notifyError('twilio-inbound-sms: Opt-out processing failed', optErr, { from });
       }
-      console.log(`[twilio-inbound-sms] Opt-out processed for ${from}`);
+      console.log(`[twilio-inbound-sms] Opt-out processed for ${maskPhone(from)}`);
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'text/xml' },

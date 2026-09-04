@@ -304,4 +304,4 @@ export const __test__ = {
 };
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

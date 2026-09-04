@@ -66,6 +66,30 @@ const REDIRECT_SOURCES = new Set(
 
 const EXCLUDE_SUFFIXES = ['/thank-you'];
 
+// Live + prerendered routes deliberately kept OUT of the sitemap (2026-08-29
+// audit round 2): GSC showed the whole {industry}-lead-response-time cluster and
+// the non-legal industry stubs as "Discovered - currently not indexed" for 90+
+// days. Pages stay up for direct traffic; the sitemap just stops asking Google
+// to prioritize them. Listed here so this gate does not treat the opt-out as
+// drift. Remove an entry to re-list it.
+const SITEMAP_OPTOUT = new Set([
+  '/blog/commercial-cleaning-lead-response-time',
+  '/blog/commercial-roofing-lead-response-time',
+  '/blog/electrician-lead-response-time',
+  '/blog/emergency-plumber-answering-service',
+  '/blog/garage-door-lead-response-time',
+  '/blog/home-service-lead-response-time',
+  '/blog/hvac-answering-service',
+  '/blog/hvac-lead-response-time',
+  '/blog/lead-response-time-benchmark',
+  '/blog/locksmith-lead-response-time',
+  '/blog/missed-call-text-back-small-business',
+  '/blog/pest-control-lead-response-time',
+  '/blog/plumbing-lead-response-time',
+  '/blog/solar-lead-response-time',
+  '/blog/speed-to-lead-for-plumbers',
+]);
+
 function normalize(p) {
   if (!p) return null;
   const trimmed = p.trim();
@@ -139,7 +163,7 @@ const live = extractAppRoutes();
 const sitemap = extractSitemap();
 const prerender = extractPrerender();
 
-const liveNotInSitemap = diff(live, sitemap);
+const liveNotInSitemap = diff(live, sitemap).filter((p) => !SITEMAP_OPTOUT.has(p));
 const liveNotInPrerender = diff(live, prerender);
 const sitemapNotInLive = diff(sitemap, live);
 const prerenderNotInLive = diff(prerender, live);

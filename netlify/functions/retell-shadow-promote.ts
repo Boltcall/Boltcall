@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { inferVertical } from './_shared/vertical-utils';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -61,7 +61,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: 'version_id required' }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Load the version — must exist and be cekura_passed
   const { data: version, error: verErr } = await supabase

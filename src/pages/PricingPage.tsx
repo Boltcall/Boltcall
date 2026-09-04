@@ -31,7 +31,7 @@ const PricingPage: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Boltcall Pricing - Speed-to-Lead Plans for Law Firms';
+    document.title = 'Boltcall Pricing — Speed-to-Lead Plans From $549/mo for Law Firms';
     updateMetaDescription('Compare Boltcall pricing plans for law firms. Choose the plan that fits your intake volume. Free setup included. View plans now.');
 
     // Add canonical link

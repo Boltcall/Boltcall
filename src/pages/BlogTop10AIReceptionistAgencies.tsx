@@ -38,7 +38,7 @@ const BlogTop10AIReceptionistAgencies: React.FC = () => {
         }
       },
       "datePublished": "2025-03-15",
-      "dateModified": "2026-04-09",
+      "dateModified": "2026-08-29",
       "mainEntityOfPage": {
         "@type": "WebPage",
         "@id": "https://boltcall.org/blog/top-10-ai-receptionist-agencies"

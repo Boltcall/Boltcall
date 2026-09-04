@@ -15,7 +15,7 @@ import AnswerBlock from '../components/seo/AnswerBlock';
 
 const PUBLISH_DATE = '2026-05-24';
 const MODIFIED_DATE = SITE_DATE_MODIFIED;
-const TITLE = 'Boltcall vs GoodCall: AI Receptionist Comparison (2026)';
+const TITLE = 'Boltcall vs GoodCall: AI Receptionist Head-to-Head for Law Firms (2026)';
 const DESCRIPTION = 'Boltcall vs GoodCall compared head-to-head. Flat all-in-one vs per-caller-metered pricing. Which AI phone agent wins for your local service business in 2026?';
 
 const CompareBoltcallVsGoodCall: React.FC = () => {

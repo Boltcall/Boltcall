@@ -18,7 +18,7 @@ const GiveawayPage: React.FC = () => {
   const endDate = GIVEAWAY_ENDS_AT;
 
   useEffect(() => {
-    document.title = 'The Boltcall Launch Giveaway | Boltcall';
+    document.title = 'Win 30 Days of Boltcall Free — Speed-to-Lead Launch Giveaway';
     updateMetaDescription('Boltcall is live. To celebrate, win a full AI audit of your business, a free branded Smart Website, and a complete speed-to-lead setup with AI receptionist and SMS follow-up.');
     const bcScript = document.createElement('script');
     bcScript.type = 'application/ld+json';

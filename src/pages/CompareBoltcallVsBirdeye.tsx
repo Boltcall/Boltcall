@@ -13,7 +13,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 const CompareBoltcallVsBirdeye: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = 'Boltcall vs Birdeye: AI Receptionist vs Reputation Management (2026)';
+    document.title = 'Boltcall vs Birdeye: Speed-to-Lead vs Reputation Platform — Which Wins (2026)';
     updateMetaDescription("Boltcall vs Birdeye compared. See how Boltcall's AI receptionist compares to Birdeye's reputation management platform for local businesses.");
 
     // Article schema

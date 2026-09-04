@@ -1,0 +1,126 @@
+name: SEO Weekly Audit
+
+# Deep SEO/AEO audit of boltcall.org. Complements the AIOS daily monitor
+# (seo-daily-monitor) which does cheap http+regex smoke checks between runs.
+#
+# This job runs Sunday 22:00 UTC:
+#  - Playwright crawls 13 key pages (home + template representatives)
+#  - Measures LCP per page via PerformanceObserver
+#  - Parses JSON-LD, counts dup @types, catches parse errors
+#  - Checks bad-route guards (unknown blog / bare stubs)
+#  - Checks robots.txt AI-bot allowlist + llms.txt freshness
+#  - Diffs against .seo-baseline/latest.json committed last week
+#  - Fails the job on regressions and opens/updates a GitHub issue
+#
+# Baseline lives in git so the diff is versioned and reviewable. First run
+# on a clean repo just establishes the baseline (no regressions).
+#
+# Also runnable on demand via workflow_dispatch (Actions -> "Run workflow").
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'  # Sunday 22:00 UTC — before Monday-morning traffic
+  workflow_dispatch:
+
+concurrency:
+  group: seo-weekly-audit
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # baseline commit
+  issues: write     # regression issue open/update
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Official Playwright image — Chromium + all deps pre-installed. Prior
+    # runs failed with "Executable doesn't exist at .../chromium-1140/..."
+    # when using ubuntu-latest + npx install; container avoids the whole
+    # class of problem. Version pinned to playwright package version below.
+    container:
+      image: mcr.microsoft.com/playwright:v1.48.2-jammy
+      options: --user 1001
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install Playwright (same version as image)
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.48.2
+
+      - name: Run weekly audit
+        id: audit
+        continue-on-error: true
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: node scripts/seo-weekly-audit.mjs
+
+      - name: Commit baseline + report
+        if: always() && hashFiles('.seo-baseline/latest.json') != ''
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config user.name  "seo-audit-bot"
+          git config user.email "seo-audit-bot@users.noreply.github.com"
+          git add .seo-baseline/ || true
+          if git diff --cached --quiet; then
+            echo "no baseline changes"
+          else
+            git commit -m "seo(baseline): weekly snapshot $(date -u +%Y-%m-%d) [skip ci]"
+            git push
+          fi
+
+      - name: Upload audit report artifact
+        if: always() && hashFiles('.seo-baseline/latest.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-audit-report
+          path: |
+            .seo-baseline/latest.json
+            .seo-baseline/latest-report.md
+          retention-days: 90
+
+      # Only fires when the audit reported a real regression AND wrote a
+      # report file. A crash (exit 2, no file) shouldn't spam an empty issue.
+      - name: Open / update regression issue
+        if: steps.audit.outcome == 'failure' && hashFiles('.seo-baseline/latest-report.md') != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('.seo-baseline/latest-report.md', 'utf8');
+            const label = 'seo-regression';
+            const title = `SEO regression: ${new Date().toISOString().slice(0,10)}`;
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+            });
+            const priorSameWeek = existing.find(i => i.title.startsWith('SEO regression:'));
+            if (priorSameWeek) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: priorSameWeek.number,
+                body: `Re-run detected regressions again.\n\n${body.slice(0, 60000)}`,
+              });
+              core.info(`Commented on existing issue #${priorSameWeek.number}`);
+            } else {
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                labels: [label],
+                body: body.slice(0, 60000),
+              });
+              core.info(`Opened issue #${issue.data.number}`);
+            }
+
+      - name: Fail if audit regressed
+        if: steps.audit.outcome == 'failure' && hashFiles('.seo-baseline/latest-report.md') != ''
+        run: exit 1

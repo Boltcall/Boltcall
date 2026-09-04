@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase } from './_shared/token-utils';
+import { getServiceSupabase } from './_shared/token-utils';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { isLocalDev } from './_shared/prod-detect';
 
@@ -68,7 +68,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 200, headers, body: JSON.stringify({ ok: true, action: 'no_uid' }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Upsert by uid so:
   // - The site-side silent-touch-attribution may have inserted a placeholder

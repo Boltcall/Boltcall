@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
+import { getServiceSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
@@ -44,7 +44,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'userId, to, and body required' }) };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Verify auth: internal calls (from AI responder / webhook) bypass JWT using a shared secret;
   // all other callers must supply a valid Supabase Bearer JWT.
@@ -152,4 +152,4 @@ const handler: Handler = async (event) => {
 };
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });

@@ -93,3 +93,9 @@ export function redactSecretsDeep<T>(input: T): { value: T; hits: string[] } {
   }
   return { value: walk(input) as T, hits: Array.from(allHits) };
 }
+
+/** Log-safe phone number: last 4 digits only. */
+export function maskPhone(phone: unknown): string {
+  const s = String(phone ?? '');
+  return s.length > 4 ? `***${s.slice(-4)}` : '***';
+}

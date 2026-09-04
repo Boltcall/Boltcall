@@ -1,5 +1,5 @@
 import { Handler } from '@netlify/functions';
-import { getSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
+import { getServiceSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { requireMatchingUser } from './_shared/user-auth';
@@ -36,7 +36,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   try {
     // Parse body for POST requests

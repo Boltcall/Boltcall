@@ -9,6 +9,7 @@ vi.mock('../_shared/azure-ai', () => ({
 
 vi.mock('../_shared/token-utils', () => ({
   getSupabase: getSupabaseMock,
+  getServiceSupabase: getSupabaseMock,
 }));
 
 function makePost(call: Record<string, unknown>) {

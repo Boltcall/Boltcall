@@ -65,6 +65,11 @@ function handleFacebookVerification(params: Record<string, string | undefined>) 
 
 // Fetch lead details from Facebook Graph API using leadgen_id
 async function fetchFacebookLeadDetails(leadgenId: string, pageAccessToken: string): Promise<any> {
+  // Graph node ids are numeric; anything else could steer the URL (e.g. "me/accounts").
+  if (!/^\d{5,}$/.test(leadgenId)) {
+    console.warn('[lead-webhook] Rejecting malformed leadgen_id');
+    return null;
+  }
   const res = await fetch(
     `https://graph.facebook.com/v20.0/${leadgenId}?access_token=${pageAccessToken}`
   );

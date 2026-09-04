@@ -1,6 +1,6 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
 import * as crypto from 'crypto';
-import { deductTokens, getSupabase, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -151,7 +151,7 @@ async function sendTwilioSms(to: string, from: string, body: string) {
 // ── Look up agent owner ──
 
 async function getAgentOwner(agentId: string): Promise<{ userId: string | null; locale: string }> {
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const { data, error } = await supabase
     .from('agents')
     .select('user_id, language')
@@ -171,7 +171,7 @@ async function getAgentOwner(agentId: string): Promise<{ userId: string | null; 
 async function getCalApiKey(userId: string | null): Promise<string> {
   if (userId) {
     try {
-      const supabase = getSupabase();
+      const supabase = getServiceSupabase();
       const { data } = await supabase
         .from('user_integrations')
         .select('api_key')
@@ -205,7 +205,7 @@ async function handleLookupCaller(
     return 'NEW CALLER: Could not look up caller (no agent owner).\nProceed with standard greeting and qualification.';
   }
 
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   try {
     // Normalize phone: strip spaces/dashes for flexible matching
@@ -340,7 +340,7 @@ async function handleSearchKnowledgeBase(args: any, userId: string | null): Prom
 // ── Google Calendar helpers for agent tools ──
 
 async function getGoogleCalendarForUser(userId: string): Promise<{ accessToken: string; config: any } | null> {
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
   const { data: gcal } = await supabase
     .from('user_integrations')
     .select('*')
@@ -568,7 +568,7 @@ async function handleBookAppointment(
 
     // Insert into Supabase
     if (userId) {
-      const supabase = getSupabase();
+      const supabase = getServiceSupabase();
 
       try {
         const estimatedValueCents = await estimateBookingValueCents(supabase, userId, service);
@@ -633,7 +633,7 @@ async function handleCancelAppointment(args: any, userId: string | null, callId:
   if (!userId) return 'Sorry, I cannot access the calendar right now. Please call back and we will help you cancel.';
 
   const query = name || email || phone;
-  const supabase = getSupabase();
+  const supabase = getServiceSupabase();
 
   // Try Google Calendar
   const gcal = await getGoogleCalendarForUser(userId);
@@ -762,7 +762,7 @@ async function handleSendSms(
     // number as long as it was set, which cross-branded outbound texts.
     let fromNumber = '';
     if (userId) {
-      const supabase = getSupabase();
+      const supabase = getServiceSupabase();
       const { data: phoneRow } = await supabase
         .from('phone_numbers')
         .select('phone_number')
