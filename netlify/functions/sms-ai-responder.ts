@@ -352,4 +352,4 @@ async function getCalcomAvailability(eventSlug: string): Promise<string> {
 }
 
 export const testHandler = handler;
-export default withLegacyHandler(handler);
+export default withLegacyHandler(handler, { strictCors: true });
