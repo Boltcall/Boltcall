@@ -36,6 +36,7 @@ const ROUTES = [
   '/documentation',
   '/api-documentation',
   '/integrations',
+  '/integrations/clio',
   '/integrations/zapier',
   '/integrations/make',
   '/integrations/hubspot',

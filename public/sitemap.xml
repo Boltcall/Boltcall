@@ -56,6 +56,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://boltcall.org/integrations/clio/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://boltcall.org/integrations/zapier/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -674,7 +679,7 @@
   </url>
   <url>
     <loc>https://boltcall.org/blog/plumber-lead-response/</loc>
-    <lastmod>2026-09-03</lastmod>
+    <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
