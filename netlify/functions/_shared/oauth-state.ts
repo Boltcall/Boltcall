@@ -2,13 +2,15 @@ import crypto from 'crypto';
 
 const MAX_STATE_AGE_MS = 15 * 60 * 1000;
 
-export type OAuthProvider = 'gmail' | 'outlook' | 'google_calendar' | 'facebook' | 'hubspot' | 'pipedrive';
+export type OAuthProvider = 'gmail' | 'outlook' | 'google_calendar' | 'facebook' | 'hubspot' | 'pipedrive' | 'clio';
 
 export type OAuthStatePayload = {
   provider: OAuthProvider;
   userId: string;
   nonce: string;
   iat: number;
+  /** Extra signed context a provider needs on the way back (e.g. Clio's region). */
+  extra?: Record<string, string>;
 };
 
 function getSecret(): string {
@@ -39,12 +41,17 @@ function timingSafeEqual(a: string, b: string): boolean {
   return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
-export function createOAuthState(provider: OAuthProvider, userId: string): string {
+export function createOAuthState(
+  provider: OAuthProvider,
+  userId: string,
+  extra?: Record<string, string>,
+): string {
   const payload: OAuthStatePayload = {
     provider,
     userId,
     nonce: crypto.randomBytes(16).toString('hex'),
     iat: Date.now(),
+    ...(extra ? { extra } : {}),
   };
   const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
   return `${encodedPayload}.${sign(encodedPayload)}`;

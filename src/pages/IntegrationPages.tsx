@@ -9,7 +9,7 @@ import {
   Workflow,
 } from 'lucide-react';
 
-type IntegrationId = 'zapier' | 'make' | 'hubspot' | 'gohighlevel' | 'wix' | 'squarespace';
+type IntegrationId = 'zapier' | 'make' | 'hubspot' | 'gohighlevel' | 'wix' | 'squarespace' | 'clio';
 
 type IntegrationPageData = {
   id: IntegrationId;
@@ -31,6 +31,55 @@ type IntegrationPageData = {
 const SITE = 'https://boltcall.org';
 
 const integrations: IntegrationPageData[] = [
+  {
+    id: 'clio',
+    name: 'Clio',
+    slug: 'clio',
+    category: 'Legal',
+    icon: 'https://www.clio.com/favicon.ico',
+    fallback: '#1C4E80',
+    h1: 'Boltcall Clio Integration',
+    meta: 'Connect Clio to Boltcall so every call, form, and after-hours enquiry reaches your firm as a qualified Clio lead in seconds.',
+    answer:
+      'The Boltcall Clio integration answers a law firm\u2019s inbound calls and web enquiries in under a minute, qualifies the caller, and writes the result straight into Clio. Boltcall supports both Clio products. Clio Grow receives new enquiries through the Lead Inbox, which needs only a token pasted from Settings, so a firm can be live the same afternoon with no OAuth app and no developer work. Clio Manage connects over OAuth and creates or matches the caller as a Person, then attaches the call summary as a note on that contact. All four Clio data regions are supported \u2014 United States, European Union, Canada and Australia \u2014 and a credential is always tied to the region its account lives in. This is best for personal injury, family, criminal and immigration firms that already run intake in Clio and are losing after-hours enquiries to whichever firm calls back first.',
+    bestFor: ['Personal injury intake', 'Family and criminal law', 'After-hours and weekend enquiries', 'Firms already running Clio Grow'],
+    workflows: [
+      'Missed call -> Boltcall answers and qualifies -> Clio Grow lead inbox',
+      'Website form -> Boltcall instant reply -> Clio Manage contact + call summary note',
+      'After-hours enquiry -> Boltcall books the consult -> lead lands in Clio before morning',
+      'Every Boltcall lead tagged as source "Boltcall" for Clio lead-source reporting',
+    ],
+    setup: [
+      'Open Boltcall Dashboard > Integrations > CRM Sync.',
+      'For Clio Grow: copy the token from Clio Grow Settings > Integrations > Lead Inbox, pick your data region, and paste it in.',
+      'For Clio Manage: pick your data region and click Connect Clio Manage, then approve access in Clio.',
+      'Hit Test to verify the connection before the first real lead.',
+      'New leads sync automatically from that point on.',
+    ],
+    acceptance: [
+      'Clio Grow token verification passes without creating a test lead in the firm\u2019s inbox.',
+      'A synced lead appears in the Clio Grow Lead Inbox with source "Boltcall".',
+      'Clio Manage matches an existing contact by email or phone instead of duplicating it.',
+    ],
+    faqs: [
+      {
+        q: 'Do I need Clio Grow, or does Clio Manage work on its own?',
+        a: 'Either works. Clio Grow is the fastest to set up because the Lead Inbox only needs a token from your settings page. Clio Manage needs a one-time OAuth approval but writes contacts and call notes into your main Clio file. Firms running both can connect both.',
+      },
+      {
+        q: 'Does Boltcall work with Clio outside the United States?',
+        a: 'Yes. Clio runs separate data regions for the United States, European Union, Canada and Australia. Pick your region when connecting and Boltcall uses the matching Clio endpoint. A credential issued in one region will not work against another.',
+      },
+      {
+        q: 'Will Boltcall create duplicate contacts in Clio?',
+        a: 'No. Clio Manage syncs search for an existing Person by email or phone first and only create a new contact when there is no match.',
+      },
+      {
+        q: 'Does Boltcall open a matter in Clio?',
+        a: 'No. Opening a matter requires a practice area and matter type that belong to your intake decision, not to an inbound call. Boltcall captures the contact and the call summary so your team can open the matter with the full picture.',
+      },
+    ],
+  },
   {
     id: 'zapier',
     name: 'Zapier',
@@ -588,6 +637,7 @@ function InfoPanel({
 
 const byId = Object.fromEntries(integrations.map((item) => [item.id, item])) as Record<IntegrationId, IntegrationPageData>;
 
+export const ClioIntegrationPage = () => <IntegrationDetailPage item={byId.clio} />;
 export const ZapierIntegrationPage = () => <IntegrationDetailPage item={byId.zapier} />;
 export const MakeIntegrationPage = () => <IntegrationDetailPage item={byId.make} />;
 export const HubSpotIntegrationPage = () => <IntegrationDetailPage item={byId.hubspot} />;
