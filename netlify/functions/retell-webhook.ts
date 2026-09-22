@@ -270,7 +270,7 @@ const handler: Handler = async (event) => {
     });
 
     // Detect direction — Retell sets call_type to 'outbound_api' for API-initiated calls
-    const isOutbound = call.call_type === 'outbound_api' || call.call_type === 'outbound_phone_call';
+    const isOutbound = call.direction === 'outbound' || call.call_type === 'outbound_api' || call.call_type === 'outbound_phone_call';
     // Lead's phone: to_number for outbound (we called them), from_number for inbound (they called us)
     const contactPhone = isOutbound ? (call.to_number || null) : (call.from_number || null);
     // Legacy alias used in the rest of this file
@@ -335,24 +335,25 @@ const handler: Handler = async (event) => {
 
           fireWebhooks(agentOwner.user_id, 'call_completed', {
             id: call.call_id,
-            caller_number: call.from_number || null,
+            caller_number: contactPhone,
             duration_seconds: Math.round((call.duration_ms || 0) / 1000),
             summary: call.call_analysis?.call_summary || null,
             sentiment: call.call_analysis?.user_sentiment || null,
           });
 
           // Create a lead and sync to connected CRMs (fire-and-forget)
-          if (call.from_number) {
+          if (contactPhone) {
             const supabaseForLead = getServiceSupabase();
-            await supabaseForLead
+            const { error: leadError } = await supabaseForLead
               .from('leads')
               .insert({
-                phone: call.from_number,
+                phone: contactPhone,
                 source: 'ai_call',
                 status: 'new',
                 user_id: agentOwner.user_id,
                 raw_data: call,
               });
+            if (leadError) throw new Error('Completed call lead could not be persisted');
 
             const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
             fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
@@ -370,7 +371,7 @@ const handler: Handler = async (event) => {
                   name: null,
                   first_name: null,
                   last_name: null,
-                  phone: call.from_number,
+                  phone: contactPhone,
                   email: null,
                   source: 'ai_call',
                   status: 'new',

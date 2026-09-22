@@ -90,7 +90,8 @@ function normalizePhone(value: unknown): string {
 
 async function resolveDemoFromNumber(client: Retell): Promise<string> {
   try {
-    const { items = [] } = await client.phoneNumber.list();
+    const response = await client.phoneNumber.list();
+    const items = Array.isArray(response) ? response : response.items || [];
     const retellNumbers = items.filter((item) => item.phone_number_type === 'retell-twilio');
     const demoNumber = retellNumbers.find((item) => /demo/i.test(item.nickname || ''));
 
@@ -215,7 +216,7 @@ const handler: Handler = async (event) => {
     const call = await client.call.createPhoneCall({
       from_number: fromNumber,
       to_number: phone,
-      agent_id: agentId,
+      override_agent_id: agentId,
       retell_llm_dynamic_variables: {
         customer_name: name,
         demo_industry: industry,
@@ -229,7 +230,7 @@ const handler: Handler = async (event) => {
         industry,
         customer_name: name,
       },
-    } as any);
+    });
 
     return {
       statusCode: 200,

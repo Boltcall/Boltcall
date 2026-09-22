@@ -132,7 +132,7 @@ describe('homepage-demo-call', () => {
     expect(retellCreatePhoneCall).toHaveBeenCalledWith(expect.objectContaining({
       from_number: '+15550001111',
       to_number: '+15551234567',
-      agent_id: agentId,
+      override_agent_id: agentId,
       retell_llm_dynamic_variables: expect.objectContaining({
         business_name: businessName,
         niche,
@@ -143,6 +143,15 @@ describe('homepage-demo-call', () => {
         industry,
       }),
     }));
+  });
+
+  it('finds the demo number in the current provider array response', async () => {
+    delete process.env.RETELL_DEMO_FROM_NUMBER;
+    delete process.env.RETELL_PHONE_NUMBER;
+    retellListPhoneNumbers.mockResolvedValue([{ phone_number: '+12025550100', phone_number_type: 'retell-twilio', nickname: 'Demo' }]);
+    const response = await handler(makeEvent({ industry: 'family-law', name: 'Test Caller', phone: '+12025550101' }), {} as any);
+    expect(response.statusCode).toBe(200);
+    expect(retellCreatePhoneCall).toHaveBeenCalledWith(expect.objectContaining({ from_number: '+12025550100' }));
   });
 
   it('blocks the fourth request for the same phone number inside the rate-limit window', async () => {

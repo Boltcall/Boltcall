@@ -121,15 +121,20 @@ const handler: Handler = async (event) => {
       }),
     };
   } catch (err: any) {
-    console.error('Failed to create demo web call:', err);
-    await supabase
-      .from('demo_sessions')
-      .update({ web_call_started_at: null })
-      .eq('id', demo_id);
+    console.error('Failed to create demo web call:', { status: err.status || null });
+    // Only a definite rejection is safe to retry. A lost response or server
+    // error may have created a call; keep that reservation for reconciliation.
+    if (err.status >= 400 && err.status < 500 && err.status !== 408) {
+      await supabase
+        .from('demo_sessions')
+        .update({ web_call_started_at: null, web_call_count: session.web_call_count || 0 })
+        .eq('id', demo_id)
+        .eq('web_call_started_at', now);
+    }
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: err.message || 'Failed to create call' }),
+      body: JSON.stringify({ error: 'Could not start the demo call. Please contact the team if this link remains unavailable.' }),
     };
   }
 };
