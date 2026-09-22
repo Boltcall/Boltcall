@@ -1,4 +1,5 @@
 import { Handler } from '@netlify/functions';
+import { createHash } from 'node:crypto';
 import { maskPhone } from './_shared/redact-secrets';
 import { notifyError } from './_shared/notify';
 import { getServiceSupabase } from './_shared/token-utils';
@@ -262,6 +263,27 @@ const handler: Handler = async (event) => {
       };
     }
 
+    if (['homepage_demo', 'facebook-dm-demo'].includes(call.metadata?.source)) {
+      if (!['call_ended', 'call_analyzed'].includes(payload.event)) {
+        return { statusCode: 200, headers, body: JSON.stringify({ ok: true, skipped: true }) };
+      }
+      // Demonstrations must never enroll a prospect, send follow-ups, or be
+      // evaluated as real booked revenue. Await storage before acknowledging.
+      const { error } = await getServiceSupabase().from('retell_calls').upsert({
+        call_id: call.call_id,
+        retell_agent_id: call.agent_id,
+        vertical: 'other',
+        outcome: 'no_outcome',
+        started_at: call.start_timestamp ? new Date(call.start_timestamp).toISOString() : null,
+        ended_at: call.end_timestamp ? new Date(call.end_timestamp).toISOString() : null,
+        duration_s: (call.duration_ms || 0) / 1000,
+        call_type: call.call_type,
+        retell_payload: call,
+      }, { onConflict: 'call_id' });
+      if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: 'Demo outcome could not be saved' }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ ok: true, demo: true, call_id: call.call_id }) };
+    }
+
     // Fire-and-forget — no-ops for every call that isn't a response-time
     // proof demo call (see correlateResponseTimeDemo above).
     void correlateResponseTimeDemo(call).catch(err => {
@@ -333,30 +355,31 @@ const handler: Handler = async (event) => {
               });
           }
 
-          fireWebhooks(agentOwner.user_id, 'call_completed', {
-            id: call.call_id,
-            caller_number: contactPhone,
-            duration_seconds: Math.round((call.duration_ms || 0) / 1000),
-            summary: call.call_analysis?.call_summary || null,
-            sentiment: call.call_analysis?.user_sentiment || null,
-          });
-
+          let duplicateLead = false;
           // Create a lead and sync to connected CRMs (fire-and-forget)
           if (contactPhone) {
             const supabaseForLead = getServiceSupabase();
+            // The existing primary key makes concurrent event retries atomic
+            // without a read-before-insert race or a schema migration.
+            const digest = createHash('sha256').update(JSON.stringify(['retell-call', agentOwner.user_id, call.call_id])).digest('hex');
+            const leadId = `${digest.slice(0, 8)}-${digest.slice(8, 12)}-5${digest.slice(13, 16)}-8${digest.slice(17, 20)}-${digest.slice(20, 32)}`;
             const { error: leadError } = await supabaseForLead
               .from('leads')
               .insert({
+                id: leadId,
                 phone: contactPhone,
                 source: 'ai_call',
                 status: 'new',
                 user_id: agentOwner.user_id,
                 raw_data: call,
               });
-            if (leadError) throw new Error('Completed call lead could not be persisted');
+            if (leadError?.code === '23505') {
+              duplicateLead = true;
+            }
+            if (leadError && !duplicateLead) throw new Error('Completed call lead could not be persisted');
 
             const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
-            fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
+            if (!duplicateLead) fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -383,6 +406,14 @@ const handler: Handler = async (event) => {
               notifyError('retell-webhook: crm-sync', err, { callId: call.call_id, userId: agentOwner.user_id });
             });
           }
+
+          if (!duplicateLead) fireWebhooks(agentOwner.user_id, 'call_completed', {
+            id: call.call_id,
+            caller_number: contactPhone,
+            duration_seconds: Math.round((call.duration_ms || 0) / 1000),
+            summary: call.call_analysis?.call_summary || null,
+            sentiment: call.call_analysis?.user_sentiment || null,
+          });
 
           // ── Outcome evaluation: record win or trigger self-heal ──────────
           await triggerOutcomeEvaluation(call, agentId, agentOwner.user_id);

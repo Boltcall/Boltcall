@@ -1,10 +1,16 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
 import * as crypto from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezonePlugin from 'dayjs/plugin/timezone';
 import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError, notifyInfo } from './_shared/notify';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { estimateBookingValueCents } from './_shared/booking-value';
+
+dayjs.extend(utc);
+dayjs.extend(timezonePlugin);
 
 /**
  * Agent Tools Webhook
@@ -391,8 +397,19 @@ async function getGoogleCalendarForUser(userId: string): Promise<{ accessToken: 
 // ── Tool: check_availability (Google Calendar first, Cal.com fallback) ──
 
 async function handleCheckAvailability(args: any, calApiKey: string, userId: string | null, locale = 'en-US'): Promise<string> {
-  const { date } = args;
+  const { date, timezone } = args;
   if (!date) return 'I can check availability for you. What date did you have in mind?';
+  let startTime: string;
+  let endTime: string;
+  try {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !timezone) throw new Error('missing date or timezone');
+    const day = dayjs.tz(`${date}T00:00:00`, timezone);
+    if (day.format('YYYY-MM-DD') !== date) throw new Error('invalid date');
+    startTime = day.toISOString();
+    endTime = dayjs.tz(`${dayjs(date).add(1, 'day').format('YYYY-MM-DD')}T00:00:00`, timezone).toISOString();
+  } catch {
+    return 'Please confirm a valid date and IANA timezone before checking availability.';
+  }
 
   // Try Google Calendar first
   if (userId) {
@@ -400,8 +417,8 @@ async function handleCheckAvailability(args: any, calApiKey: string, userId: str
     if (gcal) {
       try {
         const calendarId = gcal.config.calendar_id || 'primary';
-        const timeMin = `${date}T00:00:00Z`;
-        const timeMax = `${date}T23:59:59Z`;
+        const timeMin = startTime;
+        const timeMax = endTime;
 
         const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&singleEvents=true&orderBy=startTime`;
         const res = await fetch(url, { headers: { Authorization: `Bearer ${gcal.accessToken}` } });
@@ -411,17 +428,17 @@ async function handleCheckAvailability(args: any, calApiKey: string, userId: str
           const events = (data.items || []).filter((e: any) => e.status !== 'cancelled');
 
           if (events.length === 0) {
-            return `The calendar is completely open on ${formatDateReadable(date)}. What time works best for you?`;
+            return `No calendar events were found in the checked window for ${formatDateReadable(date)}. This does not establish business hours or bookable slots; confirm the firm's schedule before offering a time.`;
           }
 
           // Build busy times list
           const busyTimes = events.map((e: any) => {
-            const start = formatTimeSlot(e.start?.dateTime || e.start?.date);
-            const end = formatTimeSlot(e.end?.dateTime || e.end?.date);
+            const start = e.start?.dateTime || e.start?.date;
+            const end = e.end?.dateTime || e.end?.date;
             return `${start} - ${end}`;
           });
 
-          return `On ${formatDateReadable(date)}, these times are already booked: ${busyTimes.join(', ')}. Any time outside those is available. What time would you prefer?`;
+          return `On ${formatDateReadable(date)}, these times are already booked: ${busyTimes.join(', ')}. Other times are not guaranteed available; confirm business hours and the exact timezone before booking.`;
         }
       } catch (err) {
         console.error('[agent-tools] Google Calendar availability error:', err);
@@ -434,10 +451,7 @@ async function handleCheckAvailability(args: any, calApiKey: string, userId: str
   if (!eventTypeId) return 'Could not determine event type. Appointment scheduling may not be configured.';
 
   try {
-    const startTime = `${date}T00:00:00Z`;
-    const endTime = `${date}T23:59:59Z`;
-
-    const url = `${CAL_BASE_URL}/slots?apiKey=${calApiKey}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&eventTypeId=${eventTypeId}`;
+    const url = `${CAL_BASE_URL}/slots?apiKey=${calApiKey}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&eventTypeId=${eventTypeId}&timeZone=${encodeURIComponent(timezone)}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -456,7 +470,10 @@ async function handleCheckAvailability(args: any, calApiKey: string, userId: str
 
     const formattedSlots = dateSlots
       .slice(0, 8)
-      .map((slot: any) => formatTimeSlot(slot.time || slot.start || slot))
+      .map((slot: any) => {
+        const start = slot.time || slot.start || slot;
+        return `${new Date(start).toLocaleTimeString(locale, { timeZone: timezone, hour: 'numeric', minute: '2-digit' })} (${timezone}; exact start: ${start})`;
+      })
       .join(', ');
 
     const moreText = dateSlots.length > 8 ? ` and ${dateSlots.length - 8} more` : '';
@@ -482,10 +499,24 @@ async function handleBookAppointment(
     return 'I need at least your name, preferred date, and time to book an appointment.';
   }
 
+  // Require the exact offset-bearing slot and named zone. Bare local times
+  // cannot distinguish the two occurrences of a clock time at the DST fold.
+  let startISO: string;
+  const timezone = args.timezone;
   try {
-    const startISO = `${date}T${time}:00Z`;
-    const formattedDate = formatDateReadable(date, locale);
-    const formattedTime = formatTimeSlot(`${date}T${time}:00Z`, locale);
+    if (typeof args.start !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/.test(args.start) || !timezone) throw new Error('ambiguous slot');
+    const instant = new Date(args.start);
+    const parts = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(instant);
+    const part = (key: string) => parts.find(p => p.type === key)?.value;
+    if (`${part('year')}-${part('month')}-${part('day')}` !== date || `${part('hour')}:${part('minute')}` !== time) throw new Error('slot mismatch');
+    startISO = instant.toISOString();
+  } catch {
+    return 'Please confirm an exact calendar slot with its UTC offset, date, time, and IANA timezone before booking. No appointment was made.';
+  }
+
+  try {
+    const formattedDate = new Date(startISO).toLocaleDateString(locale, { timeZone: timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const formattedTime = new Date(startISO).toLocaleTimeString(locale, { timeZone: timezone, hour: 'numeric', minute: '2-digit' }) + ` (${timezone})`;
     let bookingId = 'N/A';
     let bookedVia = 'cal.com';
 
@@ -496,6 +527,16 @@ async function handleBookAppointment(
         const calendarId = gcal.config.calendar_id || 'primary';
         const startDate = new Date(startISO);
         const endDate = new Date(startDate.getTime() + 30 * 60 * 1000); // 30-min appointment
+
+        const busyResponse = await fetch('https://www.googleapis.com/calendar/v3/freeBusy', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${gcal.accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ timeMin: startISO, timeMax: endDate.toISOString(), timeZone: timezone, items: [{ id: calendarId }] }),
+        });
+        if (!busyResponse.ok) return 'Calendar availability could not be verified. No appointment was made.';
+        const busyCalendar = (await busyResponse.json()).calendars?.[calendarId];
+        if (!busyCalendar || busyCalendar.errors?.length || !Array.isArray(busyCalendar.busy)) return 'Calendar availability could not be verified. No appointment was made.';
+        if (busyCalendar.busy.length) return 'That slot is no longer available. No appointment was made. Please choose another slot.';
 
         const gcalEvent = {
           summary: `Appointment: ${name}`,
@@ -526,8 +567,8 @@ async function handleBookAppointment(
           bookingId = eventData.id;
           bookedVia = 'google_calendar';
         } else {
-          console.error('[agent-tools] Google Calendar booking failed:', res.status, await res.text());
-          // Fall through to Cal.com
+          console.error('[agent-tools] Google Calendar booking failed:', res.status);
+          return 'The calendar did not confirm the booking. Do not book again until the team checks whether an appointment was created.';
         }
       }
     }
@@ -535,7 +576,7 @@ async function handleBookAppointment(
     // Fallback to Cal.com if Google Calendar didn't work
     if (bookedVia !== 'google_calendar') {
       const eventTypeId = await getEventTypeId(calApiKey);
-      if (!eventTypeId) return 'Appointment scheduling is not configured. I will note your request and have someone follow up.';
+      if (!eventTypeId) return 'Appointment scheduling is not configured. No booking or callback was arranged. Please contact the team directly.';
 
       const endDate = new Date(startISO);
       endDate.setMinutes(endDate.getMinutes() + 20);
@@ -546,7 +587,7 @@ async function handleBookAppointment(
         end: endDate.toISOString(),
         responses: { name, email: email || 'noemail@placeholder.com', location: { value: 'integrations:daily', optionValue: '' } },
         metadata: { source: 'ai_receptionist', call_id: callId, phone: phone || '', service: service || '', notes: notes || '' },
-        timeZone: 'Europe/London',
+        timeZone: timezone,
         language: 'en',
       };
 
@@ -558,6 +599,7 @@ async function handleBookAppointment(
 
       if (!response.ok) {
         console.error('[agent-tools] Cal.com booking error:', response.status, await response.text());
+        if (response.status >= 500 || response.status === 408) return 'The calendar outcome is uncertain. Do not book again until the team checks whether an appointment was created.';
         return `I wasn't able to book that time slot. It may no longer be available. Would you like to try a different time?`;
       }
 
@@ -566,13 +608,17 @@ async function handleBookAppointment(
       bookingId = booking.id || booking.uid || 'N/A';
     }
 
+    if (!bookingId || bookingId === 'N/A') {
+      return 'The calendar response did not include a booking reference. The outcome is uncertain; do not book again. Ask the team to reconcile the calendar.';
+    }
+
     // Insert into Supabase
     if (userId) {
       const supabase = getServiceSupabase();
 
       try {
         const estimatedValueCents = await estimateBookingValueCents(supabase, userId, service);
-        await supabase.from('appointments').insert({
+        const { error: appointmentError } = await supabase.from('appointments').insert({
           user_id: userId,
           call_id: callId || null,
           cal_booking_id: String(bookingId),
@@ -582,17 +628,19 @@ async function handleBookAppointment(
           client_phone: phone || '',
           service_name: service || 'Appointment',
           starts_at: startISO,
-          timezone: 'America/New_York',
+          timezone,
           status: 'confirmed',
           estimated_value_cents: estimatedValueCents,
           raw_webhook: { source: 'agent_tool', call_id: callId, booked_via: bookedVia },
         });
+        if (appointmentError) throw new Error('Appointment storage failed');
       } catch (dbErr) {
         console.error('[agent-tools] Failed to insert appointment:', dbErr);
+        return `The calendar returned reference ${bookingId}, but local records could not be saved. Do not book again. Ask the team to reconcile this reference.`;
       }
 
       try {
-        await supabase.from('leads').insert({
+        const { error: leadError } = await supabase.from('leads').insert({
           first_name: name.split(' ')[0] || name,
           last_name: name.split(' ').slice(1).join(' ') || null,
           email: email || null,
@@ -602,8 +650,10 @@ async function handleBookAppointment(
           user_id: userId,
           raw_data: { call_id: callId, service, booking_id: bookingId, booked_via: bookedVia },
         });
+        if (leadError) throw new Error('Lead storage failed');
       } catch (dbErr) {
         console.error('[agent-tools] Failed to insert lead:', dbErr);
+        return `The calendar returned reference ${bookingId}, but intake records could not be saved. Do not book again. Ask the team to reconcile this reference.`;
       }
 
       try {
@@ -615,12 +665,14 @@ async function handleBookAppointment(
     }
 
     const refText = bookingId !== 'N/A' ? ` Your reference number is ${bookingId}.` : '';
-    await notifyInfo(`📅 *New Appointment Booked via AI*\n\n👤 ${name}\n📧 ${email || 'N/A'}\n📱 ${phone || 'N/A'}\n📅 ${formattedDate} at ${formattedTime}\n💼 ${service || 'General'}\n📞 Call: ${callId}${refText}`);
+    await notifyInfo(`📅 *New Appointment Booked via AI*\n\n👤 ${name}\n📧 ${email || 'N/A'}\n📱 ${phone || 'N/A'}\n📅 ${formattedDate} at ${formattedTime}\n💼 ${service || 'General'}\n📞 Call: ${callId}${refText}`).catch(() => {
+      console.error('[agent-tools] Booking notification failed after persistence');
+    });
 
     return `Great! Your appointment is confirmed for ${formattedDate} at ${formattedTime}.${refText} Is there anything else I can help you with?`;
   } catch (err) {
     console.error('[agent-tools] book_appointment error:', err);
-    return 'Sorry, I had trouble booking your appointment. Let me note your request and have someone follow up with you.';
+    return 'The booking outcome could not be verified. Do not book again until the team checks the calendar. No callback has been arranged by this tool.';
   }
 }
 
@@ -828,7 +880,10 @@ const handler: Handler = async (event) => {
 
   try {
     const body = JSON.parse(event.body || '{}');
-    const { call_id, agent_id, tool_call_id, name, arguments: toolArgs } = body;
+    const { tool_call_id, name } = body;
+    const call_id = body.call?.call_id ?? body.call_id;
+    const agent_id = body.call?.agent_id ?? body.agent_id;
+    const toolArgs = body.args ?? body.arguments;
 
     console.log(`[agent-tools] Tool call: ${name}, call_id=${call_id}, agent_id=${agent_id}`);
 
@@ -842,6 +897,10 @@ const handler: Handler = async (event) => {
 
     // Look up agent owner and locale for Supabase operations
     const { userId, locale } = agent_id ? await getAgentOwner(agent_id) : { userId: null, locale: 'en-US' };
+
+    if (!userId) {
+      return { statusCode: 403, headers, body: JSON.stringify({ tool_call_id: tool_call_id || '', content: 'The agent account could not be verified. No action was taken.' }) };
+    }
 
     // Get Cal.com API key per user, falling back to global env var
     const calApiKey = await getCalApiKey(userId);

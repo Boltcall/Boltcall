@@ -25,3 +25,13 @@ it('does not acknowledge successful persistence or sync when lead storage fails'
   expect((await invoke())?.statusCode).toBe(500);
   expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).endsWith('/integration-sync'))).toBe(false);
 });
+it('uses one stable lead identity for retried completed-call deliveries', async () => {
+  await invoke();
+  const first = insert.mock.calls[0][0];
+  expect(first.id).toMatch(/^[a-f0-9-]{36}$/);
+  insert.mockResolvedValue({ error: { code: '23505' } });
+  vi.mocked(fetch).mockClear();
+  expect((await invoke())?.statusCode).toBe(200);
+  expect(insert.mock.calls[1][0].id).toBe(first.id);
+  expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).endsWith('/integration-sync'))).toBe(false);
+});
