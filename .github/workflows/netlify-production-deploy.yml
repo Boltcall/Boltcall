@@ -71,7 +71,7 @@ jobs:
         run: NETLIFY_CLI_ROOT="$(npm root --global)/netlify-cli" node scripts/release-workflow.mjs deploy
       - name: Retain Netlify receipt even when smoke checks fail
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: boltcall-deployment-${{ github.run_id }}-${{ github.run_attempt }}
           path: deployment-receipt.json
@@ -103,7 +103,7 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: node scripts/release-workflow.mjs verify
       - name: Retain immutable final verification receipt
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: boltcall-verification-${{ github.run_id }}-${{ github.run_attempt }}
           path: verification-receipt.json
