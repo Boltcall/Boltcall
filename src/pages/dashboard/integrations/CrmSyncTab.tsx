@@ -37,7 +37,20 @@ interface CrmProvider {
   steps: string[];
   url: string;
   fields: CrmField[];
+  /** 'oauth' providers connect through a redirect instead of a pasted key. */
+  authType?: 'apiKey' | 'oauth';
+  /** Clio runs four independent data regions; the credential is tied to one. */
+  regionSelect?: boolean;
+  /** Netlify function that returns the OAuth authorize URL. */
+  authStartFn?: string;
 }
+
+const CLIO_REGIONS = [
+  { value: 'us', label: 'United States' },
+  { value: 'eu', label: 'European Union' },
+  { value: 'ca', label: 'Canada' },
+  { value: 'au', label: 'Australia' },
+];
 
 interface CrmField {
   boltcall: string;
@@ -90,6 +103,21 @@ const PIPEDRIVE_FIELDS: CrmField[] = [
   { boltcall: 'status', label: 'Status', defaultMap: 'status', options: ['status', 'label'] },
 ];
 
+const CLIO_GROW_FIELDS: CrmField[] = [
+  { boltcall: 'name', label: 'Full Name', defaultMap: 'from_first + from_last', options: ['from_first', 'from_last'] },
+  { boltcall: 'email', label: 'Email', defaultMap: 'from_email', options: ['from_email'] },
+  { boltcall: 'phone', label: 'Phone', defaultMap: 'from_phone', options: ['from_phone'] },
+  { boltcall: 'notes', label: 'Call Summary', defaultMap: 'from_message', options: ['from_message'] },
+  { boltcall: 'source', label: 'Lead Source', defaultMap: 'from_source', options: ['from_source'] },
+];
+
+const CLIO_FIELDS: CrmField[] = [
+  { boltcall: 'name', label: 'Full Name', defaultMap: 'first_name + last_name', options: ['first_name', 'last_name'] },
+  { boltcall: 'email', label: 'Email', defaultMap: 'email_addresses', options: ['email_addresses'] },
+  { boltcall: 'phone', label: 'Phone', defaultMap: 'phone_numbers', options: ['phone_numbers'] },
+  { boltcall: 'notes', label: 'Call Summary', defaultMap: 'note.detail', options: ['note.detail', 'note.subject'] },
+];
+
 const CRM_PROVIDERS: CrmProvider[] = [
   {
     id: 'hubspot',
@@ -118,6 +146,38 @@ const CRM_PROVIDERS: CrmProvider[] = [
     url: 'https://app.pipedrive.com/settings/api',
     fields: PIPEDRIVE_FIELDS,
   },
+  {
+    id: 'clio_grow',
+    name: 'Clio Grow',
+    logo: 'https://www.clio.com/favicon.ico',
+    fallbackColor: '#0F2C52',
+    apiLabel: 'Clio Grow Lead Inbox Token',
+    steps: [
+      'Open Clio Grow and go to Settings -> Integrations -> Lead Inbox',
+      'Generate or copy your lead inbox token',
+      'Pick the data region your firm’s Clio account runs in',
+    ],
+    url: 'https://grow.clio.com/settings/integrations',
+    regionSelect: true,
+    fields: CLIO_GROW_FIELDS,
+  },
+  {
+    id: 'clio',
+    name: 'Clio Manage',
+    logo: 'https://www.clio.com/favicon.ico',
+    fallbackColor: '#1C4E80',
+    apiLabel: 'Clio Manage (OAuth)',
+    steps: [
+      'Pick the data region your firm’s Clio account runs in',
+      'Click Connect Clio Manage and approve access in Clio',
+      'Every new lead becomes a Clio contact with the call summary attached',
+    ],
+    url: 'https://app.clio.com',
+    authType: 'oauth',
+    authStartFn: 'clio-auth-start',
+    regionSelect: true,
+    fields: CLIO_FIELDS,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -139,6 +199,7 @@ const CrmSyncTab: React.FC = () => {
 
   // Form state for connecting
   const [formApiKey, setFormApiKey] = useState('');
+  const [formRegion, setFormRegion] = useState('us');
 
   // Local edit state for sync settings
   const [editSyncDirection, setEditSyncDirection] = useState<string>('one_way');
@@ -229,6 +290,7 @@ const CrmSyncTab: React.FC = () => {
           userId: user.id,
           provider: crm.id,
           apiKey: formApiKey,
+          ...(crm.regionSelect ? { config: { region: formRegion } } : {}),
         }),
       });
       const data = await res.json();
@@ -241,6 +303,27 @@ const CrmSyncTab: React.FC = () => {
       }
     } catch {
       showToast({ message: 'Connection failed', variant: 'error' });
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  // Connect an OAuth CRM — fetch the signed authorize URL, then hand off to it
+  const handleOAuthConnect = async (crm: CrmProvider) => {
+    if (!user || !crm.authStartFn) return;
+    setConnecting(true);
+    try {
+      const params = new URLSearchParams({ user_id: user.id });
+      if (crm.regionSelect) params.set('region', formRegion);
+      const res = await authedFetch(`${FUNCTIONS_BASE}/${crm.authStartFn}?${params.toString()}`);
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      showToast({ message: data.error || `Could not start ${crm.name} authorization`, variant: 'error' });
+    } catch {
+      showToast({ message: `Could not start ${crm.name} authorization`, variant: 'error' });
     } finally {
       setConnecting(false);
     }
@@ -437,20 +520,38 @@ const CrmSyncTab: React.FC = () => {
                               </li>
                             ))}
                           </ol>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{crm.apiLabel}</label>
-                            <input
-                              type="password"
-                              value={formApiKey}
-                              onChange={e => setFormApiKey(e.target.value)}
-                              placeholder={`Enter your ${crm.name} API key`}
-                              className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-[#0a0a0c]"
-                            />
-                          </div>
+                          {crm.regionSelect && (
+                            <div>
+                              <label htmlFor={`${crm.id}-region`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data region</label>
+                              <select
+                                id={`${crm.id}-region`}
+                                value={formRegion}
+                                onChange={e => setFormRegion(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-[#0a0a0c]"
+                              >
+                                {CLIO_REGIONS.map(r => (
+                                  <option key={r.value} value={r.value}>{r.label}</option>
+                                ))}
+                              </select>
+                              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">A Clio credential only works in the region its account lives in.</p>
+                            </div>
+                          )}
+                          {crm.authType !== 'oauth' && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{crm.apiLabel}</label>
+                              <input
+                                type="password"
+                                value={formApiKey}
+                                onChange={e => setFormApiKey(e.target.value)}
+                                placeholder={`Enter your ${crm.name} API key`}
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-[#2a2a30] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white dark:bg-[#0a0a0c]"
+                              />
+                            </div>
+                          )}
                           <div className="flex gap-3">
                             <button
-                              onClick={() => handleConnect(crm)}
-                              disabled={connecting || !formApiKey}
+                              onClick={() => (crm.authType === 'oauth' ? handleOAuthConnect(crm) : handleConnect(crm))}
+                              disabled={connecting || (crm.authType !== 'oauth' && !formApiKey)}
                               className="flex items-center gap-2 px-4 py-2 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
                               style={{ backgroundColor: crm.fallbackColor }}
                             >
@@ -458,7 +559,7 @@ const CrmSyncTab: React.FC = () => {
                               Connect {crm.name}
                             </button>
                             <a href={crm.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-                              <ExternalLink className="w-3.5 h-3.5" /> Get API Key
+                              <ExternalLink className="w-3.5 h-3.5" /> {crm.authType === 'oauth' ? `Open ${crm.name}` : 'Get API Key'}
                             </a>
                           </div>
                         </div>

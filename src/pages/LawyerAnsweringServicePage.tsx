@@ -120,6 +120,11 @@ const RELATED_LINKS = [
     description: 'Why first-response time drives retainer conversion in legal practice.',
   },
   {
+    title: 'Clio Integration',
+    href: '/integrations/clio',
+    description: 'Send every answered call and web enquiry into Clio Grow or Clio Manage in seconds, with the call summary attached.',
+  },
+  {
     title: 'Personal Injury Intake',
     href: '/personal-injury',
     description: 'A closer look at Boltcall for personal-injury firms where speed most directly affects case value.',

@@ -203,6 +203,9 @@ const ApiDocsPage = React.lazy(() => import('../pages/ApiDocsPage'));
 const IntegrationsHubPage = React.lazy(() =>
   import('../pages/IntegrationPages').then(m => ({ default: m.IntegrationsHubPage }))
 );
+const ClioIntegrationPage = React.lazy(() =>
+  import('../pages/IntegrationPages').then(m => ({ default: m.ClioIntegrationPage }))
+);
 const ZapierIntegrationPage = React.lazy(() =>
   import('../pages/IntegrationPages').then(m => ({ default: m.ZapierIntegrationPage }))
 );
@@ -732,6 +735,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/documentation" element={<Documentation />} />
         <Route path="/api-documentation" element={<ApiDocsPage />} />
         <Route path="/integrations" element={<IntegrationsHubPage />} />
+        <Route path="/integrations/clio" element={<ClioIntegrationPage />} />
         <Route path="/integrations/zapier" element={<ZapierIntegrationPage />} />
         <Route path="/integrations/make" element={<MakeIntegrationPage />} />
         <Route path="/integrations/hubspot" element={<HubSpotIntegrationPage />} />

@@ -384,6 +384,7 @@ const Documentation: React.FC = () => {
 
   const automationIntegrationLinks = [
     { title: 'Integrations Hub', href: '/integrations' },
+    { title: 'Clio Integration', href: '/integrations/clio' },
     { title: 'Zapier Integration', href: '/integrations/zapier' },
     { title: 'Make Integration', href: '/integrations/make' },
     { title: 'HubSpot Integration', href: '/integrations/hubspot' },

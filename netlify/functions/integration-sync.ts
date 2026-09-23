@@ -4,6 +4,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { hasSharedSecret, requireMatchingUser } from './_shared/user-auth';
 import { validateOutboundHttpsUrl } from './_shared/outbound-url';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { clioGrowLeadInboxUrl, clioManageBase, clioOAuthCredentials, normalizeRegion } from './_shared/clio';
 
 /**
  * Integration Sync Function
@@ -647,6 +648,223 @@ async function syncToServiceTitan(
   }
 }
 
+// ─── Clio Integration ───────────────────────────────────────────────────────
+//
+// Two separate surfaces, two separate providers:
+//   'clio_grow' — Grow Lead Inbox. A per-firm token, one POST, no OAuth app.
+//   'clio'      — Manage API v4 over OAuth 2.0. Contacts + notes.
+//
+// Docs: https://docs.developers.clio.com/guides/clio-grow/lead-inbox-api/
+//       https://docs.developers.clio.com/api-docs/clio-manage/authorization/
+
+function splitLeadName(lead: any): { first: string; last: string } {
+  if (lead.first_name || lead.last_name) {
+    return { first: lead.first_name || 'Unknown', last: lead.last_name || 'Caller' };
+  }
+  const parts = String(lead.name || '').trim().split(/\s+/).filter(Boolean);
+  return {
+    first: parts[0] || 'Unknown',
+    last: parts.slice(1).join(' ') || 'Caller',
+  };
+}
+
+/**
+ * Push a lead into the Clio Grow Lead Inbox.
+ *
+ * from_message, referring_url and from_source are required by Clio — a blank one
+ * is a 422, so each has a default. from_source stays the constant "Boltcall" so
+ * the firm can attribute signed cases to us in their own Grow reporting.
+ */
+async function syncToClioGrow(
+  token: string,
+  config: any,
+  lead: any,
+): Promise<{ success: boolean; leadId?: string; error?: string }> {
+  try {
+    const { first, last } = splitLeadName(lead);
+
+    // Clio Grow has one source field, and it stays the constant "Boltcall" so the
+    // firm can attribute signed cases to us. The channel rides along in the message.
+    const summary = lead.notes || 'Inbound lead captured by Boltcall';
+    const message = lead.source ? `${summary} [${lead.source}]` : summary;
+
+    const res = await fetch(clioGrowLeadInboxUrl(config?.region), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accepts': 'application/json' },
+      body: JSON.stringify({
+        inbox_lead_token: token,
+        inbox_lead: {
+          from_first: first,
+          from_last: last,
+          from_email: lead.email || undefined,
+          from_phone: lead.phone || undefined,
+          from_message: message,
+          referring_url: 'https://boltcall.org',
+          from_source: 'Boltcall',
+        },
+      }),
+    });
+
+    if (res.status === 401) {
+      return { success: false, error: 'Invalid Clio Grow lead inbox token — reconnect in Settings > Integrations' };
+    }
+    if (!res.ok) {
+      const errText = await res.text();
+      return { success: false, error: `Clio Grow failed: ${res.status} - ${errText}` };
+    }
+
+    const data = await res.json().catch(() => ({}));
+    return { success: true, leadId: data?.id != null ? String(data.id) : undefined };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Clio Grow sync failed' };
+  }
+}
+
+/**
+ * Refresh an expired Clio Manage access token.
+ * Clio refresh tokens do not expire, so this only ever fails on explicit revocation.
+ */
+async function refreshClioToken(integration: any): Promise<string | null> {
+  const refreshToken = integration?.api_key;
+  const region = normalizeRegion(integration?.config?.region);
+  const { clientId, clientSecret } = clioOAuthCredentials(region);
+  if (!refreshToken || !clientId || !clientSecret) return null;
+
+  try {
+    const res = await fetch(`${clioManageBase(region)}/oauth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+      }).toString(),
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    const newAccessToken = data.access_token;
+    if (!newAccessToken) return null;
+
+    const expiresAt = new Date(Date.now() + (data.expires_in || 30 * 24 * 3600) * 1000).toISOString();
+
+    // Merge rather than replace — config carries the region, which the next
+    // refresh needs in order to pick the right host.
+    const supabase = getServiceSupabase();
+    await supabase
+      .from('user_integrations')
+      .update({
+        config: { ...(integration.config || {}), access_token: newAccessToken, token_expires_at: expiresAt },
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', integration.id);
+
+    return newAccessToken;
+  } catch {
+    return null;
+  }
+}
+
+/** Valid Clio Manage access token, refreshed if inside the 5-minute expiry buffer. */
+async function getClioAccessToken(integration: any): Promise<string | null> {
+  const config = integration?.config || {};
+  const expiresAt = config.token_expires_at;
+
+  if (config.access_token && expiresAt) {
+    if (Date.now() < new Date(expiresAt).getTime() - 5 * 60 * 1000) {
+      return config.access_token;
+    }
+  }
+
+  return refreshClioToken(integration);
+}
+
+/**
+ * Upsert the lead as a Clio Manage Person and attach the call summary as a note.
+ *
+ * ponytail: contact + note only. Opening a Matter needs a practice area and
+ * matter type Boltcall does not know at first touch — that is the firm's intake
+ * decision, not something an inbound call log should guess.
+ */
+async function syncToClioManage(
+  integration: any,
+  lead: any,
+): Promise<{ success: boolean; contactId?: string; error?: string }> {
+  try {
+    const accessToken = await getClioAccessToken(integration);
+    if (!accessToken) {
+      return { success: false, error: 'Clio token expired or revoked. Please reconnect Clio.' };
+    }
+
+    const base = `${clioManageBase(integration?.config?.region)}/api/v4`;
+    const authHeaders = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    };
+
+    // Clio v4 returns ids only unless `fields` is passed explicitly.
+    let existingId: string | null = null;
+    const searchTerm = lead.email || lead.phone;
+    if (searchTerm) {
+      const searchRes = await fetch(
+        `${base}/contacts?query=${encodeURIComponent(searchTerm)}&type=Person&limit=1&fields=id,name`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        if (searchData?.data?.length > 0) existingId = String(searchData.data[0].id);
+      }
+    }
+
+    let contactId = existingId;
+
+    if (!contactId) {
+      const { first, last } = splitLeadName(lead);
+      const attributes: Record<string, any> = { type: 'Person', first_name: first, last_name: last };
+      if (lead.phone) {
+        attributes.phone_numbers = [{ name: 'Work', number: lead.phone, default_number: true }];
+      }
+      if (lead.email) {
+        attributes.email_addresses = [{ name: 'Work', address: lead.email, default_email: true }];
+      }
+
+      const createRes = await fetch(`${base}/contacts?fields=id,name`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ data: attributes }),
+      });
+      if (!createRes.ok) {
+        const errText = await createRes.text();
+        throw new Error(`Clio contact create failed: ${createRes.status} - ${errText}`);
+      }
+      const createData = await createRes.json();
+      contactId = String(createData?.data?.id);
+    }
+
+    const detail = lead.notes;
+    if (contactId && detail) {
+      // A failed note must not lose the contact, so the contact is still reported synced.
+      await fetch(`${base}/notes?fields=id`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({
+          data: {
+            type: 'Contact',
+            subject: `Boltcall lead${lead.source ? ` - ${lead.source}` : ''}`,
+            detail,
+            contact: { id: Number(contactId) },
+          },
+        }),
+      }).catch(() => undefined);
+    }
+
+    return { success: true, contactId: contactId || undefined };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Clio sync failed' };
+  }
+}
+
 // ─── Main Handler ───────────────────────────────────────────────────────────
 
 const handler: Handler = async (event) => {
@@ -921,6 +1139,42 @@ const handler: Handler = async (event) => {
         return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `Google Business Profile auth failed: ${res.status}. Ensure the API is enabled and credentials are valid.` }) };
       }
 
+      if (provider === 'clio_grow') {
+        if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Lead inbox token required for Clio Grow' }) };
+
+        // ponytail: probe with an empty inbox_lead. Clio answers 401 for a bad
+        // token and 422 for a good token with missing fields, so this verifies
+        // the credential without creating a junk lead in the firm's inbox.
+        const res = await fetch(clioGrowLeadInboxUrl(testConfig?.region), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accepts': 'application/json' },
+          body: JSON.stringify({ inbox_lead_token: testApiKey, inbox_lead: {} }),
+        });
+
+        if (res.status === 401) {
+          return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: 'Clio Grow rejected the token — copy it again from Settings > Integrations > Lead Inbox' }) };
+        }
+        if (res.status === 422 || res.ok) {
+          const regionLabel = normalizeRegion(testConfig?.region).toUpperCase();
+          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Clio Grow token verified (${regionLabel} region)` }) };
+        }
+        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `Clio Grow check failed: ${res.status}` }) };
+      }
+
+      if (provider === 'clio') {
+        const accessToken = testConfig?.access_token;
+        if (!accessToken) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Connect Clio with the Connect button first — Clio Manage uses OAuth, not a pasted key' }) };
+        const res = await fetch(`${clioManageBase(testConfig?.region)}/api/v4/users/who_am_i?fields=id,name`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          const who = data?.data?.name;
+          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: who ? `Clio connected as ${who}` : 'Clio connection verified' }) };
+        }
+        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `Clio auth failed: ${res.status} — reconnect Clio` }) };
+      }
+
       if (provider === 'servicetitan') {
         if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Client ID required for ServiceTitan' }) };
         const clientSecret = testConfig?.client_secret;
@@ -1082,6 +1336,22 @@ const handler: Handler = async (event) => {
           case 'google_business':
             // Google Business Profile: log the lead interaction (review request happens via separate automation)
             result = { success: true };
+            break;
+
+          case 'clio_grow':
+            if (integration.api_key) {
+              result = await syncToClioGrow(integration.api_key, integration.config || {}, lead);
+            } else {
+              result = { success: false, error: 'No Clio Grow lead inbox token' };
+            }
+            break;
+
+          case 'clio':
+            if (integration.api_key || integration.config?.access_token) {
+              result = await syncToClioManage(integration, lead);
+            } else {
+              result = { success: false, error: 'Clio not authorized — reconnect' };
+            }
             break;
 
           case 'servicetitan':

@@ -18,6 +18,7 @@ import { DollarSign, CheckCircle, Zap, Phone, Calendar, Star } from 'lucide-reac
 
 const automationIntegrationLinks = [
   { label: 'integration hub', href: '/integrations' },
+  { label: 'Clio guide', href: '/integrations/clio' },
   { label: 'Zapier guide', href: '/integrations/zapier' },
   { label: 'Make guide', href: '/integrations/make' },
   { label: 'HubSpot guide', href: '/integrations/hubspot' },

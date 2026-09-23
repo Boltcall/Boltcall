@@ -23,6 +23,7 @@ const ROUTES = [
   { path: "/documentation",                                       priority: "0.8", changefreq: "monthly" },
   { path: "/api-documentation",                                   priority: "0.8", changefreq: "monthly" },
   { path: "/integrations",                                        priority: "0.8", changefreq: "monthly" },
+  { path: "/integrations/clio",                                   priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/zapier",                                 priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/make",                                   priority: "0.8", changefreq: "monthly" },
   { path: "/integrations/hubspot",                                priority: "0.8", changefreq: "monthly" },
