@@ -478,7 +478,7 @@ export default function ChatbotVsLiveChatVsPhoneAnswering() {
 
               <div className="bg-blue-50 p-6 rounded-lg mb-6">
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">AI Phone Receptionist Performance</h3>
-                <p className="text-gray-700 mb-3">Based on Boltcall's client data across 500+ local businesses:</p>
+                <p className="text-gray-700 mb-3">Typical AI phone receptionist performance for local businesses:</p>
                 <ul className="space-y-2 text-gray-700">
                   <li>• Call answer rate: 100% (24/7 availability)</li>
                   <li>• Lead qualification rate: 78%</li>
@@ -642,7 +642,7 @@ export default function ChatbotVsLiveChatVsPhoneAnswering() {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
+            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             {[

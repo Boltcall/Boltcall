@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import * as crypto from 'crypto';
 import { notifyError } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { isLocalDev } from './_shared/prod-detect';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
@@ -32,7 +33,7 @@ function safeEqual(a: string, b: string): boolean {
 
 function validateAcsSecret(event: HandlerEvent): boolean {
   const expected = process.env.ACS_EVENTGRID_SECRET || process.env.AZURE_EVENTGRID_WEBHOOK_SECRET || '';
-  if (!expected) return process.env.NODE_ENV !== 'production';
+  if (!expected) return isLocalDev();
 
   const headers = event.headers as Record<string, string | undefined>;
   const provided =

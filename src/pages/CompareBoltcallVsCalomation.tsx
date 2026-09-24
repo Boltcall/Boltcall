@@ -522,7 +522,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
       {/* Social Proof */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">What Businesses Say About Boltcall</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Join 500+ businesses using Boltcall to capture more leads and grow revenue.</p>
+        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { quote: "We evaluated several platforms before choosing Boltcall. The setup was done in hours, not weeks, and the AI voice quality is genuinely impressive.", name: "Marcus T.", role: "HVAC Business Owner, Texas" },
@@ -545,7 +545,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Used by 500+ local businesses</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for local service businesses</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
@@ -558,7 +558,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
+            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             {[

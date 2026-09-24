@@ -60,7 +60,7 @@ const handler: Handler = async (event) => {
     // Confirm the authenticated user owns or is an active owner/admin of this workspace.
     const { data: workspace, error: wsLookupError } = await supabase
       .from('workspaces')
-      .select('id, user_id')
+      .select('id, user_id, name')
       .eq('id', workspaceId)
       .maybeSingle();
 
@@ -86,10 +86,24 @@ const handler: Handler = async (event) => {
 
     const now = new Date().toISOString();
 
+    // Workspaces minted before the profile existed are named 'My Workspace';
+    // rename to the firm's business name now that setup captured it.
+    let rename: { name?: string } = {};
+    if (!workspace.name || workspace.name === 'My Workspace') {
+      const { data: profile } = await supabase
+        .from('business_profiles')
+        .select('business_name')
+        .eq('workspace_id', workspaceId)
+        .limit(1)
+        .maybeSingle();
+      if (profile?.business_name) rename = { name: profile.business_name };
+    }
+
     // Mark workspace setup as complete.
     const { error: wsError } = await supabase
       .from('workspaces')
       .update({
+        ...rename,
         setup_completed: true,
         setup_completed_at: now,
         updated_at: now,
@@ -132,16 +146,18 @@ const handler: Handler = async (event) => {
       };
     }
 
-    // Flip the workspace into the V2 AI-native dashboard. Separate best-effort
-    // update: environments that haven't run the v2_opt_in migration must not
-    // fail the whole launch over a missing column.
-    const { error: v2Error } = await supabase
-      .from('workspaces')
-      .update({ v2_enabled: true, updated_at: now })
-      .eq('id', workspaceId);
+    // New firms stay on the classic dashboard unless V2 is switched on as the
+    // default. Separate best-effort update: environments that haven't run the
+    // v2_opt_in migration must not fail the whole launch over a missing column.
+    if (process.env.V2_DEFAULT_ON === 'true') {
+      const { error: v2Error } = await supabase
+        .from('workspaces')
+        .update({ v2_enabled: true, updated_at: now })
+        .eq('id', workspaceId);
 
-    if (v2Error) {
-      console.error('V2 enable on launch failed (non-fatal):', v2Error);
+      if (v2Error) {
+        console.error('V2 enable on launch failed (non-fatal):', v2Error);
+      }
     }
 
     // Touch business_profiles for the authenticated user. Non-fatal if it fails —

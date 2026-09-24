@@ -17,19 +17,19 @@ import { test, expect } from '@playwright/test';
  */
 
 const CTA_TARGETS = [
-  { path: '/', label: /pricing/i, target: /\/pricing/ },
-  { path: '/', label: /book.*call|book.*demo|talk to.*sales/i, target: /\/book-a-call|\/contact|\/demo/ },
-  { path: '/pricing', label: /pricing|get started|start free/i, target: /\/pricing|\/signup|\/setup/ },
-  { path: '/features/ai-receptionist', label: /pricing|start|book/i },
-  { path: '/comparisons', label: /pricing|start|book/i },
-  { path: '/tools/roofing-missed-lead-calculator', label: /book|start|pricing/i },
-  { path: '/tools/plumber-revenue-calculator', label: /book|start|pricing/i },
-  { path: '/blog', label: /pricing|start|book|read/i },
-  { path: '/about', label: /pricing|book|start|contact/i },
+  { id: 'home-pricing', path: '/', label: /pricing/i, target: /\/pricing/ },
+  { id: 'home-book-call', path: '/', label: /book.*call|book.*demo|talk to.*sales/i, target: /\/book-a-call|\/contact|\/demo/ },
+  { id: 'pricing', path: '/pricing', label: /pricing|get started|start free/i, target: /\/pricing|\/signup|\/setup/ },
+  { id: 'features-ai-receptionist', path: '/features/ai-receptionist', label: /pricing|start|book/i },
+  { id: 'comparisons', path: '/comparisons', label: /pricing|start|book/i },
+  { id: 'roofing-calculator', path: '/tools/roofing-missed-lead-calculator', label: /book|start|pricing/i },
+  { id: 'plumber-calculator', path: '/tools/plumber-revenue-calculator', label: /book|start|pricing/i },
+  { id: 'blog', path: '/blog', label: /pricing|start|book|read/i },
+  { id: 'about', path: '/about', label: /pricing|book|start|contact/i },
 ];
 
-for (const { path, label, target } of CTA_TARGETS) {
-  test(`CTA on ${path} → primary route`, async ({ page }) => {
+for (const { id, path, label, target } of CTA_TARGETS) {
+  test(`CTA on ${path} [${id}] → primary route`, async ({ page }) => {
     const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
     expect(response, `no response for ${path}`).not.toBeNull();
     expect(response!.status(), `bad status for ${path}`).toBeLessThan(400);

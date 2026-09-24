@@ -12,6 +12,9 @@ import {
   Mail,
 } from 'lucide-react';
 import { updateMetaDescription } from '../lib/utils';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import FinalCTA from '../components/FinalCTA';
 
 const LawFirmSecurityPage: React.FC = () => {
   React.useEffect(() => {
@@ -23,6 +26,7 @@ const LawFirmSecurityPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <Header />
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 py-16">
@@ -175,11 +179,20 @@ const LawFirmSecurityPage: React.FC = () => {
             <div className="flex flex-wrap gap-4 pt-2">
               <Link to="/tools/lawyer-intake-calculator" className="text-blue-600 hover:underline font-medium">Try the lawyer intake calculator →</Link>
               <Link to="/pricing" className="text-blue-600 hover:underline font-medium">See pricing →</Link>
+              <Link to="/book-a-call" className="text-blue-600 hover:underline font-medium">Book a call →</Link>
             </div>
           </div>
         </motion.div>
 
       </div>
+
+      <FinalCTA
+        headline="Ready to see Boltcall handle your intake calls?"
+        description="Start your 7-day free trial, or book a call with our team to walk through security and compliance in more depth."
+        buttonText="Get started"
+      />
+
+      <Footer />
     </div>
   );
 };

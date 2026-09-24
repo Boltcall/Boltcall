@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, PhoneOff, Loader2, CheckCircle, ArrowRight } from 'lucide-react';
 import Header from '../components/Header';
 import { updateMetaDescription } from '../lib/utils';
+import { CAL_BOOKING_URL as BOOK_CALL_URL } from './BookCall';
 
 type DemoStatus = 'loading' | 'error' | 'ready' | 'connecting' | 'active' | 'ended';
 
 const FUNCTIONS_BASE = '/.netlify/functions';
-const BOOK_CALL_URL = 'https://cal.com/noam/boltcall';
 
 const ReceptionistDemo: React.FC = () => {
   const [searchParams] = useSearchParams();

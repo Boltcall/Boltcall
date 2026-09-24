@@ -1,11 +1,17 @@
 import { Handler } from '@netlify/functions';
 import { notifyError } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { getServiceSupabase } from './_shared/token-utils';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 
 const MAX_MESSAGE_LEN = 500;
 const MAX_STACK_LEN = 1000;
 const MAX_FIELD_LEN = 200;
 const MAX_METADATA_KEYS = 10;
+// F108: unlimited POSTs here fan out to the founder's Telegram — cap it
+// like every other public endpoint that triggers a notification.
+const REPORT_IP_MAX_ATTEMPTS = 20;
+const REPORT_IP_WINDOW_SECONDS = 60 * 60;
 
 /**
  * Frontend crash reporting — receives window.onerror / unhandledrejection /
@@ -32,6 +38,17 @@ const handler: Handler = async (event) => {
       /* malformed report — ignore */
     }
     return { statusCode: 204, body: '' };
+  }
+
+  const ip = getClientIp(event.headers as Record<string, string | undefined>);
+  const limit = await consumePublicRateLimit(getServiceSupabase(), {
+    bucket: 'client_error_report',
+    key: hashRateLimitKey([ip]),
+    maxAttempts: REPORT_IP_MAX_ATTEMPTS,
+    windowSeconds: REPORT_IP_WINDOW_SECONDS,
+  });
+  if (!limit.allowed) {
+    return { statusCode: limit.statusCode, body: '' };
   }
 
   try {

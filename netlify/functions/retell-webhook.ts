@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createHash } from 'node:crypto';
 import { maskPhone } from './_shared/redact-secrets';
-import { notifyError } from './_shared/notify';
+import { alertOwner, notifyError } from './_shared/notify';
 import { getServiceSupabase } from './_shared/token-utils';
 import { fireWebhooks } from './_shared/fire-webhooks';
 import { verifyRetellSignature } from './_shared/verify-signatures';
@@ -106,6 +106,54 @@ async function triggerOutcomeEvaluation(call: any, agentId: string, userId: stri
     console.error('[retell-webhook] Outcome evaluation trigger failed (non-blocking):', err);
     notifyError('retell-webhook: outcome-eval', err, { callId: call.call_id, userId: userId || undefined });
   });
+}
+
+// ─── Post-call intake + urgent alert ─────────────────────────────────────────
+// custom_analysis_data comes from the agent's post_call_analysis_data
+// (retell-agents getDefaultAgentConfig). Stored on this call's lead; an urgent
+// matter emails the owner once per call.
+
+async function applyCallAnalysis(supabase: any, leadId: string, userId: string, call: any, phone: string): Promise<void> {
+  const data = call.call_analysis?.custom_analysis_data;
+  if (!data || typeof data !== 'object') return;
+  const text = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+  const name = text(data.caller_name);
+  const email = text(data.caller_email);
+  const fields: Record<string, unknown> = { raw_data: call };
+  if (name) {
+    const [first, ...rest] = name.split(/\s+/);
+    fields.first_name = first;
+    fields.last_name = rest.join(' ') || null;
+  }
+  if (email.includes('@')) fields.email = email;
+
+  if (data.urgent !== true) {
+    await supabase.from('leads').update(fields).eq('id', leadId);
+    return;
+  }
+
+  // Claim before sending: the marker lives in raw_data and the conditional
+  // update is atomic, so a retried or duplicate call_analyzed matches no row.
+  const { data: claimed, error } = await supabase
+    .from('leads')
+    .update({ ...fields, raw_data: { ...call, urgent_alerted_at: new Date().toISOString() } })
+    .eq('id', leadId)
+    .is('raw_data->>urgent_alerted_at', null)
+    .select('id');
+  // A failed claim still alerts: a duplicate email beats a missed arrest call.
+  if (!error && !claimed?.length) return;
+
+  const sent = await alertOwner(supabase, userId, `URGENT call: ${name || phone} needs a call back now`, [
+    'Your AI receptionist flagged this call as urgent. The caller was told you are being alerted.',
+    `Caller: ${name || 'Name not given'}`,
+    `Phone: ${phone}`,
+    ...(email ? [`Email: ${email}`] : []),
+    `Reason: ${text(data.urgency_reason) || 'not captured'}`,
+    `Practice area: ${text(data.practice_area) || 'not captured'}`,
+    'Please call them back right away.',
+    'Open it in Boltcall: https://boltcall.org/dashboard/leads',
+  ], { urgent: true });
+  if (!sent) await notifyError('retell-webhook: urgent owner alert not sent', 'alertOwner returned false', { callId: call.call_id, userId });
 }
 
 // ─── Response-time proof widget (Task 9) ────────────────────────────────────
@@ -377,6 +425,14 @@ const handler: Handler = async (event) => {
               duplicateLead = true;
             }
             if (leadError && !duplicateLead) throw new Error('Completed call lead could not be persisted');
+            // ponytail: phone calls only; the lead row is the idempotency anchor, so web calls get no urgent alert.
+            try {
+              await applyCallAnalysis(supabaseForLead, leadId, agentOwner.user_id, call, contactPhone);
+            } catch (err) {
+              // Non-blocking: a throw here would 500 the event, and Retell's retry lands on the duplicate-lead path that skips CRM sync + webhooks.
+              console.error('[retell-webhook] applyCallAnalysis failed (non-blocking):', err);
+              await notifyError('retell-webhook: call-analysis/urgent-alert', err, { callId: call.call_id, userId: agentOwner.user_id });
+            }
 
             const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
             if (!duplicateLead) fetch(`${baseUrl}/.netlify/functions/integration-sync`, {
@@ -416,7 +472,12 @@ const handler: Handler = async (event) => {
           });
 
           // ── Outcome evaluation: record win or trigger self-heal ──────────
-          await triggerOutcomeEvaluation(call, agentId, agentOwner.user_id);
+          // Retell sends call_ended then call_analyzed for the same call; evaluate
+          // once, on the analyzed event (final call_analysis). Event-less legacy
+          // payloads still evaluate.
+          if (payload.event !== 'call_ended') {
+            await triggerOutcomeEvaluation(call, agentId, agentOwner.user_id);
+          }
         }
 
         // ── Self-improvement loop: score every completed call ─────────────
@@ -440,7 +501,7 @@ const handler: Handler = async (event) => {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ ok: true, missed: false, outcomeEvaluationTriggered: true }),
+        body: JSON.stringify({ ok: true, missed: false, outcomeEvaluationTriggered: payload.event !== 'call_ended' }),
       };
     }
 

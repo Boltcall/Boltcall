@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import Button from '../components/ui/Button';
+import { CAL_BOOKING_URL } from './BookCall';
 
 const SEOAuditPDFThankYou: React.FC = () => {
   useEffect(() => {
@@ -82,7 +83,7 @@ const SEOAuditPDFThankYou: React.FC = () => {
                 Book a free 15-minute call and we'll walk through your audit and build a plan together.
               </p>
               <a
-                href="https://cal.com/boltcall"
+                href={CAL_BOOKING_URL}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -165,15 +165,17 @@ const handler: Handler = async (event) => {
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, results: data || [], method: 'text_search' }) };
     }
 
-    // ─── Helper: Get business_profile_id for a user ──────────────────
-    async function getProfileId(userId: string): Promise<string | null> {
+    // ─── Helper: Get business profile (+ its workspace) for a user ────
+    // workspace_id is stamped on KB rows so V2 knowledge surfaces (which
+    // filter by workspace_id) see them.
+    async function getProfile(userId: string): Promise<{ id: string; workspace_id: string | null } | null> {
       const { data } = await supabase
         .from('business_profiles')
-        .select('id')
+        .select('id, workspace_id')
         .eq('user_id', userId)
         .limit(1)
         .maybeSingle();
-      return data?.id || null;
+      return data || null;
     }
 
     // ─── ADD: Add a single KB entry ─────────────────────────────────
@@ -183,7 +185,7 @@ const handler: Handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'userId, title, and content required' }) };
       }
 
-      const profileId = await getProfileId(userId);
+      const profile = await getProfile(userId);
 
       // Generate embedding for search-tier entries
       let embedding: number[] | null = null;
@@ -195,7 +197,8 @@ const handler: Handler = async (event) => {
         .from('knowledge_base')
         .insert({
           user_id: userId,
-          business_profile_id: profileId,
+          business_profile_id: profile?.id ?? null,
+          workspace_id: profile?.workspace_id ?? null,
           title,
           content,
           category: category || 'general',
@@ -219,7 +222,7 @@ const handler: Handler = async (event) => {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'userId and entries array required' }) };
       }
 
-      const profileId = await getProfileId(userId);
+      const profile = await getProfile(userId);
       const results: Array<{ title: string; success: boolean; id?: string; error?: string }> = [];
       for (const entry of entries) {
         let embedding: number[] | null = null;
@@ -231,7 +234,8 @@ const handler: Handler = async (event) => {
           .from('knowledge_base')
           .insert({
             user_id: userId,
-            business_profile_id: profileId,
+            business_profile_id: profile?.id ?? null,
+            workspace_id: profile?.workspace_id ?? null,
             title: entry.title,
             content: entry.content,
             category: entry.category || 'general',
@@ -465,7 +469,7 @@ A: ${content}
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'userId and name required' }) };
       }
 
-      const profileId = await getProfileId(userId);
+      const profileId = (await getProfile(userId))?.id;
       if (!profileId) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'No business profile found' }) };
       }

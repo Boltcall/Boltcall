@@ -84,6 +84,7 @@ describe('retell-agents tenant hardening', () => {
     process.env.SUPABASE_URL = 'https://supabase.example';
     process.env.SUPABASE_SERVICE_KEY = 'test-service-key';
     delete process.env.RETELL_LLM_WEBSOCKET_URL;
+    delete process.env.RETELL_CUSTOM_LLM_ENABLED;
     getUserAgentIdsMock.mockResolvedValue([]);
     agentRetrieveMock.mockResolvedValue(null);
     userOwnsAgentMock.mockResolvedValue(false);
@@ -198,6 +199,7 @@ describe('retell-agents tenant hardening', () => {
 
   it('requires founder or platform admin authorization for org-wide Azure migration', async () => {
     process.env.RETELL_LLM_WEBSOCKET_URL = 'wss://llm.example/ws';
+    process.env.RETELL_CUSTOM_LLM_ENABLED = 'true';
     setupSupabaseMaybeSingle({ data: null, error: null });
     const { testHandler: handler } = await import('../retell-agents');
 

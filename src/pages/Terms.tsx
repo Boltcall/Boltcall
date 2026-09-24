@@ -160,7 +160,7 @@ const Terms: React.FC = () => {
             <p>Subscriptions are billed monthly or annually in advance. Prices are displayed in USD or ILS as selected. All fees are exclusive of applicable taxes.</p>
             <p><strong>Israeli VAT (מע"מ):</strong> Israeli-resident customers are charged 18% VAT (current rate as of January 2025) in addition to the subscription price. A proper Israeli tax invoice (חשבונית מס) will be issued for each payment. B2B customers with a valid VAT number (ע.מ. / ח.פ.) may be eligible for reverse-charge treatment on qualifying transactions — contact <a href="mailto:billing@boltcall.org" className="text-blue-600 hover:underline">billing@boltcall.org</a>.</p>
             <p>Subscriptions auto-renew. Cancel any time before the renewal date through your account dashboard. Cancellation takes effect at the end of the current billing period — no partial refunds are issued except as required by Israeli Consumer Protection Law (for B2C contracts within 14 days of first purchase) or as Boltcall determines in its sole discretion.</p>
-            <p>Payments are processed by Stripe. Failed payments may result in service suspension after a 5-day grace period.</p>
+            <p>Payments are processed by PayPal. Failed payments may result in service suspension after a 5-day grace period.</p>
           </div>
         </motion.div>
 

@@ -102,6 +102,23 @@ const handler: Handler = async (event) => {
   ];
 
   const cascadeErrors: Array<{ table: string; error: string }> = [];
+
+  // F93: retell_calls (transcripts + recording_url) has no user_id column and its
+  // workspace_id FK is ON DELETE SET NULL (not CASCADE) — the loop below would
+  // orphan every call row instead of erasing it, and `leads` has no FK at all.
+  // Both must be deleted explicitly to honor the Privacy Policy's erasure promise.
+  // (Changing the FK to CASCADE is a DB-migration follow-up, tracked separately.)
+  const { data: ownedWorkspaces } = await sb.from('workspaces').select('id').eq('user_id', userId);
+  const workspaceIds = (ownedWorkspaces || []).map((w) => w.id);
+  if (workspaceIds.length) {
+    const { error: callsErr } = await sb.from('retell_calls').delete().in('workspace_id', workspaceIds);
+    if (callsErr) cascadeErrors.push({ table: 'retell_calls', error: callsErr.message });
+    const { error: leadsWsErr } = await sb.from('leads').delete().in('workspace_id', workspaceIds);
+    if (leadsWsErr) cascadeErrors.push({ table: 'leads (workspace_id)', error: leadsWsErr.message });
+  }
+  const { error: leadsUserErr } = await sb.from('leads').delete().eq('user_id', userId);
+  if (leadsUserErr) cascadeErrors.push({ table: 'leads (user_id)', error: leadsUserErr.message });
+
   for (const table of cascadeTables) {
     const { error } = await sb.from(table).delete().eq('user_id', userId);
     if (error) cascadeErrors.push({ table, error: error.message });

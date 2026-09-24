@@ -114,6 +114,7 @@ describe('provisionAgentSetup', () => {
 
     expect(mocks.createUserWorkspaceAndProfile).toHaveBeenCalledWith('user-1', {
       business_name: 'Summit Solar',
+      owner_name: null,
       website_url: 'https://summitsolar.example',
       main_category: 'solar',
       country: 'us',
@@ -146,8 +147,41 @@ describe('provisionAgentSetup', () => {
         agentType: 'speed_to_lead',
         agentName: 'Summit Solar Follow-Up Agent',
         kbFolderId: 'kb-1',
+        voiceId: '11labs-Grace',
       }),
     );
+  });
+
+  it('normalizes free-text country, keeps owner name + tone, and hides raw server errors', async () => {
+    mocks.createAgentAndKnowledgeBase.mockReset();
+    mocks.createAgentAndKnowledgeBase.mockResolvedValue({ kb_folder_id: 'kb-1' });
+    // setup-launch fails with a raw JSON body — the customer must not see it.
+    globalThis.fetch = vi.fn(async (url: string) =>
+      String(url).includes('setup-launch')
+        ? { ok: false, status: 500, text: async () => '{"error":"Setup launch failed","details":"relation x"}' }
+        : { ok: true, json: async () => ({}) }) as never;
+
+    await expect(provisionAgentSetup('user-1', {
+      ownerName: ' Harper Cole ',
+      businessName: 'Harper & Cole Law',
+      websiteUrl: '',
+      country: 'United States',
+      industry: 'law_firm',
+      voiceId: 'retell-Leland',
+      goal: 'book-appointments',
+      tone: 'confident_direct',
+      transferNumber: '',
+      createdAt: '2026-09-24T10:00:00.000Z',
+    })).rejects.toThrow(/couldn't finish setting up.*support@boltcall.org/);
+
+    expect(mocks.createUserWorkspaceAndProfile).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      country: 'us',
+      owner_name: 'Harper Cole',
+    }));
+    expect(mocks.createLocation).toHaveBeenCalledWith(expect.objectContaining({ country: 'United States' }));
+    for (const call of mocks.createAgentAndKnowledgeBase.mock.calls) {
+      expect(call[0]).toMatchObject({ country: 'us', voiceId: 'retell-Leland', callFlow: { tone: 'formal' } });
+    }
   });
 
   it('flips missed_call_textback_enabled and threads painPoint into both agents when pain=missed_calls', async () => {
@@ -184,14 +218,14 @@ describe('provisionAgentSetup', () => {
       1,
       expect.objectContaining({
         agentType: 'inbound',
-        callFlow: { painPoint: 'missed_calls' },
+        callFlow: { painPoint: 'missed_calls', tone: 'friendly_concise' },
       }),
     );
     expect(mocks.createAgentAndKnowledgeBase).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         agentType: 'speed_to_lead',
-        callFlow: { painPoint: 'missed_calls' },
+        callFlow: { painPoint: 'missed_calls', tone: 'friendly_concise' },
       }),
     );
   });
@@ -273,7 +307,7 @@ describe('provisionAgentSetup', () => {
       expect(mocks.profileUpdate).not.toHaveBeenCalled();
       // callFlow still threaded — the prompt line is the visible customization.
       expect(mocks.createAgentAndKnowledgeBase).toHaveBeenCalledWith(
-        expect.objectContaining({ callFlow: { painPoint } }),
+        expect.objectContaining({ callFlow: { painPoint, tone: 'friendly_concise' } }),
       );
     }
   });

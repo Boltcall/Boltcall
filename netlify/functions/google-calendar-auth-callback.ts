@@ -141,11 +141,15 @@ const handler: Handler = async (event) => {
       .maybeSingle();
 
     if (existing) {
+      // F111: a reconnect whose OAuth response omits refresh_token (Google only
+      // issues one on first consent) must not null out the working token —
+      // `undefined` makes supabase-js drop the key instead of overwriting it,
+      // matching the gmail/outlook callback pattern.
       await supabase
         .from('user_integrations')
         .update({
           is_connected: true,
-          api_key: refreshToken || null, // Store refresh_token in api_key field
+          api_key: refreshToken || undefined, // Store refresh_token in api_key field
           config,
           updated_at: new Date().toISOString(),
         })

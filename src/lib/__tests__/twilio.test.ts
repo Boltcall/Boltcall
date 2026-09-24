@@ -17,8 +17,6 @@ import {
   generateSmsAiReply,
   approveSmsAiDraft,
   rejectSmsAiDraft,
-  enrollInSequence,
-  processSequences,
   listPhoneNumbers,
   searchAvailableNumbers,
   purchasePhoneNumber,
@@ -141,38 +139,6 @@ describe('SMS — AI Responder', () => {
 
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(body.action).toBe('reject');
-  });
-});
-
-// ─── SMS Sequences ──────────────────────────────────────────────────────────
-
-describe('SMS — Sequences', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('enrollInSequence enrolls a contact', async () => {
-    mockFetch.mockReturnValue(okJson({
-      success: true,
-      enrollmentId: 'enr_1',
-      nextStepAt: '2026-04-05T10:00:00Z',
-    }));
-
-    const result = await enrollInSequence({
-      sequenceId: 'seq_1',
-      contactPhone: '+1234567890',
-      contactName: 'John',
-      userId: 'user_1',
-    });
-
-    expect(result.success).toBe(true);
-    expect(result.enrollmentId).toBe('enr_1');
-  });
-
-  it('processSequences triggers batch processing', async () => {
-    mockFetch.mockReturnValue(okJson({ processed: 5, failed: 1 }));
-
-    const result = await processSequences();
-    expect(result.processed).toBe(5);
-    expect(result.failed).toBe(1);
   });
 });
 

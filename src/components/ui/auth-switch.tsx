@@ -8,6 +8,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { resetPassword } from "../../lib/auth";
 import { savePendingAuthRedirect } from "../../lib/authRedirect";
+import { supabase } from "../../lib/supabase";
 import PasswordInput from "./password-input";
 
 const loginSchema = z.object({
@@ -105,6 +106,9 @@ export default function AuthSwitch({
   const [error, setError] = useState("");
   const [resetSent, setResetSent] = useState(false);
   const [loginFailed, setLoginFailed] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendMessage, setResendMessage] = useState<{ text: string; isError: boolean } | null>(null);
 
   const { login, signup, signInWithGoogle, signInWithMicrosoft, signInWithFacebook } = useAuth();
   const navigate = useNavigate();
@@ -146,6 +150,8 @@ export default function AuthSwitch({
     setError("");
     setResetSent(false);
     setLoginFailed(false);
+    setConfirmationEmail(null);
+    setResendMessage(null);
     loginForm.reset();
     signupForm.reset();
     if (prefillEmail) {
@@ -208,12 +214,40 @@ export default function AuthSwitch({
         setMode("login");
         loginForm.setValue("email", data.email);
       } else if (name === 'EmailConfirmationRequiredError') {
-        setError("Check your email — we sent you a link to confirm your account.");
+        setConfirmationEmail(data.email);
       } else {
         setError(err instanceof Error ? err.message : "Failed to create account.");
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (resendCooldown > 0 || !confirmationEmail) return;
+    setResendMessage(null);
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email: confirmationEmail,
+      });
+      if (resendError) {
+        setResendMessage({ text: resendError.message || "Failed to resend. Please try again.", isError: true });
+        return;
+      }
+      setResendMessage({ text: "Confirmation email sent.", isError: false });
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch {
+      setResendMessage({ text: "Failed to resend. Please try again.", isError: true });
     }
   };
 
@@ -481,63 +515,93 @@ export default function AuthSwitch({
                 transition={{ duration: 0.3 }}
                 className="w-full max-w-[340px]"
               >
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8">
-                  Sign up
-                </h2>
-                <form noValidate onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-3 sm:space-y-4">
-                  <PillInput
-                    {...signupForm.register("email")}
-                    type="email"
-                    placeholder="Email"
-                    aria-label="Email"
-                    error={signupForm.formState.errors.email?.message}
-                  />
-                  <PasswordInput
-                    {...signupForm.register("password")}
-                    placeholder="Password"
-                    id="signup-password"
-                    aria-label="Password"
-                  />
-                  {signupForm.formState.errors.password && (
-                    <p className="ml-4 text-xs text-red-500 -mt-2">
-                      {signupForm.formState.errors.password.message}
-                    </p>
-                  )}
-                  {error && (
-                    <div className="bg-red-50 rounded-full px-4 py-2">
-                      <p className="text-red-500 text-xs text-center">{error}</p>
+                {confirmationEmail ? (
+                  <div className="text-center">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+                      Check your email
+                    </h2>
+                    <div className="bg-blue-50 rounded-2xl px-4 py-4">
+                      <p className="text-sm text-gray-700">
+                        We sent a confirmation link to{" "}
+                        <span className="font-medium">{confirmationEmail}</span>. Click it to
+                        activate your account.
+                      </p>
                     </div>
-                  )}
-                  <div className="pt-2">{submitButton("SIGN UP", "Creating account...")}</div>
-                  <p className="px-2 text-[11px] text-gray-400 text-center">
-                    By clicking Sign up, you agree to our{" "}
-                    <Link to="/terms-of-service" target="_blank" className="underline">
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link to="/privacy-policy" target="_blank" className="underline">
-                      Privacy Policy
-                    </Link>
-                    .
-                  </p>
-                </form>
-                {OAUTH_ENABLED && (
-                  <div className="mt-5">
-                    <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
-                    <div className="flex justify-center gap-3">
-                      {[
-                        { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
-                        { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
-                        { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
-                      ].map((s, i) => (
-                        <button key={i} type="button" onClick={s.handler} disabled={isLoading}
-                          className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
-                          title={s.label}>
-                          {s.icon}
-                        </button>
-                      ))}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={handleResendConfirmation}
+                      disabled={resendCooldown > 0}
+                      className="mt-4 mx-auto block px-6 py-2.5 rounded-full border border-blue-600 text-blue-600 font-semibold text-sm hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend confirmation email"}
+                    </button>
+                    {resendMessage && (
+                      <p className={cn("mt-3 text-xs", resendMessage.isError ? "text-red-500" : "text-green-600")}>
+                        {resendMessage.text}
+                      </p>
+                    )}
                   </div>
+                ) : (
+                  <>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-6 sm:mb-8">
+                      Sign up
+                    </h2>
+                    <form noValidate onSubmit={signupForm.handleSubmit(onSignup)} className="space-y-3 sm:space-y-4">
+                      <PillInput
+                        {...signupForm.register("email")}
+                        type="email"
+                        placeholder="Email"
+                        aria-label="Email"
+                        error={signupForm.formState.errors.email?.message}
+                      />
+                      <PasswordInput
+                        {...signupForm.register("password")}
+                        placeholder="Password"
+                        id="signup-password"
+                        aria-label="Password"
+                      />
+                      {signupForm.formState.errors.password && (
+                        <p className="ml-4 text-xs text-red-500 -mt-2">
+                          {signupForm.formState.errors.password.message}
+                        </p>
+                      )}
+                      {error && (
+                        <div className="bg-red-50 rounded-full px-4 py-2">
+                          <p className="text-red-500 text-xs text-center">{error}</p>
+                        </div>
+                      )}
+                      <div className="pt-2">{submitButton("SIGN UP", "Creating account...")}</div>
+                      <p className="px-2 text-[11px] text-gray-400 text-center">
+                        By clicking Sign up, you agree to our{" "}
+                        <Link to="/terms-of-service" target="_blank" className="underline">
+                          Terms of Service
+                        </Link>{" "}
+                        and{" "}
+                        <Link to="/privacy-policy" target="_blank" className="underline">
+                          Privacy Policy
+                        </Link>
+                        .
+                      </p>
+                    </form>
+                    {OAUTH_ENABLED && (
+                      <div className="mt-5">
+                        <p className="text-gray-400 text-xs text-center mb-3">Or continue with</p>
+                        <div className="flex justify-center gap-3">
+                          {[
+                            { icon: <GoogleIcon />, handler: handleGoogleLogin, label: "Google" },
+                            { icon: <MicrosoftIcon />, handler: handleMicrosoftLogin, label: "Microsoft" },
+                            { icon: <FacebookIcon />, handler: handleFacebookLogin, label: "Facebook" },
+                          ].map((s, i) => (
+                            <button key={i} type="button" onClick={s.handler} disabled={isLoading}
+                              className="w-10 h-10 rounded-full border border-blue-200 flex items-center justify-center hover:border-blue-400 hover:shadow-md transition-all duration-200 disabled:opacity-50 bg-white"
+                              title={s.label}>
+                              {s.icon}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             )}

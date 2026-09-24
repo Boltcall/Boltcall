@@ -277,6 +277,10 @@ const SetupLoading: React.FC = () => {
           message:
             'Your AI agents are ready. Add a number from the dashboard when you have a moment.',
           duration: 8000,
+          actions: {
+            label: 'Add a number',
+            onClick: () => navigate('/dashboard/your-ai/phone'),
+          },
         });
       }
       setTimeout(() => {

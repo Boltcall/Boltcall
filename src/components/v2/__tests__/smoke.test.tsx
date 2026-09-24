@@ -402,7 +402,7 @@ describe('V2SetupChat — smoke', () => {
       target: { value: 'Noam Yakoby' },
     });
     fireEvent.change(screen.getByLabelText(/country/i), {
-      target: { value: 'Israel' },
+      target: { value: 'IL' },
     });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     expect(screen.getByLabelText(/owner name/i).closest('.transition-all')).toHaveClass('opacity-0');
@@ -467,7 +467,7 @@ describe('V2SetupChat — smoke', () => {
       target: { value: 'Noam Yakoby' },
     });
     fireEvent.change(screen.getByLabelText(/country/i), {
-      target: { value: 'Israel' },
+      target: { value: 'IL' },
     });
     fireEvent.click(screen.getByRole('button', { name: /continue/i }));
     await act(async () => {
@@ -487,6 +487,11 @@ describe('V2SetupChat — smoke', () => {
     });
 
     fireEvent.click(screen.getByRole('radio', { name: /Leland/i }));
+    // F10: Industry has no silent default — Finish stays disabled until
+    // it's explicitly chosen.
+    fireEvent.change(screen.getByLabelText(/industry/i), {
+      target: { value: 'plumbing' },
+    });
 
     fireEvent.click(screen.getByRole('button', { name: /finish/i }));
     expect(screen.getByLabelText(/choose voice/i).closest('.transition-all')).toHaveClass('opacity-0');
@@ -498,10 +503,10 @@ describe('V2SetupChat — smoke', () => {
 
     expect(JSON.parse(window.localStorage.getItem('boltcall_pending_agent_setup') || '{}')).toMatchObject({
       ownerName: 'Noam Yakoby',
-      country: 'Israel',
+      country: 'IL',
       businessName: 'Boltcall Plumbing',
       websiteUrl: 'https://boltcall.org',
-      industry: 'other',
+      industry: 'plumbing',
       voiceId: 'retell-Leland',
       goal: 'book-appointments',
       tone: 'friendly_concise',

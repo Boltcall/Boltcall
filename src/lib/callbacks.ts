@@ -190,7 +190,7 @@ export class CallbackService {
         )
       `)
       .eq('assigned_agent_id', agentId)
-      .order('priority', { ascending: true })
+      // ponytail: callbacks.priority doesn't exist in prod; order by created_at.
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -217,8 +217,8 @@ export class CallbackService {
         )
       `)
       .eq('status', 'pending')
-      .order('priority', { ascending: true })
-      .order('created_at', { ascending: true });
+      // ponytail: callbacks.priority doesn't exist in prod; order by created_at.
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch pending callbacks: ${error.message}`);

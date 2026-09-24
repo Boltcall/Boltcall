@@ -67,7 +67,8 @@ describe('retell-webhook', () => {
     expect(JSON.parse(res?.body || '{}').error).toMatch(/signature required/i);
   });
 
-  it('routes completed substantive calls through outcome evaluation and scoring', async () => {
+  // Retell delivers call_ended then call_analyzed for one call: evaluate once (analyzed), score always.
+  it.each([['call_analyzed', true], ['call_ended', false]] as const)('on %s: outcome evaluation=%s, scoring always', async (eventName, evaluated) => {
     vi.stubEnv('URL', 'https://boltcall.test');
     vi.stubEnv('INTERNAL_API_SECRET', 'test-internal-secret');
     getSupabaseMock.mockReturnValue({
@@ -94,7 +95,7 @@ describe('retell-webhook', () => {
         httpMethod: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          event: 'call_ended',
+          event: eventName,
           call: {
             call_id: 'call-complete-1',
             agent_id: 'agent-owned',
@@ -113,9 +114,9 @@ describe('retell-webhook', () => {
     expect(JSON.parse(res?.body || '{}')).toMatchObject({
       ok: true,
       missed: false,
-      outcomeEvaluationTriggered: true,
+      outcomeEvaluationTriggered: evaluated,
     });
-    expect(fetch).toHaveBeenCalledWith(
+    (evaluated ? expect(fetch) : expect(fetch).not).toHaveBeenCalledWith(
       'https://boltcall.test/.netlify/functions/conversation-outcome',
       expect.objectContaining({
         method: 'POST',

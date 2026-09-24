@@ -363,22 +363,6 @@ const Contact: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Internal navigation links */}
-      <section className="w-full max-w-[860px] mt-4 mb-8">
-        <div className="bg-white rounded-2xl shadow-sm px-8 py-6">
-          <h2 className="text-base font-semibold text-gray-700 mb-4">Explore Boltcall</h2>
-          <div className="flex flex-wrap gap-3 text-sm">
-            <Link to="/pricing" className="text-blue-600 hover:underline font-medium">View Pricing Plans</Link>
-            <span className="text-gray-300">·</span>
-            <Link to="/help-center" className="text-blue-600 hover:underline font-medium">Help Center</Link>
-            <span className="text-gray-300">·</span>
-            <Link to="/features/ai-receptionist" className="text-blue-600 hover:underline font-medium">AI Receptionist Features</Link>
-            <span className="text-gray-300">·</span>
-            <Link to="/blog" className="text-blue-600 hover:underline font-medium">Read Our Blog</Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };

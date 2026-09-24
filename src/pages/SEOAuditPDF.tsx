@@ -1225,7 +1225,7 @@ const SEOAuditPDF: React.FC = () => {
 
             <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
 
-            <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Used by 500+ local businesses</span></div>
+            <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for local service businesses</span></div>
 
             <div className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>PDF report delivered in ~5 minutes</span></div>
 

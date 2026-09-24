@@ -809,7 +809,7 @@ const AiReadinessScorecard: React.FC = () => {
                 variants={fadeInUp}
                 className="text-2xl md:text-3xl font-bold text-[#0B1220] mb-12"
               >
-                2,000+ businesses have taken this assessment
+                What missed calls cost local businesses
               </motion.h3>
 
               <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -866,7 +866,7 @@ const AiReadinessScorecard: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Used by 500+ local businesses</span>
+              <span>Built for local service businesses</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

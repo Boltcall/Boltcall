@@ -7,7 +7,6 @@ import {
   AlertCircle,
   TrendingUp,
   Zap,
-  Bot,
   Activity,
 } from 'lucide-react';
 
@@ -21,7 +20,6 @@ import RoiDashboard from '../../components/analytics/RoiDashboard';
 import ResponseTimeCard from '../../components/analytics/ResponseTimeCard';
 import PeakHoursHeatmap from '../../components/analytics/PeakHoursHeatmap';
 import SourceAttributionChart from '../../components/analytics/SourceAttributionChart';
-import AgentPerformanceTable from '../../components/analytics/AgentPerformanceTable';
 import MissedOpportunities from '../../components/analytics/MissedOpportunities';
 import ExportPanel from '../../components/analytics/ExportPanel';
 import LiveDashboard from '../../components/analytics/LiveDashboard';
@@ -36,13 +34,15 @@ import { exportToCsv } from '../../lib/exportUtils';
 /*  Tab config                                                         */
 /* ------------------------------------------------------------------ */
 
-type TabKey = 'overview' | 'funnel' | 'roi' | 'performance' | 'live';
+// ponytail: 'performance' tab (agent performance / call-based response time+heatmap)
+// dropped — it reads the nonexistent call_logs table and always renders empty.
+// Restore once analyticsApi.ts points at retell_calls.
+type TabKey = 'overview' | 'funnel' | 'roi' | 'live';
 
 const TABS: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: 'overview', label: 'Overview', icon: BarChart3 },
   { key: 'funnel', label: 'Funnel', icon: TrendingUp },
   { key: 'roi', label: 'ROI', icon: Activity },
-  { key: 'performance', label: 'Performance', icon: Bot },
   { key: 'live', label: 'Live', icon: Zap },
 ];
 
@@ -246,16 +246,6 @@ const DeepAnalyticsPage: React.FC = () => {
             loading={data.roiLoading}
             onConfigChange={data.updateRoiConfig}
           />
-        )}
-
-        {activeTab === 'performance' && (
-          <div className="space-y-6">
-            <AgentPerformanceTable agents={data.agents} loading={data.agentsLoading} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ResponseTimeCard stats={data.responseTime} loading={data.responseTimeLoading} />
-              <PeakHoursHeatmap data={data.heatmap} loading={data.heatmapLoading} />
-            </div>
-          </div>
         )}
 
         {activeTab === 'live' && (

@@ -4,6 +4,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireAuth, getUserAgentIds, userOwnsAgent } from './_shared/require-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { listRetellVoiceAgents } from './_shared/retell-call-list';
+import { hasSharedSecret } from './_shared/user-auth';
+import { findWorkspaceForUser } from './_shared/setup-workspace';
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -26,14 +28,33 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-// Legacy fallback prompt — used only when no prompt_config is provided
-function buildAgentPrompt(businessName: string, country?: string): string {
+// Legacy fallback prompt — used only when no prompt_config is provided.
+// Fails closed: the AI + recording disclosure is always on. The old ISO-2
+// allow-list let free-text countries ('United States', 'USA') skip it.
+// ponytail: no country is exempt; add an explicit exemption set here only
+// when counsel names one — never go back to an allow-list.
+export function buildAgentPrompt(businessName: string): string {
   const basePrompt = `You are a friendly, professional AI receptionist for ${businessName}. Help callers with scheduling, answering questions, and providing information about the business. Be concise and helpful.`;
-  const needsDisclosure = !country || ['us','ca','gb','uk','au','nz','il','ie','de','fr','es','it','nl','be','at','ch','se','no','dk','fi','pt','pl','cz','gr','ro','hu','bg','hr','sk','si','lt','lv','ee','lu','mt','cy','is','li'].includes(country.toLowerCase());
-  if (needsDisclosure) {
-    return `IMPORTANT: At the very beginning of every call, you MUST introduce yourself by saying: "Hi, thank you for calling ${businessName}. This call may be recorded, and just so you know, I'm an AI assistant here to help you." Then proceed naturally with the conversation.\n\n${basePrompt}`;
-  }
-  return basePrompt;
+  return `IMPORTANT: At the very beginning of every call, you MUST introduce yourself by saying: "Hi, thank you for calling ${businessName}. This call may be recorded, and just so you know, I'm an AI assistant here to help you." Then proceed naturally with the conversation.\n\n${basePrompt}`;
+}
+
+// generate-agent-prompt keys AI disclosure and language off an ISO-2 code,
+// so free text from onboarding ('United States', 'USA', 'U.S.') must be
+// normalized before it gets there.
+// ponytail: ISO-2 passes through, 'canada' -> 'ca', any other free text ->
+// 'us' (launch market, keeps disclosure on). A country <select> removes the guess.
+export function normalizeCountryCode(raw?: string | null): string {
+  const c = (raw || '').trim().toLowerCase();
+  if (/^[a-z]{2}$/.test(c)) return c;
+  return c === 'canada' ? 'ca' : 'us';
+}
+
+// The custom-LLM websocket bridge has no tool calling (no booking, transfer,
+// end_call, lookup, KB, SMS) — agents only use it when explicitly opted in.
+function customLlmWebsocketUrl(): string | undefined {
+  return process.env.RETELL_CUSTOM_LLM_ENABLED === 'true'
+    ? process.env.RETELL_LLM_WEBSOCKET_URL || undefined
+    : undefined;
 }
 
 // Customers can override the agent's begin_message via body.begin_message.
@@ -45,8 +66,7 @@ function ensureDisclosure(beginMessage: string, businessName?: string): string {
   const hasAiNotice = /\bAI\b|artificial intelligence|inteligencia artificial|asistente de IA|בינה מלאכותית/i.test(beginMessage);
   const hasRecordingNotice = /record|grabad|מוקלט/i.test(beginMessage);
   if (hasAiNotice && hasRecordingNotice) return beginMessage;
-  const name = businessName || 'us';
-  return `${beginMessage.trim()} This call may be recorded, and I'm an AI assistant here to help you at ${name}.`;
+  return `${beginMessage.trim()} This call may be recorded, and I'm an AI assistant here to help you${businessName ? ` at ${businessName}` : ''}.`;
 }
 
 // Generate professional prompt via internal HTTP call to the generate-agent-prompt function
@@ -63,7 +83,7 @@ async function generateProfessionalPrompt(promptConfig: any): Promise<{ prompt: 
     console.error('Prompt generation failed, falling back to legacy prompt');
     // Fallback: return a basic prompt so agent creation doesn't fail
     return {
-      prompt: buildAgentPrompt(promptConfig.businessProfile?.businessName || 'this business', promptConfig.businessProfile?.country),
+      prompt: buildAgentPrompt(promptConfig.businessProfile?.businessName || 'this business'),
       beginMessage: `Hi, thank you for calling ${promptConfig.businessProfile?.businessName || 'us'}. This call may be recorded, and just so you know, I'm an AI assistant here to help you. How can I help you today?`,
     };
   }
@@ -87,14 +107,30 @@ function getDefaultAgentConfig(language?: string) {
     enable_backchannel: true,
     backchannel_words: isHebrew ? ['אהה', 'אה-אה'] : ['yeah', 'uh-huh'],
     backchannel_frequency: 0.8,
-    ambient_sound: 'coffee-shop',
+    // No background noise on a law-firm line; null also clears it on update.
+    ambient_sound: null,
     response_eagerness: 1,
     interruption_sensitivity: 0.71,
     end_call_after_silence_ms: 30000,
-    max_call_duration_ms: 481000,
+    // 20 min: legal intake (practice area + collect list + booking) outruns 8.
+    max_call_duration_ms: 1_200_000,
     begin_message_delay_ms: 1000,
     allow_user_dtmf: true,
     post_call_analysis_model: 'gpt-4o-mini',
+    // Structured intake read by retell-webhook on call_analyzed (urgent = owner
+    // alert). Legal wording on every vertical: elsewhere urgent stays false and
+    // the legal fields come back empty, so it is harmless.
+    post_call_analysis_data: [
+      { type: 'boolean', name: 'urgent', description: 'true if the caller described an urgent legal matter: in custody/arrest, domestic violence or protective order, court date within 48 hours, deportation/ICE, or a deadline within days' },
+      { type: 'string', name: 'urgency_reason', description: 'If urgent, the reason in one short line, for example "court date tomorrow"' },
+      { type: 'string', name: 'caller_name', description: "The caller's full name" },
+      { type: 'string', name: 'caller_email', description: "The caller's email address, if given" },
+      { type: 'string', name: 'practice_area', description: 'The legal practice area of the matter, for example criminal defense, family law, immigration, personal injury' },
+      { type: 'string', name: 'adverse_parties', description: 'names of opposing parties mentioned, for a conflict check' },
+    ],
+    // Recording/log URLs expire (24h). Classic call history re-fetches calls
+    // live from Retell on every load, so it always gets a fresh signed URL.
+    opt_in_signed_url: true,
   };
 }
 
@@ -114,8 +150,8 @@ function buildResponseEngine(body: any) {
       llm_websocket_url: body.llm_websocket_url,
     };
   }
-  // Default: use Azure custom LLM brain if configured
-  const wsUrl = process.env.RETELL_LLM_WEBSOCKET_URL;
+  // Opt-in only: Azure custom LLM brain (no tool calling)
+  const wsUrl = customLlmWebsocketUrl();
   if (wsUrl) {
     return { type: 'custom-llm' as const, llm_websocket_url: wsUrl };
   }
@@ -450,9 +486,118 @@ function buildGeneralTools(options: {
   return tools;
 }
 
+// Retell-native LLM config with the full tool set. Shared by create_full and
+// migrate_engine so a migrated agent gets exactly what a new one gets.
+function buildRetellLlmConfig(opts: {
+  generalPrompt: string;
+  beginMessage?: string | null;
+  transferNumber?: string;
+  transferRules?: TransferRule[];
+}) {
+  return {
+    model: 'gpt-4o-mini',
+    general_prompt: opts.generalPrompt,
+    general_tools: buildGeneralTools({
+      transferNumber: opts.transferNumber,
+      transferRules: opts.transferRules,
+      baseUrl: process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org',
+    }),
+    ...(opts.beginMessage ? { begin_message: opts.beginMessage } : {}),
+  };
+}
+
+// Internal-only: move ONE agent off the custom-LLM bridge onto a retell-llm
+// engine built from its stored prompt + the create_full tool set. Updated in
+// place (same agent_id), so phone numbers keep routing to it. dry_run returns
+// the planned config without touching Retell.
+async function migrateEngine(body: any) {
+  const agentId = typeof body.agent_id === 'string' ? body.agent_id : '';
+  if (!agentId) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'agent_id required' }) };
+  }
+  const sb = getSupabaseAdmin();
+  const { data: row, error } = await sb
+    .from('agents')
+    .select('id, system_prompt, begin_message, transfer_phone_number, business_profiles(business_name)')
+    .eq('retell_agent_id', agentId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!row) {
+    return { statusCode: 404, headers, body: JSON.stringify({ error: 'Agent not found in Supabase' }) };
+  }
+  if (!row.system_prompt) {
+    return { statusCode: 409, headers, body: JSON.stringify({ error: 'Agent has no stored system_prompt to migrate' }) };
+  }
+  const { data: rules } = await sb
+    .from('transfer_rules')
+    .select('condition_type, condition_value, destination_number, priority')
+    .eq('agent_id', row.id)
+    .order('priority', { ascending: true });
+
+  const businessName = (row as any).business_profiles?.business_name as string | undefined;
+  const llmConfig = buildRetellLlmConfig({
+    generalPrompt: row.system_prompt,
+    // Most stored greetings predate the disclosure fix — add it where missing.
+    beginMessage: row.begin_message ? ensureDisclosure(row.begin_message, businessName) : null,
+    transferNumber: body.transfer_number || row.transfer_phone_number || undefined,
+    transferRules: (rules || []) as TransferRule[],
+  });
+  // Only the launch-critical defaults; keep any per-agent voice/tuning edits.
+  const { ambient_sound, max_call_duration_ms, opt_in_signed_url, post_call_analysis_data } = getDefaultAgentConfig();
+  const agentUpdate = { ambient_sound, max_call_duration_ms, opt_in_signed_url, post_call_analysis_data };
+
+  if (body.dry_run) {
+    return { statusCode: 200, headers, body: JSON.stringify({ dry_run: true, agent_id: agentId, llm_config: llmConfig, agent_update: agentUpdate }) };
+  }
+
+  const apiKey = process.env.RETELL_API_KEY;
+  if (!apiKey) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Retell API key not configured' }) };
+  }
+  const client = new Retell({ apiKey });
+  const current: any = await client.agent.retrieve(agentId);
+  if (current?.response_engine?.type === 'retell-llm') {
+    return { statusCode: 200, headers, body: JSON.stringify({ success: true, already_migrated: true, llm_id: current.response_engine.llm_id }) };
+  }
+  const llm = await client.llm.create(llmConfig as any);
+  try {
+    await client.agent.update(agentId, {
+      ...agentUpdate,
+      response_engine: { type: 'retell-llm', llm_id: llm.llm_id },
+    } as any);
+  } catch (updateErr) {
+    await client.llm.delete(llm.llm_id).catch(() => {});
+    throw updateErr;
+  }
+  if (body.transfer_number) {
+    await sb.from('agents').update({ transfer_phone_number: body.transfer_number }).eq('id', row.id);
+  }
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify({ success: true, agent_id: agentId, llm_id: llm.llm_id, previous_engine: current?.response_engine?.type || null }),
+  };
+}
+
 const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
+  }
+
+  if (event.httpMethod === 'POST') {
+    let internalBody: any = null;
+    try { internalBody = JSON.parse(event.body || '{}'); } catch { /* user path reports bad JSON */ }
+    if (internalBody?.action === 'migrate_engine') {
+      if (!hasSharedSecret(event)) {
+        return { statusCode: 401, headers, body: JSON.stringify({ error: 'Internal authorization required' }) };
+      }
+      try {
+        return await migrateEngine(internalBody);
+      } catch (err) {
+        console.error('[retell-agents] migrate_engine failed:', err);
+        return { statusCode: 500, headers, body: JSON.stringify({ error: 'migrate_engine failed', details: err instanceof Error ? err.message : String((err as any)?.message || err) }) };
+      }
+    }
   }
 
   // ── Auth gate — every method requires a valid Supabase JWT or bc_ API key ──
@@ -577,7 +722,7 @@ const handler: Handler = async (event) => {
 
           const llm = await client.llm.create({
             model: 'gpt-4o-mini',
-            general_prompt: body.general_prompt || buildAgentPrompt(body.agent_name || 'this business', body.country),
+            general_prompt: body.general_prompt || buildAgentPrompt(body.agent_name || 'this business'),
             ...(body.knowledge_base_ids ? { knowledge_base_ids: body.knowledge_base_ids } : {}),
             general_tools: generalTools,
           } as any);
@@ -771,6 +916,9 @@ const handler: Handler = async (event) => {
         let beginMessage: string | undefined;
 
         if (body.prompt_config) {
+          if (body.prompt_config.businessProfile) {
+            body.prompt_config.businessProfile.country = normalizeCountryCode(body.prompt_config.businessProfile.country);
+          }
           const generated = await generateProfessionalPrompt(body.prompt_config);
           generalPrompt = generated.prompt;
           beginMessage = generated.beginMessage;
@@ -778,7 +926,7 @@ const handler: Handler = async (event) => {
           generalPrompt = body.general_prompt;
           beginMessage = body.begin_message ? ensureDisclosure(body.begin_message, body.business_name) : body.begin_message;
         } else {
-          generalPrompt = buildAgentPrompt(body.business_name, body.country);
+          generalPrompt = buildAgentPrompt(body.business_name);
         }
 
         // Inject KB text directly into the prompt (Tier 1 — XML document format)
@@ -796,31 +944,22 @@ const handler: Handler = async (event) => {
         // Track the LLM created in this handler so we can roll it back if a
         // later step (Supabase agent insert) fails and we bail out.
         let createdLlmId: string | null = null;
-        const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+        const customLlmUrl = customLlmWebsocketUrl();
 
         if (body.llm_id) {
           responseEngine = { type: 'retell-llm' as const, llm_id: body.llm_id };
         } else if (body.llm_websocket_url) {
           responseEngine = { type: 'custom-llm' as const, llm_websocket_url: body.llm_websocket_url };
-        } else if (process.env.RETELL_LLM_WEBSOCKET_URL) {
-          // Azure custom LLM — skip Retell LLM creation; system prompt lives in Supabase agents table
-          responseEngine = { type: 'custom-llm' as const, llm_websocket_url: process.env.RETELL_LLM_WEBSOCKET_URL };
+        } else if (customLlmUrl) {
+          // Opt-in Azure custom LLM (RETELL_CUSTOM_LLM_ENABLED=true) — no Retell LLM; prompt lives in Supabase agents table
+          responseEngine = { type: 'custom-llm' as const, llm_websocket_url: customLlmUrl };
         } else {
-          // Fallback: Retell-managed LLM (gpt-4o-mini) when no Azure WS configured
-          const generalTools = buildGeneralTools({
+          // Default: Retell-managed LLM with booking/transfer/end_call/lookup/KB/SMS tools
+          const llm = await client.llm.create(buildRetellLlmConfig({
+            generalPrompt,
+            beginMessage,
             transferNumber: body.transfer_number || '',
-            baseUrl,
-          });
-
-          const llmConfig: any = {
-            model: 'gpt-4o-mini',
-            general_prompt: generalPrompt,
-            general_tools: generalTools,
-          };
-          if (beginMessage) {
-            llmConfig.begin_message = beginMessage;
-          }
-          const llm = await client.llm.create(llmConfig);
+          }) as any);
           createdLlmId = llm.llm_id;
           responseEngine = { type: 'retell-llm' as const, llm_id: llm.llm_id };
         }
@@ -914,11 +1053,16 @@ const handler: Handler = async (event) => {
             // 6a: Insert agent row into Supabase
             const agentDirection = (body.agent_type || 'inbound').startsWith('outbound') ? 'outbound' : 'inbound';
             const agentName = body.agent_name || `${body.business_name} AI Receptionist`;
+            // Best-effort: a failed lookup must not orphan the Retell agent.
+            const workspace = await findWorkspaceForUser<{ id: string }>(userId, 'id').catch(() => null);
             const { data: agentRow, error: agentErr } = await sb
               .from('agents')
               .insert({
                 user_id: body.user_id,
+                workspace_id: workspace?.id || null,
                 business_profile_id: body.business_profile_id || null,
+                // sync_transfer_config rebuilds the transfer tool from this column.
+                transfer_phone_number: body.transfer_number || null,
                 name: agentName,
                 description: body.agent_type === 'inbound'
                   ? 'Answers incoming calls — booking, FAQs, transfers'
@@ -1162,9 +1306,9 @@ const handler: Handler = async (event) => {
       // 3. Update Supabase retell_agent_id with the new agent ID
       // 4. Delete the old Retell agent
       if (action === 'migrate_to_azure') {
-        const wsUrl = process.env.RETELL_LLM_WEBSOCKET_URL;
+        const wsUrl = customLlmWebsocketUrl();
         if (!wsUrl) {
-          return { statusCode: 400, headers, body: JSON.stringify({ error: 'RETELL_LLM_WEBSOCKET_URL env var not set' }) };
+          return { statusCode: 400, headers, body: JSON.stringify({ error: 'Custom LLM disabled (set RETELL_CUSTOM_LLM_ENABLED=true and RETELL_LLM_WEBSOCKET_URL)' }) };
         }
         const sb = getSupabaseAdmin();
         if (!(await isPlatformRetellAdmin(event, sb))) {
@@ -1362,7 +1506,7 @@ const handler: Handler = async (event) => {
       if (!(await userOwnsAgent(userId, agent_id))) {
         return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to modify this agent' }) };
       }
-      const agent = await client.agent.update(agent_id, updates as any);
+      const agent = await client.agent.update(agent_id, { ...updates, opt_in_signed_url: true } as any);
       return { statusCode: 200, headers, body: JSON.stringify({ success: true, agent }) };
     }
 

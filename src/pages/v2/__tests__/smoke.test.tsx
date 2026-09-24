@@ -148,7 +148,11 @@ vi.mock('../../../lib/supabase', () => ({
       delete: (..._a: any[]) => createChainMock(),
     }),
     auth: {
-      getUser: () => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null }),
+      // user_metadata.name mirrors __authState.userName so tests that drive
+      // the AuthContext mock's display name also drive V2SetupPage's welcome
+      // greeting, which reads the raw metadata name (not the AuthContext
+      // user.name, which falls back to the email prefix — see F17).
+      getUser: () => Promise.resolve({ data: { user: { id: 'test-user', user_metadata: { name: __authState.userName } } }, error: null }),
       getSession: () => Promise.resolve({ data: { session: { access_token: 'tok' } }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
     },
@@ -170,7 +174,7 @@ vi.mock('@supabase/supabase-js', () => ({
       delete: (..._a: any[]) => createChainMock(),
     }),
     auth: {
-      getUser: () => Promise.resolve({ data: { user: { id: 'test-user' } }, error: null }),
+      getUser: () => Promise.resolve({ data: { user: { id: 'test-user', user_metadata: { name: __authState.userName } } }, error: null }),
       getSession: () => Promise.resolve({ data: { session: { access_token: 'tok' } }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
     },
@@ -329,26 +333,33 @@ describe('V2 pages — smoke tests', () => {
 
   // ── Canonical setup entry ───────────────────────────────────────────────
   describe('V2SetupPage', () => {
-    it('shows a welcome intro before starting the V2 setup chat', () => {
+    it('shows a welcome intro before starting the V2 setup chat', async () => {
       vi.useFakeTimers();
       __authState.userName = 'Test, User';
 
-      const { container } = render(
-        <MemoryRouter initialEntries={['/setup']}>
-          <Routes>
-            <Route path="/setup" element={<V2SetupPage />} />
-          </Routes>
-        </MemoryRouter>,
-      );
+      let container!: HTMLElement;
+      // F2: the page no longer locks body/html scroll — it must stay
+      // reachable (scrollable) on phones instead of being clipped.
+      await act(async () => {
+        const result = render(
+          <MemoryRouter initialEntries={['/setup']}>
+            <Routes>
+              <Route path="/setup" element={<V2SetupPage />} />
+            </Routes>
+          </MemoryRouter>,
+        );
+        container = result.container;
+      });
 
       expect(screen.getByRole('heading', { name: /welcome to boltcall test/i })).toHaveClass(
         'text-3xl',
         'sm:text-5xl',
         'lg:text-6xl',
       );
-      expect(container.firstElementChild).toHaveClass('h-dvh', 'overflow-hidden');
-      expect(document.body.style.overflow).toBe('hidden');
-      expect(document.documentElement.style.overflow).toBe('hidden');
+      expect(container.firstElementChild).toHaveClass('min-h-dvh');
+      expect(container.firstElementChild).not.toHaveClass('overflow-hidden');
+      expect(document.body.style.overflow).not.toBe('hidden');
+      expect(document.documentElement.style.overflow).not.toBe('hidden');
       expect(screen.queryByTestId('v2-setup-chat-stub')).not.toBeInTheDocument();
 
       act(() => {
@@ -361,16 +372,18 @@ describe('V2 pages — smoke tests', () => {
       vi.useRealTimers();
     });
 
-    it('romanizes a Hebrew first name for the English welcome', () => {
+    it('romanizes a Hebrew first name for the English welcome', async () => {
       __authState.userName = 'נועם יעקבי';
 
-      render(
-        <MemoryRouter initialEntries={['/setup']}>
-          <Routes>
-            <Route path="/setup" element={<V2SetupPage />} />
-          </Routes>
-        </MemoryRouter>,
-      );
+      await act(async () => {
+        render(
+          <MemoryRouter initialEntries={['/setup']}>
+            <Routes>
+              <Route path="/setup" element={<V2SetupPage />} />
+            </Routes>
+          </MemoryRouter>,
+        );
+      });
 
       expect(screen.getByRole('heading', { name: /welcome to boltcall noam/i })).toBeInTheDocument();
     });

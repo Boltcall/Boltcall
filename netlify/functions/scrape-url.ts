@@ -72,15 +72,41 @@ async function tryN8nFallback(url: string): Promise<{ success: boolean; data?: a
   }
 }
 
+const MAX_SCRAPE_REDIRECTS = 3;
+
+// F117: `redirect: 'follow'` trusts a 30x Location header without
+// re-running the SSRF guard, so a public URL that later redirects to a
+// private IP would bypass validatePublicHttpUrl entirely. Follow manually
+// and re-validate every hop.
+async function fetchWithValidatedRedirects(startUrl: string, hops = MAX_SCRAPE_REDIRECTS): Promise<Response> {
+  let currentUrl = startUrl;
+  for (let i = 0; i <= hops; i++) {
+    const response = await fetch(currentUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; BoltcallBot/1.0)',
+        'Accept': 'text/html,application/xhtml+xml,text/plain,*/*',
+      },
+      redirect: 'manual',
+    });
+
+    const isRedirect = response.status >= 300 && response.status < 400;
+    if (!isRedirect) return response;
+    const location = response.headers.get('location');
+    if (!location) return response;
+
+    const nextUrl = new URL(location, currentUrl).toString();
+    const check = await validatePublicHttpUrl(nextUrl, { allowHttp: true, label: 'Scrape URL' });
+    if (!check.ok) {
+      throw new Error(`Blocked redirect target: ${check.error}`);
+    }
+    currentUrl = nextUrl;
+  }
+  throw new Error('Too many redirects');
+}
+
 // Basic fetch fallback (original scrape-url logic)
 async function basicScrape(url: string): Promise<{ title: string; description: string; content: string }> {
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; BoltcallBot/1.0)',
-      'Accept': 'text/html,application/xhtml+xml,text/plain,*/*',
-    },
-    redirect: 'follow',
-  });
+  const response = await fetchWithValidatedRedirects(url);
 
   if (!response.ok) {
     return { title: url, description: '', content: '' };

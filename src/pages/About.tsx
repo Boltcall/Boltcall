@@ -184,9 +184,9 @@ const About: React.FC = () => {
               </p>
               
               <p className="text-lg">
-                Today, thousands of businesses trust Boltcall to handle their customer 
-                communication. From dental practices to legal firms, from home services to 
-                healthcare providers—we're helping businesses of all types compete and thrive 
+                Boltcall is built to handle customer communication for local service
+                businesses. From dental practices to legal firms, from home services to
+                healthcare providers—we're helping businesses of all types compete and thrive
                 in the digital age.
               </p>
             </div>
@@ -282,7 +282,7 @@ const About: React.FC = () => {
               </div>
             </div>
             <h2 className="text-gray-900 font-medium mt-4 text-4xl">Ready to Get Started?</h2>
-            <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Join thousands of businesses using Boltcall to transform their customer communication.</p>
+            <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Built for local service businesses ready to transform their customer communication.</p>
             <Link
               to="/setup"
               className="inline-block mt-6"
@@ -301,7 +301,7 @@ const About: React.FC = () => {
       {/* Social Proof */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Join 500+ businesses using Boltcall to capture more leads and grow revenue.</p>
+        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
@@ -329,7 +329,7 @@ const About: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Used by 500+ local businesses</span>
+              <span>Built for local service businesses</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

@@ -61,8 +61,8 @@ export const PLAN_LIMITS: Record<PlanTier, PlanConfig> = {
   },
   starter: {
     name: 'Starter',
-    monthlyPrice: 99,
-    yearlyPrice: 948,
+    monthlyPrice: 549,
+    yearlyPrice: 4941,
     monthlyTokens: 1000,
     limits: {
       ai_voice_minutes: { limit: 100, label: 'AI Voice Minutes', unit: 'min', icon: 'Phone', description: 'Minutes of AI phone conversations' },
@@ -75,8 +75,8 @@ export const PLAN_LIMITS: Record<PlanTier, PlanConfig> = {
   },
   pro: {
     name: 'Pro',
-    monthlyPrice: 179,
-    yearlyPrice: 1716,
+    monthlyPrice: 897,
+    yearlyPrice: 8073,
     monthlyTokens: 3000,
     limits: {
       ai_voice_minutes: { limit: 500, label: 'AI Voice Minutes', unit: 'min', icon: 'Phone', description: 'Minutes of AI phone conversations' },
@@ -89,8 +89,8 @@ export const PLAN_LIMITS: Record<PlanTier, PlanConfig> = {
   },
   ultimate: {
     name: 'Ultimate',
-    monthlyPrice: 249,
-    yearlyPrice: 2388,
+    monthlyPrice: 4997,
+    yearlyPrice: 44973,
     monthlyTokens: 10000,
     limits: {
       ai_voice_minutes: { limit: 2000, label: 'AI Voice Minutes', unit: 'min', icon: 'Phone', description: 'Minutes of AI phone conversations' },

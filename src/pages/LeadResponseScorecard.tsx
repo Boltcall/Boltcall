@@ -435,7 +435,7 @@ const LeadResponseScorecard: React.FC = () => {
                       </motion.div>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-900">Grading Your Lead Response System...</h2>
-                    <p className="text-gray-500">Comparing against 500+ local service businesses</p>
+                    <p className="text-gray-500">Comparing against local service business benchmarks</p>
                     <div className="flex justify-center gap-2 pt-2">
                       {[0, 0.2, 0.4].map(delay => (
                         <motion.div

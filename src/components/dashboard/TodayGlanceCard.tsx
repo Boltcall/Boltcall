@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Bot, TrendingUp, Users, PhoneMissed, DollarSign } from 'lucide-react';
-import { useDashboardStore } from '../../stores/dashboardStore';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { getRetellCallHistory } from '../../lib/retell';
 import { fetchBookedRevenueMTD, type BookedRevenueMTD } from '../../lib/dashboardApi';
 import OverviewMetricCard from './OverviewMetricCard';
 
@@ -11,10 +12,68 @@ import OverviewMetricCard from './OverviewMetricCard';
 // render its flat "no trend yet" fallback. Do not synthesize a fake slope from the
 // single current value — that invents a trend the data never showed.
 
+// Matches MissedCallsPage's bucket threshold: a connected call shorter than this
+// reads as an abandoned/missed contact, not a handled one.
+const MISSED_CALL_DURATION_THRESHOLD = 15000; // 15 seconds
+
+interface TodayStats {
+  missed: number;
+  handled: number;
+  leadsToday: number;
+}
+
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+// Same per-workspace scoping CallHistoryPage/MissedCallsPage use: this user's
+// own retell_agent_id set, then retell-calls.ts intersects against Retell's
+// call list server-side. No admin-only aggregate, no dead `callbacks` table.
+async function fetchTodayStats(userId: string): Promise<TodayStats> {
+  const todayStart = startOfToday();
+
+  const [{ data: agents }, { count: leadsToday }] = await Promise.all([
+    supabase
+      .from('agents')
+      .select('retell_agent_id')
+      .eq('user_id', userId)
+      .not('retell_agent_id', 'is', null),
+    supabase
+      .from('leads')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', todayStart.toISOString()),
+  ]);
+
+  const agentIds = (agents || []).map((a) => a.retell_agent_id).filter(Boolean);
+  let missed = 0;
+  let handled = 0;
+
+  if (agentIds.length > 0) {
+    const { calls } = await getRetellCallHistory({ agentIds, startDate: todayStart, limit: 100 });
+    for (const call of calls) {
+      if (call.call_status === 'not_connected' || call.call_status === 'error') {
+        missed++;
+      } else if (call.call_status === 'ended') {
+        if (call.duration_ms != null && call.duration_ms < MISSED_CALL_DURATION_THRESHOLD) {
+          missed++;
+        } else {
+          handled++;
+        }
+      }
+    }
+  }
+
+  return { missed, handled, leadsToday: leadsToday ?? 0 };
+}
+
 const TodayGlanceCard: React.FC = () => {
-  const { liveStats, callbackStats, loading } = useDashboardStore();
   const { user } = useAuth();
   const [revenue, setRevenue] = useState<BookedRevenueMTD | null>(null);
+  const [stats, setStats] = useState<TodayStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -23,18 +82,35 @@ const TodayGlanceCard: React.FC = () => {
       .catch((err) => console.error('Booked revenue fetch failed:', err));
   }, [user?.id]);
 
-  const handled =
-    liveStats?.retell?.successful_calls_today ??
-    (callbackStats as { completed?: number } | null)?.completed ??
-    0;
-  const missed = liveStats?.retell?.missed_calls_today ?? 0;
-  const pending = (callbackStats as { pending?: number } | null)?.pending ?? 0;
-  const totalToday = (callbackStats as { total?: number } | null)?.total ?? 0;
-  const needsAction = missed + pending;
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    setLoading(true);
+
+    fetchTodayStats(user.id)
+      .then((result) => {
+        if (!cancelled) setStats(result);
+      })
+      .catch((err) => {
+        console.error('Today overview fetch failed:', err);
+        if (!cancelled) setStats({ missed: 0, handled: 0, leadsToday: 0 });
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  const missed = stats?.missed ?? 0;
+  const handled = stats?.handled ?? 0;
+  const leadsToday = stats?.leadsToday ?? 0;
 
   const total = handled + missed;
   const winRate = total > 0 ? Math.round((handled / total) * 100) : 100;
-  const leadsToday = totalToday || handled;
+  const needsAction = missed;
 
   return (
     <motion.div
@@ -80,11 +156,11 @@ const TodayGlanceCard: React.FC = () => {
                   label="Leads today"
                   period="Overview"
                   value={leadsToday}
-                  badge={pending > 0 ? `${pending} pending` : 'Captured'}
-                  badgeTone={pending > 0 ? 'negative' : 'positive'}
+                  badge={leadsToday > 0 ? 'Captured' : 'None yet'}
+                  badgeTone={leadsToday > 0 ? 'positive' : 'neutral'}
                   icon={Users}
                   accentColor="#2563eb"
-                  caption="New callback opportunities created"
+                  caption="New leads created today"
                 />
                 <OverviewMetricCard
                   label="AI win rate"
@@ -132,7 +208,7 @@ const TodayGlanceCard: React.FC = () => {
               to="/dashboard/leads"
               className="inline-flex items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 hover:underline underline-offset-4"
             >
-              {needsAction} lead{needsAction !== 1 ? 's' : ''} need a callback right now →
+              {needsAction} call{needsAction !== 1 ? 's' : ''} need a callback right now →
             </Link>
           ) : handled > 0 ? (
             <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">

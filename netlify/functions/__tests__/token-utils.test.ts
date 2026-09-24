@@ -14,9 +14,10 @@ const mockSupabase = {
             single: mockSelect,
           }),
         }),
-        update: () => ({
-          eq: mockUpdate,
-        }),
+        update: () => {
+          const cas: any = { eq: () => cas, select: mockUpdate };
+          return cas;
+        },
       };
     }
     if (table === 'token_transactions') {
@@ -55,7 +56,7 @@ describe('deductTokens', () => {
       data: { balance: 100, bonus_balance: 20, tokens_used_this_period: 0 },
       error: null,
     });
-    mockUpdate.mockResolvedValue({ error: null });
+    mockUpdate.mockResolvedValue({ data: [{ user_id: 'user-1' }], error: null });
     mockInsert.mockResolvedValue({ error: null });
 
     const result = await deductTokens('user-1', 15, 'sms_sent', 'SMS test', {}, mockSupabase as any);
@@ -88,6 +89,27 @@ describe('deductTokens', () => {
     expect(result.error).toContain('not found');
   });
 
+  it('re-reads and retries when a concurrent debit changed the balance (CAS miss)', async () => {
+    mockSelect
+      .mockResolvedValueOnce({ data: { balance: 10, bonus_balance: 0, tokens_used_this_period: 0 }, error: null })
+      .mockResolvedValueOnce({ data: { balance: 5, bonus_balance: 0, tokens_used_this_period: 5 }, error: null })
+      .mockResolvedValueOnce({ data: { balance: 0, bonus_balance: 0, tokens_used_this_period: 10 }, error: null });
+    mockUpdate
+      .mockResolvedValueOnce({ data: [], error: null }) // lost the race
+      .mockResolvedValueOnce({ data: [{ user_id: 'user-1' }], error: null });
+    mockInsert.mockResolvedValue({ error: null });
+
+    const result = await deductTokens('user-1', 5, 'sms_sent', 'SMS', {}, mockSupabase as any);
+    expect(result.success).toBe(true);
+    expect(result.remainingBalance).toBe(0); // computed from the re-read (5), not the stale 10
+    expect(mockUpdate).toHaveBeenCalledTimes(2);
+
+    // Next concurrent caller sees the drained balance and is refused.
+    const second = await deductTokens('user-1', 5, 'sms_sent', 'SMS', {}, mockSupabase as any);
+    expect(second.success).toBe(false);
+    expect(second.error).toBe('Insufficient token balance');
+  });
+
   it('returns error when update fails', async () => {
     mockSelect.mockResolvedValue({
       data: { balance: 100, bonus_balance: 0, tokens_used_this_period: 0 },
@@ -118,7 +140,7 @@ describe('deductTokensBatch', () => {
       data: { balance: 100, bonus_balance: 0, tokens_used_this_period: 0 },
       error: null,
     });
-    mockUpdate.mockResolvedValue({ error: null });
+    mockUpdate.mockResolvedValue({ data: [{ user_id: 'user-1' }], error: null });
     mockInsert.mockResolvedValue({ error: null });
 
     const result = await deductTokensBatch(

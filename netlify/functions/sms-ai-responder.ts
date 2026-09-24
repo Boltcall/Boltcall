@@ -97,12 +97,16 @@ const handler: Handler = async (event) => {
 
     let leadId = message.lead_id;
     let leadContext = '';
+    // Only real leads columns (prod has no name/score/tags); newest row wins
+    // so a repeat texter with several leads still matches.
     const { data: existingLead } = await supabase
-      .from('leads').select('id, name, email, phone, source, status, tags, score')
-      .eq('user_id', userId).eq('phone', message.from_number).maybeSingle();
+      .from('leads').select('id, first_name, last_name, email, phone, source, status')
+      .eq('user_id', userId).eq('phone', message.from_number)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle();
     if (existingLead) {
       leadId = existingLead.id;
-      leadContext = `Existing lead: ${existingLead.name || 'Unknown'} (${existingLead.email || 'no email'}), status: ${existingLead.status}, score: ${existingLead.score || 'unscored'}`;
+      const leadName = [existingLead.first_name, existingLead.last_name].filter(Boolean).join(' ');
+      leadContext = `Existing lead: ${leadName || 'Unknown'} (${existingLead.email || 'no email'}), status: ${existingLead.status}`;
     }
 
     let availabilityContext = '';
@@ -143,7 +147,8 @@ ${agentCtx.kbSearchBlock ? `\n${agentCtx.kbSearchBlock}` : ''}
 RESPONSE RULES:
 - Tone: ${smsSettings.response_tone}
 - Keep responses SHORT — this is SMS. 1-3 sentences max.
-- Be warm, helpful, and direct. Sign as the business (never mention AI).
+- Be warm, helpful, and direct. Sign as the business.
+- Never deny being an AI. If asked whether they are talking to a person or a bot, say you are the business's AI assistant and a team member can follow up.
 - No markdown. Plain SMS text only.
 ${smsSettings.booking_enabled ? '- If the customer wants to book, suggest available times from the slots provided.' : '- Do NOT offer to book appointments.'}
 
@@ -198,20 +203,18 @@ RESPOND IN THIS EXACT JSON FORMAT:
     // qualification.score >= 30, which dropped low-score leads from the funnel
     // entirely and starved Task 7's lead-scoring signal of clean coverage.
     if (!existingLead) {
-      const { data: newLead } = await supabase.from('leads').insert({
-        user_id: userId, phone: message.from_number, source: 'sms',
+      const { data: newLead, error: leadErr } = await supabase.from('leads').insert({
+        user_id: userId, workspace_id: message.workspace_id || null, phone: message.from_number, source: 'sms',
         status: qualification.intent === 'booking' ? 'hot' : 'new',
-        score: qualification.score, tags: [qualification.intent],
+        raw_data: { sms_message_id: messageId, qualification },
       }).select('id').single();
+      if (leadErr) console.error('[sms-ai-responder] Lead insert failed:', leadErr);
       if (newLead) {
         leadId = newLead.id;
         await supabase.from('sms_conversations').update({ lead_id: leadId }).eq('id', messageId).eq('user_id', userId);
       }
-    } else if (existingLead && qualification.score > (existingLead.score || 0)) {
-      await supabase.from('leads').update({
-        score: qualification.score,
-        status: qualification.intent === 'booking' ? 'hot' : existingLead.status,
-      }).eq('id', existingLead.id);
+    } else if (qualification.intent === 'booking' && existingLead.status !== 'hot') {
+      await supabase.from('leads').update({ status: 'hot' }).eq('id', existingLead.id);
     }
 
     if (smsSettings.auto_reply_enabled && replyText) {
