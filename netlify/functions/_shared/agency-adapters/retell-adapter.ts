@@ -31,6 +31,7 @@
 import Retell from 'retell-sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServiceSupabase } from '../token-utils';
+import { getDefaultAgentConfig, getDefaultLlmConfig } from '../retell-defaults';
 import {
   emitAgencyEvent,
   type AgencyEventType,
@@ -337,7 +338,7 @@ export async function createAgentFromArtifact(
 
     const llm = await callWithRetry('llm.create', opts.client_id, () =>
       client.llm.create({
-        model: 'gpt-4o-mini',
+        ...getDefaultLlmConfig(),
         general_prompt: opts.prompt,
         ...(knowledgeBaseIds.length
           ? { knowledge_base_ids: knowledgeBaseIds, kb_config: RETELL_KB_CONFIG }
@@ -352,6 +353,7 @@ export async function createAgentFromArtifact(
         language: opts.language,
         response_engine: { type: 'retell-llm', llm_id: llm.llm_id },
         webhook_url: `${baseUrl}/.netlify/functions/retell-webhook`,
+        ...getDefaultAgentConfig({ language: opts.language, voiceId: opts.voice_id }),
       } as Parameters<typeof client.agent.create>[0]),
     );
 

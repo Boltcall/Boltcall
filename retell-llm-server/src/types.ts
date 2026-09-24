@@ -28,3 +28,11 @@ export interface RetellPingPongResponse {
   response_type: 'ping_pong';
   timestamp?: number;
 }
+
+export interface RetellConfigResponse {
+  response_type: 'config';
+  config: {
+    auto_reconnect: boolean;
+    call_details: boolean;
+  };
+}

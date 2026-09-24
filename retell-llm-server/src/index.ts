@@ -1,7 +1,7 @@
 import express from 'express';
 import { createServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-import type { RetellPingPongResponse, RetellRequest, RetellResponse } from './types.js';
+import type { RetellConfigResponse, RetellPingPongResponse, RetellRequest, RetellResponse } from './types.js';
 import { streamChatCompletion } from './llm-client.js';
 import { loadSession, getSession, clearSession } from './retell-session.js';
 
@@ -34,6 +34,20 @@ server.on('upgrade', (req, socket, head) => {
 
 wss.on('connection', (ws: WebSocket, req) => {
   let callId: string | null = getLlmPathCallId(req.url || '');
+  // Only the newest response_id matters: when the caller keeps talking,
+  // Retell sends a new response_required and discards the old one, so the
+  // old LLM stream is cancelled instead of burning tokens in the background.
+  let inflight: AbortController | null = null;
+
+  // call_details is off by default on Retell's side — without it we never
+  // learn the agent_id, so no prompt loads and no greeting is sent.
+  // auto_reconnect keeps the call alive across a dropped socket (needs the
+  // ping_pong handler below).
+  const config: RetellConfigResponse = {
+    response_type: 'config',
+    config: { auto_reconnect: true, call_details: true },
+  };
+  ws.send(JSON.stringify(config));
 
   ws.on('message', async (raw) => {
     let req: RetellRequest;
@@ -79,10 +93,15 @@ wss.on('connection', (ws: WebSocket, req) => {
     const session = getSession(callId);
     if (!session) return;
 
+    inflight?.abort();
+    const controller = new AbortController();
+    inflight = controller;
+
     try {
       let chunkSent = false;
 
-      for await (const chunk of streamChatCompletion(session.systemPrompt, req.transcript)) {
+      for await (const chunk of streamChatCompletion(session.systemPrompt, req.transcript, controller.signal)) {
+        if (controller.signal.aborted) return;
         chunkSent = true;
         const partial: RetellResponse = {
           response_type: 'response',
@@ -103,6 +122,7 @@ wss.on('connection', (ws: WebSocket, req) => {
       };
       ws.send(JSON.stringify(final));
     } catch (err) {
+      if (controller.signal.aborted) return;
       console.error('[retell-llm-server] stream error:', err);
       const fallback: RetellResponse = {
         response_type: 'response',
@@ -112,10 +132,13 @@ wss.on('connection', (ws: WebSocket, req) => {
         end_call: false,
       };
       ws.send(JSON.stringify(fallback));
+    } finally {
+      if (inflight === controller) inflight = null;
     }
   });
 
   ws.on('close', () => {
+    inflight?.abort();
     if (callId) clearSession(callId);
   });
 

@@ -195,7 +195,7 @@ const handler: Handler = async (event) => {
       backchannel_words: ['yeah', 'uh-huh', 'mmhmm'],
       backchannel_frequency: 0.6,
       ambient_sound: 'coffee-shop',
-      response_eagerness: 1,
+      responsiveness: 1,
       interruption_sensitivity: 0.8,
       end_call_after_silence_ms: 30000,
       max_call_duration_ms: 60000,

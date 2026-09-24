@@ -39,6 +39,7 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServiceSupabase } from '../token-utils';
+import { getDefaultLlmConfig } from '../retell-defaults';
 import {
   emitAgencyEvent,
   type AgencyEventType,
@@ -494,7 +495,7 @@ async function provisionTempCekuraAgent(opts: {
   const newLlm = await retellFetch('/create-retell-llm', {
     method: 'POST',
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      ...getDefaultLlmConfig(),
       general_prompt: opts.agent_config.prompt,
       // KB is plumbed via Retell's knowledge_base_ids — for sim, we skip and
       // rely on prompt-baked context. This is what the cekura-gate does.

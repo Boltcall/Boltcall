@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { requireAuth, getUserAgentIds, userOwnsAgent } from './_shared/require-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { listRetellVoiceAgents } from './_shared/retell-call-list';
+import { getDefaultAgentConfig, getDefaultLlmConfig } from './_shared/retell-defaults';
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -77,25 +78,6 @@ export function getDefaultVoiceForCountry(country?: string, gender: 'female' | '
   void country;
   // ponytail: keep setup on a tiny known-good voice set until onboarding reads the live voice catalog
   return gender === 'male' ? '11labs-Nico' : '11labs-Grace';
-}
-
-// Default agent config — copied from agent_9a4ecdf921de328c9ba0009ff3 (Israel-Outbound)
-// Applied to every new agent for consistent call quality
-function getDefaultAgentConfig(language?: string) {
-  const isHebrew = language?.startsWith('he');
-  return {
-    enable_backchannel: true,
-    backchannel_words: isHebrew ? ['אהה', 'אה-אה'] : ['yeah', 'uh-huh'],
-    backchannel_frequency: 0.8,
-    ambient_sound: 'coffee-shop',
-    response_eagerness: 1,
-    interruption_sensitivity: 0.71,
-    end_call_after_silence_ms: 30000,
-    max_call_duration_ms: 481000,
-    begin_message_delay_ms: 1000,
-    allow_user_dtmf: true,
-    post_call_analysis_model: 'gpt-4o-mini',
-  };
 }
 
 // Build the response_engine param based on what the caller provides
@@ -576,7 +558,7 @@ const handler: Handler = async (event) => {
           });
 
           const llm = await client.llm.create({
-            model: 'gpt-4o-mini',
+            ...getDefaultLlmConfig(),
             general_prompt: body.general_prompt || buildAgentPrompt(body.agent_name || 'this business', body.country),
             ...(body.knowledge_base_ids ? { knowledge_base_ids: body.knowledge_base_ids } : {}),
             general_tools: generalTools,
@@ -588,14 +570,15 @@ const handler: Handler = async (event) => {
           };
         }
 
+        const voiceId = body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender);
         let agent;
         try {
           agent = await client.agent.create({
             agent_name: body.agent_name,
-            voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
+            voice_id: voiceId,
             response_engine: responseEngine,
             webhook_url: `${webhookBaseUrl}/.netlify/functions/retell-webhook`,
-            ...getDefaultAgentConfig(body.language),
+            ...getDefaultAgentConfig({ language: body.language, voiceId, businessName: body.business_name }),
           } as any);
         } catch (agentCreateErr) {
           if (createAgentLlmId) {
@@ -806,20 +789,17 @@ const handler: Handler = async (event) => {
           // Azure custom LLM — skip Retell LLM creation; system prompt lives in Supabase agents table
           responseEngine = { type: 'custom-llm' as const, llm_websocket_url: process.env.RETELL_LLM_WEBSOCKET_URL };
         } else {
-          // Fallback: Retell-managed LLM (gpt-4o-mini) when no Azure WS configured
+          // Fallback: Retell-managed LLM when no Azure WS configured
           const generalTools = buildGeneralTools({
             transferNumber: body.transfer_number || '',
             baseUrl,
           });
 
           const llmConfig: any = {
-            model: 'gpt-4o-mini',
+            ...getDefaultLlmConfig({ beginMessage }),
             general_prompt: generalPrompt,
             general_tools: generalTools,
           };
-          if (beginMessage) {
-            llmConfig.begin_message = beginMessage;
-          }
           const llm = await client.llm.create(llmConfig);
           createdLlmId = llm.llm_id;
           responseEngine = { type: 'retell-llm' as const, llm_id: llm.llm_id };
@@ -831,15 +811,16 @@ const handler: Handler = async (event) => {
         // "{business} AI Receptionist" default only when unset.
         const webhookUrl = `${(process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org')}/.netlify/functions/retell-webhook`;
         const resolvedAgentName = body.agent_name || `${body.business_name} AI Receptionist`;
+        const voiceId = body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender);
         let agent;
         try {
           agent = await client.agent.create({
             agent_name: resolvedAgentName,
-            voice_id: body.voice_id || getDefaultVoiceForCountry(body.country, body.voice_gender),
+            voice_id: voiceId,
             language: body.language || 'en-US',
             response_engine: responseEngine,
             webhook_url: webhookUrl,
-            ...getDefaultAgentConfig(body.language),
+            ...getDefaultAgentConfig({ language: body.language, voiceId, businessName: body.business_name }),
           } as any);
         } catch (agentCreateErr) {
           // Roll back the LLM we minted in Step 3 so it does not orphan a
@@ -1205,6 +1186,15 @@ const handler: Handler = async (event) => {
               begin_message_delay_ms: existing.begin_message_delay_ms,
               max_call_duration_ms: existing.max_call_duration_ms,
               end_call_after_silence_ms: existing.end_call_after_silence_ms,
+              responsiveness: existing.responsiveness,
+              enable_dynamic_responsiveness: existing.enable_dynamic_responsiveness,
+              stt_mode: existing.stt_mode,
+              denoising_mode: existing.denoising_mode,
+              voice_model: existing.voice_model,
+              boosted_keywords: existing.boosted_keywords,
+              reminder_trigger_ms: existing.reminder_trigger_ms,
+              reminder_max_count: existing.reminder_max_count,
+              post_call_analysis_model: existing.post_call_analysis_model,
             } as any);
             // Refuse to delete the old Retell agent while any phone number
             // still routes to it — Retell blocks it, and even if it didn't

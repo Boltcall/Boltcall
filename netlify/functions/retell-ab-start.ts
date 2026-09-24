@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { RETELL_LLM_MODEL } from './_shared/retell-defaults';
 
 /**
  * retell-ab-start — batch-2 task 6: true per-call A/B testing.
@@ -103,7 +104,7 @@ const handler: Handler = async (event) => {
   const variantLlm = await retellFetch('/create-retell-llm', {
     method: 'POST',
     body: JSON.stringify({
-      model: baseLlm?.model || 'gpt-4o-mini',
+      model: baseLlm?.model || RETELL_LLM_MODEL,
       general_prompt: version.prompt_text,
       general_tools: baseLlm?.general_tools || undefined,
       begin_message: baseLlm?.begin_message || undefined,

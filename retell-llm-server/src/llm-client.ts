@@ -23,6 +23,7 @@ function getConfig() {
 export async function* streamChatCompletion(
   systemPrompt: string,
   transcript: Utterance[],
+  signal?: AbortSignal,
 ): AsyncGenerator<string> {
   const { endpoint, apiKey, deployment } = getConfig();
   const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${FOUNDRY_API_VERSION}`;
@@ -45,8 +46,9 @@ export async function* streamChatCompletion(
       messages,
       stream: true,
       max_tokens: 150,
-      temperature: 0.7,
+      temperature: 0.4,
     }),
+    signal,
   });
 
   if (!res.ok || !res.body) {

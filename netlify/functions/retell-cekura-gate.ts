@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { getDefaultLlmConfig } from './_shared/retell-defaults';
 
 /**
  * retell-cekura-gate
@@ -146,7 +147,7 @@ async function startCekuraRun(promptVersionId: string) {
   const newLlm = await retellFetch('/create-retell-llm', {
     method: 'POST',
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      ...getDefaultLlmConfig(),
       general_prompt: version.prompt_text,
     }),
   });

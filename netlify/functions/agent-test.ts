@@ -4,6 +4,7 @@ import { userOwnsAgent } from './_shared/require-auth';
 import { requireUser } from './_shared/user-auth';
 import { chatCompletion } from './_shared/azure-ai';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { getDefaultLlmConfig } from './_shared/retell-defaults';
 
 const RETELL_API = 'https://api.retellai.com';
 const RETELL_KEY = process.env.RETELL_API_KEY || '';
@@ -126,7 +127,7 @@ async function createTempChatAgent(
     const newLlm = await retellFetch('/create-retell-llm', {
       method: 'POST',
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        ...getDefaultLlmConfig(),
         general_prompt: promptFromDb,
       }),
     });
