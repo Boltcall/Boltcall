@@ -38,16 +38,6 @@ export function buildAgentPrompt(businessName: string): string {
   return `IMPORTANT: At the very beginning of every call, you MUST introduce yourself by saying: "Hi, thank you for calling ${businessName}. This call may be recorded, and just so you know, I'm an AI assistant here to help you." Then proceed naturally with the conversation.\n\n${basePrompt}`;
 }
 
-// generate-agent-prompt keys AI disclosure and language off an ISO-2 code,
-// so free text from onboarding ('United States', 'USA', 'U.S.') must be
-// normalized before it gets there.
-// ponytail: ISO-2 passes through, 'canada' -> 'ca', any other free text ->
-// 'us' (launch market, keeps disclosure on). A country <select> removes the guess.
-export function normalizeCountryCode(raw?: string | null): string {
-  const c = (raw || '').trim().toLowerCase();
-  if (/^[a-z]{2}$/.test(c)) return c;
-  return c === 'canada' ? 'ca' : 'us';
-}
 
 // The custom-LLM websocket bridge has no tool calling (no booking, transfer,
 // end_call, lookup, KB, SMS) — agents only use it when explicitly opted in.
@@ -916,9 +906,7 @@ const handler: Handler = async (event) => {
         let beginMessage: string | undefined;
 
         if (body.prompt_config) {
-          if (body.prompt_config.businessProfile) {
-            body.prompt_config.businessProfile.country = normalizeCountryCode(body.prompt_config.businessProfile.country);
-          }
+          // Country is normalized (names → ISO-2, fail-closed disclosure) inside generate-agent-prompt.
           const generated = await generateProfessionalPrompt(body.prompt_config);
           generalPrompt = generated.prompt;
           beginMessage = generated.beginMessage;

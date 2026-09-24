@@ -109,13 +109,8 @@ describe('retell-agents engine + tenancy', () => {
     });
   });
 
-  it('normalizes free-text countries and always discloses in the legacy prompt', async () => {
-    const { normalizeCountryCode, buildAgentPrompt } = await import('../retell-agents');
-    for (const raw of ['United States', 'USA', 'U.S.', ' us ', '', undefined, 'ישראל']) {
-      expect(normalizeCountryCode(raw)).toBe('us');
-    }
-    expect(normalizeCountryCode('GB')).toBe('gb');
-    expect(normalizeCountryCode('Canada')).toBe('ca');
+  it('always discloses AI + recording in the legacy prompt', async () => {
+    const { buildAgentPrompt } = await import('../retell-agents');
     expect(buildAgentPrompt('Harper Law')).toMatch(/may be recorded.*AI assistant/);
   });
 
