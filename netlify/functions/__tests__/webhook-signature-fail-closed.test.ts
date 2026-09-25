@@ -80,4 +80,31 @@ describe('webhook signature fail-closed behavior', () => {
     expect(res.statusCode).toBe(403);
     expect(res.body).toContain('<Response/>');
   });
+
+  it('rejects unauthenticated ACS inbound-SMS webhooks when no secret is configured, regardless of NODE_ENV (F79/F103)', async () => {
+    // No ACS_EVENTGRID_SECRET/AZURE_EVENTGRID_WEBHOOK_SECRET, no NETLIFY_DEV, and NODE_ENV
+    // left unset/undefined: this is the real Netlify Lambda case (prod-detect.ts documents
+    // that NODE_ENV is NOT reliably 'production' there). Must still fail closed. Explicitly
+    // unstub NODE_ENV rather than setting it, so a regression back to the old
+    // `NODE_ENV !== 'production'` check (fail-open when unset) would actually fail this test.
+    vi.stubEnv('NODE_ENV', undefined);
+
+    const { testHandler: handler } = await import('../acs-inbound-sms');
+    const res = await handler(
+      {
+        httpMethod: 'POST',
+        headers: {},
+        body: JSON.stringify([
+          {
+            eventType: 'Microsoft.Communication.SMSReceived',
+            data: { from: '+15551234567', to: '+15557654321', message: 'stop' },
+          },
+        ]),
+        queryStringParameters: null,
+      } as any,
+      {} as any
+    );
+
+    expect(res.statusCode).toBe(403);
+  });
 });

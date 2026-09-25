@@ -197,6 +197,27 @@ const handler: Handler = async (event) => {
           }) };
         }
 
+        // Every number is a monthly Retell charge. The first one (bought at
+        // onboarding) is free; more need an active or trialing subscription.
+        // Fails closed if either lookup errors.
+        // ponytail: flat 1-number free cap; per-plan limits once pricing tiers set them.
+        const [{ count: ownedCount, error: countErr }, { data: activeSub, error: subErr }] = await Promise.all([
+          serviceSupabase.from('phone_numbers').select('id', { count: 'exact', head: true })
+            .eq('user_id', userId).eq('status', 'active'),
+          serviceSupabase.from('subscriptions').select('id')
+            .eq('user_id', userId).in('status', ['active', 'trialing']).limit(1).maybeSingle(),
+        ]);
+        if (countErr || subErr) {
+          console.error('Phone purchase plan check failed:', countErr || subErr);
+          return { statusCode: 500, headers, body: JSON.stringify({ error: 'Could not verify your plan. Please try again.' }) };
+        }
+        if ((ownedCount ?? 0) >= 1 && !activeSub) {
+          return { statusCode: 402, headers, body: JSON.stringify({
+            error: 'Your account includes one phone number. Start a subscription to add another.',
+            code: 'subscription_required',
+          }) };
+        }
+
         // ── Step 1: Retell provisions the number with both agents attached.
         const retellApiKey = process.env.RETELL_API_KEY;
         if (!retellApiKey) {

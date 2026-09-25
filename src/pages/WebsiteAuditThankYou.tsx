@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import Button from '../components/ui/Button';
+import { CAL_BOOKING_URL } from './BookCall';
 
 const WebsiteAuditThankYou: React.FC = () => {
   useEffect(() => {
@@ -70,7 +71,7 @@ const WebsiteAuditThankYou: React.FC = () => {
               <p className="text-sm text-gray-600 mb-4">
                 Book a free 15-minute call and we'll walk through your audit and build a plan together.
               </p>
-              <a href="https://cal.com/boltcall" target="_blank" rel="noopener noreferrer">
+              <a href={CAL_BOOKING_URL} target="_blank" rel="noopener noreferrer">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold">
                   Book Strategy Call
                 </Button>

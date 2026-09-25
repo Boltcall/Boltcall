@@ -5,6 +5,7 @@ import { TrendingUp, AlertTriangle, Download, Mail, Loader, BarChart3, DollarSig
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
+import { CAL_BOOKING_URL } from './BookCall';
 
 const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/funnel-report';
 
@@ -455,7 +456,7 @@ const FunnelOptimizer: React.FC = () => {
 
                   <div className="mt-4 text-center">
                     <a
-                      href="https://cal.com/boltcall"
+                      href={CAL_BOOKING_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-indigo-600 hover:text-indigo-700 font-medium text-sm underline"
@@ -563,7 +564,7 @@ const FunnelOptimizer: React.FC = () => {
               See Pricing
             </a>
             <a
-              href="https://cal.com/boltcall"
+              href={CAL_BOOKING_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-8 py-3.5 border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 transition-colors"
@@ -632,7 +633,7 @@ const FunnelOptimizer: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Used by 500+ local businesses</span>
+              <span>Built for local service businesses</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

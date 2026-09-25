@@ -38,7 +38,7 @@ test.describe('Homepage', () => {
 
   test('hero subheadline is visible', async ({ page }) => {
     await expect(
-      page.getByText('The Speed To Lead System for local businesses')
+      page.getByText('The all-in-one speed-to-lead system for law firms.')
     ).toBeVisible();
   });
 
@@ -49,21 +49,24 @@ test.describe('Homepage', () => {
   });
 
   test('CTA buttons exist', async ({ page }) => {
-    await expect(page.getByRole('button', { name: 'See How It Works' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Start For Free' })).toBeVisible();
+    // Hero CTA is now a website-audit URL form (replaced "See How It Works").
+    await expect(page.getByRole('button', { name: /get my free audit|get audit/i })).toBeVisible();
+    // Header's primary CTA replaced "Start For Free" with "Get Started".
+    await expect(page.getByRole('link', { name: 'Get Started' })).toBeVisible();
   });
 
-  test('See How It Works button scrolls or navigates', async ({ page }) => {
-    const seeHowItWorks = page.getByRole('button', { name: 'See How It Works' });
-    await expect(seeHowItWorks).toBeVisible();
-    // Verify it is clickable (has a link or button role)
-    await expect(seeHowItWorks).toBeEnabled();
+  test('hero audit form submits and navigates to the audit page', async ({ page }) => {
+    const urlInput = page.getByLabel('Your website URL');
+    await expect(urlInput).toBeVisible();
+    await urlInput.fill('example.com');
+    await page.getByRole('button', { name: /get my free audit|get audit/i }).click();
+    await page.waitForURL(/\/website-audit\?url=/);
   });
 
-  test('Start For Free button is present and clickable', async ({ page }) => {
-    const startFree = page.getByRole('link', { name: 'Start For Free' });
-    await expect(startFree).toBeVisible();
-    await expect(startFree).toBeEnabled();
+  test('Get Started link is present and clickable', async ({ page }) => {
+    const getStarted = page.getByRole('link', { name: 'Get Started' });
+    await expect(getStarted).toBeVisible();
+    await expect(getStarted).toBeEnabled();
   });
 
   test('footer is present on homepage', async ({ page }) => {

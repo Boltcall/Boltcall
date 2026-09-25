@@ -33,10 +33,10 @@ const DPA: React.FC = () => {
       link: 'https://www.twilio.com/en-us/legal/privacy',
     },
     {
-      name: 'Stripe',
+      name: 'PayPal',
       purpose: 'Payment processing and subscription management',
       location: 'United States (EU/UK residents: also EU data residency)',
-      link: 'https://stripe.com/privacy',
+      link: 'https://www.paypal.com/privacy',
     },
     {
       name: 'OpenAI',
@@ -45,10 +45,22 @@ const DPA: React.FC = () => {
       link: 'https://openai.com/policies/privacy-policy',
     },
     {
+      name: 'Anthropic',
+      purpose: 'AI language model inference for lead summaries and reply drafting',
+      location: 'United States',
+      link: 'https://www.anthropic.com/legal/privacy',
+    },
+    {
       name: 'ElevenLabs',
       purpose: 'Text-to-speech voice synthesis for AI agents',
       location: 'United States',
       link: 'https://elevenlabs.io/privacy',
+    },
+    {
+      name: 'Cal.com',
+      purpose: 'Appointment and consultation booking/calendar sync',
+      location: 'United States (EU data residency available)',
+      link: 'https://cal.com/privacy',
     },
     {
       name: 'Brevo (formerly Sendinblue)',

@@ -54,7 +54,7 @@ const CalcomPage: React.FC = () => {
         title="Cal.com Not Connected"
         description="Connect your Cal.com account to enable appointment reminders and automatic review requests after every booking."
         setupLabel="Connect Cal.com"
-        setupTo="/dashboard/reminders"
+        setupTo="/dashboard/integrations"
       />
     );
   }

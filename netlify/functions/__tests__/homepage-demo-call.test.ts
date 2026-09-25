@@ -179,6 +179,34 @@ describe('homepage-demo-call', () => {
     expect(phoneRow?.attempts).toBe(3);
   });
 
+  it('blocks a 4th call to the same phone number within 24h even after the hourly window resets (F110)', async () => {
+    const body = {
+      industry: 'personal-injury',
+      name: 'Noam Yakoby',
+      phone: '+15551234567',
+    };
+
+    await handler(makeEvent(body, '203.0.113.10'), {} as any);
+    await handler(makeEvent(body, '203.0.113.11'), {} as any);
+    await handler(makeEvent(body, '203.0.113.12'), {} as any);
+    expect(retellCreatePhoneCall).toHaveBeenCalledTimes(3);
+
+    // Simulate the 1-hour window elapsing (but well inside the 24h window)
+    // by rewinding only the hourly bucket's window_start.
+    const hourlyKey = rateLimitMapKey('homepage_demo_phone', hashRateLimitKey(['+15551234567']));
+    const hourlyRow = rateLimits.get(hourlyKey)!;
+    rateLimits.set(hourlyKey, {
+      ...hourlyRow,
+      window_start: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    });
+
+    const fourth = await handler(makeEvent(body, '203.0.113.13'), {} as any);
+
+    expect(fourth.statusCode).toBe(429);
+    expect(JSON.parse(fourth.body).code).toBe('demo_phone_day_rate_limited');
+    expect(retellCreatePhoneCall).toHaveBeenCalledTimes(3);
+  });
+
   it('uses a Retell demo line when no caller number environment variable is set', async () => {
     delete process.env.RETELL_DEMO_FROM_NUMBER;
     retellListPhoneNumbers.mockResolvedValue({

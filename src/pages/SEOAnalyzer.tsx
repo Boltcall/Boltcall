@@ -355,7 +355,7 @@ const SEOAnalyzer: React.FC = () => {
       {/* Social Proof */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Join 500+ businesses using Boltcall to capture more leads and grow revenue.</p>
+        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { quote: "The SEO audit flagged 12 issues we had no idea about. After fixing them, our Google ranking jumped from page 3 to page 1 for our main keyword.", name: "Lisa M.", role: "Roofing Company Owner, Ohio" },
@@ -378,7 +378,7 @@ const SEOAnalyzer: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Used by 500+ local businesses</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for local service businesses</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Report delivered to your inbox in minutes</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>

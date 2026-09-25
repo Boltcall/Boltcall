@@ -1,47 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { PageSkeleton } from '../../components/ui/loading-skeleton';
-import {
-  Phone,
-  MessageSquare,
-  Clock,
-  Bot,
-  PhoneCall,
-  Users,
-  AlertCircle,
-  RefreshCw,
-  Loader2,
-  Coins,
-  CalendarDays,
-} from 'lucide-react';
+import { AlertCircle, RefreshCw, Loader2, Coins, CalendarDays } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BarChart3 } from 'lucide-react';
 import KpiTile from '../../components/dashboard/KpiTile';
-import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
-import TimeSeriesCard from '../../components/dashboard/TimeSeriesCard';
 import Card from '../../components/ui/Card';
 import {
-  fetchDashboardStats,
-  fetchDailyMetrics,
-  type DashboardStats,
-} from '../../lib/dashboardApi';
+  fetchUserCallStats,
+  fetchUserLeadsCount,
+  type UserCallStats,
+} from '../../lib/analyticsApi';
 import { useTokens } from '../../contexts/TokenContext';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
-
-interface DailyMetric {
-  date: string;
-  calls?: number;
-  leads?: number;
-  bookings?: number;
-  sms_sent?: number;
-  success_rate?: number;
-  [key: string]: unknown;
-}
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -57,24 +29,6 @@ function fmtDuration(seconds: number): string {
 function fmtNumber(n: number): string {
   return new Intl.NumberFormat('en-US').format(n);
 }
-
-/* ------------------------------------------------------------------ */
-/*  Small sub-components                                               */
-/* ------------------------------------------------------------------ */
-
-const StatusBadge: React.FC<{ label: string; value: number; color: string }> = ({
-  label,
-  value,
-  color,
-}) => (
-  <div className="flex items-center justify-between py-2">
-    <div className="flex items-center gap-2">
-      <span className={`w-2 h-2 rounded-full ${color}`} />
-      <span className="text-sm text-text-muted">{label}</span>
-    </div>
-    <span className="text-sm font-semibold text-text-main">{fmtNumber(value)}</span>
-  </div>
-);
 
 /* ------------------------------------------------------------------ */
 /*  Main Component                                                     */
@@ -97,8 +51,8 @@ function getDateRange(range: DateRange, customStart?: string, customEnd?: string
 }
 
 const AnalyticsPage: React.FC = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [metrics, setMetrics] = useState<DailyMetric[]>([]);
+  const [callStats, setCallStats] = useState<UserCallStats | null>(null);
+  const [leadsCount, setLeadsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [, setLastRefresh] = useState<Date | null>(null);
@@ -112,20 +66,21 @@ const AnalyticsPage: React.FC = () => {
   const { totalAvailable, tokensUsed, monthlyAllocation, isLoading: tokensLoading } = useTokens();
   const { user } = useAuth();
 
+  // Real per-workspace data only — same agents->retell-calls scoping as
+  // CallHistoryPage/TodayGlanceCard, plus a leads-table count. No admin-only
+  // dashboard-stats aggregate, no daily_metrics (service_role-only RLS).
   const loadData = useCallback(async () => {
+    if (!user?.id) return;
     setLoading(true);
     setError(null);
     try {
       const range = getDateRange(dateRange, customStart, customEnd);
-      const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : 90;
-      const [dashStats, dailyMetrics] = await Promise.all([
-        fetchDashboardStats(),
-        dateRange === 'custom'
-          ? fetchDailyMetrics(365, range)
-          : fetchDailyMetrics(days),
+      const [stats, leads] = await Promise.all([
+        fetchUserCallStats(user.id, range),
+        fetchUserLeadsCount(user.id, range),
       ]);
-      setStats(dashStats);
-      setMetrics((dailyMetrics as DailyMetric[]).reverse()); // oldest first for charts
+      setCallStats(stats);
+      setLeadsCount(leads);
       setLastRefresh(new Date());
     } catch (err) {
       console.error('Failed to load analytics:', err);
@@ -133,7 +88,7 @@ const AnalyticsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [dateRange, customStart, customEnd]);
+  }, [dateRange, customStart, customEnd, user?.id]);
 
   useEffect(() => {
     loadData();
@@ -177,12 +132,12 @@ const AnalyticsPage: React.FC = () => {
   }, [user?.id]);
 
   /* ----- Loading state ----- */
-  if (loading && !stats) {
+  if (loading && !callStats) {
     return <PageSkeleton />;
   }
 
   /* ----- Error state ----- */
-  if (error && !stats) {
+  if (error && !callStats) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="p-8 max-w-md text-center">
@@ -201,24 +156,10 @@ const AnalyticsPage: React.FC = () => {
     );
   }
 
-  const retell = stats?.retell;
-  const twilio = stats?.twilio;
-  const sb = stats?.supabase;
-
-  /* ----- Build sparkline data from daily metrics ----- */
-  const callSparkline = metrics.map((m) => m.calls ?? m.leads ?? 0);
-  const smsSparkline = metrics.map((m) => m.sms_sent ?? 0);
-  const successSparkline = metrics.map((m) => m.success_rate ?? 0);
-  // Empty (not [0,0,...]) — a zero-filled series draws a false flat-zero line under
-  // a non-zero value. Empty lets the card fall back to its "no history" rendering.
+  // No per-day history source exists for these headline numbers (daily_metrics
+  // is service_role-only), so tiles render without a sparkline rather than a
+  // fabricated trend line.
   const emptySparkline: number[] = [];
-
-  /* ----- Build time series data for chart ----- */
-  const timeSeriesData = metrics.map((m) => ({
-    date: m.date,
-    leads: m.leads ?? m.calls ?? 0,
-    bookings: m.bookings ?? 0,
-  }));
 
   return (
     <div className="space-y-8">
@@ -307,56 +248,46 @@ const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Error banner (when we have stale data but refresh failed) */}
-      {error && stats && (
+      {error && callStats && (
         <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-lg text-sm text-red-700 dark:text-red-300">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           Refresh failed: {error}. Showing last known data.
         </div>
       )}
 
-      {/* KPI Cards - Primary metrics */}
+      {/* KPI Cards - Primary metrics, real per-workspace call + lead data
+          for the selected date range */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <KpiTile
-          title="Total Calls (24h)"
-          value={retell?.calls_today ?? 0}
-          delta={
-            retell && retell.calls_7d > 0
-              ? ((retell.calls_today / (retell.calls_7d / 7) - 1) * 100)
-              : 0
-          }
-          sparkline={callSparkline.length >= 2 ? callSparkline : emptySparkline}
+          title="Total Calls"
+          value={callStats?.callsTotal ?? 0}
+          delta={0}
+          sparkline={emptySparkline}
           format="number"
         />
         <KpiTile
           title="Success Rate"
-          value={retell?.success_rate ? `${retell.success_rate}%` : '0%'}
+          value={callStats ? `${callStats.successRate}%` : '0%'}
           delta={0}
-          sparkline={successSparkline.length >= 2 ? successSparkline : emptySparkline}
+          sparkline={emptySparkline}
         />
         <KpiTile
           title="Avg Duration"
-          value={fmtDuration(retell?.avg_duration_seconds ?? 0)}
+          value={fmtDuration(callStats?.avgDurationSeconds ?? 0)}
           delta={0}
           sparkline={emptySparkline}
           format="time"
         />
         <KpiTile
-          title="SMS Sent Today"
-          value={twilio?.sms_sent_today ?? 0}
-          delta={0}
-          sparkline={smsSparkline.length >= 2 ? smsSparkline : emptySparkline}
-          format="number"
-        />
-        <KpiTile
           title="Total Leads"
-          value={sb?.total_leads ?? 0}
+          value={leadsCount}
           delta={0}
           sparkline={emptySparkline}
           format="number"
         />
         <KpiTile
-          title="Missed Calls (24h)"
-          value={retell?.missed_calls_today ?? 0}
+          title="Missed Calls"
+          value={callStats?.callsMissed ?? 0}
           delta={0}
           sparkline={emptySparkline}
           format="number"
@@ -411,188 +342,11 @@ const AnalyticsPage: React.FC = () => {
         </Card>
       </motion.div>
 
-      {/* Secondary KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {[
-          {
-            icon: PhoneCall,
-            label: 'Calls (7d)',
-            value: fmtNumber(retell?.calls_7d ?? 0),
-            color: 'text-brand-blue',
-          },
-          {
-            icon: Clock,
-            label: 'Talk Time Today',
-            value: `${retell?.total_talk_minutes_today ?? 0}m`,
-            color: 'text-amber-500',
-          },
-          {
-            icon: Bot,
-            label: 'Active Agents',
-            value: fmtNumber(retell?.active_agents ?? 0),
-            color: 'text-purple-500',
-          },
-          {
-            icon: MessageSquare,
-            label: 'SMS Received',
-            value: fmtNumber(twilio?.sms_received_today ?? 0),
-            color: 'text-green-500',
-          },
-          {
-            icon: Phone,
-            label: 'Phone Numbers',
-            value: fmtNumber(twilio?.total_phone_numbers ?? 0),
-            color: 'text-sky-500',
-          },
-          {
-            icon: Users,
-            label: 'Workspaces',
-            value: fmtNumber(sb?.total_workspaces ?? 0),
-            color: 'text-indigo-500',
-          },
-        ].map((item, i) => (
-          <motion.div
-            key={item.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, delay: i * 0.05 }}
-          >
-            <OverviewMetricCard
-              compact
-              label={item.label}
-              period="Analytics overview"
-              value={item.value}
-              badge="Live"
-              badgeTone="neutral"
-              icon={item.icon}
-              accentColor={
-                item.color === 'text-brand-blue' ? '#2563eb' :
-                item.color === 'text-amber-500' ? '#f59e0b' :
-                item.color === 'text-purple-500' ? '#8b5cf6' :
-                item.color === 'text-green-500' ? '#10b981' :
-                item.color === 'text-sky-500' ? '#0ea5e9' :
-                '#4f46e5'
-              }
-              chartData={emptySparkline}
-              caption="Live metric from the current dashboard snapshot"
-            />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 7-day trend chart (reuse TimeSeriesCard if data exists) */}
-        {timeSeriesData.length > 1 ? (
-          <TimeSeriesCard data={timeSeriesData} />
-        ) : (
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold text-text-main mb-4">
-              {dateRange === '7d' ? '7-Day' : dateRange === '30d' ? '30-Day' : dateRange === '90d' ? '90-Day' : 'Custom'} Trend
-            </h3>
-            <div className="flex items-center justify-center h-64 text-text-muted text-sm">
-              No daily metrics data available yet.
-              <br />
-              Metrics will appear once the daily collector runs.
-            </div>
-          </Card>
-        )}
-
-        {/* Callbacks & Chats breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="p-6">
-            <h3 className="text-xl font-semibold text-text-main mb-6">Activity Breakdown</h3>
-            <div className="grid grid-cols-2 gap-6">
-              {/* Callbacks */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Phone className="w-4 h-4 text-brand-blue" />
-                  <span className="text-sm font-semibold text-text-main">Callbacks</span>
-                </div>
-                <div className="divide-y divide-border">
-                  <StatusBadge label="Total" value={sb?.callbacks_total ?? 0} color="bg-brand-blue" />
-                  <StatusBadge label="Pending" value={sb?.callbacks_pending ?? 0} color="bg-amber-400" />
-                </div>
-              </div>
-
-              {/* Chats */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageSquare className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-semibold text-text-main">Chats</span>
-                </div>
-                <div className="divide-y divide-border">
-                  <StatusBadge label="Total" value={sb?.chats_total ?? 0} color="bg-green-500" />
-                  <StatusBadge label="Active" value={sb?.chats_active ?? 0} color="bg-emerald-400" />
-                </div>
-              </div>
-            </div>
-
-            {/* Phone numbers list */}
-            {twilio?.phone_numbers && twilio.phone_numbers.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-border">
-                <div className="flex items-center gap-2 mb-3">
-                  <Phone className="w-4 h-4 text-sky-500" />
-                  <span className="text-sm font-semibold text-text-main">Phone Numbers</span>
-                </div>
-                <div className="space-y-2">
-                  {twilio.phone_numbers.map((pn) => (
-                    <div
-                      key={pn.number}
-                      className="flex items-center justify-between text-sm py-1"
-                    >
-                      <span className="text-text-muted">{pn.friendly_name || 'Unnamed'}</span>
-                      <span className="font-mono text-text-main">{pn.number}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Latest Metrics (raw data card if available) */}
-      {sb?.latest_metrics && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-text-main">Latest Daily Snapshot</h3>
-              <span className="text-xs text-text-muted bg-gray-100 dark:bg-[#17171b] px-2 py-1 rounded">
-                {sb.latest_metrics.date || 'Today'}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {Object.entries(sb.latest_metrics)
-                .filter(
-                  ([key]) =>
-                    key !== 'id' &&
-                    key !== 'date' &&
-                    key !== 'created_at' &&
-                    key !== 'updated_at'
-                )
-                .map(([key, value]) => (
-                  <div key={key} className="text-center">
-                    <p className="text-xs text-text-muted mb-1">
-                      {key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </p>
-                    <p className="text-lg font-bold text-text-main">
-                      {typeof value === 'number' ? fmtNumber(value) : String(value ?? '-')}
-                    </p>
-                  </div>
-                ))}
-            </div>
-          </Card>
-        </motion.div>
-      )}
+      {/* ponytail: secondary KPI row, trend chart, callbacks/chats card, and
+          latest-snapshot card deleted — all read the admin-only dashboard-stats
+          aggregate or service_role-only daily_metrics, so every value was 0 for
+          a real customer. Re-add per-widget once each has a real per-workspace
+          source. */}
     </div>
   );
 };

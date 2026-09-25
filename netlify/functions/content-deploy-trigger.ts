@@ -1,4 +1,5 @@
 import { notifyError, notifyInfo } from './_shared/notify';
+import { authorizeRunner } from './_shared/agency-runner-auth';
 
 /**
  * content-deploy-trigger.ts
@@ -91,7 +92,20 @@ async function triggerNetlifyBuild(token: string): Promise<void> {
   if (!res.ok) throw new Error(`netlify build trigger ${res.status}: ${await res.text()}`);
 }
 
-export default async () => {
+export default async (req: Request) => {
+  // F106: this triggers a real production Netlify build — gate it the same
+  // way every other scheduled runner in this codebase does (Netlify's own
+  // schedule invocation, or the shared cron/founder secret), not open to
+  // anyone who requests the function URL directly.
+  // ponytail: tsconfig.functions.json's lib list omits DOM.Iterable, so Headers
+  // isn't typed as iterable here — forEach() doesn't need it.
+  const headerEntries: Record<string, string> = {};
+  req.headers.forEach((value, key) => { headerEntries[key] = value; });
+  const authz = await authorizeRunner({ headers: headerEntries } as any);
+  if (!authz.ok) {
+    return new Response(authz.message, { status: authz.status });
+  }
+
   const token = process.env.NETLIFY_AUTH_TOKEN;
   if (!token) {
     await notifyError(

@@ -1,5 +1,6 @@
 import { Handler } from '@netlify/functions';
-import { deductTokens, deductTokensBatch, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
+import { deductTokens, deductTokensBatch, getServiceSupabase, hasTokenBalance, TOKEN_COSTS } from './_shared/token-utils';
+import { toE164 } from './_shared/twilio-from-number';
 import { authenticateApiKey } from './_shared/validate-api-key';
 import { requireUser } from './_shared/user-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -65,6 +66,16 @@ async function resolveFromNumber(userId: string, requestedFrom?: string): Promis
   return ownedNumbers[0] || null;
 }
 
+// Numbers that replied STOP (sms_optouts stores Twilio's E.164 `From`). Throws
+// on a lookup error so the send fails closed instead of texting an opt-out.
+async function getOptedOut(toList: string[]): Promise<Set<string>> {
+  const keys = [...new Set(toList.flatMap((to) => [to, toE164(to)]).filter(Boolean))];
+  const { data, error } = await getServiceSupabase().from('sms_optouts').select('phone').in('phone', keys);
+  if (error) throw new Error(`Opt-out check failed: ${error.message}`);
+  const blocked = new Set((data || []).map((r: any) => r.phone));
+  return new Set(toList.filter((to) => blocked.has(to) || blocked.has(toE164(to))));
+}
+
 const handler: Handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
@@ -109,6 +120,14 @@ const handler: Handler = async (event) => {
           headers,
           body: JSON.stringify({ error: 'No active sending number found for this user' }),
         };
+      }
+
+      if ((await getOptedOut([to])).size) {
+        return { statusCode: 409, headers, body: JSON.stringify({ error: 'Recipient has opted out of SMS (replied STOP)' }) };
+      }
+      // ponytail: warn-only until a payment path credits token_balances; flip to fail-closed then.
+      if (!(await hasTokenBalance(body.user_id, TOKEN_COSTS.sms_sent))) {
+        console.warn(`[twilio-sms] Low/no token balance for user=${body.user_id}, sending anyway`);
       }
 
       const result = await twilioRequest('/Messages.json', 'POST', {
@@ -164,13 +183,22 @@ const handler: Handler = async (event) => {
           body: JSON.stringify({ error: 'No active sending number found for this user' }),
         };
       }
+      const optedOut = await getOptedOut(messages.map((msg: { to: string }) => msg.to));
+      const sendable = messages.filter((msg: { to: string }) => !optedOut.has(msg.to));
+      // ponytail: warn-only until a payment path credits token_balances; flip to fail-closed then.
+      if (sendable.length && !(await hasTokenBalance(body.user_id, sendable.length * TOKEN_COSTS.sms_sent))) {
+        console.warn(`[twilio-sms] Low/no token balance for user=${body.user_id}, sending ${sendable.length} anyway`);
+      }
+
       const results = await Promise.allSettled(
         messages.map((msg: { to: string; message: string }) =>
-          twilioRequest('/Messages.json', 'POST', {
-            To: msg.to,
-            From: fromNumber,
-            Body: msg.message,
-          })
+          optedOut.has(msg.to)
+            ? Promise.reject(new Error('Recipient has opted out of SMS (replied STOP)'))
+            : twilioRequest('/Messages.json', 'POST', {
+                To: msg.to,
+                From: fromNumber,
+                Body: msg.message,
+              })
         )
       );
 

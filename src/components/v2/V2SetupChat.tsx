@@ -126,10 +126,53 @@ const AGENT_STYLE_OPTIONS = [
   },
 ] as const;
 
-// Local shape mirrors the source-of-truth INDUSTRY_OPTIONS from
-// src/lib/setup/onboarding.ts. Adding a value there flows through here
-// automatically.
-const INDUSTRY_OPTIONS = INDUSTRY_SOURCE_OPTIONS;
+// Law firm should be easy to find (F10) — surfaced first, "Other" last so it
+// is never the accidental default. Source of truth stays
+// src/lib/setup/onboarding.ts; this only reorders for display.
+const INDUSTRY_OPTIONS = [
+  ...INDUSTRY_SOURCE_OPTIONS.filter((opt) => opt.value === 'law_firm'),
+  ...INDUSTRY_SOURCE_OPTIONS.filter((opt) => opt.value !== 'law_firm' && opt.value !== 'other'),
+  ...INDUSTRY_SOURCE_OPTIONS.filter((opt) => opt.value === 'other'),
+];
+
+const LAW_FIRM_NAME_PATTERN = /law|legal|attorney|esq\.?\b|pllc|llp/i;
+
+// F3: free-text country silently drops the AI-disclosure/recording notice
+// for anything but an exact ISO-2 code (see generate-agent-prompt.ts
+// requiresAIDisclosure). Use ISO-2 codes as values so downstream matching
+// works; get the code list + English names from the platform (Intl) instead
+// of hand-maintaining ~195 country names, with a small fallback for engines
+// without Intl.supportedValuesOf.
+const FALLBACK_COUNTRY_CODES = [
+  'US', 'CA', 'GB', 'IE', 'AU', 'NZ', 'IL', 'MX', 'ES', 'FR', 'DE', 'IT', 'NL', 'BE', 'CH',
+  'AT', 'SE', 'NO', 'DK', 'FI', 'PT', 'PL', 'IN', 'SG', 'AE', 'ZA', 'BR', 'AR', 'CL', 'CO',
+  'JP', 'KR', 'PH', 'NG', 'KE', 'PR',
+] as const;
+
+function buildCountryOptions(): Array<{ value: string; label: string }> {
+  // ponytail: Intl.supportedValuesOf('region') isn't a valid argument at
+  // runtime (throws RangeError) — no engine actually exposes 'region', so
+  // this was always falling back anyway. Use the static list directly.
+  const codes: string[] = [...FALLBACK_COUNTRY_CODES];
+
+  let displayNames: Intl.DisplayNames | null = null;
+  try {
+    displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+  } catch {
+    displayNames = null;
+  }
+
+  const options = codes.map((code) => ({
+    value: code,
+    label: displayNames?.of(code) || code,
+  }));
+  options.sort((a, b) => a.label.localeCompare(b.label));
+
+  const us = options.find((opt) => opt.value === 'US');
+  return us ? [us, ...options.filter((opt) => opt.value !== 'US')] : options;
+}
+
+const COUNTRY_OPTIONS = buildCountryOptions();
 
 type OpeningStep = 'owner' | 'business' | 'agent';
 
@@ -181,7 +224,14 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   });
   const [isOpeningTransitioning, setIsOpeningTransitioning] = useState(false);
   const [ownerNameDraft, setOwnerNameDraft] = useState(restoredDrafts.ownerName || '');
-  const [countryDraft, setCountryDraft] = useState(restoredDrafts.country || '');
+  // Guard against a stale free-text draft (e.g. "United States") from before
+  // the country field became a select — fall back to US rather than show a
+  // blank/invalid <select>.
+  const [countryDraft, setCountryDraft] = useState(() =>
+    restoredDrafts.country && COUNTRY_OPTIONS.some((c) => c.value === restoredDrafts.country)
+      ? restoredDrafts.country
+      : 'US',
+  );
   const [businessNameDraft, setBusinessNameDraft] = useState(restoredDrafts.businessName || '');
   const [websiteDraft, setWebsiteDraft] = useState(restoredDrafts.website || '');
   const [acceptTermsDraft, setAcceptTermsDraft] = useState(false);
@@ -190,9 +240,12 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   );
   const [agentStyleDraft, setAgentStyleDraft] =
     useState<(typeof AGENT_STYLE_OPTIONS)[number]['id']>('friendly_concise');
-  const [industryDraft, setIndustryDraft] = useState<PendingAgentSetup['industry']>(
-    (restoredDrafts.industry as PendingAgentSetup['industry']) || 'other',
+  // F10: no silent default — '' means "not chosen yet" and blocks Finish
+  // until the owner explicitly picks one (see canContinueOpening).
+  const [industryDraft, setIndustryDraft] = useState<PendingAgentSetup['industry'] | ''>(
+    (restoredDrafts.industry as PendingAgentSetup['industry']) || '',
   );
+  const industryPrefilled = useRef(false);
   const [transferNumberDraft, setTransferNumberDraft] = useState<string>(restoredDrafts.transferNumber || '');
   const [playingVoiceId, setPlayingVoiceId] = useState<(typeof VOICE_OPTIONS)[number]['id'] | null>(
     null,
@@ -527,6 +580,17 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       }
       setWebsiteDraft(normalizedWebsite.value);
       setError(null);
+      // F10: pre-fill (not silently default) Law firm when the name/website
+      // reads as a law firm, so the legal-guardrail prompt applies without
+      // making the owner hunt for it — still editable, still explicit.
+      if (
+        !industryDraft &&
+        !industryPrefilled.current &&
+        LAW_FIRM_NAME_PATTERN.test(`${businessNameDraft} ${normalizedWebsite.value}`)
+      ) {
+        industryPrefilled.current = true;
+        setIndustryDraft('law_firm');
+      }
       advanceOpeningStep('agent');
       return;
     }
@@ -541,7 +605,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       return;
     }
     const website = normalizedWebsite.value;
-    if (!ownerName || !country || !companyName) return;
+    if (!ownerName || !country || !companyName || !industryDraft) return;
     const voice = VOICE_OPTIONS.find((option) => option.id === voiceDraft) ?? VOICE_OPTIONS[0];
     setError(null);
     savePendingAgentSetup({
@@ -549,7 +613,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       businessName: companyName,
       websiteUrl: website,
       country,
-      industry: industryDraft || 'other',
+      industry: industryDraft,
       voiceId: voice.id,
       goal: 'book-appointments',
       tone: agentStyleDraft,
@@ -588,10 +652,10 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       ? !!ownerNameDraft.trim() && !!countryDraft.trim()
       : openingStep === 'business'
         ? !!businessNameDraft.trim() && acceptTermsDraft
-        : !!voiceDraft;
+        : !!voiceDraft && !!industryDraft;
 
   return (
-    <div className="v2-setup-chat flex h-full min-h-0 w-full max-w-3xl flex-col justify-center bg-transparent">
+    <div className="v2-setup-chat flex w-full max-w-3xl flex-col bg-transparent">
       <style>
         {`
           .v2-setup-chat input:-webkit-autofill,
@@ -685,15 +749,25 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                   className="opacity-0"
                   style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 220ms both' }}
                 >
-                  <Input
-                    id="v2-country"
-                    aria-label="Country"
-                    label="Country"
-                    value={countryDraft}
-                    onChange={(e) => setCountryDraft(e.target.value)}
-                    className="w-full"
-                    autoComplete="country-name"
-                  />
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">
+                      Country
+                    </span>
+                    <select
+                      id="v2-country"
+                      aria-label="Country"
+                      value={countryDraft}
+                      onChange={(e) => setCountryDraft(e.target.value)}
+                      autoComplete="country"
+                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white focus:border-white focus:outline-none"
+                    >
+                      {COUNTRY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
               </div>
             )}
@@ -765,6 +839,48 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
 
             {openingStep === 'agent' && (
               <div className="space-y-7">
+                {/* F10: Industry sits above Voice/Call style, and is required
+                    (no silent "Other" default) — see canContinueOpening. */}
+                <div
+                  className="grid gap-4 opacity-0 sm:grid-cols-2"
+                  style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both' }}
+                >
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">Industry</span>
+                    <select
+                      value={industryDraft}
+                      onChange={(e) => setIndustryDraft(e.target.value as PendingAgentSetup['industry'])}
+                      required
+                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white focus:border-white focus:outline-none"
+                    >
+                      <option value="" disabled hidden className="bg-slate-900 text-white">
+                        Select an industry
+                      </option>
+                      {INDUSTRY_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">
+                      Transfer number <span className="font-normal normal-case text-white/50">(optional)</span>
+                    </span>
+                    <input
+                      type="tel"
+                      value={transferNumberDraft}
+                      onChange={(e) => setTransferNumberDraft(e.target.value)}
+                      placeholder="+1 555 123 4567"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-white focus:outline-none"
+                    />
+                    <span className="mt-1 block text-xs text-white/50">Calls the agent can't handle are forwarded here.</span>
+                  </label>
+                </div>
+
                 <fieldset
                   aria-label="Choose voice"
                   className="grid gap-3 opacity-0 sm:grid-cols-3"
@@ -832,39 +948,6 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                       </button>
                     ))}
                   </fieldset>
-                </div>
-
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">Industry</span>
-                    <select
-                      value={industryDraft}
-                      onChange={(e) => setIndustryDraft(e.target.value as PendingAgentSetup['industry'])}
-                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white focus:border-white focus:outline-none"
-                    >
-                      {INDUSTRY_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-white/70">
-                      Transfer number <span className="font-normal normal-case text-white/50">(optional)</span>
-                    </span>
-                    <input
-                      type="tel"
-                      value={transferNumberDraft}
-                      onChange={(e) => setTransferNumberDraft(e.target.value)}
-                      placeholder="+1 555 123 4567"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      className="w-full rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-white focus:outline-none"
-                    />
-                    <span className="mt-1 block text-xs text-white/50">Calls the agent can't handle are forwarded here.</span>
-                  </label>
                 </div>
               </div>
             )}

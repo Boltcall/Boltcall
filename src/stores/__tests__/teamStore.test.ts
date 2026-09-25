@@ -185,4 +185,33 @@ describe('teamStore', () => {
       await expect(useTeamStore.getState().removeMember('m1')).rejects.toBeDefined();
     });
   });
+
+  describe('transferOwnership', () => {
+    it('throws instead of writing the nonexistent workspaces.owner_id column', async () => {
+      useTeamStore.setState({ workspace: { id: 'ws1' } as any });
+      await expect(useTeamStore.getState().transferOwnership('other-user')).rejects.toThrow(
+        'Ownership transfer is not supported yet'
+      );
+      expect(supabase.from).not.toHaveBeenCalledWith('workspaces');
+    });
+  });
+
+  describe('updateWorkspace', () => {
+    it('creates a new workspace row keyed by user_id, not owner_id', async () => {
+      useTeamStore.setState({ workspace: null });
+      // Reset .insert() back to chain-returning — an earlier test in this file
+      // (inviteMember) permanently overrides it to a terminal resolved value.
+      mockSupabaseChain.insert = vi.fn().mockReturnValue(mockSupabaseChain);
+      mockSupabaseChain.single = vi.fn().mockResolvedValue({ data: { id: 'ws1' }, error: null });
+
+      await useTeamStore.getState().updateWorkspace({ name: 'Acme' } as any);
+
+      expect(mockSupabaseChain.insert).toHaveBeenCalledWith(
+        expect.objectContaining({ user_id: 'user-1' })
+      );
+      expect(mockSupabaseChain.insert).not.toHaveBeenCalledWith(
+        expect.objectContaining({ owner_id: expect.anything() })
+      );
+    });
+  });
 });

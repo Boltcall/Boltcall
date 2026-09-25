@@ -4,7 +4,8 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezonePlugin from 'dayjs/plugin/timezone';
 import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
-import { notifyError, notifyInfo } from './_shared/notify';
+import { alertOwner, notifyError, notifyInfo } from './_shared/notify';
+import { resolveTwilioFromNumber } from './_shared/twilio-from-number';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { estimateBookingValueCents } from './_shared/booking-value';
@@ -313,18 +314,26 @@ async function handleSearchKnowledgeBase(args: any, userId: string | null): Prom
   if (!question) return 'I\'d be happy to look that up for you. Could you repeat your question so I can find the right information?';
   if (!userId) return 'I cannot search the knowledge base without a user context.';
 
-  const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
+  // Query the firm's KB directly with the service client (userId comes from the
+  // verified agent owner). The old HTTP hop to kb-search carried no user JWT,
+  // so it always got 401. Same keyword match kb-search falls back to.
+  // ponytail: keyword match only; use the search_kb vector RPC once its migration is applied.
+  const keywords = String(question).toLowerCase().split(/\s+/)
+    .map((w) => w.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter((w) => w.length > 2)
+    .slice(0, 8);
   try {
-    const res = await fetch(`${baseUrl}/.netlify/functions/kb-search`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'search', userId, query: question, limit: 3 }),
-    });
-
-    if (!res.ok) return 'I could not search the knowledge base right now. Let me take your details and have someone follow up.';
-
-    const data = await res.json();
-    const results = data.results || [];
+    const { data, error } = keywords.length
+      ? await getServiceSupabase()
+          .from('knowledge_base')
+          .select('title, content, category')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .or(keywords.map((kw) => `title.ilike.%${kw}%,content.ilike.%${kw}%`).join(','))
+          .limit(3)
+      : { data: [], error: null };
+    if (error) throw error;
+    const results = data || [];
 
     if (results.length === 0) {
       return 'I don\'t have specific information about that in our knowledge base. I can take your details and have someone who knows more get back to you. Would you like that?';
@@ -394,6 +403,48 @@ async function getGoogleCalendarForUser(userId: string): Promise<{ accessToken: 
   return accessToken ? { accessToken, config } : null;
 }
 
+// ── No-calendar fallback: capture the request as a callback, never a dead end ──
+
+const NO_CALENDAR_AVAILABILITY =
+  'No online calendar is connected, so there are no live time slots. Do not offer or promise a specific time. ' +
+  'Ask which day and time suit the caller, then call book_appointment with their name, best phone number, that preferred date and time, ' +
+  'and a short note about their matter. The office will call them back to confirm.';
+
+async function recordCallbackRequest(args: any, userId: string, callId: string): Promise<string> {
+  const { name, email, phone, date, time, timezone, service, notes } = args;
+  const requested = [date, time, timezone].filter(Boolean).join(' ');
+  const supabase = getServiceSupabase();
+  const { error } = await supabase.from('callbacks').insert({
+    user_id: userId,
+    client_name: name,
+    client_phone: phone || 'not provided', // callbacks.client_phone is NOT NULL; caller number stays on the call record
+    client_email: email || null,
+    status: 'pending',
+    timezone: timezone || 'UTC',
+    callback_reason: `Consultation request${service ? `: ${service}` : ''}`,
+    special_instructions: [requested && `Requested time: ${requested}`, notes].filter(Boolean).join('\n') || null,
+    source_details: JSON.stringify({ source: 'ai_call', call_id: callId }),
+  });
+  if (error) console.error('[agent-tools] Callback request insert failed:', error);
+
+  const alerted = await alertOwner(supabase, userId, `Callback requested: ${name}`, [
+    'A caller asked to book a consultation, but no calendar is connected, so nothing was booked.',
+    'Please call them back to confirm a time.',
+    `Name: ${name}`,
+    `Phone: ${phone || 'not given (see the call record)'}`,
+    `Email: ${email || 'not given'}`,
+    `Requested time: ${requested || 'not given'}`,
+    ...(service ? [`About: ${service}`] : []),
+    ...(notes ? [`Notes: ${notes}`] : []),
+  ]);
+  if (error && !alerted) {
+    await notifyError('agent-tools: callback request not saved or emailed', error.message || String(error), { userId, callId });
+  }
+
+  return `Nothing was booked because no online calendar is connected. Tell the caller their request${requested ? ` for ${requested}` : ''} is noted ` +
+    'and someone from the office will call them back to confirm a time. Confirm their name and best callback number, then close politely.';
+}
+
 // ── Tool: check_availability (Google Calendar first, Cal.com fallback) ──
 
 async function handleCheckAvailability(args: any, calApiKey: string, userId: string | null, locale = 'en-US'): Promise<string> {
@@ -447,8 +498,8 @@ async function handleCheckAvailability(args: any, calApiKey: string, userId: str
   }
 
   // Fallback to Cal.com
-  const eventTypeId = await getEventTypeId(calApiKey);
-  if (!eventTypeId) return 'Could not determine event type. Appointment scheduling may not be configured.';
+  const eventTypeId = calApiKey ? await getEventTypeId(calApiKey) : null;
+  if (!eventTypeId) return NO_CALENDAR_AVAILABILITY;
 
   try {
     const url = `${CAL_BASE_URL}/slots?apiKey=${calApiKey}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&eventTypeId=${eventTypeId}&timeZone=${encodeURIComponent(timezone)}`;
@@ -499,6 +550,9 @@ async function handleBookAppointment(
     return 'I need at least your name, preferred date, and time to book an appointment.';
   }
 
+  const gcal = userId ? await getGoogleCalendarForUser(userId).catch(() => null) : null;
+  if (userId && !gcal && !calApiKey) return recordCallbackRequest(args, userId, callId);
+
   // Require the exact offset-bearing slot and named zone. Bare local times
   // cannot distinguish the two occurrences of a clock time at the DST fold.
   let startISO: string;
@@ -522,7 +576,6 @@ async function handleBookAppointment(
 
     // Try Google Calendar first
     if (userId) {
-      const gcal = await getGoogleCalendarForUser(userId);
       if (gcal) {
         const calendarId = gcal.config.calendar_id || 'primary';
         const startDate = new Date(startISO);
@@ -576,7 +629,10 @@ async function handleBookAppointment(
     // Fallback to Cal.com if Google Calendar didn't work
     if (bookedVia !== 'google_calendar') {
       const eventTypeId = await getEventTypeId(calApiKey);
-      if (!eventTypeId) return 'Appointment scheduling is not configured. No booking or callback was arranged. Please contact the team directly.';
+      if (!eventTypeId) {
+        if (userId) return recordCallbackRequest(args, userId, callId);
+        return 'Appointment scheduling is not configured. Nothing was booked. Tell the caller the office will call them back, and confirm their best number.';
+      }
 
       const endDate = new Date(startISO);
       endDate.setMinutes(endDate.getMinutes() + 20);
@@ -618,7 +674,7 @@ async function handleBookAppointment(
 
       try {
         const estimatedValueCents = await estimateBookingValueCents(supabase, userId, service);
-        const { error: appointmentError } = await supabase.from('appointments').insert({
+        const appointment: Record<string, any> = {
           user_id: userId,
           call_id: callId || null,
           cal_booking_id: String(bookingId),
@@ -632,7 +688,14 @@ async function handleBookAppointment(
           status: 'confirmed',
           estimated_value_cents: estimatedValueCents,
           raw_webhook: { source: 'agent_tool', call_id: callId, booked_via: bookedVia },
-        });
+        };
+        let { error: appointmentError } = await supabase.from('appointments').insert(appointment);
+        // ponytail: prod lacks appointments.call_id until the attribution migration lands;
+        // retry without it (call_id is still in raw_webhook). Drop once the column exists.
+        if (appointmentError?.code === '42703' || appointmentError?.code === 'PGRST204') {
+          const { call_id: _omit, ...withoutCallId } = appointment;
+          ({ error: appointmentError } = await supabase.from('appointments').insert(withoutCallId));
+        }
         if (appointmentError) throw new Error('Appointment storage failed');
       } catch (dbErr) {
         console.error('[agent-tools] Failed to insert appointment:', dbErr);
@@ -807,28 +870,7 @@ async function handleSendSms(
   }
 
   try {
-    // Determine from number — always prefer the tenant's own provisioned
-    // line so caller-ID stays correct. Only fall back to TWILIO_FROM_NUMBER
-    // when the tenant has no active number of their own (single-tenant dev,
-    // demo agents). The prior order sent every tenant from the shared env
-    // number as long as it was set, which cross-branded outbound texts.
-    let fromNumber = '';
-    if (userId) {
-      const supabase = getServiceSupabase();
-      const { data: phoneRow } = await supabase
-        .from('phone_numbers')
-        .select('phone_number')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .limit(1)
-        .single();
-
-      if (phoneRow) {
-        fromNumber = phoneRow.phone_number;
-      }
-    }
-
-    if (!fromNumber) fromNumber = process.env.TWILIO_FROM_NUMBER || '';
+    const fromNumber = await resolveTwilioFromNumber(getServiceSupabase(), userId);
 
     if (!fromNumber) {
       return 'SMS sending is not configured. Please contact the business directly.';

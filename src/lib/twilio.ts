@@ -182,49 +182,6 @@ export async function rejectSmsAiDraft(messageId: string, userId: string): Promi
   return response.json();
 }
 
-/**
- * Enroll a contact in a follow-up SMS sequence
- */
-export async function enrollInSequence(params: {
-  sequenceId: string;
-  contactPhone: string;
-  contactName?: string;
-  contactEmail?: string;
-  userId: string;
-  leadId?: string;
-}): Promise<{ success: boolean; enrollmentId?: string; nextStepAt?: string }> {
-  const response = await authedFetch(`${FUNCTIONS_BASE}/sms-sequence-processor`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'enroll', ...params }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || `Enroll failed: ${response.status}`);
-  }
-
-  return response.json();
-}
-
-/**
- * Manually trigger sequence processing
- */
-export async function processSequences(): Promise<{ processed: number; failed: number }> {
-  const response = await authedFetch(`${FUNCTIONS_BASE}/sms-sequence-processor`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'process' }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || `Process failed: ${response.status}`);
-  }
-
-  return response.json();
-}
-
 // === Phone Numbers ===
 
 export interface OwnedPhoneNumber {

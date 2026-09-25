@@ -13,7 +13,7 @@ interface SendEmailParams {
   htmlContent?: string;
   textContent?: string;
   fromName?: string;
-  fromEmail?: string;
+  replyTo?: string;   // caller-controlled reply-to; From address is never caller-controlled
   userId?: string;    // for token deduction
   metadata?: Record<string, unknown>;
 }
@@ -24,16 +24,19 @@ async function sendBrevoEmail(params: SendEmailParams): Promise<{ messageId: str
     return { error: 'Brevo API key not configured (BREVO_API_KEY)' };
   }
 
-  const fromEmail = params.fromEmail || process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org';
+  // F121: From is always Boltcall's own verified Brevo sender — a caller can only
+  // set a display name and reply-to, never the From address (phishing/spoofing guard).
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org';
   const fromName = params.fromName || process.env.BREVO_FROM_NAME || 'Boltcall';
 
-  const body = {
+  const body: Record<string, unknown> = {
     sender: { name: fromName, email: fromEmail },
     to: [{ email: params.to }],
     subject: params.subject,
     htmlContent: params.htmlContent || undefined,
     textContent: params.textContent || undefined,
   };
+  if (params.replyTo) body.replyTo = { email: params.replyTo };
 
   const response = await fetch(`${BREVO_API_BASE}/smtp/email`, {
     method: 'POST',
@@ -88,13 +91,13 @@ const handler: Handler = async (event) => {
     }
 
     if (action === 'send') {
-      const { to, subject, htmlContent, textContent, fromName, fromEmail, userId, metadata } = body;
+      const { to, subject, htmlContent, textContent, fromName, replyTo, userId, metadata } = body;
 
       if (!to || !subject) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'to and subject are required' }) };
       }
 
-      const result = await sendBrevoEmail({ to, subject, htmlContent, textContent, fromName, fromEmail, userId, metadata });
+      const result = await sendBrevoEmail({ to, subject, htmlContent, textContent, fromName, replyTo, userId, metadata });
 
       if ('error' in result) {
         await notifyError('send-email: Brevo send failed', result.error, { to, subject });

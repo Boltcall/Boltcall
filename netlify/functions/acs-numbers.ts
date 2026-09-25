@@ -69,8 +69,13 @@ async function requireNumberAdmin(event: HandlerEvent, headers: Record<string, s
 
 async function getOperationStatus(operationId: string): Promise<any> {
   const { endpoint, key } = getAcsCredentials();
-  // operationId may be a full URL or a relative path
+  // operationId may be a full URL or a relative path. F104: never fetch an
+  // attacker-supplied URL with real ACS auth headers attached — a full-URL
+  // operationId must be on the configured ACS endpoint, nothing else (SSRF).
   const url = operationId.startsWith('http') ? operationId : `${endpoint}${operationId}`;
+  if (!url.startsWith(`${endpoint}/`) && url !== endpoint) {
+    throw new Error('operationId must resolve to the configured ACS endpoint');
+  }
   const authHeaders = buildAcsAuthHeaders('GET', url, '', key);
   const res = await fetch(url, { headers: { ...authHeaders } });
   if (!res.ok) {

@@ -99,34 +99,23 @@ const handler: Handler = async (event) => {
       return { statusCode: 400, body: JSON.stringify({ error: 'No organizer email in payload' }) };
     }
 
-    // Find user by organizer email via database function
-    let userId: string | null = null;
-    const { data: foundUserId } = await supabase.rpc('find_user_by_email', { lookup_email: organizerEmail });
-    userId = foundUserId || null;
-
-    // Fallback: check business_features where cal_api_key is stored (the user who connected Cal.com)
-    if (!userId) {
-      const { data: bfRows } = await supabase
-        .from('business_features')
-        .select('user_id, reminders_config')
-        .not('reminders_config', 'is', null);
-
-      if (bfRows) {
-        for (const row of bfRows) {
-          const cfg = row.reminders_config as Record<string, any>;
-          if (cfg?.cal_connected) {
-            userId = row.user_id;
-            break;
-          }
-        }
-      }
-    }
-
-    if (!userId) {
-      console.error('[appointment-handler] Could not resolve user for organizer:', organizerEmail);
-      await notifyError('appointment-handler: User lookup failed', 'Could not resolve user for organizer email', { organizerEmail, triggerEvent });
+    // Find user by organizer email via database function. No cross-tenant
+    // fallback: guessing a workspace by "first row with cal_connected=true"
+    // misattributes another firm's client PII (F86/F105) once 2+ tenants
+    // connect Cal.com.
+    // DEPLOY ORDERING: requires the find_user_by_email RPC from
+    // supabase/migrations/20260924120000_launch_hardening.sql to be applied
+    // to prod first, or every Cal.com webhook 404s here (RPC error -> fail
+    // closed, by design — do not add back a guessing fallback). Confirmed
+    // missing in prod as of this writing: `select proname from pg_proc where
+    // proname='find_user_by_email'` returns no rows.
+    const { data: foundUserId, error: findUserError } = await supabase.rpc('find_user_by_email', { lookup_email: organizerEmail });
+    if (findUserError || !foundUserId) {
+      console.error('[appointment-handler] Could not resolve user for organizer:', organizerEmail, findUserError);
+      await notifyError('appointment-handler: User lookup failed', findUserError?.message || 'Could not resolve user for organizer email', { organizerEmail, triggerEvent });
       return { statusCode: 404, body: JSON.stringify({ error: 'User not found for organizer email' }) };
     }
+    const userId: string = foundUserId;
 
     // Get user's workspace_id
     const { data: bpRow } = await supabase

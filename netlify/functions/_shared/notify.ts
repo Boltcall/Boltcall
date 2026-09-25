@@ -84,6 +84,71 @@ export async function notifyInfo(message: string): Promise<void> {
 }
 
 /**
+ * Real-time email alert to the BUSINESS OWNER (the Telegram helpers above only
+ * reach Boltcall's own chat). Honors the classic Settings > Notifications row
+ * (new_lead / email toggles, notification_email); with no row it defaults ON
+ * to the account email. Never throws; returns whether an email went out.
+ * ponytail: email only — SMS alerts need a notification_phone the settings page never collects.
+ */
+export async function alertOwner(
+  supabase: { from(table: string): any; auth?: any },
+  userId: string,
+  subject: string,
+  lines: string[],
+  opts: { urgent?: boolean } = {},
+): Promise<boolean> {
+  try {
+    const apiKey = process.env.BREVO_API_KEY;
+    if (!apiKey) {
+      console.warn('[notify] alertOwner skipped: BREVO_API_KEY not set');
+      return false;
+    }
+    const { data: prefs } = await supabase
+      .from('notification_preferences')
+      .select('new_lead, email_notifications, notification_email')
+      .eq('user_id', userId)
+      .maybeSingle();
+    // Urgent (e.g. caller in custody) ignores the new-lead toggle; a global email opt-out still wins.
+    if (prefs && ((!opts.urgent && prefs.new_lead === false) || prefs.email_notifications === false)) return false;
+
+    let to: string | null = prefs?.notification_email || null;
+    if (!to) {
+      const { data } = await supabase.auth.admin.getUserById(userId);
+      to = data?.user?.email || null;
+    }
+    if (!to) {
+      console.warn(`[notify] alertOwner skipped: no email for user ${userId}`);
+      return false;
+    }
+
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        sender: { name: process.env.BREVO_FROM_NAME || 'Boltcall', email: process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org' },
+        to: [{ email: to }],
+        subject,
+        htmlContent: lines.map((l) => `<p>${escapeHtml(l)}</p>`).join(''),
+        textContent: lines.join('\n'),
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) {
+      console.error(`[notify] alertOwner Brevo error ${res.status} for user ${userId}`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[notify] alertOwner failed:', err);
+    return false;
+  }
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+/**
  * Escape special Markdown characters to prevent Telegram parse errors.
  */
 function escapeMarkdown(text: string): string {

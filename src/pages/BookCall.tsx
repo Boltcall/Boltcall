@@ -16,7 +16,9 @@ import {
 import { Link } from 'react-router-dom';
 import { updateMetaDescription } from '../lib/utils';
 
-const CAL_BOOKING_URL = 'https://cal.com/boltcall';
+// ponytail: single source of truth for the live Cal.com booking link — every
+// "Book a Call" CTA site-wide imports this instead of hardcoding the URL.
+export const CAL_BOOKING_URL = 'https://cal.com/noam-jacoby/free-consultation';
 
 const FAQS = [
   {

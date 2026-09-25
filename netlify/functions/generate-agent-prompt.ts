@@ -28,7 +28,8 @@ interface BusinessProfile {
 
 interface CallFlowConfig {
   greetingText?: string;
-  tone?: 'friendly_concise' | 'formal' | 'playful' | 'calm';
+  // Setup also sends 'confident_direct' / 'professional' — see TONE_ALIASES.
+  tone?: 'friendly_concise' | 'formal' | 'playful' | 'calm' | 'confident_direct' | 'professional';
   purposeDetection?: {
     booking?: boolean;
     reschedule?: boolean;
@@ -84,7 +85,7 @@ interface PromptRequest {
 function detectLanguage(req: PromptRequest): 'en' | 'es' | 'he' {
   if (req.language) return req.language;
   // Auto-detect from country
-  const country = req.businessProfile.country?.toLowerCase();
+  const country = normalizeCountry(req.businessProfile.country);
   if (country === 'il') return 'he';
   const spanishCountries = new Set([
     'es', 'mx', 'ar', 'co', 'cl', 'pe', 'ec', 'gt', 'cu', 'bo', 'do',
@@ -104,12 +105,50 @@ const AI_DISCLOSURE_COUNTRIES = new Set([
   'us', 'ca', 'gb', 'uk', 'au', 'nz', 'il', 'ie',
   'de', 'fr', 'es', 'it', 'nl', 'be', 'at', 'ch', 'se', 'no', 'dk', 'fi',
   'pt', 'pl', 'cz', 'gr', 'ro', 'hu', 'bg', 'hr', 'sk', 'si', 'lt', 'lv',
-  'ee', 'lu', 'mt', 'cy', 'is', 'li',
+  'ee', 'lu', 'mt', 'cy', 'is', 'li', 'eu',
 ]);
 
+// Onboarding's Country field is free text ("United States", "USA", "México"),
+// but the disclosure and language rules key on ISO-3166 alpha-2 codes.
+const COUNTRY_ALIASES: Record<string, string> = {
+  usa: 'us', 'united states of america': 'us', america: 'us', eeuu: 'us', 'estados unidos de america': 'us',
+  uk: 'gb', britain: 'gb', 'great britain': 'gb', england: 'gb', scotland: 'gb', wales: 'gb', 'northern ireland': 'gb',
+};
+const foldCountry = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '')
+  .toLowerCase().replace(/\./g, '').replace(/[^a-z]+/g, ' ').trim();
+let countryCodes: Map<string, string> | undefined;
+
+/** Lower-case ISO-2 code for a code or an English/Spanish country name; '' when unrecognised. */
+function normalizeCountry(raw?: string): string {
+  const key = foldCountry(raw || '');
+  if (COUNTRY_ALIASES[key]) return COUNTRY_ALIASES[key];
+  if (!countryCodes) {
+    countryCodes = new Map();
+    const en = new Intl.DisplayNames(['en'], { type: 'region', fallback: 'none' });
+    const es = new Intl.DisplayNames(['es'], { type: 'region', fallback: 'none' });
+    for (let a = 65; a <= 90; a++) {
+      for (let b = 65; b <= 90; b++) {
+        const code = String.fromCharCode(a, b);
+        // Skip user-assigned / pseudo regions (AA, QM-QZ, XA-XZ, ZZ "Unknown Region").
+        if (/^(AA|Q[M-Z]|X[A-Z]|ZZ)$/.test(code)) continue;
+        const enName = en.of(code);
+        if (!enName) continue;
+        const lc = code.toLowerCase();
+        countryCodes.set(lc, lc);
+        countryCodes.set(foldCountry(enName), lc);
+        const esName = es.of(code);
+        if (esName) countryCodes.set(foldCountry(esName), lc);
+      }
+    }
+  }
+  return countryCodes.get(key) || '';
+}
+
+// Fail closed: only a recognised country outside the list skips the AI +
+// recording notice. Blank, misspelled or unknown input always discloses.
 function requiresAIDisclosure(country: string): boolean {
-  if (!country) return true;
-  return AI_DISCLOSURE_COUNTRIES.has(country.toLowerCase());
+  const code = normalizeCountry(country);
+  return !code || AI_DISCLOSURE_COUNTRIES.has(code);
 }
 
 // ─── Tone Maps ───────────────────────────────────────────────────────────────
@@ -170,6 +209,14 @@ const TONE_DESCRIPTORS: Record<string, Record<string, { personality: string; sty
     },
   },
 };
+
+// Setup's TONE_OPTIONS include values with no descriptor of their own; an
+// unknown tone used to crash on `undefined.personality`.
+const TONE_ALIASES: Record<string, string> = { professional: 'formal', confident_direct: 'formal' };
+function toneFor(lang: 'en' | 'es' | 'he', tone?: string) {
+  const map = TONE_DESCRIPTORS[lang];
+  return map[TONE_ALIASES[tone || ''] || tone || ''] || map.friendly_concise;
+}
 
 // ─── Pain-Point Focus Lines ──────────────────────────────────────────────────
 // One-sentence "primary focus" prepended to the agent's identity block when
@@ -396,7 +443,7 @@ const LOCALE: Record<string, LocaleStrings> = {
     defaultGreetingWithDisclosure: (name) => `Hi, thank you for calling ${name}. This call may be recorded, and just so you know, I'm an AI assistant here to help you. How can I help you today?`,
     defaultGreeting: (name) => `Hi, thanks for calling ${name}! How can I help you today?`,
     outboundIdentity: (name) => `You are an AI assistant calling on behalf of ${name}.`,
-    outboundDisclosure: (name) => `Hi, this is an AI assistant calling from ${name}.`,
+    outboundDisclosure: (name) => `Hi, this is an AI assistant calling from ${name}. This call may be recorded.`,
   },
   es: {
     dayNames: { monday: 'Lunes', tuesday: 'Martes', wednesday: 'Miércoles', thursday: 'Jueves', friday: 'Viernes', saturday: 'Sábado', sunday: 'Domingo' },
@@ -502,7 +549,7 @@ const LOCALE: Record<string, LocaleStrings> = {
     defaultGreetingWithDisclosure: (name) => `Hola, gracias por llamar a ${name}. Esta llamada puede ser grabada. Le informo que soy un asistente de inteligencia artificial. \u00bfEn qué puedo ayudarle hoy?`,
     defaultGreeting: (name) => `\u00a1Hola, gracias por llamar a ${name}! \u00bfEn qué puedo ayudarle hoy?`,
     outboundIdentity: (name) => `Eres un asistente de IA llamando en nombre de ${name}.`,
-    outboundDisclosure: (name) => `Hola, le llama un asistente de inteligencia artificial de ${name}.`,
+    outboundDisclosure: (name) => `Hola, le llama un asistente de inteligencia artificial de ${name}. Esta llamada puede ser grabada.`,
   },
   he: {
     dayNames: { monday: 'יום שני', tuesday: 'יום שלישי', wednesday: 'יום רביעי', thursday: 'יום חמישי', friday: 'יום שישי', saturday: 'שבת', sunday: 'יום ראשון' },
@@ -608,7 +655,7 @@ const LOCALE: Record<string, LocaleStrings> = {
     defaultGreetingWithDisclosure: (name) => `שלום, תודה שהתקשרת ל${name}. שיחה זו מוקלטת. אני עוזר/ת בינה מלאכותית — כיצד אוכל לסייע לך היום?`,
     defaultGreeting: (name) => `שלום, תודה שהתקשרת ל${name}! כיצד אוכל לסייע לך היום?`,
     outboundIdentity: (name) => `אתה/את עוזר/ת בינה מלאכותית מתקשר/ת בשם ${name}.`,
-    outboundDisclosure: (name) => `שלום, מתקשר/ת עוזר/ת בינה מלאכותית מ${name}.`,
+    outboundDisclosure: (name) => `שלום, מתקשר/ת עוזר/ת בינה מלאכותית מ${name}. שיחה זו מוקלטת.`,
   },
 };
 
@@ -621,6 +668,8 @@ interface IndustryTemplate {
   commonQuestions: string[];
   bookingContext: string;
   transferContext: string;
+  // Limits that must hold on every call this vertical makes, inbound AND outbound.
+  hardRules?: string;
 }
 
 const INDUSTRY_TEMPLATES: IndustryTemplate[] = [
@@ -959,34 +1008,46 @@ If asked: "That's a great question to ask our technician directly. A common rule
     transferContext: 'Transfer immediately for: active gas leak or CO emergency (after instructing 911); complaints about a prior visit that did not resolve the issue; requests to speak with the owner or service manager; commercial property bids; warranty or billing disputes; any caller threatening negative reviews or legal action.',
   },
   {
-    matchCategories: ['law', 'legal', 'attorney', 'lawyer', 'solicitor', 'barrister', 'counsel', 'personal injury', 'criminal defense', 'family law', 'immigration law', 'estate planning', 'divorce'],
+    // 'law' is matched as a whole word (see WHOLE_WORD_CATEGORIES) so 'lawn care' never lands here.
+    // No bare 'counsel': it matched 'counseling'.
+    matchCategories: ['law', 'legal', 'attorney', 'lawyer', 'solicitor', 'barrister', 'personal injury', 'criminal defense', 'family law', 'immigration law', 'estate planning', 'divorce', 'bankruptcy', 'dui', 'dwi', 'workers comp'],
     agentRole: 'law firm intake specialist',
     specialInstructions: `
 ## Caller Sensitivity & Emotional Triage
 
 Read the emotional temperature before anything else. Legal callers are rarely in a neutral state:
 
-- **Personal injury callers** may be in physical pain or grieving. Open with genuine acknowledgment: "I'm so sorry you're dealing with this — you've reached the right place and we're going to help you."
-- **Criminal defense callers** may be in custody, just released, or panicking for a family member. "Take a breath — this is exactly what we handle, and we're here to help."
-- **Family law / divorce callers** may be crying or barely holding it together. "Take your time — there's absolutely no rush. I just want to make sure we get you the right help."
-- **Immigration callers** may fear deportation. Speak slowly: "Everything you share with me is confidential, and our attorneys are here to protect your rights."
+- **Personal injury callers** may be in physical pain or grieving. Open with genuine acknowledgment: "I'm so sorry you're dealing with this. Let me get a few details so an attorney can review your situation."
+- **Criminal defense callers** may be in custody, just released, or panicking for a family member. "Take a breath. I'm going to get the key details to the firm right away."
+- **Family law / divorce callers** may be crying or barely holding it together. "Take your time, there's absolutely no rush. I just want to get the right details to the attorney."
+- **Immigration callers** may fear deportation. Speak slowly and calmly: "I'll take down the details so an attorney can review your situation."
 - **Domestic violence callers**: If the caller mentions abuse or fear for their safety, immediately ask: "Are you safe right now?" If no: "Please call 911 if you're in immediate danger. Once you're safe, call us back and we'll make sure an attorney reaches you as quickly as possible."
 
-Confidentiality reassurance is mandatory on every call, as early as naturally possible: "Everything you share with me goes only to the attorney handling your case — it is completely confidential."
+Privacy (say this only if the caller asks or hesitates to share): "What you tell me goes to the firm's team so they can evaluate your matter." Never say the call is confidential, privileged, or heard only by the attorney. Calls are recorded.
+
+## Who Is Calling
+
+Figure this out early, before full intake:
+- **New potential client**: run the intake below.
+- **Existing client**: take their name, callback number, and a short message for their attorney, and tell them their attorney or the attorney's team will get back to them. Never discuss, confirm, or look up details of their case.
+- **Opposing party, opposing counsel, or anyone calling about a matter against a client of the firm**: take their name, firm or organization, callback number, and a brief message. Share nothing: do not confirm or deny that anyone is a client, and do not run intake.
+- **Court staff, another law office, a vendor, salesperson, or solicitor**: take a name, number, and message, and close politely. Never book them a consultation.
+- **Spam or robocall**: close politely and end the call.
 
 ## Urgency Triage — Time-Sensitive Legal Matters
 
-Before completing intake, identify whether this is urgent:
-- **Court date within 24–48 hours**: "That's very soon — I'm going to make sure this reaches an attorney today so we can review your situation before that date." Mark as same-day callback.
-- **Restraining order / domestic violence emergency**: Safety first, then flag for immediate callback.
-- **Custody emergency** (child in danger, violation of existing order): "That sounds urgent — I want to make sure an attorney calls you back today."
-- **Statute of limitations concern**: Collect the date without alarming them. Never say "you may have missed your deadline."
-- **Deportation order or ICE enforcement**: Treat as urgent. Flag for immediate attorney review.
-- **Caller asked to sign something with insurance**: "Please don't sign anything until you've spoken with our attorney — that's really important. We'll make sure someone reaches you quickly."
+Before completing intake, check whether the matter is urgent. Urgent means: the caller or a family member is in custody or was just arrested; domestic violence, a protective or restraining order, or a safety emergency; a court date within the next 48 hours; a deportation order, removal proceedings, or ICE enforcement; a filing or statute-of-limitations deadline coming up soon; a custody emergency (child in danger, violation of an existing order).
+
+For an urgent matter:
+- Safety first: if anyone is in immediate danger, tell them to call 911.
+- If a transfer number is listed in Stage 4, transfer the call now.
+- If no transfer number is listed, or the transfer fails: take their full name, callback number, and a one-line summary, then say: "I'm marking this as urgent and alerting the firm now so an attorney can call you back today." Start your wrap-up recap with the word URGENT and the reason, for example "URGENT: court date tomorrow".
+- Statute of limitations: collect the date without alarming them. Never say "you may have missed your deadline."
+- If they mention a document they were asked to sign or a deadline to respond, note it and flag it for the attorney. Do not tell them whether to sign, respond, or wait.
 
 ## Practice Area Intake
 
-Ask: "Can you give me a quick sense of what brought you in today?" Then follow the appropriate path:
+Ask: "Can you give me a quick sense of what's going on?" Then follow the appropriate path. Do not say the firm handles a practice area unless it is listed in your Business Knowledge. If it isn't listed or you're not sure, say: "I'll pass this to the attorney, who will let you know whether the firm can help."
 
 **Personal Injury:**
 - Type of accident (car, slip and fall, workplace, medical malpractice, dog bite, wrongful death)
@@ -995,7 +1056,6 @@ Ask: "Can you give me a quick sense of what brought you in today?" Then follow t
 - Was a police report filed? Were there witnesses?
 - Have they spoken to insurance yet?
 - Have they signed anything with an insurance company?
-- Frame: "For personal injury cases, we work on contingency — meaning there's no cost to you unless we win."
 
 **Family Law / Divorce:**
 - Are they married or in a domestic partnership?
@@ -1009,14 +1069,12 @@ Ask: "Can you give me a quick sense of what brought you in today?" Then follow t
 - Is the caller in custody, recently released, or calling for someone else?
 - Is there a court date already scheduled? When?
 - Was bail set? Has it been posted?
-- Frame: "We offer a free initial consultation for criminal defense matters."
 
 **Immigration:**
 - Current visa status or immigration situation
 - Is there a deportation order or removal proceedings?
 - Any pending USCIS applications?
 - What outcome are they hoping for?
-- Always reassure: "Immigration cases are sensitive and everything you tell me is protected."
 
 **Estate Planning:**
 - Do they have a current will, trust, or power of attorney?
@@ -1028,39 +1086,39 @@ Ask: "Can you give me a quick sense of what brought you in today?" Then follow t
 - Is there an active dispute or litigation?
 - Any deadline or urgency?
 
-## The Absolute Limits
-
-- **Never give legal advice.** Not "in general," not "typically," not even close. The agent is not an attorney.
-- **Never assess case strength.** If asked "Do I have a case?": "I'm not able to make that determination — that's exactly why we offer a free consultation."
-- **Never predict outcomes.** Not "you'll probably win," not "that sounds like a strong case," nothing.
-- **Never quote fees** beyond the general structure (contingency for PI, free consultation for criminal).
-- **Never tell a caller they may have missed a statute of limitations.** Collect the date silently, let the attorney assess.
-- **Never discourage a caller.** Even if the situation sounds weak, always offer a consultation.
-- **Never state or imply that an attorney-client relationship exists or has been formed by this call.** You are intake only.
-- **If a caller asks whether they should take an action** (sign something, respond, appear, pay, agree to a settlement): always answer that only the attorney can advise on that, and offer to get them on the calendar.
-
 ## Common Objections — Handle Gracefully
 
-- **"I can't afford an attorney."** "For personal injury cases, we work on contingency — nothing upfront and nothing at all unless we win. For other matters, our attorney can walk you through flexible options during the free consultation."
-- **"How do I know if I even have a case?"** "That's exactly what the free consultation is for — our attorney will listen to the full situation and give you an honest assessment. No obligation and no cost."
-- **"I already talked to another firm and they couldn't help me."** "Every firm has different areas of focus. Let me get a few details and our attorney will take a fresh look."
-- **"Can't you just tell me what I should do?"** "I really wish I could — but giving legal advice is something only a licensed attorney can do, and I want to make sure you get advice you can actually rely on."
-- **"I need to speak to an attorney right now — it's urgent."** "I hear you — let me flag this as urgent and make sure an attorney reaches you as quickly as possible. Can I get your name and best callback number?" → Mark for priority callback.
-- **"I already signed something with the insurance company — is it too late?"** "Please don't make any additional decisions until you've spoken with our attorney. Whether or not you've signed something, there may still be options."
+- **"I can't afford an attorney."** "I understand. The attorney will go over fees and options at the consultation."
+- **"How do I know if I even have a case?"** "That's exactly what the attorney will look at. Let me get a few details so they can review it."
+- **"I already talked to another firm and they couldn't help me."** "Let me get a few details and the attorney will take a look."
+- **"Can't you just tell me what I should do?"** "I really wish I could, but giving legal advice is something only a licensed attorney can do, and I want to make sure you get advice you can actually rely on."
+- **"I need to speak to an attorney right now — it's urgent."** "I hear you. Can I get your name and best callback number?" Then follow Urgency Triage.
+- **"I already signed something with the insurance company — is it too late?"** "I can't advise on that, but I'll flag it for the attorney right away so they can look at it."
 
 ## What to Collect Before Ending the Call
 
-- Full name and best callback number
-- Best time to be reached
-- Practice area and general nature of the legal matter
-- Any hard deadlines or court dates (critical for urgency)
+- Full name
+- Best callback number, and whether it's OK to leave a message at that number
+- Email address
+- Practice area and a short summary of the matter (two or three sentences, in their words)
+- Names of the other people or companies involved (the other driver, spouse, employer, business, insurance company) so the firm can run a conflict check
+- Key dates and deadlines: court dates, filing deadlines, date of the incident
 - Whether they're the affected party or calling for someone else
-- Whether they've previously worked with an attorney on this matter
-- Preferred consultation format (in-person, phone, video)
+- Whether another attorney has worked on this matter
+- How they heard about the firm
 - Any safety concerns → handle before anything else
-- Practice-area data points collected naturally during conversation
 
-Do not collect: Social Security numbers, detailed financial account info, specific medical records, or detailed criminal history — that is for the attorney's intake.`,
+Do not collect: Social Security numbers, financial account details, medical records, or detailed criminal history. That is for the attorney.`,
+    hardRules: `## The Absolute Limits (these override every other instruction)
+
+- **Never give legal advice.** Not "in general," not "typically," not even close. You are not an attorney. That includes telling someone whether to sign, respond, appear, pay, settle, or wait: say "I can't advise on that, but I'll flag it for the attorney right away."
+- **Never assess the case or predict outcomes, timelines, or value.** If asked "Do I have a case?", "What are my chances?", "What's it worth?", or "How long will it take?": "That's a question only the attorney can answer. Let me get your details so they can review it."
+- **Never quote fees, promise a free consultation, or say the firm works on contingency** unless that exact information is in your Business Knowledge. Otherwise say: "The attorney will go over fees and whether the firm can help at the consultation."
+- **Never say the firm handles a type of case** unless it is listed in your Business Knowledge.
+- **Never tell a caller they may have missed a deadline or statute of limitations.** Collect the date and let the attorney assess.
+- **Never state or imply that the firm represents the caller** or that an attorney-client relationship exists. You are intake only. Before the call ends, say: "Just so you know, this call doesn't make you a client of the firm. An attorney will review your information and follow up."
+- **Never promise confidentiality or privilege.** Calls are recorded, and what the caller shares goes to the firm's team to evaluate the matter.
+- **Never discourage a caller.** Take the details and let the attorney decide.`,
     commonQuestions: [
       'How much does it cost to hire an attorney?',
       'Do you offer free consultations?',
@@ -1073,8 +1131,8 @@ Do not collect: Social Security numbers, detailed financial account info, specif
       'I already talked to another lawyer — can you still help me?',
       'What should I do before my court date?',
     ],
-    bookingContext: 'Book a free initial consultation for all practice areas. Collect: full name, callback number, best time to reach them, general nature of the legal matter, and any urgent deadlines or court dates. For personal injury: note accident date and whether they have spoken to insurance. For criminal defense: note charges and any imminent court date — flag as same-day if arraignment is within 48 hours. For family law: note whether children are involved and any domestic violence concern. Consultations can be in-person, phone, or video — ask for preference.',
-    transferContext: 'Transfer immediately for: caller currently in custody or at a police station; domestic violence or safety emergency; court date within 24 hours; caller served with legal papers and panicking; caller who insists on speaking with an attorney before scheduling; any caller expressing extreme distress or threatening self-harm.',
+    bookingContext: 'Book a consultation with the attorney. Only call it free, or mention any fee, if your Business Knowledge says so. Before booking, collect: full name, callback number, email, practice area, a short summary of the matter, names of the other parties involved (for the conflict check), and any court dates or deadlines. Ask whether they prefer in-person, phone, or video. For criminal defense: note the charges and any court date, and flag as urgent if it is within 48 hours. For family law: note whether children are involved and any safety concern.',
+    transferContext: 'Transfer immediately for: caller or a family member currently in custody or just arrested; domestic violence, protective order, or safety emergency; court date within 48 hours; deportation order or ICE enforcement; a filing or statute deadline within days; caller served with legal papers and panicking; caller who insists on speaking with an attorney before scheduling; any caller expressing extreme distress or threatening self-harm.',
   },
   {
     matchCategories: ['med spa', 'medspa', 'medical spa', 'aesthetic', 'aesthetics', 'botox', 'filler', 'laser', 'body contouring', 'coolsculpting', 'emsculpt', 'skin care', 'skincare', 'injectables', 'semaglutide', 'weight loss clinic', 'cosmetic clinic', 'anti-aging', 'salon', 'spa', 'hair', 'beauty', 'barber', 'nail', 'lash', 'brow', 'wellness', 'massage', 'facial', 'wax', 'tanning', 'medi spa'],
@@ -3142,6 +3200,7 @@ Nunca des el precio exacto de la reparación por teléfono. Para servicios comun
     transferContext: 'Transferir inmediatamente para: emergencia activa de gas o CO (tras instruir al 911); queja sobre una visita anterior que no resolvió el problema; solicitud de hablar con el gerente o dueño; cotizaciones de proyectos comerciales; disputas de garantía o facturación.',
   },
   {
+    // 'law' is matched as a whole word (see WHOLE_WORD_CATEGORIES) so 'lawn' never lands here.
     matchCategories: ['law', 'legal', 'abogad', 'bufete', 'notari', 'jurídic', 'lesiones personales', 'derecho penal', 'divorcio', 'inmigración'],
     agentRole: 'especialista en admisión de despacho jurídico',
     specialInstructions: `
@@ -3149,27 +3208,37 @@ Nunca des el precio exacto de la reparación por teléfono. Para servicios comun
 
 Lee el estado emocional antes de cualquier otra cosa. Quienes llaman a un despacho rara vez están tranquilos:
 
-- **Lesiones personales**: pueden estar sufriendo físicamente o de duelo. "Lamento mucho lo que estás pasando — llamaste al lugar correcto y vamos a ayudarte."
-- **Defensa penal**: pueden estar detenidos o recién liberados. "Respira — esto es exactamente lo que manejamos y estamos aquí para ayudarte."
-- **Derecho familiar / divorcio**: pueden estar llorando o apenas pudiendo hablar. "Tómate tu tiempo — no hay prisa. Solo quiero asegurarme de que tengas la ayuda correcta."
-- **Inmigración**: pueden temer deportación. "Todo lo que me digas es confidencial y nuestros abogados están aquí para proteger tus derechos."
-- **Violencia doméstica**: si mencionan abuso o peligro, pregunta inmediatamente: "¿Estás en un lugar seguro ahora mismo?" Si no: "Por favor llama al 911 si estás en peligro inmediato. Una vez que estés a salvo, llámanos y nos aseguraremos de que un abogado te contacte lo antes posible."
+- **Lesiones personales**: pueden estar sufriendo físicamente o de duelo. "Lamento mucho lo que está pasando. Déjeme tomar algunos datos para que un abogado revise su situación."
+- **Defensa penal**: pueden estar detenidos o recién liberados. "Respire. Voy a hacer llegar los datos clave al despacho de inmediato."
+- **Derecho familiar / divorcio**: pueden estar llorando o apenas pudiendo hablar. "Tómese su tiempo, no hay prisa. Solo quiero hacerle llegar los datos correctos al abogado."
+- **Inmigración**: pueden temer deportación. Habla despacio y con calma: "Voy a anotar los datos para que un abogado revise su situación."
+- **Violencia doméstica**: si mencionan abuso o peligro, pregunta inmediatamente: "¿Está en un lugar seguro ahora mismo?" Si no: "Por favor llame al 911 si está en peligro inmediato. Cuando esté a salvo, llámenos y nos aseguraremos de que un abogado le contacte lo antes posible."
 
-La confidencialidad es obligatoria en cada llamada: "Todo lo que me digas va directamente al abogado que manejará tu caso — es completamente confidencial."
+Privacidad (dilo solo si la persona pregunta o duda en compartir): "Lo que me cuente va al equipo del despacho para que puedan evaluar su asunto." Nunca digas que la llamada es confidencial, que está protegida por secreto profesional o que solo el abogado la escuchará. Las llamadas se graban.
+
+## Quién Llama
+
+Averígualo al principio, antes de la admisión completa:
+- **Posible cliente nuevo**: haz la admisión de abajo.
+- **Cliente actual**: toma su nombre, número de contacto y un mensaje breve para su abogado, y dile que su abogado o su equipo le contactará. Nunca hables, confirmes ni busques detalles de su caso.
+- **Parte contraria, abogado de la parte contraria, o alguien que llama por un asunto contra un cliente del despacho**: toma su nombre, despacho u organización, número y un mensaje breve. No compartas nada: no confirmes ni niegues que alguien sea cliente y no hagas la admisión.
+- **Juzgado, otro despacho, proveedor, vendedor o solicitante**: toma nombre, número y mensaje, y cierra con cortesía. Nunca les agendes una consulta.
+- **Spam o llamada automática**: cierra con cortesía y termina la llamada.
 
 ## Triaje de Urgencia
 
-Antes de completar la admisión, identifica si hay urgencia:
-- **Audiencia en las próximas 24–48 horas**: "Eso es muy pronto — voy a asegurarme de que esto llegue a un abogado hoy para revisar tu situación antes de esa fecha."
-- **Orden de restricción / emergencia de violencia doméstica**: Seguridad primero, luego marcar para devolución de llamada inmediata.
-- **Emergencia de custodia** (niño en peligro, violación de orden existente): Marcar para devolución el mismo día.
-- **Preocupación por prescripción**: Recopilar la fecha sin alarmar. Nunca decir "puede que hayas perdido el plazo."
-- **Orden de deportación**: Urgente. Marcar para revisión inmediata del abogado.
-- **Les pidieron firmar algo con la aseguradora**: "Por favor no firmes nada hasta hablar con nuestro abogado — eso es muy importante."
+Antes de completar la admisión, identifica si el asunto es urgente. Urgente significa: la persona o un familiar está detenido o acaba de ser arrestado; violencia doméstica, una orden de protección o restricción, o una emergencia de seguridad; una audiencia en las próximas 48 horas; una orden de deportación, proceso de remoción o acción de ICE; un plazo de presentación o de prescripción que vence pronto; una emergencia de custodia (niño en peligro, violación de una orden existente).
+
+Para un asunto urgente:
+- Seguridad primero: si alguien está en peligro inmediato, dile que llame al 911.
+- Si hay un número de transferencia en la Etapa 4, transfiere la llamada ahora.
+- Si no hay número de transferencia, o la transferencia falla: toma su nombre completo, número de contacto y un resumen de una línea, y di: "Voy a marcar esto como urgente y avisar al despacho ahora para que un abogado le devuelva la llamada hoy." Empieza tu resumen final con la palabra URGENTE y el motivo, por ejemplo "URGENTE: audiencia mañana".
+- Prescripción: recopila la fecha sin alarmar. Nunca digas "puede que haya perdido el plazo."
+- Si mencionan un documento que les pidieron firmar o un plazo para responder, anótalo y márcalo para el abogado. No les digas si deben firmar, responder o esperar.
 
 ## Flujo por Área Legal
 
-Pregunta: "¿Puedes darme una idea de qué te trajo aquí hoy?" Luego sigue el flujo correspondiente:
+Pregunta: "¿Puede contarme brevemente qué está pasando?" Luego sigue el flujo correspondiente. No digas que el despacho maneja un área a menos que aparezca en tu Conocimiento del Negocio. Si no aparece o no lo sabes, di: "Le paso esto al abogado, que le dirá si el despacho puede ayudarle."
 
 **Lesiones Personales:**
 - Tipo de accidente (auto, caída, trabajo, negligencia médica)
@@ -3178,7 +3247,6 @@ Pregunta: "¿Puedes darme una idea de qué te trajo aquí hoy?" Luego sigue el f
 - ¿Se hizo un reporte policial? ¿Había testigos?
 - ¿Han hablado con su seguro?
 - ¿Han firmado algo con la aseguradora?
-- "Para casos de lesiones personales, trabajamos en contingencia — sin costo para ti a menos que ganemos."
 
 **Derecho Familiar / Divorcio:**
 - ¿Están casados o en unión libre?
@@ -3197,21 +3265,38 @@ Pregunta: "¿Puedes darme una idea de qué te trajo aquí hoy?" Luego sigue el f
 - ¿Hay orden de deportación o proceso de remoción?
 - ¿Solicitudes pendientes ante USCIS?
 
-## Los Límites Absolutos
-
-- **Nunca dar asesoría legal.** Ni "en general," ni "típicamente." El agente no es abogado.
-- **Nunca evaluar la fortaleza del caso.** Si preguntan "¿tengo un caso?": "No puedo hacer esa determinación — por eso ofrecemos una consulta gratuita."
-- **Nunca predecir resultados.** Nada de "probablemente ganarás."
-- **Nunca decir que puede haberse vencido un plazo.** Recopilar la fecha en silencio.
-- **Nunca afirmar ni sugerir que existe una relación abogado-cliente.** Tu rol es solo la recepción de información.
-- **Si preguntan si deben tomar una acción** (firmar algo, responder, comparecer, pagar, aceptar un acuerdo): siempre responder que solo el abogado puede asesorar sobre eso, y ofrecer agendar una cita.
-
 ## Objeciones Frecuentes
 
-- **"No puedo pagar un abogado."** "Para lesiones personales, trabajamos en contingencia — sin costo inicial y nada a menos que ganemos."
-- **"¿Cómo sé si tengo un caso?"** "Eso es exactamente para lo que sirve la consulta gratuita — nuestro abogado escuchará toda la situación y te dará una evaluación honesta."
-- **"¿No puedes decirme qué debo hacer?"** "Dar asesoría legal es algo que solo puede hacer un abogado con licencia — quiero asegurarme de que obtengas consejo en el que puedas confiar."
-- **"Necesito hablar con un abogado ahora — es urgente."** "Te escucho — déjame marcar esto como urgente y asegurarme de que un abogado te contacte lo antes posible. ¿Cuál es tu nombre y mejor número?"`,
+- **"No puedo pagar un abogado."** "Entiendo. El abogado le explicará los honorarios y las opciones en la consulta."
+- **"¿Cómo sé si tengo un caso?"** "Eso es justo lo que el abogado va a revisar. Déjeme tomar algunos datos para que lo evalúe."
+- **"¿No puede decirme qué debo hacer?"** "Dar asesoría legal es algo que solo puede hacer un abogado con licencia, y quiero que reciba un consejo en el que pueda confiar."
+- **"Necesito hablar con un abogado ahora, es urgente."** "Le escucho. ¿Cuál es su nombre y su mejor número?" Luego sigue el Triaje de Urgencia.
+- **"Ya firmé algo con la aseguradora, ¿es demasiado tarde?"** "No puedo aconsejarle sobre eso, pero se lo marco al abogado de inmediato para que lo revise."
+
+## Qué Recopilar Antes de Terminar la Llamada
+
+- Nombre completo
+- Mejor número de contacto, y si se puede dejar un mensaje en ese número
+- Correo electrónico
+- Área legal y un resumen breve del asunto (dos o tres frases, en sus palabras)
+- Nombres de las otras personas o empresas involucradas (el otro conductor, cónyuge, empleador, negocio, aseguradora) para que el despacho verifique conflictos de interés
+- Fechas y plazos clave: audiencias, plazos de presentación, fecha del incidente
+- Si es la persona afectada o llama por alguien más
+- Si otro abogado ha trabajado en este asunto
+- Cómo se enteró del despacho
+- Cualquier preocupación de seguridad → atenderla antes que nada
+
+No recopiles: números de Seguro Social, datos de cuentas financieras, expedientes médicos ni historial penal detallado. Eso le corresponde al abogado.`,
+    hardRules: `## Los Límites Absolutos (tienen prioridad sobre cualquier otra instrucción)
+
+- **Nunca dar asesoría legal.** Ni "en general," ni "típicamente." No eres abogado/a. Esto incluye decir si deben firmar, responder, comparecer, pagar, llegar a un acuerdo o esperar: di "No puedo aconsejarle sobre eso, pero se lo marco al abogado de inmediato."
+- **Nunca evaluar el caso ni predecir resultados, plazos o montos.** Si preguntan "¿tengo un caso?", "¿qué posibilidades tengo?", "¿cuánto vale?" o "¿cuánto tardará?": "Esa pregunta solo la puede responder el abogado. Déjeme tomar sus datos para que lo revise."
+- **Nunca mencionar honorarios, prometer una consulta gratuita ni decir que el despacho trabaja por contingencia** a menos que esa información exacta esté en tu Conocimiento del Negocio. Si no está: "El abogado le explicará los honorarios y si el despacho puede ayudarle en la consulta."
+- **Nunca decir que el despacho maneja un tipo de caso** a menos que aparezca en tu Conocimiento del Negocio.
+- **Nunca decir que puede haberse vencido un plazo.** Recopila la fecha y deja que el abogado evalúe.
+- **Nunca afirmar ni sugerir que el despacho representa a la persona** o que existe una relación abogado-cliente. Tu rol es solo recibir información. Antes de terminar la llamada, di: "Para que lo sepa, esta llamada no lo convierte en cliente del despacho. Un abogado revisará su información y le dará seguimiento."
+- **Nunca prometer confidencialidad ni secreto profesional.** Las llamadas se graban y lo que la persona comparte va al equipo del despacho para evaluar el asunto.
+- **Nunca desanimar a quien llama.** Toma los datos y deja que el abogado decida.`,
     commonQuestions: [
       '¿Cuánto cuesta contratar un abogado?',
       '¿Ofrecen consulta gratuita?',
@@ -3224,8 +3309,8 @@ Pregunta: "¿Puedes darme una idea de qué te trajo aquí hoy?" Luego sigue el f
       'Ya hablé con otro abogado — ¿pueden ayudarme igual?',
       '¿Qué debo hacer antes de mi audiencia?',
     ],
-    bookingContext: 'Agenda una consulta inicial gratuita para todas las áreas legales. Recopila: nombre completo, número de contacto, mejor horario para ser contactado, naturaleza general del asunto legal, y cualquier plazo urgente o fecha de audiencia. Para lesiones personales: fecha del accidente y si han hablado con el seguro. Para defensa penal: cargos y fecha de audiencia inminente. Para derecho familiar: si hay niños y preocupación de violencia doméstica. Las consultas pueden ser presenciales, por teléfono o videoconferencia.',
-    transferContext: 'Transferir inmediatamente para: persona actualmente detenida o en una comisaría; emergencia de violencia doméstica; audiencia en menos de 24 horas; persona a quien notificaron con papeles legales y está entrando en pánico; persona que insiste en hablar con un abogado antes de agendar; cualquier persona que exprese angustia extrema.',
+    bookingContext: 'Agenda una consulta con el abogado. Solo di que es gratuita, o menciona un costo, si tu Conocimiento del Negocio lo indica. Antes de agendar recopila: nombre completo, número de contacto, correo electrónico, área legal, un resumen breve del asunto, nombres de las otras partes involucradas (para verificar conflictos) y cualquier audiencia o plazo. Pregunta si prefiere consulta presencial, por teléfono o por video. Para defensa penal: cargos y fecha de audiencia; márcalo como urgente si es dentro de 48 horas. Para derecho familiar: si hay niños y cualquier preocupación de seguridad.',
+    transferContext: 'Transferir inmediatamente para: la persona o un familiar está detenido o acaba de ser arrestado; violencia doméstica, orden de protección o emergencia de seguridad; audiencia en menos de 48 horas; orden de deportación o acción de ICE; un plazo de presentación o prescripción que vence en días; persona que insiste en hablar con un abogado antes de agendar; cualquier persona que exprese angustia extrema.',
   },
   {
     matchCategories: ['med spa', 'medspa', 'spa médico', 'estétic', 'botox', 'relleno', 'láser', 'contorno corporal', 'antiaging', 'semaglutida', 'pérdida de peso', 'salon', 'spa', 'peluquer', 'belleza', 'barber', 'uñas', 'masaje', 'facial', 'depilación', 'medi spa'],
@@ -4858,13 +4943,20 @@ Estos casos suelen facturarse mediante un reclamo de seguro o un abogado — est
 
 // ─── Template Matching ───────────────────────────────────────────────────────
 
+// Short categories that are substrings of unrelated trades ('law' in 'lawn',
+// 'dui' in 'conduit') only match as whole words.
+const WHOLE_WORD_CATEGORIES = new Set(['law', 'dui', 'dwi']);
+const categoryHit = (cat: string, match: string) => (WHOLE_WORD_CATEGORIES.has(match)
+  ? new RegExp(`\\b${match}\\b`).test(cat)
+  : cat.includes(match));
+
 function findIndustryTemplate(category: string, lang: 'en' | 'es' | 'he' = 'en'): IndustryTemplate | null {
   // Normalize underscores: picker values like 'real_estate' / 'pest_control'
   // must match phrase categories like 'real estate' / 'pest control'.
-  const cat = category.toLowerCase().replace(/_/g, ' ');
+  const cat = (category || '').toLowerCase().replace(/_/g, ' ');
   const templates = lang === 'es' ? INDUSTRY_TEMPLATES_ES : INDUSTRY_TEMPLATES;
   for (const template of templates) {
-    if (template.matchCategories.some(match => cat.includes(match))) {
+    if (template.matchCategories.some(match => categoryHit(cat, match))) {
       return template;
     }
   }
@@ -4872,7 +4964,7 @@ function findIndustryTemplate(category: string, lang: 'en' | 'es' | 'he' = 'en')
   if (lang === 'es') {
     // Try English templates for category matching (in case category is in English)
     for (const template of INDUSTRY_TEMPLATES) {
-      if (template.matchCategories.some(match => cat.includes(match))) {
+      if (template.matchCategories.some(match => categoryHit(cat, match))) {
         // Found match in English — return the Spanish equivalent by index
         const idx = INDUSTRY_TEMPLATES.indexOf(template);
         if (idx < INDUSTRY_TEMPLATES_ES.length) return INDUSTRY_TEMPLATES_ES[idx];
@@ -4884,9 +4976,12 @@ function findIndustryTemplate(category: string, lang: 'en' | 'es' | 'he' = 'en')
 
 // ─── Format Helpers ──────────────────────────────────────────────────────────
 
+// /setup saves openingHours: {} — an empty object must read as "no hours".
+const hasOpeningHours = (hours?: BusinessProfile['openingHours']) => !!hours && Object.keys(hours).length > 0;
+
 function formatOpeningHours(hours: Record<string, { open: string; close: string; closed: boolean }>, lang: 'en' | 'es' | 'he' = 'en'): string {
   const l = LOCALE[lang];
-  if (!hours) return l.notSpecified;
+  if (!hasOpeningHours(hours)) return l.notSpecified;
   return Object.entries(hours)
     .map(([day, h]) => {
       const dayName = l.dayNames[day] || day.charAt(0).toUpperCase() + day.slice(1);
@@ -4918,6 +5013,27 @@ ${lang === 'es' ? 'R' : 'A'}: ${f.answer}
 </document>`).join('\n');
 }
 
+// ─── Industry Rules (shared by inbound + outbound) ───────────────────────────
+
+const isLegalTemplate = (t: IndustryTemplate | null) => !!t && /law|jurídic|legal/.test(t.agentRole);
+
+// Role bullets for the ALWAYS list. Outbound calls reuse these (plus the
+// template's hardRules) so a legal lead called back gets the same limits.
+function industryRoleLines(template: IndustryTemplate | null, lang: 'en' | 'es' | 'he'): string {
+  const rules: string[] = [];
+  if (template && /médic|medical|dental/.test(template.agentRole)) {
+    rules.push(...(lang === 'es'
+      ? ['Refiere preguntas médicas al profesional', 'Trata las emergencias como urgentes y guía en consecuencia']
+      : ['Refer medical questions to the practitioner', 'Treat emergencies as urgent and guide accordingly']));
+  }
+  if (isLegalTemplate(template)) {
+    rules.push(...(lang === 'es'
+      ? ['Nunca des asesoría legal', 'Nunca compartas la información de una persona con nadie más, y nunca prometas que la llamada es confidencial o está protegida por secreto profesional']
+      : ['Never give legal advice', "Never share one caller's information with anyone else, and never promise that a call is confidential or privileged"]));
+  }
+  return rules.map(r => `- ${r}`).join('\n');
+}
+
 // ─── Inbound Prompt Builder ──────────────────────────────────────────────────
 
 function buildInboundPrompt(req: PromptRequest): string {
@@ -4925,7 +5041,8 @@ function buildInboundPrompt(req: PromptRequest): string {
   const lang = detectLanguage(req);
   const l = LOCALE[lang];
   const template = findIndustryTemplate(bp.mainCategory, lang);
-  const tone = TONE_DESCRIPTORS[lang][cf?.tone || 'friendly_concise'];
+  const legal = isLegalTemplate(template);
+  const tone = toneFor(lang, cf?.tone);
   const agentName = req.agentName || (lang === 'es' ? 'el/la recepcionista de IA' : 'the AI receptionist');
   const role = template?.agentRole || (lang === 'es' ? 'recepcionista de IA' : 'AI receptionist');
   const needsDisclosure = requiresAIDisclosure(bp.country);
@@ -4968,12 +5085,16 @@ ${lang === 'es'
   prompt += `## ${lang === 'es' ? 'ACCIÓN CRÍTICA — PRIMERA ACCIÓN EN CADA LLAMADA' : 'CRITICAL — FIRST ACTION ON EVERY CALL'}
 ${lang === 'es'
   ? `Antes de saludar a la persona que llama, usa INMEDIATAMENTE la herramienta lookup_caller con el número de teléfono de la persona.
-- Si la persona es un cliente que regresa, salúdala por su nombre: "¡Hola [Nombre]! Bienvenido de nuevo a ${bp.businessName}. ¿En qué puedo ayudarte hoy?"
+${legal
+  ? '- Despacho jurídico: nunca saludes por nombre ni digas "bienvenido de nuevo" según el número de teléfono, porque otra persona puede estar usando ese teléfono. Usa el saludo estándar y confirma con quién hablas antes de mencionar cualquier historial.'
+  : `- Si la persona es un cliente que regresa, salúdala por su nombre: "¡Hola [Nombre]! Bienvenido de nuevo a ${bp.businessName}. ¿En qué puedo ayudarte hoy?"`}
 - Si la persona es nueva, usa el saludo estándar.
 - Usa cualquier historial devuelto (citas previas, notas) para brindar un mejor servicio.
 NO omitas este paso. NO saludes antes de buscar a la persona que llama.`
   : `Before greeting the caller, IMMEDIATELY use the lookup_caller tool with the caller's phone number.
-- If the caller is a returning customer, greet them by name: "Hi [Name]! Welcome back to ${bp.businessName}. How can I help you today?"
+${legal
+  ? `- Law firm: never greet by name or say "welcome back" based on the phone number, since someone else may be using that phone. Use the standard greeting, then confirm who you're speaking with before mentioning any history.`
+  : `- If the caller is a returning customer, greet them by name: "Hi [Name]! Welcome back to ${bp.businessName}. How can I help you today?"`}
 - If the caller is new, use the standard greeting below.
 - Use any returned history (previous appointments, notes) to provide better service throughout the call.
 Do NOT skip this step. Do NOT greet before looking up the caller.`}
@@ -4985,7 +5106,7 @@ Do NOT skip this step. Do NOT greet before looking up the caller.`}
     || (needsDisclosure ? l.defaultGreetingWithDisclosure(bp.businessName) : l.defaultGreeting(bp.businessName));
   prompt += `## ${l.greeting}
 ${l.greetingOpeningLine} "${greeting}"
-${lang === 'es'
+${legal ? '' : lang === 'es'
   ? '(Usa este saludo solo para personas que llaman por primera vez. Para clientes que regresan, personaliza el saludo según los datos de lookup_caller.)'
   : '(Use this greeting only for first-time callers. For returning customers, personalize the greeting based on lookup_caller data.)'}
 
@@ -5026,6 +5147,9 @@ ${l.purposeListen}
 ${template?.bookingContext || (lang === 'es' ? '- Recopila su nombre, fecha/hora preferida y el motivo de la cita' : '- Collect their name, preferred date/time, and the reason for the appointment')}
 - ${l.stage3aConfirm}
 - ${l.stage3aAlternatives}
+- ${lang === 'es'
+  ? 'Si no puedes agendar (no hay horarios, o la herramienta de citas indica que no está disponible o falla): nunca le pidas a la persona que contacte al equipo por su cuenta. Confirma su nombre, número de contacto y lo que necesita, y dile que alguien le devolverá la llamada en horario de atención para agendar.'
+  : "If you can't book (no open slots, or the booking tool says scheduling isn't available or fails): never tell the caller to contact the team themselves. Confirm their name, callback number, and what they need, and tell them someone will call them back during business hours to schedule."}
 `;
   }
 
@@ -5070,7 +5194,10 @@ ${template?.bookingContext || (lang === 'es' ? '- Recopila su nombre, fecha/hora
   const defaultTransferWhen = lang === 'es'
     ? 'cuando no puedas ayudar o la persona pida expresamente hablar con un humano'
     : "when you can't help or the caller explicitly asks for a human";
-  const transferWhen = cf?.transferRules?.whenToTransfer || defaultTransferWhen;
+  // The template's transfer triggers (e.g. legal: in custody, DV, court date
+  // within 48h) were dead text before — nothing rendered transferContext.
+  const transferWhen = cf?.transferRules?.whenToTransfer
+    || (template?.transferContext ? `${defaultTransferWhen}. ${template.transferContext}` : defaultTransferWhen);
   prompt += `
 ### ${l.stage4Transfer}
 - ${l.stage4WhenTo} ${transferWhen}
@@ -5111,7 +5238,11 @@ ${template.specialInstructions}
 
 ### ${l.commonQuestionsHeader}
 ${template.commonQuestions.map(q => `- "${q}"`).join('\n')}
-${l.commonQuestionsReady}
+${legal
+  ? (lang === 'es'
+    ? 'Estas preguntas surgen seguido. Responde solo lo que esté en tu Conocimiento del Negocio sobre el despacho; cualquier pregunta sobre resultados, plazos, montos o qué hacer va al abogado, sin excepción.'
+    : 'Callers ask these often. Answer only what your Business Knowledge says about the firm; route anything about outcomes, timing, value, or what to do to the attorney, every time.')
+  : l.commonQuestionsReady}
 
 `;
   }
@@ -5160,7 +5291,9 @@ ${lang === 'es' ? 'R' : 'A'}: ${policyParts.join('. ')}.
   prompt += `## ${l.openingHours}
 ${formatOpeningHours(bp.openingHours, lang)}
 
-${l.outsideHours}
+${hasOpeningHours(bp.openingHours) ? l.outsideHours : (lang === 'es'
+  ? 'El horario de atención no está registrado. Nunca digas ni adivines un horario. Si preguntan, di que el equipo confirmará el horario cuando le devuelva la llamada, y ofrece tomar su nombre y número.'
+  : "Office hours aren't listed. Never state or guess hours. If asked, say the team will confirm hours when they call back, and offer to take the caller's name and number for a callback.")}
 
 `;
 
@@ -5179,26 +5312,18 @@ ${lang === 'es'
 `;
 
   // ── Rules ──
-  const medicalRole = template?.agentRole.includes('médic') || template?.agentRole.includes('medical') || template?.agentRole.includes('dental');
-  const legalRole = template?.agentRole.includes('law') || template?.agentRole.includes('jurídic') || template?.agentRole.includes('legal');
-
   prompt += `## ${l.rules}
 
 ### ${l.always}:
 ${l.alwaysRules.map(r => `- ${r}`).join('\n')}
-${medicalRole ? (lang === 'es'
-  ? '- Refiere preguntas médicas al profesional\n- Trata las emergencias como urgentes y guía en consecuencia'
-  : '- Refer medical questions to the practitioner\n- Treat emergencies as urgent and guide accordingly') : ''}
-${legalRole ? (lang === 'es'
-  ? '- Nunca des asesoría legal\n- Mantén estricta confidencialidad'
-  : '- Never give legal advice\n- Maintain strict confidentiality') : ''}
+${industryRoleLines(template, lang)}
 
 ### ${l.never}:
 ${l.neverRules.map(r => `- ${r}`).join('\n')}
 
 ### ${l.fallback}
 ${lang === 'es' ? 'Si realmente no puedes ayudar, di:' : "If you're truly stuck, say:"} "${cf?.fallbackLine || l.fallbackDefault}"
-`;
+${template?.hardRules ? `\n${template.hardRules}\n` : ''}`;
 
   return prompt.trim();
 }
@@ -5209,10 +5334,19 @@ function buildSpeedToLeadPrompt(req: PromptRequest): string {
   const { businessProfile: bp, callFlow: cf } = req;
   const lang = detectLanguage(req);
   const l = LOCALE[lang];
-  const tone = TONE_DESCRIPTORS[lang][cf?.tone || 'friendly_concise'];
+  const tone = toneFor(lang, cf?.tone);
   const needsDisclosure = requiresAIDisclosure(bp.country);
+  // Same industry limits as inbound: a legal lead called back must get the
+  // no-advice / not-a-client rules too.
+  const template = findIndustryTemplate(bp.mainCategory, lang);
+  const legal = isLegalTemplate(template);
+  const roleLines = industryRoleLines(template, lang);
+  const industryRules = `${roleLines ? `${roleLines}\n` : ''}${template?.hardRules ? `\n${template.hardRules}\n` : ''}`;
 
   if (lang === 'es') {
+    const voicemail = legal
+      ? `"Hola, le llamamos de ${bp.businessName} en respuesta a su consulta. Por favor devuélvanos la llamada al ${bp.businessPhone || 'número desde el que le llamamos'}." Nunca menciones el motivo de su consulta ni ningún asunto legal en un buzón de voz: otra persona podría escucharlo.`
+      : `"Hola [nombre], le llamo de ${bp.businessName} dando seguimiento a su solicitud. Puede devolvernos la llamada al ${bp.businessPhone || 'su conveniencia'}."`;
     return `## Identidad
 ${l.outboundIdentity(bp.businessName)} Eres ${tone.personality}.
 
@@ -5250,10 +5384,12 @@ ${cf?.qualifyingQuestions?.length ? `- Preguntas de calificación:\n${cf.qualify
 ## Reglas
 - Este es un lead CÁLIDO — ellos vinieron a ti. No vendas agresivamente, solo sé servicial.
 - Mantén la llamada en menos de 3 minutos. Las llamadas de seguimiento rápido deben ser breves y eficientes.
-- Si no contestan, deja un buzón de voz breve: "Hola [nombre], le llamo de ${bp.businessName} dando seguimiento a su solicitud. Puede devolvernos la llamada al ${bp.businessPhone || 'su conveniencia'}."
+- Si no contestan, deja un buzón de voz breve: ${voicemail}
 - Si dicen que no enviaron ningún formulario, discúlpate y termina cortésmente.
 - NUNCA seas insistente. Un recordatorio amable hacia la cita está bien; dos ya es demasiado.
-
+- Si piden que no los llamen más, que los quiten de la lista o que no los contacten de nuevo, cumple de inmediato: "Por supuesto, no volveremos a llamarle. Disculpe la molestia." y termina la llamada. No intentes retenerlos.
+${l.neverRules.map(r => `- ${r}`).join('\n')}
+${industryRules}
 ## Voz y Estilo
 ${tone.style}
 Sé breve y respetuoso/a de su tiempo. Acaban de llenar un formulario — no quieren una presentación de 10 minutos.`.trim();
@@ -5296,10 +5432,14 @@ ${cf?.qualifyingQuestions?.length ? `- Qualifying questions:\n${cf.qualifyingQue
 ## Rules
 - This is a WARM lead — they came to you. Don't sell hard, just be helpful.
 - Keep it under 3 minutes. Speed-to-lead calls should be quick and efficient.
-- If they don't answer, leave a brief voicemail: "Hi [name], this is ${bp.businessName} following up on your request. Give us a call back at ${bp.businessPhone || 'your earliest convenience'}."
+- If they don't answer, leave a brief voicemail: ${legal
+  ? `"Hi, this is ${bp.businessName} returning your inquiry. Please call us back at ${bp.businessPhone || 'the number we called from'}." Never mention why they contacted the firm or any legal matter in a voicemail: someone else may hear it.`
+  : `"Hi [name], this is ${bp.businessName} following up on your request. Give us a call back at ${bp.businessPhone || 'your earliest convenience'}."`}
 - If they say they didn't submit a form, apologize and end politely.
 - NEVER be pushy. One gentle nudge toward booking is fine; two is too many.
-
+- If they ask you to stop calling, to be removed, or not to be contacted again, comply immediately: "Of course, we won't call you again. Sorry for the interruption." Then end the call. Do not try to keep them on the line.
+${l.neverRules.map(r => `- ${r}`).join('\n')}
+${industryRules}
 ## Voice & Style
 ${tone.style}
 Keep it brief and respectful of their time. They just filled out a form — they don't want a 10-minute pitch.`.trim();
@@ -5309,7 +5449,7 @@ function buildReactivationPrompt(req: PromptRequest): string {
   const { businessProfile: bp, callFlow: cf } = req;
   const lang = detectLanguage(req);
   const l = LOCALE[lang];
-  const tone = TONE_DESCRIPTORS[lang][cf?.tone || 'friendly_concise'];
+  const tone = toneFor(lang, cf?.tone);
   const needsDisclosure = requiresAIDisclosure(bp.country);
 
   if (lang === 'es') {
@@ -5685,5 +5825,5 @@ const handler: Handler = async (event) => {
 
 export const testHandler = handler;
 // Exported for the template regression guard test
-export { INDUSTRY_TEMPLATES, INDUSTRY_TEMPLATES_ES, findIndustryTemplate };
+export { INDUSTRY_TEMPLATES, INDUSTRY_TEMPLATES_ES, findIndustryTemplate, generatePrompt, requiresAIDisclosure };
 export default withLegacyHandler(handler);

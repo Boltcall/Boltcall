@@ -5,8 +5,7 @@ import { supabase } from '../lib/supabase';
 import { updateMetaDescription } from '../lib/utils';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-
-const CAL_BOOKING_URL = 'https://cal.com/boltcall';
+import { CAL_BOOKING_URL } from './BookCall';
 
 interface AuditPayload {
   vertical: string;
@@ -47,11 +46,8 @@ const AuditPage: React.FC = () => {
     let cancelled = false;
 
     (async () => {
-      const { data, error } = await supabase
-        .from('audit_sessions')
-        .select('id, business_name, vertical, audit_payload, booked_at')
-        .eq('id', id)
-        .maybeSingle();
+      const { data: rows, error } = await supabase.rpc('get_audit_session', { p_id: id });
+      const data = rows?.[0];
 
       if (cancelled) return;
       if (error || !data) { setStatus('not_found'); return; }
@@ -61,7 +57,7 @@ const AuditPage: React.FC = () => {
       setStatus('ready');
 
       // Mark viewed (best-effort, first view only matters for the metric).
-      supabase.from('audit_sessions').update({ viewed_at: new Date().toISOString() }).eq('id', id).then(() => {});
+      supabase.rpc('mark_audit_session', { p_id: id }).then(() => {});
     })();
 
     return () => { cancelled = true; };
@@ -69,7 +65,7 @@ const AuditPage: React.FC = () => {
 
   const handleBook = async () => {
     if (id) {
-      await supabase.from('audit_sessions').update({ booked_at: new Date().toISOString() }).eq('id', id);
+      await supabase.rpc('mark_audit_session', { p_id: id, p_booked: true });
       setBooked(true);
     }
     window.open(CAL_BOOKING_URL, '_blank', 'noopener,noreferrer');

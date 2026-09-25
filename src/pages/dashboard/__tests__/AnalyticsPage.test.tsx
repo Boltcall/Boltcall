@@ -165,13 +165,14 @@ describe('AnalyticsPage', () => {
     expect(tokenHeader).toBeInTheDocument();
   });
 
-  it('should render Activity Breakdown section', async () => {
+  // The admin-only Activity Breakdown card showed fake zeros for real customers and was removed.
+  it('does not render the removed Activity Breakdown card', async () => {
     render(
       <MemoryRouter>
         <AnalyticsPage />
       </MemoryRouter>
     );
-    const activitySection = await screen.findByText('Activity Breakdown');
-    expect(activitySection).toBeInTheDocument();
+    await screen.findByText('Token Usage');
+    expect(screen.queryByText('Activity Breakdown')).not.toBeInTheDocument();
   });
 });

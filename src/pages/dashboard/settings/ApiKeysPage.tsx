@@ -9,6 +9,7 @@ import ModalShell from '../../../components/ui/modal-shell';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { useTeamStore } from '../../../stores/teamStore';
+import { PermissionGate } from '../../../hooks/usePermission';
 import type { ApiKey } from '../../../types/team';
 
 const EXPIRY_OPTIONS = [
@@ -142,9 +143,11 @@ const ApiKeysPage: React.FC = () => {
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">API Keys</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage programmatic access to your workspace</p>
         </div>
-        <PopButton color="blue" onClick={() => { resetForm(); setShowCreateModal(true); }}>
-          <Plus className="w-4 h-4 mr-2" /> Create API Key
-        </PopButton>
+        <PermissionGate permission="settings.api_keys">
+          <PopButton color="blue" onClick={() => { resetForm(); setShowCreateModal(true); }}>
+            <Plus className="w-4 h-4 mr-2" /> Create API Key
+          </PopButton>
+        </PermissionGate>
       </div>
 
       {/* Security notice */}
@@ -238,13 +241,15 @@ const ApiKeysPage: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={() => { setSelectedKey(key); setShowRevokeModal(true); }}
-                    className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors duration-200 ease-out"
-                    title="Revoke key"
-                  >
-                    <Trash2 className="w-4 h-4 text-red-400 dark:text-red-500" />
-                  </button>
+                  <PermissionGate permission="settings.api_keys">
+                    <button
+                      onClick={() => { setSelectedKey(key); setShowRevokeModal(true); }}
+                      className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors duration-200 ease-out"
+                      title="Revoke key"
+                    >
+                      <Trash2 className="w-4 h-4 text-red-400 dark:text-red-500" />
+                    </button>
+                  </PermissionGate>
                 </div>
               </motion.div>
             ))}

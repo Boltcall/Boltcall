@@ -70,7 +70,7 @@ const Privacy: React.FC = () => {
               <ul className="list-disc list-inside space-y-1">
                 <li>Name, email address, phone number</li>
                 <li>Business name, address, industry, website</li>
-                <li>Payment and billing information (processed via Stripe — we do not store raw card data)</li>
+                <li>Payment and billing information (processed via PayPal — we do not store raw card data)</li>
                 <li>VAT number / business registration (ח.פ. / ע.מ.) for Israeli tax invoicing</li>
                 <li>Account credentials (passwords are hashed — never stored in plain text)</li>
               </ul>
@@ -109,7 +109,7 @@ const Privacy: React.FC = () => {
                 <tr><td className="p-3">Provide and maintain the AI receptionist platform</td><td className="p-3">Contract performance</td></tr>
                 <tr><td className="p-3">Process payments and issue tax invoices</td><td className="p-3">Contract &amp; legal obligation</td></tr>
                 <tr><td className="p-3">Answer inbound calls, send SMS / WhatsApp</td><td className="p-3">Contract &amp; consent (Israeli Communications Law)</td></tr>
-                <tr><td className="p-3">Improve AI models using anonymised data</td><td className="p-3">Legitimate interest</td></tr>
+                <tr><td className="p-3">Improve AI models (only with your explicit consent — never by default)</td><td className="p-3">Consent</td></tr>
                 <tr><td className="p-3">Send marketing communications</td><td className="p-3">Explicit opt-in consent (Israeli anti-spam law)</td></tr>
                 <tr><td className="p-3">Comply with tax, anti-fraud, and legal obligations</td><td className="p-3">Legal obligation</td></tr>
               </tbody>
@@ -129,10 +129,12 @@ const Privacy: React.FC = () => {
                 <tr><td className="p-3">Supabase (AWS)</td><td className="p-3">Database &amp; auth</td><td className="p-3">US East (us-east-1)</td></tr>
                 <tr><td className="p-3">Retell AI</td><td className="p-3">AI voice agent &amp; call recordings</td><td className="p-3">US (AWS)</td></tr>
                 <tr><td className="p-3">Twilio</td><td className="p-3">Phone numbers, SMS, call routing</td><td className="p-3">US / Ireland</td></tr>
-                <tr><td className="p-3">Stripe</td><td className="p-3">Payment processing</td><td className="p-3">US / Ireland</td></tr>
+                <tr><td className="p-3">PayPal</td><td className="p-3">Payment processing</td><td className="p-3">US / Ireland</td></tr>
                 <tr><td className="p-3">Brevo</td><td className="p-3">Transactional email</td><td className="p-3">EU (Germany)</td></tr>
                 <tr><td className="p-3">ElevenLabs</td><td className="p-3">AI voice synthesis</td><td className="p-3">US</td></tr>
                 <tr><td className="p-3">OpenAI</td><td className="p-3">Language model inference</td><td className="p-3">US</td></tr>
+                <tr><td className="p-3">Anthropic</td><td className="p-3">Language model inference (lead summaries, reply drafting)</td><td className="p-3">US</td></tr>
+                <tr><td className="p-3">Cal.com</td><td className="p-3">Appointment booking &amp; calendar sync</td><td className="p-3">US</td></tr>
                 <tr><td className="p-3">Google Analytics / GTM</td><td className="p-3">Web analytics (consent-gated)</td><td className="p-3">US</td></tr>
                 <tr><td className="p-3">Microsoft Clarity</td><td className="p-3">Public-site heatmaps and session behavior analytics (consent-gated)</td><td className="p-3">US</td></tr>
                 <tr><td className="p-3">Greeninvoice</td><td className="p-3">Israeli tax invoice issuance</td><td className="p-3">Israel</td></tr>
@@ -150,11 +152,11 @@ const Privacy: React.FC = () => {
             <table className="w-full text-gray-700">
               <tbody className="divide-y divide-gray-100">
                 <tr><td className="py-2 font-medium w-1/2">Account information</td><td className="py-2">Account closure + 7 years (Israeli tax records requirement)</td></tr>
-                <tr><td className="py-2 font-medium">Call recordings &amp; transcripts</td><td className="py-2">2 years, then permanently deleted</td></tr>
+                <tr><td className="py-2 font-medium">Call recordings &amp; transcripts</td><td className="py-2">Until you delete them or close your account, then deleted within 30 days</td></tr>
                 <tr><td className="py-2 font-medium">Lead &amp; conversation data</td><td className="py-2">Until you delete or account closes</td></tr>
                 <tr><td className="py-2 font-medium">Payment records</td><td className="py-2">7 years (Israeli Bookkeeping Regulations)</td></tr>
-                <tr><td className="py-2 font-medium">Technical logs</td><td className="py-2">1 year</td></tr>
-                <tr><td className="py-2 font-medium">Consent records</td><td className="py-2">3 years from last interaction (Israeli anti-spam law)</td></tr>
+                <tr><td className="py-2 font-medium">Technical logs</td><td className="py-2">Until account closes, then deleted within 30 days</td></tr>
+                <tr><td className="py-2 font-medium">Consent records</td><td className="py-2">Until account closes, then deleted within 30 days</td></tr>
               </tbody>
             </table>
           </div>

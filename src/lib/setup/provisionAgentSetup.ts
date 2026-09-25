@@ -84,8 +84,40 @@ function locationCacheKey(userId: string) {
   return `currentLocationId:${userId}`;
 }
 
+// The prompt builder keys AI/recording disclosure off an ISO-2 code, so free
+// text ('United States', 'USA', 'U.S.') must never be saved as-is.
+// ponytail: mirrors normalizeCountryCode in netlify/functions/retell-agents.ts
+// (separate runtime): ISO-2 passes through, 'canada' -> 'ca', else 'us'.
+export function normalizeCountryCode(raw?: string | null): string {
+  const c = (raw || '').trim().toLowerCase();
+  if (/^[a-z]{2}$/.test(c)) return c;
+  return c === 'canada' ? 'ca' : 'us';
+}
+
+// Setup tone -> generate-agent-prompt TONE_DESCRIPTORS key. That map has no
+// 'confident_direct' (an unknown key throws there), so it rides on 'formal'.
+const PROMPT_TONE: Record<string, string> = {
+  friendly_concise: 'friendly_concise',
+  formal: 'formal',
+  confident_direct: 'formal',
+};
+
+const SETUP_FAILED_MESSAGE =
+  "We couldn't finish setting up your agent. Please try again in a minute, or email support@boltcall.org and we'll get you live.";
+
+// Callers show error.message to the customer — never raw server/DB text.
 export async function provisionAgentSetup(userId: string, setup: PendingAgentSetup) {
-  const country = setup.country?.trim() || 'us';
+  try {
+    return await runProvisioning(userId, setup);
+  } catch (error) {
+    reportHandledError('provisionAgentSetup', error, { userId });
+    throw new Error(SETUP_FAILED_MESSAGE);
+  }
+}
+
+async function runProvisioning(userId: string, setup: PendingAgentSetup) {
+  const country = normalizeCountryCode(setup.country);
+  const ownerName = setup.ownerName?.trim() || null;
 
   // Idempotency: a failed run leaves pendingAgentSetup in localStorage and the
   // documented recovery is "refresh and try again" — reuse anything already
@@ -97,6 +129,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     // No workspace yet — mint both workspace + profile.
     const created = await createUserWorkspaceAndProfile(userId, {
       business_name: setup.businessName,
+      owner_name: ownerName,
       website_url: setup.websiteUrl.trim() || undefined,
       main_category: setup.industry,
       country,
@@ -114,6 +147,7 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     // uniqueness. Just attach the profile to the existing workspace.
     businessProfile = await createBusinessProfile({
       business_name: setup.businessName,
+      owner_name: ownerName,
       website_url: setup.websiteUrl.trim() || undefined,
       main_category: setup.industry,
       country,
@@ -180,7 +214,8 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
         city: null,
         state: null,
         postal_code: null,
-        country,
+        // Address field: Settings > General selects countries by display name.
+        country: new Intl.DisplayNames(['en'], { type: 'region' }).of(country.toUpperCase()) || country,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         is_primary: true,
         is_active: true,
@@ -217,8 +252,11 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
     },
     // Pain choice reaches the prompt builder via callFlow so the agent's
     // "primary focus" line is aligned with what the user actually cares
-    // about — see PAIN_FOCUS_LINES in generate-agent-prompt.ts.
-    callFlow: setup.painPoint ? { painPoint: setup.painPoint } : undefined,
+    // about — see PAIN_FOCUS_LINES in generate-agent-prompt.ts. Tone is the
+    // agent style picked in setup (both agents share it).
+    callFlow: { painPoint: setup.painPoint, tone: PROMPT_TONE[setup.tone] },
+    // Same voice for the receptionist and the follow-up agent.
+    voiceId: setup.voiceId,
   };
 
   let primaryResult: { kb_folder_id?: string } | undefined;
@@ -227,7 +265,6 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
       ...commonAgentData,
       agentType: 'inbound',
       agentName: `${setup.businessName} AI Receptionist`,
-      voiceId: setup.voiceId,
       transferNumber: setup.transferNumber.trim(),
     });
   }
@@ -276,7 +313,8 @@ export async function provisionAgentSetup(userId: string, setup: PendingAgentSet
       if (purchaseRes.ok && purchaseData.phone_number) {
         phone.number = purchaseData.phone_number;
       } else {
-        phone.error = purchaseData.detail || purchaseData.error || `Phone purchase failed (${purchaseRes.status})`;
+        // error is the customer-facing sentence; detail is raw provider text.
+        phone.error = purchaseData.error || `Phone purchase failed (${purchaseRes.status})`;
         console.error('Phone purchase failed during /start launch:', phone.error);
       }
     }

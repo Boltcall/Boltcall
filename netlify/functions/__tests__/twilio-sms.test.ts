@@ -4,6 +4,7 @@ const mockOwnedNumbers = ['+15551234567'];
 const mockPhoneQuery: any = {
   select: vi.fn(() => mockPhoneQuery),
   eq: vi.fn(() => mockPhoneQuery),
+  in: vi.fn(async () => ({ data: [], error: null })), // sms_optouts: nobody opted out
   then: (resolve: any, reject: any) =>
     Promise.resolve({
       data: mockOwnedNumbers.map(phone_number => ({ phone_number })),
@@ -18,6 +19,7 @@ const mockSupabase = {
 vi.mock('../_shared/token-utils', () => ({
   deductTokens: vi.fn().mockResolvedValue({ success: true }),
   deductTokensBatch: vi.fn().mockResolvedValue({ success: true }),
+  hasTokenBalance: vi.fn().mockResolvedValue(true),
   getServiceSupabase: () => mockSupabase,
   TOKEN_COSTS: { sms_sent: 5 },
 }));

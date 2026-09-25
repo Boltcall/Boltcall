@@ -82,9 +82,81 @@ interface DeductResult {
 }
 
 /**
+ * Fail-closed pre-send check for billable provider sends: false when the row
+ * is missing, unreadable, or short. Deduct with deductTokens after the send.
+ */
+export async function hasTokenBalance(
+  userId: string,
+  cost: number,
+  supabaseOverride?: SupabaseClient
+): Promise<boolean> {
+  const supabase = supabaseOverride || getSupabase();
+  const { data, error } = await supabase
+    .from('token_balances')
+    .select('balance, bonus_balance')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error || !data) return false;
+  return (data.balance || 0) + (data.bonus_balance || 0) >= cost;
+}
+
+type DebitResult = DeductResult & { bonusDeduct: number; balanceDeduct: number };
+
+/**
+ * Debit `cost` from bonus_balance first, then balance. The UPDATE only lands
+ * if the balances are still what we read (compare-and-swap), so two concurrent
+ * debits can't both pass the check and clobber each other.
+ * ponytail: CAS + 3 retries; a deduct_tokens RPC is the upgrade if contention shows up.
+ */
+async function debitBalance(supabase: SupabaseClient, userId: string, cost: number): Promise<DebitResult> {
+  const fail = (error: string, remainingBalance = 0): DebitResult =>
+    ({ success: false, tokensDeducted: 0, remainingBalance, error, bonusDeduct: 0, balanceDeduct: 0 });
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data: balance, error: fetchError } = await supabase
+      .from('token_balances')
+      .select('balance, bonus_balance, tokens_used_this_period')
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !balance) return fail(fetchError?.message || 'No token balance found for user');
+
+    const totalAvailable = (balance.balance || 0) + (balance.bonus_balance || 0);
+    if (totalAvailable < cost) return fail('Insufficient token balance', totalAvailable);
+
+    const bonusDeduct = Math.min(balance.bonus_balance || 0, cost);
+    const balanceDeduct = cost - bonusDeduct;
+    const newBonusBalance = (balance.bonus_balance || 0) - bonusDeduct;
+    const newBalance = (balance.balance || 0) - balanceDeduct;
+
+    const { data: updated, error: updateError } = await supabase
+      .from('token_balances')
+      .update({
+        bonus_balance: newBonusBalance,
+        balance: newBalance,
+        tokens_used_this_period: (balance.tokens_used_this_period || 0) + cost,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId)
+      .eq('balance', balance.balance)
+      .eq('bonus_balance', balance.bonus_balance)
+      .select('user_id');
+
+    if (updateError) return fail(`Failed to update balance: ${updateError.message}`, totalAvailable);
+    if (updated?.length) {
+      return { success: true, tokensDeducted: cost, remainingBalance: newBalance + newBonusBalance, bonusDeduct, balanceDeduct };
+    }
+    // Lost the race to a concurrent debit — re-read and retry.
+  }
+  return fail('Token balance changed concurrently; deduction not applied');
+}
+
+/**
  * Deduct tokens from a user's balance in a Netlify function context.
  * Deducts from bonus_balance first, then from balance.
  * Also logs the transaction in token_transactions.
+ * Failures are returned (not thrown) and always logged here, so callers that
+ * ignore the result can't make a missed charge silent.
  */
 export async function deductTokens(
   userId: string,
@@ -96,57 +168,10 @@ export async function deductTokens(
 ): Promise<DeductResult> {
   const supabase = supabaseOverride || getSupabase();
 
-  // Get current balance
-  const { data: balance, error: fetchError } = await supabase
-    .from('token_balances')
-    .select('balance, bonus_balance, tokens_used_this_period')
-    .eq('user_id', userId)
-    .single();
-
-  if (fetchError || !balance) {
-    return {
-      success: false,
-      tokensDeducted: 0,
-      remainingBalance: 0,
-      error: fetchError?.message || 'No token balance found for user',
-    };
-  }
-
-  const totalAvailable = (balance.balance || 0) + (balance.bonus_balance || 0);
-  if (totalAvailable < cost) {
-    return {
-      success: false,
-      tokensDeducted: 0,
-      remainingBalance: totalAvailable,
-      error: 'Insufficient token balance',
-    };
-  }
-
-  // Deduct from bonus first, then balance
-  const bonusDeduct = Math.min(balance.bonus_balance || 0, cost);
-  const balanceDeduct = cost - bonusDeduct;
-
-  const newBonusBalance = (balance.bonus_balance || 0) - bonusDeduct;
-  const newBalance = (balance.balance || 0) - balanceDeduct;
-  const newTokensUsed = (balance.tokens_used_this_period || 0) + cost;
-
-  const { error: updateError } = await supabase
-    .from('token_balances')
-    .update({
-      bonus_balance: newBonusBalance,
-      balance: newBalance,
-      tokens_used_this_period: newTokensUsed,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('user_id', userId);
-
-  if (updateError) {
-    return {
-      success: false,
-      tokensDeducted: 0,
-      remainingBalance: totalAvailable,
-      error: `Failed to update balance: ${updateError.message}`,
-    };
+  const debit = await debitBalance(supabase, userId, cost);
+  if (!debit.success) {
+    console.error(`[token-utils] Deduction failed user=${userId} cost=${cost} category=${category}: ${debit.error}`);
+    return { success: false, tokensDeducted: 0, remainingBalance: debit.remainingBalance, error: debit.error };
   }
 
   // Log the transaction
@@ -157,8 +182,8 @@ export async function deductTokens(
     category,
     description,
     metadata: {
-      bonus_deducted: bonusDeduct,
-      balance_deducted: balanceDeduct,
+      bonus_deducted: debit.bonusDeduct,
+      balance_deducted: debit.balanceDeduct,
       ...(metadata || {}),
     },
   });
@@ -168,11 +193,7 @@ export async function deductTokens(
     // Non-fatal: balance was already deducted, just log the error
   }
 
-  return {
-    success: true,
-    tokensDeducted: cost,
-    remainingBalance: newBalance + newBonusBalance,
-  };
+  return { success: true, tokensDeducted: cost, remainingBalance: debit.remainingBalance };
 }
 
 /**
@@ -191,57 +212,11 @@ export async function deductTokensBatch(
   const totalCost = items.reduce((sum, item) => sum + item.cost, 0);
   const supabase = supabaseOverride || getSupabase();
 
-  // Get current balance
-  const { data: balance, error: fetchError } = await supabase
-    .from('token_balances')
-    .select('balance, bonus_balance, tokens_used_this_period')
-    .eq('user_id', userId)
-    .single();
-
-  if (fetchError || !balance) {
-    return {
-      success: false,
-      tokensDeducted: 0,
-      remainingBalance: 0,
-      error: fetchError?.message || 'No token balance found for user',
-    };
-  }
-
-  const totalAvailable = (balance.balance || 0) + (balance.bonus_balance || 0);
-  if (totalAvailable < totalCost) {
-    return {
-      success: false,
-      tokensDeducted: 0,
-      remainingBalance: totalAvailable,
-      error: 'Insufficient token balance for batch',
-    };
-  }
-
-  // Deduct from bonus first, then balance
-  const bonusDeduct = Math.min(balance.bonus_balance || 0, totalCost);
-  const balanceDeduct = totalCost - bonusDeduct;
-
-  const newBonusBalance = (balance.bonus_balance || 0) - bonusDeduct;
-  const newBalance = (balance.balance || 0) - balanceDeduct;
-  const newTokensUsed = (balance.tokens_used_this_period || 0) + totalCost;
-
-  const { error: updateError } = await supabase
-    .from('token_balances')
-    .update({
-      bonus_balance: newBonusBalance,
-      balance: newBalance,
-      tokens_used_this_period: newTokensUsed,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('user_id', userId);
-
-  if (updateError) {
-    return {
-      success: false,
-      tokensDeducted: 0,
-      remainingBalance: totalAvailable,
-      error: `Failed to update balance: ${updateError.message}`,
-    };
+  const debit = await debitBalance(supabase, userId, totalCost);
+  if (!debit.success) {
+    const error = debit.error === 'Insufficient token balance' ? 'Insufficient token balance for batch' : debit.error;
+    console.error(`[token-utils] Batch deduction failed user=${userId} cost=${totalCost}: ${error}`);
+    return { success: false, tokensDeducted: 0, remainingBalance: debit.remainingBalance, error };
   }
 
   // Log each transaction individually
@@ -262,9 +237,5 @@ export async function deductTokensBatch(
     console.error('Failed to log batch token transactions:', txError.message);
   }
 
-  return {
-    success: true,
-    tokensDeducted: totalCost,
-    remainingBalance: newBalance + newBonusBalance,
-  };
+  return { success: true, tokensDeducted: totalCost, remainingBalance: debit.remainingBalance };
 }

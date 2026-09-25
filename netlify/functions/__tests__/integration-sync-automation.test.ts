@@ -125,6 +125,37 @@ describe('integration-sync automation providers', () => {
     );
   });
 
+  it('rejects connect when the provider credential check fails (Integration Hub fake-Connected fix)', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({}),
+      text: async () => 'unauthorized',
+    } as any);
+
+    const res = await handler(makeEvent({ action: 'connect', provider: 'hubspot', apiKey: 'bad-token' }), {} as any);
+    const body = JSON.parse(res!.body);
+
+    expect(body.success).toBe(false);
+    expect(mockChain.insert).not.toHaveBeenCalled();
+    expect(mockChain.maybeSingle).not.toHaveBeenCalled();
+  });
+
+  it('skips credential validation for google_calendar connect (settings-merge save, not a fresh credential submit)', async () => {
+    mockChain.maybeSingle.mockResolvedValueOnce({ data: null, error: null }); // no existing integration row
+    mockChain.single.mockResolvedValueOnce({ data: { id: 'int-1', provider: 'google_calendar', is_connected: true }, error: null });
+
+    const res = await handler(makeEvent({
+      action: 'connect',
+      provider: 'google_calendar',
+      config: { sync_direction: 'two_way' }, // no access_token — would fail validation if it ran
+    }), {} as any);
+    const body = JSON.parse(res!.body);
+
+    expect(body.success).toBe(true);
+    expect(mockChain.insert).toHaveBeenCalled();
+  });
+
   it('tests Pipedrive OAuth user access', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,

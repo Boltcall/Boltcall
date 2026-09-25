@@ -385,7 +385,7 @@ const Comparisons: React.FC = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Trusted by 1,000+ local businesses &middot; No credit card required &middot; Cancel anytime
+            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             {[

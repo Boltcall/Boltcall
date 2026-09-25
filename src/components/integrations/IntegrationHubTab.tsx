@@ -15,6 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { PageSkeleton } from '../ui/loading-skeleton';
 import { authedFetch } from '../../lib/authedFetch';
+import { supabase } from '../../lib/supabase';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -302,18 +303,28 @@ const IntegrationHubTab: React.FC = () => {
   const [formWebhookUrl, setFormWebhookUrl] = useState('');
   const [formExtra, setFormExtra] = useState<Record<string, string>>({});
 
-  // Load saved integrations
+  // Load saved integrations. Cal.com is a special case: it connects via
+  // calcom-webhook.ts (registers a real Cal.com webhook), not integration-sync,
+  // so its connected state lives in business_features.reminders_config, not
+  // user_integrations. Merge it in so isConnected('calcom') reflects reality.
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'list', userId: user.id }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.integrations) setSavedIntegrations(data.integrations);
+    Promise.all([
+      authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list', userId: user.id }),
+      }).then(r => r.json()),
+      supabase.from('business_features').select('reminders_config').eq('user_id', user.id).single(),
+    ])
+      .then(([syncData, bf]) => {
+        const list: SavedIntegration[] = (syncData.integrations || []).filter((i: SavedIntegration) => i.provider !== 'calcom');
+        const calCfg = (bf.data?.reminders_config || {}) as Record<string, any>;
+        if (calCfg.cal_connected) {
+          list.push({ id: 'calcom', provider: 'calcom', is_connected: true, config: {}, last_sync_at: null, sync_count: 0 });
+        }
+        setSavedIntegrations(list);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -427,8 +438,51 @@ const IntegrationHubTab: React.FC = () => {
     }
   };
 
+  // Cal.com connects for real via calcom-webhook.ts, which registers a live
+  // webhook on Cal.com's API and writes business_features.reminders_config —
+  // the same place CalcomPage/RemindersPage read from. Routing this through
+  // the generic integration-sync path (like every other api_key integration)
+  // would silently "succeed" while never registering a webhook.
+  const handleCalcomConnect = async () => {
+    if (!user) return;
+    if (!formApiKey.trim()) {
+      showToast({ message: 'Cal.com API Key is required', variant: 'error' });
+      return;
+    }
+    setConnecting(true);
+    try {
+      const res = await authedFetch(`${FUNCTIONS_BASE}/calcom-webhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cal_api_key: formApiKey.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSavedIntegrations(prev => {
+          const existing = prev.findIndex(i => i.provider === 'calcom');
+          const newItem: SavedIntegration = { id: 'calcom', provider: 'calcom', is_connected: true, config: {}, last_sync_at: null, sync_count: 0 };
+          if (existing >= 0) {
+            const updated = [...prev];
+            updated[existing] = { ...updated[existing], is_connected: true };
+            return updated;
+          }
+          return [...prev, newItem];
+        });
+        showToast({ message: 'Cal.com connected!', variant: 'success' });
+        closePanel();
+      } else {
+        showToast({ message: data.error || 'Connection failed', variant: 'error' });
+      }
+    } catch {
+      showToast({ message: 'Connection failed', variant: 'error' });
+    } finally {
+      setConnecting(false);
+    }
+  };
+
   const handleConnect = async (integration: Integration) => {
     if (!user) return;
+    if (integration.id === 'calcom') return handleCalcomConnect();
 
     if (integration.type === 'api_key' && integration.apiLabel && !formApiKey.trim()) {
       showToast({ message: `${integration.apiLabel} is required`, variant: 'error' });
@@ -492,11 +546,15 @@ const IntegrationHubTab: React.FC = () => {
   const handleDisconnect = async (integration: Integration) => {
     if (!user) return;
     try {
-      await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'disconnect', userId: user.id, provider: integration.id }),
-      });
+      if (integration.id === 'calcom') {
+        await authedFetch(`${FUNCTIONS_BASE}/calcom-webhook`, { method: 'DELETE' });
+      } else {
+        await authedFetch(`${FUNCTIONS_BASE}/integration-sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'disconnect', userId: user.id, provider: integration.id }),
+        });
+      }
       setSavedIntegrations(prev =>
         prev.map(i => i.provider === integration.id ? { ...i, is_connected: false } : i)
       );
@@ -820,7 +878,7 @@ const IntegrationHubTab: React.FC = () => {
 
                       {/* Action buttons */}
                       <div className="space-y-3">
-                        {integration.type !== 'oauth' && (formApiKey || formWebhookUrl) && (
+                        {integration.type !== 'oauth' && integration.id !== 'calcom' && (formApiKey || formWebhookUrl) && (
                           <button
                             onClick={() => handleTest(integration)}
                             disabled={testing}

@@ -1,6 +1,7 @@
 // Analytics API — data fetching for the deep analytics dashboard
 
 import { supabase } from './supabase';
+import { getRetellCallHistory } from './retell';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -152,6 +153,85 @@ function getPreviousPeriod(filter: DateRangeFilter): DateRangeFilter {
     start: prevStart.toISOString().split('T')[0],
     end: prevEnd.toISOString().split('T')[0],
   };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Real per-workspace call + lead stats (Growth > Analytics)          */
+/*  Same agents -> retell-calls scoping CallHistoryPage/TodayGlance-    */
+/*  Card use — no admin-only aggregate, no dead `call_logs` table.     */
+/* ------------------------------------------------------------------ */
+
+export interface UserCallStats {
+  callsTotal: number;
+  callsHandled: number;
+  callsMissed: number;
+  successRate: number; // % of calls handled (not missed/errored)
+  avgDurationSeconds: number;
+  activeAgents: number;
+}
+
+// Matches MissedCallsPage/TodayGlanceCard's bucket: a connected call shorter
+// than this reads as an abandoned/missed contact, not a handled one.
+const MISSED_CALL_DURATION_MS = 15000;
+
+export async function fetchUserCallStats(userId: string, range: DateRangeFilter): Promise<UserCallStats> {
+  const { data: agents } = await supabase
+    .from('agents')
+    .select('retell_agent_id')
+    .eq('user_id', userId)
+    .not('retell_agent_id', 'is', null);
+
+  const agentIds = (agents || []).map((a) => a.retell_agent_id).filter(Boolean);
+  const empty: UserCallStats = { callsTotal: 0, callsHandled: 0, callsMissed: 0, successRate: 0, avgDurationSeconds: 0, activeAgents: agentIds.length };
+  if (agentIds.length === 0) return empty;
+
+  const { calls } = await getRetellCallHistory({
+    agentIds,
+    startDate: new Date(range.start),
+    endDate: new Date(range.end + 'T23:59:59'),
+    limit: 500,
+  });
+
+  let handled = 0;
+  let missed = 0;
+  let totalDurationMs = 0;
+  let durationCount = 0;
+
+  for (const call of calls) {
+    if (call.call_status === 'not_connected' || call.call_status === 'error') {
+      missed++;
+    } else if (call.call_status === 'ended') {
+      if (call.duration_ms != null && call.duration_ms < MISSED_CALL_DURATION_MS) {
+        missed++;
+      } else {
+        handled++;
+      }
+      if (call.duration_ms != null) {
+        totalDurationMs += call.duration_ms;
+        durationCount++;
+      }
+    }
+  }
+
+  const callsTotal = calls.length;
+  return {
+    callsTotal,
+    callsHandled: handled,
+    callsMissed: missed,
+    successRate: callsTotal > 0 ? Math.round((handled / callsTotal) * 100) : 0,
+    avgDurationSeconds: durationCount > 0 ? Math.round(totalDurationMs / durationCount / 1000) : 0,
+    activeAgents: agentIds.length,
+  };
+}
+
+export async function fetchUserLeadsCount(userId: string, range: DateRangeFilter): Promise<number> {
+  const { count } = await supabase
+    .from('leads')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', range.start)
+    .lte('created_at', range.end + 'T23:59:59');
+  return count ?? 0;
 }
 
 /* ------------------------------------------------------------------ */
