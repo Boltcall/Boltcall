@@ -166,7 +166,7 @@ async function sendResponseTimeReportEmail(to: string, latencyMs: number): Promi
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) throw new Error('BREVO_API_KEY not configured');
 
-  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org';
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noamj@boltcall.org';
   const fromName = process.env.BREVO_FROM_NAME || 'Boltcall';
   const seconds = (latencyMs / 1000).toFixed(1);
 

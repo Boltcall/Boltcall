@@ -240,7 +240,7 @@ const handler: Handler = async (event) => {
         const emailBody = {
           sender: {
             name: process.env.BREVO_FROM_NAME || 'Boltcall',
-            email: process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org',
+            email: process.env.BREVO_FROM_EMAIL || 'noamj@boltcall.org',
           },
           to: [{ email: msg.recipient_email }],
           subject: msg.subject || (msg.type === 'reminder' ? 'Appointment Reminder' : 'We\'d love your feedback'),

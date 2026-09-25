@@ -143,7 +143,7 @@ async function sendBrevoEmail(to: string, subject: string, htmlContent: string):
   const apiKey = process.env.BREVO_API_KEY;
   if (!apiKey) throw new Error('BREVO_API_KEY not configured');
 
-  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org';
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noamj@boltcall.org';
   const fromName = process.env.BREVO_FROM_NAME || 'Boltcall';
 
   const response = await fetch(`${BREVO_API_BASE}/smtp/email`, {

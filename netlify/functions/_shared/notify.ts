@@ -125,7 +125,7 @@ export async function alertOwner(
       method: 'POST',
       headers: { 'api-key': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
-        sender: { name: process.env.BREVO_FROM_NAME || 'Boltcall', email: process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org' },
+        sender: { name: process.env.BREVO_FROM_NAME || 'Boltcall', email: process.env.BREVO_FROM_EMAIL || 'noamj@boltcall.org' },
         to: [{ email: to }],
         subject,
         htmlContent: lines.map((l) => `<p>${escapeHtml(l)}</p>`).join(''),
