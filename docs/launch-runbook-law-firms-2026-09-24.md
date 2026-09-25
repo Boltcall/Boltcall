@@ -7,12 +7,8 @@ Nothing on this branch has been deployed, and the database migration has **not**
 
 ## 1. Before deploying (only you can do these)
 
-1. **Signup email (blocker).** Supabase has no custom SMTP. The built-in mailer sends 2 emails per hour and only to team members, so an outside law firm never gets its confirmation link.
-   - Brevo → SMTP & API → SMTP → generate an SMTP key.
-   - Supabase → Authentication → Emails → SMTP settings: host `smtp-relay.brevo.com`, port `587`, user = your Brevo SMTP login, password = the SMTP key, sender = a verified `@boltcall.org` address.
-   - Supabase → Authentication → Rate limits: raise "emails sent per hour" to 100 or more.
-   - Test: sign up with a personal Gmail and click the link.
-   - If SMTP can't be done today, the fallback is turning email confirmation off (Supabase → Auth → Providers → Email → "Confirm email"). That lets unverified emails in.
+1. **Signup email.** DONE 2026-09-25 without SMTP: Supabase Auth "Send Email Hook" → `netlify/functions/auth-send-email.ts` → Brevo API. Hook secret in Supabase is `v1,whsec_` + `hookSecretBase64()` (derived from `INTERNAL_API_SECRET`; rotating that secret means re-setting the hook secret).
+   - Still yours: **authenticate `boltcall.org` in Brevo** (Senders & Domains → add domain → put the DKIM/SPF/DMARC records in the Google/Squarespace DNS for boltcall.org). Until then only the single sender `noamj@boltcall.org` works, and Brevo rewrites its From to `@brevosend.com` (spam risk). `noreply@boltcall.org` is rejected outright, which is why every function now defaults to `noamj@boltcall.org`. After the domain is authenticated you can switch back to `noreply@` in code (the env is at the 4KB cap, avoid adding `BREVO_FROM_EMAIL`).
 2. **Backups.** The Supabase project is on the Free plan: no backups, no point-in-time recovery. Law-firm data needs the Pro plan ($25/mo) before real clients.
 3. **Netlify production env vars.**
    - Leave `RETELL_CUSTOM_LLM_ENABLED` and `V2_DEFAULT_ON` **unset**. New agents then use Retell's own LLM with tools, and new firms land on the classic dashboard.

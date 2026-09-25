@@ -133,7 +133,7 @@ const handler: Handler = async (event) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            sender: { name: 'Boltcall', email: process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org' },
+            sender: { name: 'Boltcall', email: process.env.BREVO_FROM_EMAIL || 'noamj@boltcall.org' },
             to: [{ email }],
             subject: `You've been invited to ${businessName || 'a Boltcall workspace'}`,
             htmlContent: `

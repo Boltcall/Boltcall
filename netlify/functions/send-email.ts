@@ -26,7 +26,7 @@ async function sendBrevoEmail(params: SendEmailParams): Promise<{ messageId: str
 
   // F121: From is always Boltcall's own verified Brevo sender — a caller can only
   // set a display name and reply-to, never the From address (phishing/spoofing guard).
-  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org';
+  const fromEmail = process.env.BREVO_FROM_EMAIL || 'noamj@boltcall.org';
   const fromName = params.fromName || process.env.BREVO_FROM_NAME || 'Boltcall';
 
   const body: Record<string, unknown> = {

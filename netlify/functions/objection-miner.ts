@@ -153,7 +153,7 @@ async function sendBrevoEmail(to: string, subject: string, htmlContent: string):
     body: JSON.stringify({
       sender: {
         name: process.env.BREVO_FROM_NAME || 'Boltcall',
-        email: process.env.BREVO_FROM_EMAIL || 'noreply@boltcall.org',
+        email: process.env.BREVO_FROM_EMAIL || 'noamj@boltcall.org',
       },
       to: [{ email: to }],
       subject,
