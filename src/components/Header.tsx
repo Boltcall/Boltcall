@@ -344,13 +344,23 @@ const Header: React.FC = () => {
           <div className="flex items-center rtl:flex-row-reverse">
             {/* Logo */}
             <Link to="/">
-              <div className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105">
+              <div className="group/logo relative flex items-center cursor-pointer motion-safe:transition-transform motion-safe:duration-200 motion-safe:hover:scale-105">
+                {/* one-shot spark on mount, behind the mark, never occludes it (opacity+transform only) */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-2 -z-10 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.45),transparent_70%)] blur-md opacity-0 motion-safe:animate-logo-spark"
+                />
+                {/* hover glow, opacity-only so it stays compositor-friendly */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-2 -z-10 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.4),transparent_70%)] blur-md opacity-0 transition-opacity duration-150 group-hover/logo:opacity-100"
+                />
                 <picture>
                   <source srcSet="/boltcall_full_logo.webp" type="image/webp" />
                   <img
                     src="/boltcall_full_logo.png"
                     alt="Boltcall - AI Receptionist, Follow Ups, Reminders"
-                    className={`h-[68px] w-auto -translate-y-[2.8px] transition-[filter] duration-200 ${isOverBlueBackground ? 'brightness-0 invert' : ''}`}
+                    className={`h-[68px] w-auto -translate-y-[2.8px] motion-safe:animate-logo-in transition-[filter] duration-200 ${isOverBlueBackground ? 'brightness-0 invert' : ''}`}
                     width="136"
                     height="68"
                     loading="eager"
