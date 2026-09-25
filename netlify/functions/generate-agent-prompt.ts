@@ -5387,6 +5387,8 @@ ${cf?.qualifyingQuestions?.length ? `- Preguntas de calificación:\n${cf.qualify
 - Si no contestan, deja un buzón de voz breve: ${voicemail}
 - Si dicen que no enviaron ningún formulario, discúlpate y termina cortésmente.
 - NUNCA seas insistente. Un recordatorio amable hacia la cita está bien; dos ya es demasiado.
+- Si piden que no los llamen más, que los quiten de la lista o que no los contacten de nuevo, cumple de inmediato: "Por supuesto, no volveremos a llamarle. Disculpe la molestia." y termina la llamada. No intentes retenerlos.
+${l.neverRules.map(r => `- ${r}`).join('\n')}
 ${industryRules}
 ## Voz y Estilo
 ${tone.style}
@@ -5435,6 +5437,8 @@ ${cf?.qualifyingQuestions?.length ? `- Qualifying questions:\n${cf.qualifyingQue
   : `"Hi [name], this is ${bp.businessName} following up on your request. Give us a call back at ${bp.businessPhone || 'your earliest convenience'}."`}
 - If they say they didn't submit a form, apologize and end politely.
 - NEVER be pushy. One gentle nudge toward booking is fine; two is too many.
+- If they ask you to stop calling, to be removed, or not to be contacted again, comply immediately: "Of course, we won't call you again. Sorry for the interruption." Then end the call. Do not try to keep them on the line.
+${l.neverRules.map(r => `- ${r}`).join('\n')}
 ${industryRules}
 ## Voice & Style
 ${tone.style}

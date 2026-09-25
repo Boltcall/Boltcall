@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
-import { useDashboardStore } from '../../stores/dashboardStore';
+import { getRetellCallHistory } from '../../lib/retell';
 import SectionCard from '../../components/dashboard/page/SectionCard';
 
 dayjs.extend(relativeTime);
@@ -26,13 +26,13 @@ type Decision = { id: string; summary: string; created_at: string };
 // pausable, with a visible account of what it knows and what it did.
 const YourAiOverview: React.FC = () => {
   const { user } = useAuth();
-  const { liveStats, callbackStats } = useDashboardStore();
   const [agent, setAgent] = useState<AgentRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [knows, setKnows] = useState<KnowsCounts>({ services: 0, faqs: 0, policies: 0, other: 0 });
   const [decisions, setDecisions] = useState<Decision[]>([]);
+  const [answeredToday, setAnsweredToday] = useState(0);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -72,11 +72,22 @@ const YourAiOverview: React.FC = () => {
     return () => { cancelled = true; };
   }, [user?.id]);
 
+  // Same per-workspace call source TodayGlanceCard uses — no admin-only
+  // aggregate, scoped to this agent's own retell_agent_id.
+  useEffect(() => {
+    if (!agent?.retell_agent_id) return;
+    let cancelled = false;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    getRetellCallHistory({ agentIds: [agent.retell_agent_id], startDate: todayStart, limit: 100 })
+      .then(({ calls }) => {
+        if (!cancelled) setAnsweredToday(calls.filter((c) => c.call_status === 'ended').length);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [agent?.retell_agent_id]);
+
   const isLive = !agent?.status || agent.status === 'active';
-  const answeredToday =
-    liveStats?.retell?.successful_calls_today ??
-    (callbackStats as { completed?: number } | null)?.completed ??
-    0;
 
   // Same persistence path as AgentDetailPage (direct agents update).
   // ponytail: Retell name sync skipped here — Personality tab does full sync.
