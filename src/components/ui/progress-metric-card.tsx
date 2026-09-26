@@ -252,8 +252,8 @@ export default function ProgressMetricCard({
 
       <div className={`pointer-events-none relative z-10 flex flex-1 flex-col ${sz.pad}`}>
         <div className="flex items-center justify-between gap-4">
-          <h3 className={`${sz.title} font-semibold tracking-tight text-foreground`}>{title}</h3>
-          <div className="flex items-center gap-3 text-[13px]">
+          <h3 className={`${sz.title} min-w-0 truncate font-semibold tracking-tight text-foreground`}>{title}</h3>
+          <div className="flex flex-shrink-0 items-center gap-3 text-[13px]">
             {displayPercent ? (
               <span className="flex items-center gap-1 font-medium" style={{ color: color.text }}>
                 <TrendIcon size={15} strokeWidth={2.5} />

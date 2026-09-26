@@ -476,7 +476,7 @@ const DashboardLayout: React.FC = () => {
            data-onboarding="sidebar"
            className={`fixed lg:static inset-y-0 left-0 z-[9999] transform transition-all duration-300 ease-in-out flex-shrink-0 ${
              sidebarCollapsed ? 'w-16' : 'w-64'
-           } ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} bg-white dark:bg-[#111114] rounded-2xl shadow-lg m-2 dashboard-sidebar lg:z-40 group/sidebar`}
+           } ${sidebarOpen ? 'translate-x-0' : '-translate-x-[calc(100%+0.5rem)] lg:translate-x-0'} bg-white dark:bg-[#111114] rounded-2xl shadow-lg m-2 dashboard-sidebar lg:z-40 group/sidebar`}
          >
           {/* Collapse/Expand toggle arrow — fixed position so it doesn't shift on collapse */}
           <button
