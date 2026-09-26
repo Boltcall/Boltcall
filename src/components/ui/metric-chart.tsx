@@ -70,6 +70,8 @@ export function MetricChart({
           <YAxis hide />
           <Tooltip
             cursor={{ fill: 'rgba(148, 163, 184, 0.08)' }}
+            allowEscapeViewBox={{ x: false, y: false }}
+            wrapperStyle={{ zIndex: 30 }}
             contentStyle={{
               borderRadius: 14,
               border: '1px solid rgba(148, 163, 184, 0.2)',
@@ -92,6 +94,8 @@ export function MetricChart({
           <YAxis hide />
           <Tooltip
             cursor={{ stroke: primary.color, strokeDasharray: '4 4' }}
+            allowEscapeViewBox={{ x: false, y: false }}
+            wrapperStyle={{ zIndex: 30 }}
             contentStyle={{
               borderRadius: 14,
               border: '1px solid rgba(148, 163, 184, 0.2)',

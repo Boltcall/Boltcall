@@ -106,7 +106,8 @@ export default function ProgressMetricCard({
   const sz = SIZES[size];
   // ponytail: no overflow-hidden here — clipped the chart tooltip on hover.
   // Decorative background below gets its own clipped layer instead.
-  const shell = `relative mx-auto flex ${sz.minH} w-full ${sz.maxW} flex-col rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`;
+  // hover/focus z-20 so the hovered card's tooltip paints above its neighbours.
+  const shell = `relative hover:z-20 focus-within:z-20 mx-auto flex ${sz.minH} w-full ${sz.maxW} flex-col rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`;
 
   const periods = periodOptions ?? DEFAULT_PERIODS;
   const [selectedLabel, setSelectedLabel] = useState(period);
