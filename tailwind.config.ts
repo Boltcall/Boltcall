@@ -109,18 +109,17 @@ const config: Config = {
         blob: "blob 2s ease-in-out infinite",
         "integration-scroll-left": "integration-scroll-left 30s linear infinite",
         "integration-scroll-right": "integration-scroll-right 30s linear infinite",
-        "logo-in": "logo-in 550ms cubic-bezier(0.16,1,0.3,1) 1 both",
-        "logo-spark": "logo-spark 550ms cubic-bezier(0.16,1,0.3,1) 1 both",
+        "logo-bolt-in": "logo-bolt-in 600ms cubic-bezier(0.16,1,0.3,1) both",
+        "logo-char-in": "logo-char-in 500ms cubic-bezier(0.16,1,0.3,1) both",
       },
       keyframes: {
-        "logo-in": {
-          "0%": { opacity: "0", transform: "translateY(6px) scale(0.94)" },
-          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        "logo-bolt-in": {
+          "0%": { opacity: "0", transform: "translateY(10px) scale(0.9) rotate(-6deg)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1) rotate(0)" },
         },
-        "logo-spark": {
-          "0%": { opacity: "0", transform: "scale(0.4)" },
-          "35%": { opacity: "0.9", transform: "scale(1.15)" },
-          "100%": { opacity: "0", transform: "scale(1.6)" },
+        "logo-char-in": {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
         aurora: {
           from: {
