@@ -5,7 +5,15 @@ import { X, FileText, Edit, Trash2, Save, Upload, Globe, PenTool, Plus, ChevronD
 import ModalShell from '../../components/ui/modal-shell';
 
 import { FileUpload } from '@/components/ui/file-upload';
-import CardTableWithPanel from '../../components/ui/CardTableWithPanel';
+import CardTableWithPanel, { columnsToGridTemplate } from '../../components/ui/CardTableWithPanel';
+
+const DOCUMENT_TABLE_COLUMNS = [
+  { key: 'name', label: 'Document Name', width: '25%' },
+  { key: 'content', label: 'Content Preview', width: '35%' },
+  { key: 'createdAt', label: 'Created', width: '15%' },
+  { key: 'updatedAt', label: 'Updated', width: '15%' },
+  { key: 'actions', label: 'Actions', width: '10%' }
+];
 import Card from '../../components/ui/Card';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -1455,17 +1463,11 @@ const KnowledgeBasePage: React.FC = () => {
           <CardTableWithPanel
             hideSearch={true}
             data={documents.filter(doc => doc.name.toLowerCase().includes(searchTerm.toLowerCase()) || doc.content.toLowerCase().includes(searchTerm.toLowerCase()))}
-            columns={[
-              { key: 'name', label: 'Document Name', width: '25%' },
-              { key: 'content', label: 'Content Preview', width: '35%' },
-              { key: 'createdAt', label: 'Created', width: '15%' },
-              { key: 'updatedAt', label: 'Updated', width: '15%' },
-              { key: 'actions', label: 'Actions', width: '10%' }
-            ]}
+            columns={DOCUMENT_TABLE_COLUMNS}
             renderRow={(doc) => (
-              <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-6">
+              <div className="flex flex-col gap-2 md:grid md:items-center md:gap-6" style={{ gridTemplateColumns: columnsToGridTemplate(DOCUMENT_TABLE_COLUMNS) }}>
                 <div className="flex items-center justify-between md:contents">
-                  <div className="flex items-center gap-3 md:flex-1 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"><FileText className="w-4 h-4 text-blue-600" /></div>
                     <div className="font-medium text-gray-900 truncate">{doc.name}</div>
                   </div>
@@ -1474,12 +1476,12 @@ const KnowledgeBasePage: React.FC = () => {
                     <button onClick={() => handleDeleteDocument(doc.id)} className="text-red-600 hover:text-red-900 transition-colors p-1 min-w-[44px] min-h-[44px] flex items-center justify-center"><Trash2 className="w-5 h-5" /></button>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600 md:flex-1 truncate">{doc.content.substring(0, 50)}...</div>
+                <div className="text-sm text-gray-600 truncate min-w-0">{doc.content.substring(0, 50)}...</div>
                 <div className="flex items-center gap-4 text-xs md:text-sm text-gray-500 md:contents">
-                  <div className="md:flex-1"><span className="md:hidden">Created: </span>{doc.createdAt.toLocaleDateString()}</div>
-                  <div className="md:flex-1"><span className="md:hidden">Updated: </span>{doc.updatedAt.toLocaleDateString()}</div>
+                  <div className="min-w-0"><span className="md:hidden">Created: </span>{doc.createdAt.toLocaleDateString()}</div>
+                  <div className="min-w-0"><span className="md:hidden">Updated: </span>{doc.updatedAt.toLocaleDateString()}</div>
                 </div>
-                <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+                <div className="hidden md:flex items-center gap-2 min-w-0">
                   <button onClick={() => handleEditDocument(doc)} className="text-blue-600 hover:text-blue-900 transition-colors"><Edit className="w-4 h-4" /></button>
                   <button onClick={() => handleDeleteDocument(doc.id)} className="text-red-600 hover:text-red-900 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
