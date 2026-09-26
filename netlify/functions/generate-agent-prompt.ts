@@ -4999,13 +4999,22 @@ function formatServices(services: Array<{ name: string; duration: number; price:
   if (!services?.length) return '';
   const l = LOCALE[lang];
   return services
-    .map((s, i) => `<document index="${i + 1}" title="${s.name}" category="services">
-${lang === 'es'
-  ? `P: ¿Cuánto cuesta ${s.name} y cuánto dura?
-R: ${s.name} dura ${s.duration} ${l.minutes} y cuesta $${s.price}.`
-  : `Q: How much does ${s.name} cost and how long does it take?
-A: ${s.name} takes ${s.duration} ${l.minutes} and costs $${s.price}.`}
-</document>`)
+    .map((s, i) => {
+      // Law-firm practice areas arrive with no price/duration (null after JSON);
+      // never render "$null" or invite fee talk the legal rules forbid.
+      const priced = Number.isFinite(Number(s.price)) && s.price !== null;
+      const timed = Number.isFinite(Number(s.duration)) && s.duration !== null;
+      const body = !priced && !timed
+        ? (lang === 'es' ? `El negocio ofrece: ${s.name}.` : `The business offers: ${s.name}.`)
+        : lang === 'es'
+          ? `P: ¿Cuánto cuesta ${s.name} y cuánto dura?
+R: ${s.name}${timed ? ` dura ${s.duration} ${l.minutes}` : ''}${timed && priced ? ' y' : ''}${priced ? ` cuesta $${s.price}` : ''}.`
+          : `Q: How much does ${s.name} cost and how long does it take?
+A: ${s.name}${timed ? ` takes ${s.duration} ${l.minutes}` : ''}${timed && priced ? ' and' : ''}${priced ? ` costs $${s.price}` : ''}.`;
+      return `<document index="${i + 1}" title="${s.name}" category="services">
+${body}
+</document>`;
+    })
     .join('\n');
 }
 
