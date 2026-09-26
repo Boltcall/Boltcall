@@ -85,6 +85,7 @@ const OPENING_STEP_PROMPTS: Record<OpeningStep, string> = {
   owner: SEED_GREETING,
   business: 'Great. Now tell me about the business we are setting up.',
   agent: 'Perfect. Now choose how your AI agent should sound and how it should handle new leads.',
+  practiceAreas: 'Which practice areas do you handle? (optional)',
 };
 
 const VOICE_OPTIONS = [
@@ -137,6 +138,23 @@ const INDUSTRY_OPTIONS = [
 
 const LAW_FIRM_NAME_PATTERN = /law|legal|attorney|esq\.?\b|pllc|llp/i;
 
+// Law firms are the one industry where "what services do you offer" doesn't
+// fit the wizard's generic services step — ask practice areas instead so the
+// agent prompt/KB knows what the firm handles. Chip labels double as the
+// service name written to setup.services (see submitOpeningStep).
+const PRACTICE_AREA_OPTIONS = [
+  'Personal injury',
+  'Family law',
+  'Criminal defense',
+  'Immigration',
+  'Estate planning',
+  'Employment',
+  'Business law',
+  'Real estate',
+  'Bankruptcy',
+  'Other',
+] as const;
+
 // F3: free-text country silently drops the AI-disclosure/recording notice
 // for anything but an exact ISO-2 code (see generate-agent-prompt.ts
 // requiresAIDisclosure). Use ISO-2 codes as values so downstream matching
@@ -174,7 +192,7 @@ function buildCountryOptions(): Array<{ value: string; label: string }> {
 
 const COUNTRY_OPTIONS = buildCountryOptions();
 
-type OpeningStep = 'owner' | 'business' | 'agent';
+type OpeningStep = 'owner' | 'business' | 'agent' | 'practiceAreas';
 
 function genId() {
   return 'm_' + Math.random().toString(36).slice(2, 10);
@@ -247,6 +265,9 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
   );
   const industryPrefilled = useRef(false);
   const [transferNumberDraft, setTransferNumberDraft] = useState<string>(restoredDrafts.transferNumber || '');
+  // Law-firm-only, optional — no draft persistence needed (matches voiceDraft/agentStyleDraft).
+  const [practiceAreasDraft, setPracticeAreasDraft] = useState<string[]>([]);
+  const [practiceAreaOtherDraft, setPracticeAreaOtherDraft] = useState('');
   const [playingVoiceId, setPlayingVoiceId] = useState<(typeof VOICE_OPTIONS)[number]['id'] | null>(
     null,
   );
@@ -523,7 +544,17 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
     }
     if (openingStep === 'agent') {
       advanceOpeningStep('business');
+      return;
     }
+    if (openingStep === 'practiceAreas') {
+      advanceOpeningStep('agent');
+    }
+  }
+
+  function togglePracticeArea(label: string) {
+    setPracticeAreasDraft((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
+    );
   }
 
   function stopVoicePreview() {
@@ -595,6 +626,29 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       return;
     }
 
+    if (openingStep === 'agent') {
+      if (!ownerNameDraft.trim() || !countryDraft.trim() || !businessNameDraft.trim() || !industryDraft) return;
+      const normalizedWebsite = normalizeOptionalWebsite(websiteDraft);
+      if (normalizedWebsite.error) {
+        setError(normalizedWebsite.error);
+        return;
+      }
+      setError(null);
+      // Law firms get one more optional step (practice areas) before deploy;
+      // every other industry finalizes here same as before.
+      if (industryDraft === 'law_firm') {
+        advanceOpeningStep('practiceAreas');
+        return;
+      }
+      finalizeAndDeploy();
+      return;
+    }
+
+    // openingStep === 'practiceAreas'
+    finalizeAndDeploy();
+  }
+
+  function finalizeAndDeploy() {
     const ownerName = ownerNameDraft.trim();
     const country = countryDraft.trim();
     const companyName = businessNameDraft.trim();
@@ -608,6 +662,16 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
     if (!ownerName || !country || !companyName || !industryDraft) return;
     const voice = VOICE_OPTIONS.find((option) => option.id === voiceDraft) ?? VOICE_OPTIONS[0];
     setError(null);
+    // Practice-area chips become named services (no price/duration — just
+    // tells the agent prompt/KB what the firm handles). NaN keeps
+    // provisionAgentSetup's Number.isFinite checks writing null instead of a
+    // fake $0 price.
+    const practiceAreaServices = [
+      ...practiceAreasDraft.filter((label) => label !== 'Other'),
+      ...(practiceAreasDraft.includes('Other') && practiceAreaOtherDraft.trim()
+        ? [practiceAreaOtherDraft.trim()]
+        : []),
+    ].map((name) => ({ name, duration: Number.NaN, price: Number.NaN }));
     savePendingAgentSetup({
       ownerName,
       businessName: companyName,
@@ -619,6 +683,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
       tone: agentStyleDraft,
       transferNumber: transferNumberDraft.trim(),
       createdAt: new Date().toISOString(),
+      ...(practiceAreaServices.length ? { services: practiceAreaServices } : {}),
     });
     sessionStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem(OPENING_DRAFTS_KEY);
@@ -952,6 +1017,46 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
               </div>
             )}
 
+            {openingStep === 'practiceAreas' && (
+              <div
+                className="space-y-4 opacity-0"
+                style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both' }}
+              >
+                <fieldset aria-label="Practice areas" className="grid gap-3 sm:grid-cols-3">
+                  <legend className="col-span-full text-sm font-semibold text-white/80">
+                    Practice areas <span className="font-normal text-white/50">(optional — skip if you'd rather set this up later)</span>
+                  </legend>
+                  {PRACTICE_AREA_OPTIONS.map((label) => (
+                    <button
+                      key={label}
+                      type="button"
+                      role="checkbox"
+                      aria-checked={practiceAreasDraft.includes(label)}
+                      onClick={() => togglePracticeArea(label)}
+                      className={cn(
+                        'rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
+                        practiceAreasDraft.includes(label)
+                          ? 'border-white bg-white/20 text-white shadow-[0_16px_50px_rgba(255,255,255,0.10)]'
+                          : 'border-white/25 bg-white/10 text-white/85 hover:bg-white/15',
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </fieldset>
+                {practiceAreasDraft.includes('Other') && (
+                  <Input
+                    id="v2-practice-area-other"
+                    aria-label="Other practice area"
+                    label="Other practice area"
+                    value={practiceAreaOtherDraft}
+                    onChange={(e) => setPracticeAreaOtherDraft(e.target.value)}
+                    className="w-full max-w-sm"
+                  />
+                )}
+              </div>
+            )}
+
             <div
               className="flex items-center gap-3 opacity-0"
               style={{ animation: 'v2SetupFieldFadeIn 700ms cubic-bezier(0.22, 1, 0.36, 1) 360ms both' }}
@@ -972,7 +1077,9 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                 disabled={!canContinueOpening || isStreaming || isFinalizing}
                 className={SETUP_BUTTON_PRIMARY}
               >
-                {openingStep === 'agent' ? 'Finish' : 'Continue'}
+                {openingStep === 'practiceAreas' || (openingStep === 'agent' && industryDraft !== 'law_firm')
+                  ? 'Finish'
+                  : 'Continue'}
               </button>
             </div>
           </div>

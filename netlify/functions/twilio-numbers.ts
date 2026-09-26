@@ -377,7 +377,38 @@ const handler: Handler = async (event) => {
 
       // Release a phone number
       if (postAction === 'release') {
-        const { sid } = body;
+        const { sid, phone_number } = body;
+
+        // Numbers bought through Retell are stored with twilio_sid 'retell_pool'
+        // and have no Twilio SID of their own: release them on Retell by number.
+        if (phone_number) {
+          if (!(await userOwnsPhoneNumber(userId, phone_number))) {
+            return { statusCode: 403, headers, body: JSON.stringify({ error: 'Not authorized to release this number' }) };
+          }
+          const serviceSupabase = createClient(
+            process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+            process.env.SUPABASE_SERVICE_KEY || '',
+          );
+          const { data: row } = await serviceSupabase
+            .from('phone_numbers')
+            .select('id, twilio_sid')
+            .eq('phone_number', phone_number)
+            .eq('user_id', userId)
+            .maybeSingle();
+          if (row?.twilio_sid === 'retell_pool') {
+            const retellResp = await fetch(`https://api.retellai.com/delete-phone-number/${encodeURIComponent(phone_number)}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${process.env.RETELL_API_KEY || ''}` },
+            });
+            // 404 = already gone on Retell; still clear our row.
+            if (!retellResp.ok && retellResp.status !== 404) {
+              return { statusCode: 502, headers, body: JSON.stringify({ error: `Release failed (${retellResp.status}). Please try again or contact support.` }) };
+            }
+            await serviceSupabase.from('phone_numbers').delete().eq('id', row.id);
+            return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+          }
+        }
+
         if (!sid) {
           return { statusCode: 400, headers, body: JSON.stringify({ error: 'sid required' }) };
         }

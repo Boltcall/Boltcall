@@ -9,6 +9,7 @@ import { PopButton } from '../../../components/ui/pop-button';
 import ModalShell from '../../../components/ui/modal-shell';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
+import { supabase } from '../../../lib/supabase';
 import { usePermission, PermissionGate } from '../../../hooks/usePermission';
 import { useTeamStore } from '../../../stores/teamStore';
 import { useUsageGate } from '../../../hooks/useUsageTracking';
@@ -82,7 +83,15 @@ const MembersPage: React.FC = () => {
     if (!user || membersLoading || members.length > 0) return;
     const seedOwner = async () => {
       try {
-        await inviteMember(user.email, 'owner', user.name || user.email.split('@')[0]);
+        // Same source as HomePage's greeting: business_profiles.owner_name
+        // beats user.name and the email-prefix fallback.
+        const { data: profile } = await supabase
+          .from('business_profiles')
+          .select('owner_name')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        const ownerName = profile?.owner_name?.trim() || user.name || user.email.split('@')[0];
+        await inviteMember(user.email, 'owner', ownerName);
         await updateMemberStatus(
           members.find((m) => m.email === user.email)?.id || '',
           'active'

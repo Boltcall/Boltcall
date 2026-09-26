@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PhoneNumbersSkeleton } from '../../components/ui/loading-skeleton';
 import ServiceEmptyState from '../../components/dashboard/ServiceEmptyState';
-import { PhoneCall, MoreHorizontal, ChevronDown, Phone, Settings } from 'lucide-react';
+import { PhoneCall, ChevronDown, Phone, Settings } from 'lucide-react';
 
 import CardTableWithPanel from '../../components/ui/CardTableWithPanel';
 import ModalShell from '../../components/ui/modal-shell';
 import { Magnetic } from '../../components/ui/magnetic';
 import { supabase } from '../../lib/supabase';
 import { authedFetch } from '../../lib/authedFetch';
+import { releasePhoneNumber } from '../../lib/twilio';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useTokens } from '../../contexts/TokenContext';
@@ -24,6 +25,7 @@ interface PhoneNumber {
   assignedTo: string;
   assignedAgentId: string | null;
   createdAt: string;
+  twilioSid: string;
 }
 
 interface TwilioPhoneNumber {
@@ -101,6 +103,7 @@ const PhoneNumbersPage: React.FC = () => {
           type: phone.phone_type || 'main',
           assignedTo: phone.assigned_agent_name || 'Not assigned',
           assignedAgentId: phone.assigned_agent_id || null,
+          twilioSid: phone.twilio_sid || '',
           createdAt: phone.created_at 
             ? new Date(phone.created_at).toLocaleDateString()
             : new Date().toLocaleDateString()
@@ -231,6 +234,7 @@ const PhoneNumbersPage: React.FC = () => {
             type: phone.phone_type || 'main',
             assignedTo: phone.assigned_agent_name || 'Not assigned',
             assignedAgentId: phone.assigned_agent_id || null,
+            twilioSid: phone.twilio_sid || '',
             createdAt: phone.created_at
               ? new Date(phone.created_at).toLocaleDateString()
               : new Date().toLocaleDateString(),
@@ -337,6 +341,7 @@ const PhoneNumbersPage: React.FC = () => {
             type: phone.phone_type || 'main',
             assignedTo: phone.assigned_agent_name || 'Not assigned',
             assignedAgentId: phone.assigned_agent_id || null,
+            twilioSid: phone.twilio_sid || '',
             createdAt: phone.created_at
               ? new Date(phone.created_at).toLocaleDateString()
               : new Date().toLocaleDateString(),
@@ -378,6 +383,34 @@ const PhoneNumbersPage: React.FC = () => {
       sipTrunkPassword: '',
       nickname: ''
     });
+  };
+
+  const [releaseTarget, setReleaseTarget] = useState<PhoneNumber | null>(null);
+  const [releasing, setReleasing] = useState(false);
+
+  const handleReleaseNumber = async () => {
+    if (!releaseTarget) return;
+    setReleasing(true);
+    try {
+      await releasePhoneNumber(releaseTarget.twilioSid, releaseTarget.number);
+      setPhoneNumbers((prev) => prev.filter((p) => p.id !== releaseTarget.id));
+      showToast({
+        title: 'Number Released',
+        message: `${releaseTarget.number} has been released`,
+        variant: 'success',
+        duration: 4000,
+      });
+      setReleaseTarget(null);
+    } catch (err) {
+      showToast({
+        title: 'Release Failed',
+        message: err instanceof Error ? err.message : 'Could not release phone number',
+        variant: 'error',
+        duration: 5000,
+      });
+    } finally {
+      setReleasing(false);
+    }
   };
 
   if (isLoading) {
@@ -532,8 +565,11 @@ const PhoneNumbersPage: React.FC = () => {
 
               {/* Action Icons */}
               <div className="flex items-center gap-2">
-                <button className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200 ease-out">
-                  <MoreHorizontal className="w-4 h-4" />
+                <button
+                  onClick={() => setReleaseTarget(phone)}
+                  className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200 ease-out"
+                >
+                  Release
                 </button>
               </div>
             </div>
@@ -768,6 +804,28 @@ const PhoneNumbersPage: React.FC = () => {
             </p>
           </div>
         </form>
+      </ModalShell>
+
+      {/* Release Number Confirm Modal */}
+      <ModalShell
+        open={!!releaseTarget}
+        onClose={() => setReleaseTarget(null)}
+        title="Release this number?"
+        maxWidth="max-w-sm"
+        footer={
+          <>
+            <PopButton type="button" onClick={() => setReleaseTarget(null)} disabled={releasing}>
+              Cancel
+            </PopButton>
+            <PopButton color="red" type="button" onClick={handleReleaseNumber} disabled={releasing}>
+              {releasing ? 'Releasing...' : 'Release'}
+            </PopButton>
+          </>
+        }
+      >
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Release {releaseTarget?.number}? Calls to this number will stop and it can't be recovered.
+        </p>
       </ModalShell>
 
     </div>

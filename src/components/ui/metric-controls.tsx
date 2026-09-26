@@ -47,7 +47,7 @@ export function PeriodSelect({ value, options, onChange, accentText }: PeriodSel
   if (options.length <= 1) {
     return (
       <span
-        className="rounded-full border border-slate-200/80 bg-white/85 px-3 py-1 text-[11px] font-medium shadow-sm"
+        className="flex-shrink-0 whitespace-nowrap rounded-full border border-slate-200/80 bg-white/85 px-3 py-1 text-[11px] font-medium shadow-sm"
         style={accentText ? { color: accentText } : undefined}
       >
         {value}
@@ -56,10 +56,10 @@ export function PeriodSelect({ value, options, onChange, accentText }: PeriodSel
   }
 
   return (
-    <label className="pointer-events-auto relative inline-flex items-center">
+    <label className="pointer-events-auto relative inline-flex flex-shrink-0 items-center">
       <span className="sr-only">Metric period</span>
       <select
-        className="rounded-full border border-slate-200/80 bg-white/85 px-3 py-1 text-[11px] font-medium shadow-sm outline-none transition focus:border-slate-300"
+        className="whitespace-nowrap rounded-full border border-slate-200/80 bg-white/85 px-3 py-1 text-[11px] font-medium shadow-sm outline-none transition focus:border-slate-300"
         style={accentText ? { color: accentText } : undefined}
         value={value}
         onChange={(event) => {

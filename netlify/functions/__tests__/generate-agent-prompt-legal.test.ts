@@ -94,3 +94,21 @@ describe('legal vertical matching', () => {
     expect(findIndustryTemplate(c)?.agentRole).toBe('law firm intake specialist');
   });
 });
+
+describe('law firm practice areas and every-call rules', () => {
+  it('unpriced practice areas never render $null or a price', () => {
+    const { prompt } = generatePrompt({
+      agentType: 'inbound',
+      businessProfile: lawFirm(),
+      knowledgeBase: { services: [{ name: 'Family law', duration: null, price: null }], faqs: [], policies: {} },
+    } as any);
+    expect(prompt).toMatch(/The business offers: Family law\./);
+    expect(prompt).not.toMatch(/\$null|null minutes|costs \$/);
+  });
+
+  it('outbound follow-up carries urgent triage and conflict check', () => {
+    const { prompt } = generatePrompt({ agentType: 'speed_to_lead', businessProfile: lawFirm() } as any);
+    expect(prompt).toMatch(/call 911 now/);
+    expect(prompt).toMatch(/Conflict check before details/);
+  });
+});
