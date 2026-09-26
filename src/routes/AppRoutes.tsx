@@ -363,11 +363,16 @@ const NavigationWrapper: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const pendingAuthRedirect = readPendingAuthRedirect();
   const hasAuthHash = typeof window !== 'undefined' && window.location.hash.length > 1;
+  // isLoading alone must NOT block — it also flips true on every plain
+  // login/signup submit on this same page (AuthProvider's LOGIN_START), which
+  // would unmount the form (and its error/confirmation state) mid-submit.
+  // Only a real cross-mount recovery — an OAuth/email-link hash landing, or
+  // an already-established session sitting on a stale redirect — should block.
   const isRecoveringAuthRedirect =
     !!pendingAuthRedirect &&
     (RECOVERABLE_AUTH_REDIRECT_PATHS.has(location.pathname) || hasAuthHash) &&
     !isMatchingAuthRedirect(location.pathname, pendingAuthRedirect) &&
-    (isLoading || isAuthenticated);
+    (isAuthenticated || (isLoading && hasAuthHash));
 
   // RTL support for Hebrew — only apply to dashboard, public pages stay English LTR
   useEffect(() => {
