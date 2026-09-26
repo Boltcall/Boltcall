@@ -175,6 +175,7 @@ const Toaster = forwardRef<ToasterRef, { defaultPosition?: Position }>(
       <SonnerToaster
         position={defaultPosition}
         toastOptions={{ unstyled: true, className: 'flex justify-end' }}
+        containerAriaLabel="toast-region"
       />
     );
   }

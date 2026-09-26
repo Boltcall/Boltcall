@@ -10,6 +10,15 @@ interface CardTableColumn {
   width?: string;
 }
 
+// Grid tracks (not flex %) so gap-6 is subtracted from available width before
+// sizing columns — flex/% + gap always overflows by (columns-1)*24px.
+export function columnsToGridTemplate(columns: CardTableColumn[]): string {
+  return columns
+    .filter(col => col.key !== 'checkbox')
+    .map(col => (col.width ? `${parseFloat(col.width)}fr` : '1fr'))
+    .join(' ');
+}
+
 interface CardTableWithPanelProps {
   columns: CardTableColumn[];
   data: any[];
@@ -119,15 +128,14 @@ const CardTableWithPanel: React.FC<CardTableWithPanelProps> = ({
         {/* Table Headers - Simple Text (hidden on mobile since rows stack) */}
         {filteredData.length > 0 && (
           <div className="hidden md:block px-6 py-4">
-            <div className="flex items-center gap-6">
+            <div className="grid gap-6" style={{ gridTemplateColumns: columnsToGridTemplate(columns) }}>
               {/* Column headers - match row structure exactly */}
               {columns.filter(col => col.key !== 'checkbox').map((column) => (
                 <div
                   key={column.key}
-                  className={`flex items-center gap-2 text-sm font-medium text-gray-700 ${
+                  className={`flex items-center gap-2 text-sm font-medium text-gray-700 min-w-0 ${
                     column.sortable ? 'cursor-pointer hover:text-gray-900' : ''
                   }`}
-                  style={column.width ? { width: column.width, flex: 'none' } : { flex: '1' }}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
                   {column.label}

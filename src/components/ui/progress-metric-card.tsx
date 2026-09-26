@@ -104,7 +104,9 @@ export default function ProgressMetricCard({
 }: ProgressMetricCardProps) {
   const gridId = `grid-${useId().replace(/:/g, '')}`;
   const sz = SIZES[size];
-  const shell = `relative mx-auto flex ${sz.minH} w-full ${sz.maxW} flex-col overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`;
+  // ponytail: no overflow-hidden here — clipped the chart tooltip on hover.
+  // Decorative background below gets its own clipped layer instead.
+  const shell = `relative mx-auto flex ${sz.minH} w-full ${sz.maxW} flex-col rounded-[28px] border border-border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.04)] ${className}`;
 
   const periods = periodOptions ?? DEFAULT_PERIODS;
   const [selectedLabel, setSelectedLabel] = useState(period);
@@ -220,25 +222,27 @@ export default function ProgressMetricCard({
   return (
     <div className={shell}>
       <div className="absolute inset-y-0 right-0 z-0" style={{ width: `${REGION_W}%` }}>
-        <div
-          className="absolute inset-0"
-          style={{ background: `linear-gradient(to left, ${color.stroke}1f, transparent 75%)` }}
-        />
-        <div
-          className="absolute inset-0 text-foreground/[0.13]"
-          style={{
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 55%)',
-            maskImage: 'linear-gradient(to right, transparent, black 55%)',
-          }}
-        >
-          <svg className="h-full w-full" aria-hidden>
-            <defs>
-              <pattern id={gridId} width="14" height="14" patternUnits="userSpaceOnUse">
-                <circle cx="1" cy="1" r="1" fill="currentColor" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill={`url(#${gridId})`} />
-          </svg>
+        <div className="absolute inset-0 overflow-hidden rounded-[28px]">
+          <div
+            className="absolute inset-0"
+            style={{ background: `linear-gradient(to left, ${color.stroke}1f, transparent 75%)` }}
+          />
+          <div
+            className="absolute inset-0 text-foreground/[0.13]"
+            style={{
+              WebkitMaskImage: 'linear-gradient(to right, transparent, black 55%)',
+              maskImage: 'linear-gradient(to right, transparent, black 55%)',
+            }}
+          >
+            <svg className="h-full w-full" aria-hidden>
+              <defs>
+                <pattern id={gridId} width="14" height="14" patternUnits="userSpaceOnUse">
+                  <circle cx="1" cy="1" r="1" fill="currentColor" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill={`url(#${gridId})`} />
+            </svg>
+          </div>
         </div>
 
         <MetricChart

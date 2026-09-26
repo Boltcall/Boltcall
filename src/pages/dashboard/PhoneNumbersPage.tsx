@@ -4,7 +4,17 @@ import { PhoneNumbersSkeleton } from '../../components/ui/loading-skeleton';
 import ServiceEmptyState from '../../components/dashboard/ServiceEmptyState';
 import { PhoneCall, ChevronDown, Phone, Settings } from 'lucide-react';
 
-import CardTableWithPanel from '../../components/ui/CardTableWithPanel';
+import CardTableWithPanel, { columnsToGridTemplate } from '../../components/ui/CardTableWithPanel';
+
+const PHONE_TABLE_COLUMNS = [
+  { key: 'number', label: 'Phone Number', width: '22%' },
+  { key: 'location', label: 'Location', width: '18%' },
+  { key: 'assignedTo', label: 'Assigned To', width: '18%' },
+  { key: 'assignedAgentId', label: 'Assigned Agent', width: '14%' },
+  { key: 'status', label: 'Status', width: '9%' },
+  { key: 'createdAt', label: 'Created', width: '9%' },
+  { key: 'actions', label: '', width: '10%' }
+];
 import ModalShell from '../../components/ui/modal-shell';
 import { Magnetic } from '../../components/ui/magnetic';
 import { supabase } from '../../lib/supabase';
@@ -506,21 +516,13 @@ const PhoneNumbersPage: React.FC = () => {
           </div>
 
           <CardTableWithPanel
-            columns={[
-              { key: 'number', label: 'Phone Number', width: '22%' },
-              { key: 'location', label: 'Location', width: '18%' },
-              { key: 'assignedTo', label: 'Assigned To', width: '18%' },
-              { key: 'assignedAgentId', label: 'Assigned Agent', width: '14%' },
-              { key: 'status', label: 'Status', width: '9%' },
-              { key: 'createdAt', label: 'Created', width: '9%' },
-              { key: 'actions', label: '', width: '10%' }
-            ]}
+            columns={PHONE_TABLE_COLUMNS}
             data={phoneNumbers}
             hideSearch={true}
             renderRow={(phone) => (
-            <div className="flex items-center gap-6">
+            <div className="grid items-center gap-6" style={{ gridTemplateColumns: columnsToGridTemplate(PHONE_TABLE_COLUMNS) }}>
               {/* Phone Number */}
-              <div className="flex items-center gap-3" style={{ width: '22%', flex: 'none' }}>
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center flex-shrink-0">
                   <PhoneCall className="w-4 h-4 text-green-600" />
                 </div>
@@ -528,17 +530,17 @@ const PhoneNumbersPage: React.FC = () => {
               </div>
 
               {/* Location */}
-              <div className="text-sm text-gray-900 dark:text-gray-100 truncate" style={{ width: '18%', flex: 'none' }}>
+              <div className="text-sm text-gray-900 dark:text-gray-100 truncate min-w-0">
                 {phone.location}
               </div>
 
               {/* Assigned To */}
-              <div className="text-sm text-gray-900 dark:text-gray-100 truncate" style={{ width: '18%', flex: 'none' }}>
+              <div className="text-sm text-gray-900 dark:text-gray-100 truncate min-w-0">
                 {phone.assignedTo}
               </div>
 
               {/* Assigned Agent ID */}
-              <div className="text-sm text-gray-900 dark:text-gray-100" style={{ width: '14%', flex: 'none' }}>
+              <div className="text-sm text-gray-900 dark:text-gray-100 min-w-0">
                 {phone.assignedAgentId ? (
                   <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
                     {phone.assignedAgentId}
@@ -549,7 +551,7 @@ const PhoneNumbersPage: React.FC = () => {
               </div>
 
               {/* Status */}
-              <div style={{ width: '9%', flex: 'none' }}>
+              <div className="min-w-0">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                   phone.status?.toLowerCase() === 'active'
                     ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400'
@@ -560,12 +562,12 @@ const PhoneNumbersPage: React.FC = () => {
               </div>
 
               {/* Created Date */}
-              <div className="text-sm text-gray-500 dark:text-gray-400 truncate" style={{ width: '9%', flex: 'none' }}>
+              <div className="text-sm text-gray-500 dark:text-gray-400 truncate min-w-0">
                 {phone.createdAt}
               </div>
 
               {/* Action Icons */}
-              <div className="flex items-center gap-2" style={{ width: '10%', flex: 'none' }}>
+              <div className="flex items-center gap-2 min-w-0">
                 <button
                   onClick={() => setReleaseTarget(phone)}
                   className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200 ease-out"

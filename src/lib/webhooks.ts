@@ -84,7 +84,7 @@ export const createAgentAndKnowledgeBase = async (data: {
   const knowledgeBaseTexts = [
     {
       title: 'Business Information',
-      text: `Business: ${data.businessName}\nCategory: ${data.mainCategory}\nCountry: ${data.country}\nService Areas: ${data.serviceAreas.join(', ')}\nLanguages: ${data.languages.join(', ')}${data.businessPhone ? `\nPhone: ${data.businessPhone}` : ''}${data.city ? `\nLocation: ${data.city}${data.state ? `, ${data.state}` : ''}` : ''}\n\nOpening Hours:\n${data.openingHours && Object.keys(data.openingHours).length ? Object.entries(data.openingHours).map(([day, h]: [string, any]) => h.closed ? `${day}: Closed` : `${day}: ${h.open} - ${h.close}`).join('\n') : 'Not specified'}`,
+      text: `Business: ${data.businessName}\nCategory: ${data.mainCategory}\nCountry: ${data.country}\nService Areas: ${data.serviceAreas.join(', ') || 'Not specified'}\nLanguages: ${data.languages.join(', ')}${data.businessPhone ? `\nPhone: ${data.businessPhone}` : ''}${data.city ? `\nLocation: ${data.city}${data.state ? `, ${data.state}` : ''}` : ''}\n\nOpening Hours:\n${data.openingHours && Object.keys(data.openingHours).length ? Object.entries(data.openingHours).map(([day, h]: [string, any]) => h.closed ? `${day}: Closed` : `${day}: ${h.open} - ${h.close}`).join('\n') : 'Not specified'}`,
     },
   ];
 
