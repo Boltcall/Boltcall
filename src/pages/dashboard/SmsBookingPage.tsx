@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MessageSquare, Edit, Trash2, Calendar, Phone, Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PageSkeleton } from '../../components/ui/loading-skeleton';
-import CardTableWithPanel from '../../components/ui/CardTableWithPanel';
+import CardTableWithPanel, { columnsToGridTemplate } from '../../components/ui/CardTableWithPanel';
 import ModalShell from '../../components/ui/modal-shell';
 import { Magnetic } from '../../components/ui/magnetic';
 import { PopButton } from '../../components/ui/pop-button';
@@ -45,6 +45,15 @@ interface SmsBooking {
 }
 
 /** Map a Twilio delivery status to a simplified status for the UI */
+const SMS_BOOKING_TABLE_COLUMNS = [
+  { key: 'client', label: 'Recipient & Type', width: '25%' },
+  { key: 'appointment', label: 'Sent At', width: '20%' },
+  { key: 'status', label: 'Status', width: '15%' },
+  { key: 'timing', label: 'Delivery Status', width: '15%' },
+  { key: 'text', label: 'Message', width: '15%' },
+  { key: 'actions', label: 'Actions', width: '10%' }
+];
+
 function mapTwilioStatus(twilioStatus: string): 'active' | 'inactive' {
   const deliveredStatuses = ['delivered', 'sent', 'queued', 'sending'];
   return deliveredStatuses.includes(twilioStatus) ? 'active' : 'inactive';
@@ -203,18 +212,11 @@ const SmsBookingPage: React.FC = () => {
       >
         <CardTableWithPanel
           data={smsBookings}
-          columns={[
-            { key: 'client', label: 'Recipient & Type', width: '25%' },
-            { key: 'appointment', label: 'Sent At', width: '20%' },
-            { key: 'status', label: 'Status', width: '15%' },
-            { key: 'timing', label: 'Delivery Status', width: '15%' },
-            { key: 'text', label: 'Message', width: '20%' },
-            { key: 'actions', label: 'Actions', width: '5%' }
-          ]}
+          columns={SMS_BOOKING_TABLE_COLUMNS}
           renderRow={(booking) => (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div className="flex flex-col gap-3 sm:grid sm:items-center sm:gap-6" style={{ gridTemplateColumns: columnsToGridTemplate(SMS_BOOKING_TABLE_COLUMNS) }}>
               {/* Recipient & Type */}
-              <div className="flex items-center gap-3 sm:flex-1 min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
                   <MessageSquare className="w-5 h-5 text-green-600" />
                 </div>
@@ -232,7 +234,7 @@ const SmsBookingPage: React.FC = () => {
 
               {/* Sent At + Status + Delivery — row on mobile */}
               <div className="flex flex-wrap items-center gap-3 sm:contents pl-13 sm:pl-0">
-                <div className="flex items-center gap-2 sm:flex-1">
+                <div className="flex items-center gap-2 min-w-0">
                   <Calendar className="w-4 h-4 text-gray-400" />
                   <div>
                     <div className="text-sm text-gray-900">{booking.appointmentDate}</div>
@@ -240,7 +242,7 @@ const SmsBookingPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 sm:flex-1">
+                <div className="flex items-center gap-2 min-w-0">
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                     booking.status === 'active'
                       ? 'bg-green-100 text-green-800'
@@ -255,19 +257,19 @@ const SmsBookingPage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 sm:flex-1">
+                <div className="flex items-center gap-2 min-w-0">
                   <Clock className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-900 capitalize">{booking.reminderTime}</span>
                 </div>
               </div>
 
               {/* Message */}
-              <div className="text-sm text-gray-900 sm:flex-1 truncate pl-13 sm:pl-0">
+              <div className="text-sm text-gray-900 truncate pl-13 sm:pl-0 min-w-0">
                 {booking.reminderText}
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 pl-13 sm:pl-0 flex-shrink-0">
+              <div className="flex items-center gap-2 pl-13 sm:pl-0 flex-shrink-0 min-w-0">
                 <button
                   onClick={() => handleRescheduleBooking(booking)}
                   className="text-blue-600 hover:text-blue-900 transition-colors duration-200 ease-out p-1.5"

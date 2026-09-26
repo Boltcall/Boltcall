@@ -11,7 +11,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { CallHistorySkeleton } from '../../components/ui/loading-skeleton';
-import CardTableWithPanel from '../../components/ui/CardTableWithPanel';
+import CardTableWithPanel, { columnsToGridTemplate } from '../../components/ui/CardTableWithPanel';
 import { getRetellCallHistory, type RetellCall } from '../../lib/retell';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,6 +22,15 @@ import { UnsavedChanges } from '../../components/ui/unsaved-changes';
 
 // Threshold in ms — calls shorter than this are considered missed/abandoned
 const MISSED_CALL_DURATION_THRESHOLD = 15000; // 15 seconds
+
+const MISSED_CALLS_TABLE_COLUMNS = [
+  { key: 'caller', label: 'Caller', width: '25%' },
+  { key: 'missedAt', label: 'Missed At', width: '20%' },
+  { key: 'duration', label: 'Duration', width: '10%' },
+  { key: 'status', label: 'Status', width: '15%' },
+  { key: 'agent', label: 'Agent', width: '15%' },
+  { key: 'actions', label: 'Actions', width: '15%' },
+];
 
 const DEFAULT_TEMPLATE =
   "Hi! We noticed we missed your call at {{business_name}}. How can we help? Reply to this text or call us back. We're here for you!";
@@ -556,25 +565,18 @@ const MissedCallsPage: React.FC = () => {
           ) : (
             <CardTableWithPanel
               data={missedCalls}
-              columns={[
-                { key: 'caller', label: 'Caller', width: '25%' },
-                { key: 'missedAt', label: 'Missed At', width: '20%' },
-                { key: 'duration', label: 'Duration', width: '10%' },
-                { key: 'status', label: 'Status', width: '15%' },
-                { key: 'agent', label: 'Agent', width: '15%' },
-                { key: 'actions', label: 'Actions', width: '15%' },
-              ]}
+              columns={MISSED_CALLS_TABLE_COLUMNS}
               renderRow={(call) => (
-                <div className="flex items-center gap-6">
+                <div className="grid items-center gap-6" style={{ gridTemplateColumns: columnsToGridTemplate(MISSED_CALLS_TABLE_COLUMNS) }}>
                   {/* Caller */}
-                  <div className="flex items-center gap-3 flex-1">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 bg-red-100 dark:bg-red-950/40 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Phone className="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
-                    <div>
-                      <div className="font-medium text-gray-900 dark:text-white">{call.callerPhone}</div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-900 dark:text-white truncate">{call.callerPhone}</div>
                       {call.disconnectionReason && (
-                        <div className="text-xs text-gray-500 dark:text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-500 truncate">
                           {call.disconnectionReason.replace(/_/g, ' ')}
                         </div>
                       )}
@@ -582,7 +584,7 @@ const MissedCallsPage: React.FC = () => {
                   </div>
 
                   {/* Missed At */}
-                  <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
+                  <div className="text-sm text-gray-900 dark:text-gray-100 min-w-0">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4 text-gray-400" />
                       {new Date(call.missedAt).toLocaleDateString()}
@@ -593,10 +595,10 @@ const MissedCallsPage: React.FC = () => {
                   </div>
 
                   {/* Duration */}
-                  <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">{call.duration}</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-100 min-w-0">{call.duration}</div>
 
                   {/* Status */}
-                  <div className="flex-1">
+                  <div className="min-w-0">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(call.status)}`}
                     >
@@ -612,10 +614,10 @@ const MissedCallsPage: React.FC = () => {
                   </div>
 
                   {/* Agent */}
-                  <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">{call.agentName}</div>
+                  <div className="text-sm text-gray-900 dark:text-gray-100 min-w-0 truncate">{call.agentName}</div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <button
                       onClick={() => handleViewDetails(call)}
                       className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400 transition-colors duration-200 ease-out"

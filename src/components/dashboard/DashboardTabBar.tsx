@@ -15,7 +15,7 @@ type Props = {
 const DashboardTabBar: React.FC<Props> = ({ tabs, className = '' }) => (
   <div
     role="tablist"
-    className={`flex items-center gap-1 border-b border-gray-200 dark:border-[#1e1e24] px-3 md:px-6 overflow-x-auto ${className}`}
+    className={`flex items-center gap-1 border-b border-gray-200 dark:border-[#1e1e24] px-3 md:px-6 overflow-x-auto overflow-y-hidden ${className}`}
   >
     {tabs.map((tab) => (
       <NavLink

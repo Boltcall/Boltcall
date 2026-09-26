@@ -6,6 +6,15 @@ import { FUNCTIONS_BASE } from './api';
 import { authedFetch } from './authedFetch';
 import { serviceDetails } from './serviceText';
 
+// Setup stores ISO codes ("us"); the agent's knowledge should read "United States".
+const countryName = (c: string) => {
+  try {
+    return /^[a-z]{2}$/i.test(c) ? new Intl.DisplayNames(['en'], { type: 'region' }).of(c.toUpperCase()) || c : c;
+  } catch {
+    return c;
+  }
+};
+
 export interface PhoneNumber {
   phone_number: string;
   friendly_name: string;
@@ -84,7 +93,7 @@ export const createAgentAndKnowledgeBase = async (data: {
   const knowledgeBaseTexts = [
     {
       title: 'Business Information',
-      text: `Business: ${data.businessName}\nCategory: ${data.mainCategory}\nCountry: ${data.country}\nService Areas: ${data.serviceAreas.join(', ') || 'Not specified'}\nLanguages: ${data.languages.join(', ')}${data.businessPhone ? `\nPhone: ${data.businessPhone}` : ''}${data.city ? `\nLocation: ${data.city}${data.state ? `, ${data.state}` : ''}` : ''}\n\nOpening Hours:\n${data.openingHours && Object.keys(data.openingHours).length ? Object.entries(data.openingHours).map(([day, h]: [string, any]) => h.closed ? `${day}: Closed` : `${day}: ${h.open} - ${h.close}`).join('\n') : 'Not specified'}`,
+      text: `Business: ${data.businessName}\nCategory: ${String(data.mainCategory || '').replace(/_/g, ' ')}\nCountry: ${countryName(data.country)}\nService Areas: ${data.serviceAreas.join(', ') || 'Not specified'}\nLanguages: ${data.languages.join(', ')}${data.businessPhone ? `\nPhone: ${data.businessPhone}` : ''}${data.city ? `\nLocation: ${data.city}${data.state ? `, ${data.state}` : ''}` : ''}\n\nOpening Hours:\n${data.openingHours && Object.keys(data.openingHours).length ? Object.entries(data.openingHours).map(([day, h]: [string, any]) => h.closed ? `${day}: Closed` : `${day}: ${h.open} - ${h.close}`).join('\n') : 'Not specified'}`,
     },
   ];
 
