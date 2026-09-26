@@ -507,37 +507,38 @@ const PhoneNumbersPage: React.FC = () => {
 
           <CardTableWithPanel
             columns={[
-              { key: 'number', label: 'Phone Number', width: '25%' },
-              { key: 'location', label: 'Location', width: '20%' },
-              { key: 'assignedTo', label: 'Assigned To', width: '20%' },
-              { key: 'assignedAgentId', label: 'Assigned Agent', width: '15%' },
-              { key: 'status', label: 'Status', width: '10%' },
-              { key: 'createdAt', label: 'Created', width: '10%' }
+              { key: 'number', label: 'Phone Number', width: '22%' },
+              { key: 'location', label: 'Location', width: '18%' },
+              { key: 'assignedTo', label: 'Assigned To', width: '18%' },
+              { key: 'assignedAgentId', label: 'Assigned Agent', width: '14%' },
+              { key: 'status', label: 'Status', width: '9%' },
+              { key: 'createdAt', label: 'Created', width: '9%' },
+              { key: 'actions', label: '', width: '10%' }
             ]}
             data={phoneNumbers}
             hideSearch={true}
             renderRow={(phone) => (
             <div className="flex items-center gap-6">
               {/* Phone Number */}
-              <div className="flex items-center gap-3 flex-1">
-                <div className="w-8 h-8 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center">
+              <div className="flex items-center gap-3" style={{ width: '22%', flex: 'none' }}>
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-950/30 rounded-full flex items-center justify-center flex-shrink-0">
                   <PhoneCall className="w-4 h-4 text-green-600" />
                 </div>
-                <div className="font-medium text-gray-900 dark:text-white">{phone.number}</div>
+                <div className="font-medium text-gray-900 dark:text-white truncate">{phone.number}</div>
               </div>
 
               {/* Location */}
-              <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
+              <div className="text-sm text-gray-900 dark:text-gray-100 truncate" style={{ width: '18%', flex: 'none' }}>
                 {phone.location}
               </div>
 
               {/* Assigned To */}
-              <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
+              <div className="text-sm text-gray-900 dark:text-gray-100 truncate" style={{ width: '18%', flex: 'none' }}>
                 {phone.assignedTo}
               </div>
 
               {/* Assigned Agent ID */}
-              <div className="text-sm text-gray-900 dark:text-gray-100 flex-1">
+              <div className="text-sm text-gray-900 dark:text-gray-100" style={{ width: '14%', flex: 'none' }}>
                 {phone.assignedAgentId ? (
                   <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
                     {phone.assignedAgentId}
@@ -546,25 +547,25 @@ const PhoneNumbersPage: React.FC = () => {
                   <span className="text-gray-400 dark:text-gray-500 text-xs">Not assigned</span>
                 )}
               </div>
-              
+
               {/* Status */}
-              <div className="flex-1">
+              <div style={{ width: '9%', flex: 'none' }}>
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  phone.status === 'Active' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
+                  phone.status?.toLowerCase() === 'active'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                 }`}>
                   {phone.status}
                 </span>
               </div>
-              
+
               {/* Created Date */}
-              <div className="text-sm text-gray-500 dark:text-gray-400 flex-1">
+              <div className="text-sm text-gray-500 dark:text-gray-400 truncate" style={{ width: '9%', flex: 'none' }}>
                 {phone.createdAt}
               </div>
 
               {/* Action Icons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" style={{ width: '10%', flex: 'none' }}>
                 <button
                   onClick={() => setReleaseTarget(phone)}
                   className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors duration-200 ease-out"

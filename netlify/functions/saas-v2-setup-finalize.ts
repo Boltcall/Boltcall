@@ -342,14 +342,19 @@ Service Areas: ${(extracted.serviceAreas || []).join(', ') || 'Not specified'}
 Languages: ${languages.join(', ')}${extracted.businessPhone ? `\nPhone: ${extracted.businessPhone}` : ''}${extracted.city ? `\nLocation: ${extracted.city}${extracted.state ? `, ${extracted.state}` : ''}` : ''}
 
 Opening Hours:
-${extracted.openingHours ? Object.entries(extracted.openingHours).map(([day, h]) => h.closed ? `${day}: Closed` : `${day}: ${h.open || '?'} - ${h.close || '?'}`).join('\n') : 'Not specified'}`,
+${extracted.openingHours && Object.keys(extracted.openingHours).length ? Object.entries(extracted.openingHours).map(([day, h]) => h.closed ? `${day}: Closed` : `${day}: ${h.open || '?'} - ${h.close || '?'}`).join('\n') : 'Not specified'}`,
       },
     ];
     if (extracted.services?.length) {
       texts.push({
         title: 'Services Offered',
         text: extracted.services
-          .map((s) => `- ${s.name}: ${s.duration} minutes, $${s.price}`)
+          .map((s) => {
+            // Practice areas have no price/duration; never print "$null".
+            const known = (v: unknown) => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
+            const d = [known(s.duration) && `${s.duration} minutes`, known(s.price) && `$${s.price}`].filter(Boolean).join(', ');
+            return `- ${s.name}${d ? `: ${d}` : ''}`;
+          })
           .join('\n'),
       });
     }

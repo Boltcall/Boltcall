@@ -4,6 +4,7 @@
 import { searchAvailableNumbers, purchasePhoneNumber as purchaseTwilioNumber } from './twilio';
 import { FUNCTIONS_BASE } from './api';
 import { authedFetch } from './authedFetch';
+import { serviceDetails } from './serviceText';
 
 export interface PhoneNumber {
   phone_number: string;
@@ -83,14 +84,14 @@ export const createAgentAndKnowledgeBase = async (data: {
   const knowledgeBaseTexts = [
     {
       title: 'Business Information',
-      text: `Business: ${data.businessName}\nCategory: ${data.mainCategory}\nCountry: ${data.country}\nService Areas: ${data.serviceAreas.join(', ')}\nLanguages: ${data.languages.join(', ')}${data.businessPhone ? `\nPhone: ${data.businessPhone}` : ''}${data.city ? `\nLocation: ${data.city}${data.state ? `, ${data.state}` : ''}` : ''}\n\nOpening Hours:\n${data.openingHours ? Object.entries(data.openingHours).map(([day, h]: [string, any]) => h.closed ? `${day}: Closed` : `${day}: ${h.open} - ${h.close}`).join('\n') : 'Not specified'}`,
+      text: `Business: ${data.businessName}\nCategory: ${data.mainCategory}\nCountry: ${data.country}\nService Areas: ${data.serviceAreas.join(', ')}\nLanguages: ${data.languages.join(', ')}${data.businessPhone ? `\nPhone: ${data.businessPhone}` : ''}${data.city ? `\nLocation: ${data.city}${data.state ? `, ${data.state}` : ''}` : ''}\n\nOpening Hours:\n${data.openingHours && Object.keys(data.openingHours).length ? Object.entries(data.openingHours).map(([day, h]: [string, any]) => h.closed ? `${day}: Closed` : `${day}: ${h.open} - ${h.close}`).join('\n') : 'Not specified'}`,
     },
   ];
 
   if (data.services?.length) {
     knowledgeBaseTexts.push({
       title: 'Services Offered',
-      text: data.services.map(s => `- ${s.name}: ${s.duration} minutes, $${s.price}`).join('\n'),
+      text: data.services.map(s => { const d = serviceDetails(s); return `- ${s.name}${d ? `: ${d}` : ''}`; }).join('\n'),
     });
   }
 

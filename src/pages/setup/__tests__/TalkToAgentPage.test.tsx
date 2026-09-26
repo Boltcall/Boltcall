@@ -138,6 +138,8 @@ describe('TalkToAgentPage', () => {
   });
 
   it('starts the web call with the signed-in users own callable inbound agent', async () => {
+    const user = userEvent.setup();
+
     await act(async () => {
       render(
         <MemoryRouter>
@@ -145,6 +147,10 @@ describe('TalkToAgentPage', () => {
         </MemoryRouter>,
       );
     });
+
+    expect(navigator.mediaDevices.getUserMedia).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: /start test call/i }));
 
     await waitFor(() => expect(mocks.startCall).toHaveBeenCalledWith({ accessToken: 'web-call-token' }));
 

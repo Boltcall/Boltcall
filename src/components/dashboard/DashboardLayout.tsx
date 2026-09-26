@@ -212,6 +212,9 @@ const DashboardLayout: React.FC = () => {
     if (path.startsWith('/dashboard/conversations')) {
       return t('nav.conversations');
     }
+    if (path.startsWith('/dashboard/your-ai/phone')) {
+      return t('page.phoneNumbers');
+    }
     if (path.startsWith('/dashboard/your-ai')) {
       return t('nav.yourAi');
     }

@@ -10,12 +10,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { VoicePoweredOrb } from '../../components/ui/voice-powered-orb';
 import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 
-type Phase = 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
+type Phase = 'idle' | 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
 
 const TalkToAgentPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [phase, setPhase] = useState<Phase>('provisioning');
+  const [phase, setPhase] = useState<Phase>('idle');
   const [agentName, setAgentName] = useState('your agent');
   const [errorMessage, setErrorMessage] = useState('');
   const [callSeconds, setCallSeconds] = useState(0);
@@ -143,12 +143,6 @@ const TalkToAgentPage: React.FC = () => {
     }
   }, [user?.id, cleanup]);
 
-  // Auto-start on mount
-  useEffect(() => {
-    startCall();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleEnd = () => {
     if (clientRef.current) {
       try { clientRef.current.stopCall(); } catch { /* ignore */ }
@@ -165,6 +159,7 @@ const TalkToAgentPage: React.FC = () => {
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   const captionByPhase: Record<Phase, string> = {
+    idle: "We'll ask for mic access once you start the call.",
     provisioning: 'Waking your agent up...',
     connecting: 'Connecting...',
     live: '',
@@ -250,6 +245,20 @@ const TalkToAgentPage: React.FC = () => {
 
         {/* Action buttons */}
         <div className="mt-10 flex flex-col items-center gap-4 min-h-[80px]">
+          {phase === 'idle' && (
+            <motion.button
+              type="button"
+              onClick={startCall}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-2 px-8 py-3 rounded-full bg-blue-600 text-white font-semibold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-colors"
+            >
+              Start test call
+            </motion.button>
+          )}
+
           {phase === 'live' && (
             <motion.button
               type="button"

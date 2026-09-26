@@ -2,6 +2,7 @@
 
 import { FUNCTIONS_BASE } from './api';
 import { authedFetch } from './authedFetch';
+import { serviceDetails } from './serviceText';
 
 export interface RetellKnowledgeBaseText {
   text: string;
@@ -101,11 +102,13 @@ A: Our hours are: ${hoursText}. If you're calling outside these hours, I can hel
   // Each service as its own Q&A document
   if (data.services?.length) {
     for (const s of data.services) {
+      const details = serviceDetails(s);
       texts.push({
         title: `Service: ${s.name}`,
         text: `<document index="${docIndex}" title="${s.name}" category="services">
-Q: How much does ${s.name} cost and how long does it take?
-A: ${s.name} takes ${s.duration} minutes and costs $${s.price}.
+${details
+  ? `Q: How much does ${s.name} cost and how long does it take?\nA: ${s.name}: ${details}.`
+  : `The business offers: ${s.name}.`}
 </document>`,
       });
       docIndex++;

@@ -717,7 +717,12 @@ const KnowledgeBasePage: React.FC = () => {
       // Add KB entries from services/FAQs/policies
       if (kbServices.length > 0) {
         const servicesContent = kbServices
-          .map(s => `${s.name} — ${s.duration} min — $${s.price}`)
+          .map(s => {
+            const parts = [s.name];
+            if (typeof s.duration === 'number' && Number.isFinite(s.duration)) parts.push(`${s.duration} min`);
+            if (typeof s.price === 'number' && Number.isFinite(s.price)) parts.push(`$${s.price}`);
+            return parts.join(' · ');
+          })
           .join('\n');
         documentsToInsert.push({
           user_id: user.id,

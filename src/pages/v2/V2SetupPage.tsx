@@ -149,7 +149,7 @@ const V2SetupPage: React.FC = () => {
   }
 
   return (
-    <div className="dark relative isolate min-h-dvh bg-[#050507] text-white">
+    <div className="dark relative isolate min-h-screen bg-[#050507] text-white">
       <style>
         {`
           @keyframes boltcallSetupWelcome {
@@ -192,7 +192,7 @@ const V2SetupPage: React.FC = () => {
         `}
       </style>
       <SetupGradientBackground />
-      <main className="mx-auto flex min-h-dvh max-w-5xl items-start justify-center px-4 pb-12 pt-24 sm:items-center sm:px-6 sm:pb-6 sm:pt-28 lg:px-8">
+      <main className="mx-auto flex min-h-screen max-w-5xl items-start justify-center px-4 pb-12 pt-24 sm:items-center sm:px-6 sm:pb-6 sm:pt-28 lg:px-8">
         {!showPrompting ? (
           <h1
             className="relative z-10 text-center text-3xl font-black uppercase tracking-[0.1em] text-white sm:text-5xl lg:text-6xl"
