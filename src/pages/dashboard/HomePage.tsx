@@ -77,22 +77,26 @@ const HomePage: React.FC = () => {
   const [agentName, setAgentName] = useState<string>('Your AI');
   const suggestion = useFeatureTriggers(agentName);
   const [milestone, setMilestone] = useState<Milestone | null>(null);
+  const [ownerName, setOwnerName] = useState<string | null>(null);
   const hasFetchedLiveData = useRef(false);
 
-  // Hydrate businessName from business_profiles so the greeting can weave it in
-  // ("Alex is standing by for Acme Plumbing"). Store keeps the value across
-  // routes; only fetch when it's missing.
+  // Hydrate businessName + owner_name from business_profiles so the greeting
+  // can weave them in ("Alex is standing by for Acme Plumbing"). Store keeps
+  // businessName across routes; only fetch when it's missing.
   useEffect(() => {
     if (!user?.id || businessName) return;
     let cancelled = false;
     supabase
       .from('business_profiles')
-      .select('business_name')
+      .select('business_name, owner_name')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
+        if (cancelled) return;
         const name = data?.business_name?.trim();
-        if (!cancelled && name) setBusinessName(name);
+        if (name) setBusinessName(name);
+        const owner = data?.owner_name?.trim();
+        if (owner) setOwnerName(owner);
       });
     return () => {
       cancelled = true;
@@ -136,7 +140,12 @@ const HomePage: React.FC = () => {
   }, [user?.id]);
 
   const now = new Date();
-  const firstName = (user?.name || 'there').split(' ')[0];
+  // user.name falls back to the email local-part when no real name was ever
+  // collected (signup never asks for one) — never greet with that. Prefer the
+  // owner's name saved in setup, then a real metadata name, then 'there'.
+  const emailLocalPart = user?.email?.split('@')[0];
+  const metadataName = user?.name && user.name !== emailLocalPart ? user.name : null;
+  const firstName = (ownerName || metadataName || 'there').split(' ')[0];
   // dashboard-stats is an admin-only aggregate (403s for real customers), so
   // the store never calls it. Use the callback-derived count instead so the
   // greeting reflects real activity rather than a hardcoded 0.

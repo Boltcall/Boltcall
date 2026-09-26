@@ -109,7 +109,8 @@ const TodayGlanceCard: React.FC = () => {
   const leadsToday = stats?.leadsToday ?? 0;
 
   const total = handled + missed;
-  const winRate = total > 0 ? Math.round((handled / total) * 100) : 100;
+  // No calls yet today isn't a 100% win rate — it's no data. Don't fabricate one.
+  const winRate = total > 0 ? Math.round((handled / total) * 100) : null;
   const needsAction = missed;
 
   return (
@@ -165,12 +166,12 @@ const TodayGlanceCard: React.FC = () => {
                 <OverviewMetricCard
                   label="AI win rate"
                   period="Overview"
-                  value={`${winRate}%`}
-                  badge={winRate >= 80 ? 'Strong' : winRate >= 50 ? 'Stable' : 'Watch'}
-                  badgeTone={winRate >= 80 ? 'positive' : winRate >= 50 ? 'neutral' : 'negative'}
+                  value={winRate === null ? '—' : `${winRate}%`}
+                  badge={winRate === null ? 'No data' : winRate >= 80 ? 'Strong' : winRate >= 50 ? 'Stable' : 'Watch'}
+                  badgeTone={winRate === null ? 'neutral' : winRate >= 80 ? 'positive' : winRate >= 50 ? 'neutral' : 'negative'}
                   icon={TrendingUp}
-                  accentColor={winRate >= 80 ? '#10b981' : winRate >= 50 ? '#f59e0b' : '#ef4444'}
-                  caption="Share of handled calls versus misses"
+                  accentColor={winRate === null ? '#94a3b8' : winRate >= 80 ? '#10b981' : winRate >= 50 ? '#f59e0b' : '#ef4444'}
+                  caption={winRate === null ? 'No calls yet today' : 'Share of handled calls versus misses'}
                 />
                 {revenue && revenue.valuedBookings === 0 ? (
                   <Link to="/dashboard/settings/services" className="block">

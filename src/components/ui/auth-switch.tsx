@@ -209,14 +209,17 @@ export default function AuthSwitch({
       // Route account-exists to sign-in mode, and email-confirmation to a
       // helpful state instead of a scary error.
       const name = err instanceof Error ? err.name : '';
+      const msg = err instanceof Error ? err.message : '';
       if (name === 'AccountExistsError') {
         setError("You already have an account. Sign in instead.");
         setMode("login");
         loginForm.setValue("email", data.email);
       } else if (name === 'EmailConfirmationRequiredError') {
         setConfirmationEmail(data.email);
+      } else if (/rate.?limit|too many/i.test(msg)) {
+        setError('Too many signup emails right now, please try again in a few minutes.');
       } else {
-        setError(err instanceof Error ? err.message : "Failed to create account.");
+        setError(msg || "Failed to create account.");
       }
     } finally {
       setIsLoading(false);

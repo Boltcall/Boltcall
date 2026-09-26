@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard, Download, CheckCircle, Loader2, ExternalLink, Zap, Coins, Settings } from 'lucide-react';
 import { PopButton } from '../../../components/ui/pop-button';
@@ -40,13 +40,21 @@ interface Invoice {
 
 const PlanBillingPage: React.FC = () => {
   const { t } = useTranslation();
-  const { monthlyAllocation, tokensUsed } = useTokens();
+  const { monthlyAllocation, tokensUsed, totalAvailable } = useTokens();
   const [activeTab, setActiveTab] = useState<'plan' | 'invoices'>('plan');
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [changeError, setChangeError] = useState<string | null>(null);
+  const changeErrorRef = useRef<HTMLDivElement>(null);
+
+  // The error banner renders above the plan grid, which can be scrolled past
+  // the fold — without this, clicking Upgrade near the bottom of a long page
+  // silently "does nothing" because the only feedback appeared off-screen.
+  useEffect(() => {
+    if (changeError) changeErrorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [changeError]);
   const [portalLoading, setPortalLoading] = useState(false);
   const [isFounder, setIsFounder] = useState(false);
   const [paypalTestLoading, setPaypalTestLoading] = useState(false);
@@ -150,8 +158,12 @@ const PlanBillingPage: React.FC = () => {
 
   const currentPlan = planDetails[currentPlanLevel] || planDetails.free;
 
-  // Real usage from token context
-  const tokenLimit = monthlyAllocation > 0 ? monthlyAllocation : (TOKEN_PLANS[currentPlanLevel as keyof typeof TOKEN_PLANS]?.monthlyTokens ?? 0);
+  // Real usage from token context. Fall back to totalAvailable (balance +
+  // bonus) so a free-plan account with bonus credits shows "0/50" instead of
+  // a misleading "0/0" that disagrees with the Analytics page's own balance.
+  const tokenLimit = monthlyAllocation > 0
+    ? monthlyAllocation
+    : (TOKEN_PLANS[currentPlanLevel as keyof typeof TOKEN_PLANS]?.monthlyTokens ?? totalAvailable);
   const usageItems = [
     { label: 'Tokens Used', used: tokensUsed, limit: tokenLimit },
   ];
@@ -188,9 +200,8 @@ const PlanBillingPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Plan change error:', error);
-      setChangeError(
-        error instanceof Error ? error.message : 'Could not start checkout. Please try again.',
-      );
+      const msg = error instanceof Error ? error.message : 'Could not start checkout. Please try again.';
+      setChangeError(/not available for checkout/i.test(msg) ? `${msg} Contact us at support@boltcall.org.` : msg);
       setUpgrading(null);
     }
   };
@@ -245,7 +256,10 @@ const PlanBillingPage: React.FC = () => {
       {activeTab === 'plan' && (
         <div className="space-y-6">
           {changeError && (
-            <div className="rounded-lg border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+            <div
+              ref={changeErrorRef}
+              className="rounded-lg border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+            >
               {changeError}
             </div>
           )}

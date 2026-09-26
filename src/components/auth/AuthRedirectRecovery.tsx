@@ -29,11 +29,14 @@ const AuthRedirectRecovery = () => {
   const canRecoverHere =
     !RECOVERY_EXCLUDED_PATHS.has(location.pathname) &&
     (RECOVERABLE_PATHS.has(location.pathname) || hasAuthHash);
+  // Same reasoning as AppRoutes' isRecoveringAuthRedirect: isLoading alone
+  // fires on every plain login/signup submit on this same page, not just on
+  // a real cross-mount recovery. Gate it on an actual auth-hash landing.
   const shouldBlockWhileRecovering =
     !!pendingRedirect &&
     canRecoverHere &&
     !isMatchingRedirect(location.pathname, pendingRedirect) &&
-    (isLoading || isAuthenticated);
+    (isAuthenticated || (isLoading && hasAuthHash));
 
   useLayoutEffect(() => {
     if (isLoading) return;

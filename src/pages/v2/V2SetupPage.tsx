@@ -59,9 +59,17 @@ function formatWelcomeFirstName(name: string | null | undefined) {
   return transliterated.charAt(0).toUpperCase() + transliterated.slice(1);
 }
 
+// Same key + signal ProtectedRoute already uses to gate /dashboard — reusing
+// it here avoids a second DB round trip for a user who already passed that
+// check this session, and keeps the two checks from disagreeing.
+const SETUP_COMPLETE_KEY = 'boltcall_setup_complete';
+
 const V2SetupPage: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [showPrompting, setShowPrompting] = useState(false);
+  // A firm that already finished setup shouldn't be able to re-open /setup
+  // and restart onboarding. null = still checking.
+  const [alreadySetUp, setAlreadySetUp] = useState<boolean | null>(null);
   // ponytail: auth.ts's User.name falls back to the email prefix
   // (auth.ts:39), which is wrong for a welcome greeting — intake@/info@
   // signups (common for law firms) would render "WELCOME TO BOLTCALL INTAKE".
@@ -90,6 +98,32 @@ const V2SetupPage: React.FC = () => {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    if (localStorage.getItem(SETUP_COMPLETE_KEY) === user.id) {
+      setAlreadySetUp(true);
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from('workspaces')
+      .select('setup_completed')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data?.setup_completed) {
+          localStorage.setItem(SETUP_COMPLETE_KEY, user.id);
+          setAlreadySetUp(true);
+        } else {
+          setAlreadySetUp(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, user?.id]);
+
+  useEffect(() => {
     if (isLoading || !isAuthenticated) return;
 
     setShowPrompting(false);
@@ -104,6 +138,14 @@ const V2SetupPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return <Navigate to="/signup?redirect=%2Fsetup" replace />;
+  }
+
+  if (alreadySetUp === null) {
+    return <div className="min-h-screen bg-[#050507]" />;
+  }
+
+  if (alreadySetUp) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

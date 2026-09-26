@@ -133,7 +133,13 @@ const TalkToAgentPage: React.FC = () => {
       console.error('Talk-to-agent start failed:', err);
       cleanup();
       setPhase('error');
-      setErrorMessage(err instanceof Error ? err.message : 'Could not start the call.');
+      const rawMsg = err instanceof Error ? err.message : '';
+      const isBillingError = /402|payment overdue|service stopped/i.test(rawMsg);
+      setErrorMessage(
+        isBillingError
+          ? 'Test call is unavailable right now. Your agent is set up; you can test it from the dashboard later.'
+          : rawMsg || 'Could not start the call.',
+      );
     }
   }, [user?.id, cleanup]);
 
@@ -167,10 +173,13 @@ const TalkToAgentPage: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center justify-center overflow-hidden bg-white">
+    <div className="fixed inset-0 isolate z-[9999] flex flex-col items-center overflow-y-auto bg-white">
       <SetupGradientBackground />
 
-      <div className="relative z-10 flex flex-col items-center px-6 text-center">
+      {/* pt-28 clears the logo (SetupGradientBackground renders it at top-8/top-10);
+          overflow-y-auto on the container lets short viewports scroll instead of
+          the content overlapping the logo. */}
+      <div className="relative z-10 flex flex-col items-center px-6 pt-28 pb-10 text-center">
         {/* Heading */}
         <AnimatePresence mode="wait">
           <motion.div
@@ -182,17 +191,17 @@ const TalkToAgentPage: React.FC = () => {
             className="mb-8"
           >
             {phase === 'live' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 Meet {agentName}.
               </h1>
             )}
             {phase !== 'live' && phase !== 'ended' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 Your agent is almost ready
               </h1>
             )}
             {phase === 'ended' && (
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 That's your agent.
               </h1>
             )}
@@ -214,11 +223,11 @@ const TalkToAgentPage: React.FC = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-6 flex items-center gap-2 text-sm font-medium text-slate-600"
+              className="mt-6 flex items-center gap-2 text-sm font-medium text-white/80"
             >
               <span className="inline-block w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
               <span>Live</span>
-              <span className="text-slate-400">·</span>
+              <span className="text-white/40">·</span>
               <span className="tabular-nums">{formatTime(callSeconds)}</span>
             </motion.div>
           )}
@@ -232,7 +241,7 @@ const TalkToAgentPage: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="mt-6 text-sm text-slate-500 max-w-md"
+              className="mt-6 text-sm text-white/70 max-w-md"
             >
               {captionByPhase[phase]}
             </motion.p>
@@ -292,7 +301,7 @@ const TalkToAgentPage: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-8 text-sm text-slate-400 hover:text-slate-600 underline-offset-4 hover:underline transition-colors"
+            className="mt-8 text-sm text-white/60 hover:text-white underline-offset-4 hover:underline transition-colors"
           >
             Skip &amp; enter dashboard →
           </motion.button>
