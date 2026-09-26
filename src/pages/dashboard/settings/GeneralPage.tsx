@@ -267,13 +267,15 @@ const GeneralPage: React.FC = () => {
 
   // Keep these slugs aligned with business_profiles.main_category so saved
   // values (for example 'plumber') round-trip cleanly in settings.
+  // 'law_firm' is a legacy slug some older profiles still hold; keep it selectable
+  // only for those, so new selections all land on the canonical 'legal' value.
   const industries: { value: string; label: string }[] = [
     { value: 'dentist', label: 'Dentist' },
     { value: 'medspa', label: 'Med Spa' },
     { value: 'plumber', label: 'Plumber' },
     { value: 'hvac', label: 'HVAC' },
-    { value: 'legal', label: 'Legal' },
-    { value: 'law_firm', label: 'Law Firm' },
+    { value: 'legal', label: 'Law Firm' },
+    ...(businessInfo.industry === 'law_firm' ? [{ value: 'law_firm', label: 'Law Firm (legacy)' }] : []),
     { value: 'salon', label: 'Salon' },
     { value: 'fitness', label: 'Fitness' },
     { value: 'restaurant', label: 'Restaurant' },
