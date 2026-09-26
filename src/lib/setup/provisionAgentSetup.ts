@@ -284,9 +284,8 @@ async function runProvisioning(userId: string, setup: PendingAgentSetup) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Phone number: /start's promise includes a dialable line. Non-fatal —
-  // launch never blocks on it — but the failure is RETURNED so the UI can
-  // show it with a retry, never silently swallowed (the V1 wizard's sin).
+  // Phone number: report an existing one only. Buying happens on
+  // /dashboard/phone-numbers after setup, never inline in onboarding.
   const phone: { number: string | null; error: string | null } = { number: null, error: null };
   try {
     const { data: existingPhone } = await supabase
@@ -296,31 +295,9 @@ async function runProvisioning(userId: string, setup: PendingAgentSetup) {
       .eq('status', 'active')
       .limit(1)
       .maybeSingle();
-    if (existingPhone?.phone_number) {
-      phone.number = existingPhone.phone_number;
-    } else {
-      const purchaseRes = await fetch(`${FUNCTIONS_BASE}/twilio-numbers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token
-            ? { Authorization: `Bearer ${session.access_token}` }
-            : {}),
-        },
-        body: JSON.stringify({ action: 'purchase', country_code: country.toUpperCase() }),
-      });
-      const purchaseData = await purchaseRes.json().catch(() => ({}));
-      if (purchaseRes.ok && purchaseData.phone_number) {
-        phone.number = purchaseData.phone_number;
-      } else {
-        // error is the customer-facing sentence; detail is raw provider text.
-        phone.error = purchaseData.error || `Phone purchase failed (${purchaseRes.status})`;
-        console.error('Phone purchase failed during /start launch:', phone.error);
-      }
-    }
+    phone.number = existingPhone?.phone_number || null;
   } catch (error) {
-    phone.error = error instanceof Error ? error.message : 'Phone purchase failed';
-    console.error('Phone purchase failed during /start launch:', error);
+    console.error('Phone lookup failed during setup:', error);
   }
 
   // Brand the workspace with the logo scraped during /start onboarding.

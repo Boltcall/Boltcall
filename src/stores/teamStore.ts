@@ -71,6 +71,8 @@ interface TeamState {
   deleteWorkspace: () => Promise<void>;
 }
 
+let ownerSeed: Promise<void> | null = null;
+
 export const useTeamStore = create<TeamState>((set, get) => ({
   // ─── Members State ─────────────────────────────────────────────────────
   members: [],
@@ -103,19 +105,32 @@ export const useTeamStore = create<TeamState>((set, get) => ({
 
     // Owner self-seed: when the workspace owner adds themselves on first load,
     // skip the invite-email round-trip and write directly with status='active'.
+    // MembersPage seeds on mount and the effect can fire twice, so dedupe the
+    // in-flight call and skip if the row already exists.
+    // ponytail: two tabs at once can still race; add a unique (workspace_id, email) index if that shows up.
     if (trimmedEmail === session.user.email?.toLowerCase()) {
-      const { error } = await supabase.from('workspace_members').insert({
-        workspace_id: session.user.id,
-        user_id: session.user.id,
-        invited_by: session.user.id,
-        email: trimmedEmail,
-        name: name?.trim() || null,
-        role,
-        status: 'active' as MemberStatus,
-        invited_at: new Date().toISOString(),
-        accepted_at: new Date().toISOString(),
-      });
-      if (error) throw error;
+      ownerSeed ??= (async () => {
+        const { data: existing } = await supabase
+          .from('workspace_members')
+          .select('id')
+          .eq('workspace_id', session.user.id)
+          .eq('email', trimmedEmail)
+          .limit(1);
+        if (existing?.length) return;
+        const { error } = await supabase.from('workspace_members').insert({
+          workspace_id: session.user.id,
+          user_id: session.user.id,
+          invited_by: session.user.id,
+          email: trimmedEmail,
+          name: name?.trim() || null,
+          role,
+          status: 'active' as MemberStatus,
+          invited_at: new Date().toISOString(),
+          accepted_at: new Date().toISOString(),
+        });
+        if (error) throw error;
+      })().finally(() => { ownerSeed = null; });
+      await ownerSeed;
       await get().fetchMembers(session.user.id);
       return;
     }
@@ -195,6 +210,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
   },
 
   updateMemberStatus: async (memberId: string, status: MemberStatus, reason?: string) => {
+    if (!memberId) return; // owner seed passes '' before its row is fetched; it's already inserted active
     const updates: Record<string, unknown> = { status };
     if (status === 'suspended') {
       updates.suspended_at = new Date().toISOString();
