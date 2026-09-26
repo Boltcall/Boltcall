@@ -278,7 +278,7 @@ const HomePage: React.FC = () => {
       {/* Zone D — the ONE next action (P3) */}
       <div className="rounded-xl border border-gray-200 dark:border-[#1e1e24] bg-white dark:bg-[#111114] p-4 md:p-5 flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{nextAction.label}</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{nextAction.label}</h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{nextAction.description}</p>
         </div>
         <Link
