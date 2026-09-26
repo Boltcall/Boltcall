@@ -437,8 +437,8 @@ const MembersPage: React.FC = () => {
                 <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
                 <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
                 <th className="hidden sm:table-cell px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Joined</th>
-                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Active</th>
+                <th className="hidden 2xl:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Joined</th>
+                <th className="hidden 2xl:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Active</th>
                 <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -471,11 +471,11 @@ const MembersPage: React.FC = () => {
                             <User className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                           )}
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        <div className="min-w-0 max-w-[140px] sm:max-w-[220px]">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate" title={member.name || member.email}>
                             {member.name || member.email.split('@')[0]}
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">{member.email}</div>
+                          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate" title={member.email}>{member.email}</div>
                         </div>
                       </div>
                     </td>
@@ -493,10 +493,10 @@ const MembersPage: React.FC = () => {
                         {statusInfo.label}
                       </span>
                     </td>
-                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="hidden 2xl:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatDate(member.accepted_at || member.invited_at)}
                     </td>
-                    <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <td className="hidden 2xl:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {formatLastActive(member.last_active)}
                     </td>
                     <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm" onClick={(e) => e.stopPropagation()}>
