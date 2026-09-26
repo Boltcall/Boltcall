@@ -415,7 +415,7 @@ const V2AnalyticsPageInner: React.FC = () => {
                       textAnchor="end"
                       height={50}
                     />
-                    <YAxis tick={{ fontSize: 11, fill: '#71717a' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#71717a' }} allowDecimals={false} />
                     <Tooltip />
                     <Bar dataKey="count" fill="#2563EB" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -433,7 +433,7 @@ const V2AnalyticsPageInner: React.FC = () => {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                     <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#71717a' }} />
-                    <YAxis tick={{ fontSize: 11, fill: '#71717a' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#71717a' }} allowDecimals={false} />
                     <Tooltip />
                     <Area
                       type="monotone"
@@ -475,7 +475,7 @@ const V2AnalyticsPageInner: React.FC = () => {
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                     <XAxis dataKey="hour" tick={{ fontSize: 11, fill: '#71717a' }} />
-                    <YAxis tick={{ fontSize: 11, fill: '#71717a' }} />
+                    <YAxis tick={{ fontSize: 11, fill: '#71717a' }} allowDecimals={false} />
                     <Tooltip />
                     <Line
                       type="monotone"
