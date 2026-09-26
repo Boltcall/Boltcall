@@ -356,7 +356,7 @@ describe('V2 pages — smoke tests', () => {
         'sm:text-5xl',
         'lg:text-6xl',
       );
-      expect(container.firstElementChild).toHaveClass('min-h-dvh');
+      expect(container.firstElementChild).toHaveClass('min-h-screen');
       expect(container.firstElementChild).not.toHaveClass('overflow-hidden');
       expect(document.body.style.overflow).not.toBe('hidden');
       expect(document.documentElement.style.overflow).not.toBe('hidden');
