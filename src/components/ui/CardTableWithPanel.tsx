@@ -126,9 +126,9 @@ const CardTableWithPanel: React.FC<CardTableWithPanelProps> = ({
         )}
 
         {/* Table Headers - Simple Text (hidden on mobile since rows stack) */}
+        {/* px-[49px] = outer container's px-6 (24) + row card's p-6 (24) + border (1),
+            so header columns land at the exact same x as row content, not just px-6. */}
         {filteredData.length > 0 && (
-          {/* px-[49px] = outer container's px-6 (24) + row card's p-6 (24) + border (1),
-              so header columns land at the exact same x as row content, not just px-6. */}
           <div className="hidden md:block px-[49px] py-4">
             <div className="grid gap-6" style={{ gridTemplateColumns: columnsToGridTemplate(columns) }}>
               {/* Column headers - match row structure exactly */}
