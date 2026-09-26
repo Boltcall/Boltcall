@@ -42,6 +42,22 @@ describe('marketing analytics loader', () => {
     });
   });
 
+  it('queues GA4 consent and config as Arguments objects, which is all gtag.js reads', async () => {
+    const { loadMarketingAnalytics } = await loadModule('clarity-id');
+
+    loadMarketingAnalytics();
+
+    const commands = (window.dataLayer || []).filter((entry) => !(entry as Record<string, unknown>)['gtm.start']);
+    expect(commands.map((entry) => Object.prototype.toString.call(entry))).toEqual([
+      '[object Arguments]',
+      '[object Arguments]',
+      '[object Arguments]',
+    ]);
+    expect(commands.map((entry) => (entry as IArguments)[0])).toEqual(['consent', 'js', 'config']);
+    expect((commands[0] as IArguments)[1]).toBe('default');
+    expect((commands[2] as IArguments)[1]).toBe('G-LY9H4ZQW81');
+  });
+
   it('does not load Microsoft Clarity in authenticated or setup areas', async () => {
     const { shouldLoadClarity } = await loadModule('clarity-id');
 

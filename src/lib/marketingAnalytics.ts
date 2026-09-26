@@ -83,13 +83,19 @@ function updateGoogleConsent(analyticsStorage: 'granted' | 'denied') {
     security_storage: 'granted',
   };
 
-  if (typeof window.gtag === 'function') {
-    window.gtag('consent', 'update', payload);
-    return;
-  }
+  const mode = typeof window.gtag === 'function' ? 'update' : 'default';
+  ensureGtag()('consent', mode, payload);
+}
 
+// gtag.js only reads Arguments objects off the dataLayer; a rest-param array is silently
+// dropped, which is how the old loader shipped a GA4 config that never took effect.
+function ensureGtag() {
   window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push(['consent', 'default', payload]);
+  window.gtag = window.gtag || function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer!.push(arguments);
+  };
+  return window.gtag;
 }
 
 function loadGoogleTagManager() {
@@ -111,15 +117,10 @@ function loadGoogleTagManager() {
 }
 
 function loadGoogleAnalytics() {
-  addScript(`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`, () => {
-    window.dataLayer = window.dataLayer || [];
-    function gtag(...args: unknown[]) {
-      window.dataLayer?.push(args);
-    }
-    gtag('js', new Date());
-    gtag('config', GOOGLE_ANALYTICS_ID);
-    window.gtag = gtag;
-  });
+  const gtag = ensureGtag();
+  gtag('js', new Date());
+  gtag('config', GOOGLE_ANALYTICS_ID);
+  addScript(`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`);
 }
 
 export function shouldLoadClarity(pathname = window.location.pathname) {
@@ -134,6 +135,7 @@ function loadMicrosoftClarity() {
     window.clarity ||
     function () {
       window.clarity!.q = window.clarity!.q || [];
+      // eslint-disable-next-line prefer-rest-params
       window.clarity!.q.push(arguments);
     };
   window.clarity('consentv2', {
