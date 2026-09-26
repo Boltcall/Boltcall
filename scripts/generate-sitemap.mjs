@@ -221,8 +221,23 @@ export function publishedAeoRoutesFromContentDir(contentDir = resolve(__dirname,
     .map(({ status, ...route }) => route);
 }
 
+let shallowClone;
+function isShallowClone() {
+  if (shallowClone === undefined) {
+    try {
+      shallowClone = execFileSync("git", ["rev-parse", "--is-shallow-repository"], { encoding: "utf-8", stdio: ["ignore", "pipe", "ignore"] }).trim() === "true";
+    } catch {
+      shallowClone = false;
+    }
+  }
+  return shallowClone;
+}
+
 /** Real last-edit date for a file: git commit date, falling back to mtime. */
 function lastModifiedDate(filePath) {
+  // A shallow clone (fetch-depth 1) reports its one commit's date for every file, and a
+  // fresh checkout's mtime is the clone time: both would stamp the whole site as edited today.
+  if (isShallowClone()) return null;
   try {
     const out = execFileSync("git", ["log", "-1", "--format=%cs", "--", filePath], {
       encoding: "utf-8",
@@ -239,10 +254,83 @@ function lastModifiedDate(filePath) {
   }
 }
 
-export function buildSitemapXml({ contentDir = resolve(__dirname, "../src/content/aeo") } = {}) {
+/**
+ * Live routes and their page source files, read from AppRoutes.tsx. Components shared by
+ * several routes (the blog template, redirects) are left out: a template edit is
+ * not a content change, and stamping 20 articles with it would be a false lastmod.
+ */
+export function appRoutePages(appRoutesFile = resolve(__dirname, "../src/routes/AppRoutes.tsx")) {
+  if (!existsSync(appRoutesFile)) return { paths: new Set(), files: new Map() };
+  const src = readFileSync(appRoutesFile, "utf-8");
+  const fileByComponent = new Map();
+  for (const m of src.matchAll(/(?:import\s+(\w+)\s+from|const\s+(\w+)\s*=\s*(?:React\.)?lazy\(\s*\(\)\s*=>\s*import\()\s*['"](\.\.\/pages\/[^'"]+)['"]/g)) {
+    fileByComponent.set(m[1] || m[2], m[3]);
+  }
+  const componentByPath = new Map();
+  const routeCount = new Map();
+  for (const m of src.matchAll(/<Route\s+path="([^"]+)"\s+element=\{<(\w+)\s*\/>\}/g)) {
+    componentByPath.set(canonicalPath(m[1]), m[2]);
+    routeCount.set(m[2], (routeCount.get(m[2]) || 0) + 1);
+  }
+  const files = new Map();
+  for (const [path, component] of componentByPath) {
+    const rel = fileByComponent.get(component);
+    if (!rel || routeCount.get(component) > 1) continue;
+    const base = resolve(dirname(appRoutesFile), rel);
+    const file = [".tsx", ".ts", "/index.tsx"].map((ext) => base + ext).find(existsSync);
+    if (file) files.set(path, file);
+  }
+  return { paths: new Set(componentByPath.keys()), files };
+}
+
+/** Blog posts rendered by the shared template carry their own content date here. */
+function overrideDatesByRoute(overridesFile = resolve(__dirname, "../src/content/seo-autopilot-overrides.json")) {
+  if (!existsSync(overridesFile)) return new Map();
+  const overrides = JSON.parse(readFileSync(overridesFile, "utf-8"));
+  return new Map(
+    Object.entries(overrides)
+      .filter(([, o]) => /^\d{4}-\d{2}-\d{2}/.test(o?.updated_at || ""))
+      .map(([path, o]) => [canonicalPath(path), o.updated_at.slice(0, 10)]),
+  );
+}
+
+/** Paths public/_redirects sends elsewhere; a sitemap must never list a redirect. */
+function redirectSources(redirectsFile = resolve(__dirname, "../public/_redirects")) {
+  if (!existsSync(redirectsFile)) return new Set();
+  return new Set(
+    readFileSync(redirectsFile, "utf-8")
+      .split(/\r?\n/)
+      .map((line) => line.trim().split(/\s+/))
+      .filter(([from, , status]) => from?.startsWith("/") && !from.includes("*") && /^30[12]!?$/.test(status || ""))
+      .map(([from]) => canonicalPath(from)),
+  );
+}
+
+// lastmod precedence: AEO markdown git date > override updated_at > page file git date.
+// A route none of these cover gets no <lastmod>; omitting it is valid, a guessed date is not.
+export function buildSitemapXml({
+  contentDir = resolve(__dirname, "../src/content/aeo"),
+  appRoutesFile,
+  overridesFile,
+  redirectsFile,
+} = {}) {
+  const { paths: livePaths, files: pageFiles } = appRoutePages(appRoutesFile);
+  const overrideDates = overrideDatesByRoute(overridesFile);
+  const redirected = redirectSources(redirectsFile);
+  // Posts written into the overrides file (the Aug 2026 lead-response series) were never
+  // added to ROUTES by hand, so 16 live articles sat outside the sitemap. List them from
+  // the source of truth instead; only ones that also have a live route qualify.
+  const overrideRoutes = [...overrideDates.keys()]
+    .filter((path) => livePaths.has(path))
+    .map((path) => ({ path, priority: "0.8", changefreq: "weekly" }));
   const byPath = new Map();
-  for (const route of [...ROUTES, ...publishedAeoRoutesFromContentDir(contentDir)]) {
-    byPath.set(canonicalPath(route.path), { ...route, path: canonicalPath(route.path) });
+  for (const route of [...ROUTES, ...overrideRoutes, ...publishedAeoRoutesFromContentDir(contentDir)]) {
+    const path = canonicalPath(route.path);
+    if (redirected.has(path)) continue;
+    const lastmod = route.lastmod
+      || overrideDates.get(path)
+      || (pageFiles.has(path) ? lastModifiedDate(pageFiles.get(path)) : null);
+    byPath.set(path, { ...route, path, lastmod });
   }
   const routes = [...byPath.values()];
 

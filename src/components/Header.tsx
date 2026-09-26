@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import GiveawayBar from './GiveawayBar';
+import BoltcallLogoReveal from './BoltcallLogoReveal';
 import LanguageSwitcher from './dashboard/LanguageSwitcher';
 import { useDirection } from '../hooks/useDirection';
 
@@ -344,19 +345,11 @@ const Header: React.FC = () => {
           <div className="flex items-center rtl:flex-row-reverse">
             {/* Logo */}
             <Link to="/">
-              <div className="flex items-center cursor-pointer transition-transform duration-200 hover:scale-105">
-                <picture>
-                  <source srcSet="/boltcall_full_logo.webp" type="image/webp" />
-                  <img
-                    src="/boltcall_full_logo.png"
-                    alt="Boltcall - AI Receptionist, Follow Ups, Reminders"
-                    className={`h-[68px] w-auto -translate-y-[2.8px] transition-[filter] duration-200 ${isOverBlueBackground ? 'brightness-0 invert' : ''}`}
-                    width="136"
-                    height="68"
-                    loading="eager"
-                    fetchPriority="high"
-                  />
-                </picture>
+              <div className="flex items-center cursor-pointer motion-safe:transition-transform motion-safe:duration-200 motion-safe:hover:scale-105">
+                <BoltcallLogoReveal
+                  alt="Boltcall - AI Receptionist, Follow Ups, Reminders"
+                  invert={isOverBlueBackground}
+                />
               </div>
             </Link>
 
