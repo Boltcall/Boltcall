@@ -149,7 +149,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({ children }) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 bg-gray-50 dark:bg-[#0a0a0c] min-h-[60vh]">
+        <div className="flex-1 min-w-0 bg-gray-50 dark:bg-[#0a0a0c] min-h-[60vh]">
           <div className="p-4 md:p-12 max-w-5xl">
             <AnimatePresence mode="wait">
               <motion.div
