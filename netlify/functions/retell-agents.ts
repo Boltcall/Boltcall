@@ -6,6 +6,7 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 import { listRetellVoiceAgents } from './_shared/retell-call-list';
 import { hasSharedSecret } from './_shared/user-auth';
 import { findWorkspaceForUser } from './_shared/setup-workspace';
+import { toE164 } from './_shared/twilio-from-number';
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -280,8 +281,8 @@ function buildTransferDestination(
     const sorted = [...rules].sort((a, b) => a.priority - b.priority);
     const lines = sorted.map((r) =>
       r.condition_type === 'default' || !r.condition_value
-        ? `- No specific match / general request to speak to a person: transfer to ${r.destination_number}`
-        : `- If the caller mentions "${r.condition_value}": transfer to ${r.destination_number}`
+        ? `- No specific match / general request to speak to a person: transfer to ${toE164(r.destination_number)}`
+        : `- If the caller mentions "${r.condition_value}": transfer to ${toE164(r.destination_number)}`
     ).join('\n');
     return {
       type: 'inferred',
@@ -289,10 +290,11 @@ function buildTransferDestination(
     };
   }
   if (rules.length === 1) {
-    return { type: 'predefined', number: rules[0].destination_number };
+    return { type: 'predefined', number: toE164(rules[0].destination_number) };
   }
-  if (fallbackNumber) {
-    return { type: 'predefined', number: fallbackNumber };
+  // Retell only accepts E.164; firms type "(415) 555-0142".
+  if (fallbackNumber && toE164(fallbackNumber)) {
+    return { type: 'predefined', number: toE164(fallbackNumber) };
   }
   return null;
 }
@@ -648,6 +650,7 @@ const handler: Handler = async (event) => {
     // POST /retell-agents — create agent with knowledge base
     if (event.httpMethod === 'POST') {
       const body = JSON.parse(event.body || '{}');
+      if (body.transfer_number) body.transfer_number = toE164(body.transfer_number);
       const { action } = body;
       const requestedUserId = body.user_id == null ? null : String(body.user_id);
       if (requestedUserId && requestedUserId !== userId) {

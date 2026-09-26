@@ -11,6 +11,7 @@ import {
   normalizeRetellCallList,
 } from './_shared/retell-call-list';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { toE164 } from './_shared/twilio-from-number';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -502,8 +503,9 @@ async function executeTool(name: string, args: any, ctx: any): Promise<{ result:
 
     case 'update_transfer_number': {
       if (!agent) return { result: 'No agent found. Please complete setup first.' };
-      const phone = args.phone_number.trim();
-      await supabase.from('agents').update({ transfer_number: phone }).eq('id', agent.id);
+      const phone = toE164(args.phone_number);
+      if (!phone) return { result: 'That phone number looks invalid. Please give a full number, e.g. +1 415 555 0142.' };
+      await supabase.from('agents').update({ transfer_phone_number: phone }).eq('id', agent.id);
 
       // Also update the Retell LLM's transfer_call tool with the new number
       if (agent.retell_agent_id) {
