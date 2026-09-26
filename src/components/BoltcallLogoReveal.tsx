@@ -4,9 +4,10 @@ import React, { useLayoutEffect, useState } from 'react';
 // survives remounts within one page load but resets on a real reload.
 let hasPlayedBoltcallLogoReveal = false;
 
-// Glyph x-ranges measured from public/boltcall_full_logo.png (565x278).
-// Every clip-path is a full-size crop of the same source image, so the 9
-// layers tile back together into the exact real logo with zero seam.
+// Glyph x-ranges measured from public/boltcall_full_logo.png, same 565x278
+// geometry as the .webp actually used below. Every clip-path is a full-size
+// crop of the same source image, so the 9 layers tile back together into
+// the exact real logo with zero seam.
 const SLICES: Array<{ key: string; clip: string; origin?: string; anim: 'bolt' | 'char'; delayMs?: number }> = [
   { key: 'bolt', clip: 'inset(24% 71.00% 16% 5.00%)', origin: '16.8% 54%', anim: 'bolt' },
   { key: 'b', clip: 'inset(24% 59.12% 16% 29.00%)', anim: 'char', delayMs: 400 },
@@ -25,7 +26,7 @@ interface BoltcallLogoRevealProps {
   className?: string;
 }
 
-/** Typing reveal of the Boltcall wordmark: 9 clipped copies of the same PNG
+/** Typing reveal of the Boltcall wordmark: 9 clipped copies of the same webp
  * (bolt icon + 8 letters), each animating in once per full page load. Final
  * frame is pixel-identical to the static logo. */
 const BoltcallLogoReveal: React.FC<BoltcallLogoRevealProps> = ({ alt, invert, className }) => {
@@ -49,7 +50,7 @@ const BoltcallLogoReveal: React.FC<BoltcallLogoRevealProps> = ({ alt, invert, cl
       {SLICES.map((s) => (
         <img
           key={s.key}
-          src="/boltcall_full_logo.png"
+          src="/boltcall_full_logo.webp"
           alt={s.key === 'bolt' ? alt : ''}
           aria-hidden={s.key === 'bolt' ? undefined : true}
           draggable={false}
