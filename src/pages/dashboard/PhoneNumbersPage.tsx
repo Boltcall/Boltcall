@@ -13,7 +13,7 @@ const PHONE_TABLE_COLUMNS = [
   { key: 'assignedAgentId', label: 'Assigned Agent', width: '14%' },
   { key: 'status', label: 'Status', width: '9%' },
   { key: 'createdAt', label: 'Created', width: '9%' },
-  { key: 'actions', label: '', width: '10%' }
+  { key: 'actions', label: 'Actions', width: '10%' }
 ];
 import ModalShell from '../../components/ui/modal-shell';
 import { Magnetic } from '../../components/ui/magnetic';
@@ -540,13 +540,9 @@ const PhoneNumbersPage: React.FC = () => {
               </div>
 
               {/* Assigned Agent ID */}
-              <div className="text-sm text-gray-900 dark:text-gray-100 min-w-0">
-                {phone.assignedAgentId ? (
-                  <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
-                    {phone.assignedAgentId}
-                  </span>
-                ) : (
-                  <span className="text-gray-400 dark:text-gray-500 text-xs">Not assigned</span>
+              <div className="text-sm text-gray-900 dark:text-gray-100 truncate min-w-0">
+                {phone.assignedAgentId || (
+                  <span className="text-gray-400 dark:text-gray-500">Not assigned</span>
                 )}
               </div>
 
