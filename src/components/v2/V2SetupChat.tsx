@@ -15,6 +15,7 @@ import { cn } from '../../lib/utils';
 import { Input } from '../ui/input';
 import { recordTosAcceptance } from '../../lib/tosAcceptance';
 import { reportHandledError } from '../../lib/errorReporting';
+import { Check } from 'lucide-react';
 
 interface ChatMessage {
   id: string;
@@ -1024,7 +1025,7 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
               >
                 <fieldset aria-label="Practice areas" className="grid gap-3 sm:grid-cols-3">
                   <legend className="col-span-full text-sm font-semibold text-white/80">
-                    Practice areas <span className="font-normal text-white/50">(optional — skip if you'd rather set this up later)</span>
+                    Practice areas <span className="font-normal text-white/50">(skip if you'd rather set this up later)</span>
                   </legend>
                   {PRACTICE_AREA_OPTIONS.map((label) => (
                     <button
@@ -1034,12 +1035,15 @@ const V2SetupChat: React.FC<{ onSpeakingChange?: (speaking: boolean) => void }> 
                       aria-checked={practiceAreasDraft.includes(label)}
                       onClick={() => togglePracticeArea(label)}
                       className={cn(
-                        'rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
+                        'flex items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
                         practiceAreasDraft.includes(label)
-                          ? 'border-white bg-white/20 text-white shadow-[0_16px_50px_rgba(255,255,255,0.10)]'
+                          ? 'border-white bg-white text-slate-900 shadow-[0_16px_50px_rgba(255,255,255,0.18)]'
                           : 'border-white/25 bg-white/10 text-white/85 hover:bg-white/15',
                       )}
                     >
+                      {practiceAreasDraft.includes(label) && (
+                        <Check className="h-4 w-4 flex-shrink-0" strokeWidth={2.5} />
+                      )}
                       {label}
                     </button>
                   ))}
