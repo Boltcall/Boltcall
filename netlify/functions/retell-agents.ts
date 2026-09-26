@@ -925,7 +925,8 @@ const handler: Handler = async (event) => {
           generalPrompt += '\n\n## Business Knowledge Base\nBelow is your structured knowledge base. Each document contains a question and answer. Use this information to answer accurately, but REPHRASE answers in your own tone and style — never read them verbatim.\n\n<knowledge_base>\n';
           for (const text of body.knowledge_base_texts) {
             const content = typeof text === 'string' ? text : text.text || text.content || '';
-            if (content) generalPrompt += `${content}\n`;
+            const title = typeof text === 'string' ? '' : text.title;
+            if (content) generalPrompt += `${title ? `### ${title}\n` : ''}${content}\n`;
           }
           generalPrompt += '</knowledge_base>\n';
         }
