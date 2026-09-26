@@ -295,11 +295,11 @@ export async function configurePhoneNumber(
 /**
  * Release (delete) a phone number
  */
-export async function releasePhoneNumber(sid: string): Promise<{ success: boolean }> {
+export async function releasePhoneNumber(sid: string, phoneNumber?: string): Promise<{ success: boolean }> {
   const response = await authedFetch(`${FUNCTIONS_BASE}/twilio-numbers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'release', sid }),
+    body: JSON.stringify({ action: 'release', sid, phone_number: phoneNumber }),
   });
 
   if (!response.ok) {
