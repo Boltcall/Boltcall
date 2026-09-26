@@ -109,17 +109,13 @@ const config: Config = {
         blob: "blob 2s ease-in-out infinite",
         "integration-scroll-left": "integration-scroll-left 30s linear infinite",
         "integration-scroll-right": "integration-scroll-right 30s linear infinite",
-        "logo-bolt-in": "logo-bolt-in 600ms cubic-bezier(0.16,1,0.3,1) both",
-        "logo-char-in": "logo-char-in 500ms cubic-bezier(0.16,1,0.3,1) both",
+        "logo-mask-bolt": "maskUp 800ms cubic-bezier(0.16,1,0.3,1) both",
+        "logo-mask-char": "maskUp 750ms cubic-bezier(0.16,1,0.3,1) both",
       },
       keyframes: {
-        "logo-bolt-in": {
-          "0%": { opacity: "0", transform: "translateY(10px) scale(0.9) rotate(-6deg)" },
-          "100%": { opacity: "1", transform: "translateY(0) scale(1) rotate(0)" },
-        },
-        "logo-char-in": {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+        maskUp: {
+          "0%": { transform: "translateY(58%)" },
+          "100%": { transform: "none" },
         },
         aurora: {
           from: {
