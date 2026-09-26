@@ -22,7 +22,7 @@ const MessagesPage: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Tab Bar */}
-      <div className="bg-white dark:bg-[#111114] border-b border-gray-200 dark:border-[#1e1e24] flex-shrink-0 px-3 md:px-6 pt-4 pb-0 overflow-x-auto">
+      <div className="bg-white dark:bg-[#111114] border-b border-gray-200 dark:border-[#1e1e24] flex-shrink-0 px-3 md:px-6 pt-4 pb-0 overflow-x-auto overflow-y-hidden">
         <div className="flex flex-col gap-1 mb-0 sm:flex-row sm:items-center">
           <h1 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white sm:mr-6">Messages</h1>
           <nav className="flex gap-3 md:gap-4 -mb-px flex-1">
