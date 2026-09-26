@@ -109,8 +109,14 @@ const config: Config = {
         blob: "blob 2s ease-in-out infinite",
         "integration-scroll-left": "integration-scroll-left 30s linear infinite",
         "integration-scroll-right": "integration-scroll-right 30s linear infinite",
+        "logo-mask-bolt": "maskUp 800ms cubic-bezier(0.16,1,0.3,1) both",
+        "logo-mask-char": "maskUp 750ms cubic-bezier(0.16,1,0.3,1) both",
       },
       keyframes: {
+        maskUp: {
+          "0%": { transform: "translateY(58%)" },
+          "100%": { transform: "none" },
+        },
         aurora: {
           from: {
             backgroundPosition: "50% 50%, 50% 50%",
