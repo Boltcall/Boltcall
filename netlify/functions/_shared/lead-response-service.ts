@@ -1,3 +1,7 @@
+import { isQuietHours, nextAllowedSendTime } from '../message-dispatcher';
+import { alertOwner } from './notify';
+import { toE164 } from './twilio-from-number';
+
 type SupabaseLike = {
   from(table: string): any;
 };
@@ -10,7 +14,7 @@ export type InboundLeadInput = {
 export type LeadResponseOutcome = {
   status: 'captured' | 'rejected' | 'failed';
   lead_id: string | null;
-  first_touch_status: 'not_applicable' | 'started' | 'skipped' | 'failed';
+  first_touch_status: 'not_applicable' | 'started' | 'deferred' | 'skipped' | 'failed';
   retell_call_started: boolean;
   events_emitted: string[];
   warnings: string[];
@@ -89,6 +93,47 @@ async function findExistingIdempotentLead(
   }
 
   return null;
+}
+
+// Cross-source dedup: the same person reaching two channels (a tracked call and
+// a web form) within 24h gets one AI call, not two. The new touch is still saved.
+async function hasRecentContact(deps: LeadResponseDeps, lead: Record<string, any>): Promise<boolean> {
+  if (!lead.user_id || !lead.phone) return false; // no phone, no call to suppress
+  const phone = toE164(lead.phone);
+  const email = String(lead.email || '').trim().toLowerCase();
+  try {
+    const since = new Date((deps.now?.() ?? new Date()).getTime() - 24 * 3600_000).toISOString();
+    // ponytail: normalized match in JS over the newest 200 leads of the last 24h; add a normalized phone column if volume outgrows it.
+    const { data } = await deps.supabase
+      .from('leads')
+      .select('phone, email')
+      .eq('user_id', lead.user_id)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(200);
+    return (data || []).some((row: any) =>
+      toE164(row.phone) === phone ||
+      // Same email counts only if that earlier lead had a phone (so it was called).
+      (email !== '' && !!row.phone && String(row.email || '').trim().toLowerCase() === email));
+  } catch {
+    return false; // dedup must never block a first touch
+  }
+}
+
+// Same source and default as message-dispatcher's SMS quiet hours: sms_settings,
+// where 'UTC' is the column default ("never configured").
+async function businessTimezone(deps: LeadResponseDeps, userId: string): Promise<string> {
+  try {
+    const { data } = await deps.supabase
+      .from('sms_settings')
+      .select('business_timezone')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (data?.business_timezone && data.business_timezone !== 'UTC') return data.business_timezone;
+  } catch {
+    // fall through to the default
+  }
+  return 'America/New_York';
 }
 
 async function emitLifecycleEvent(
@@ -177,6 +222,37 @@ async function startFirstTouch(
     return 'skipped';
   }
 
+  // TCPA: no automated calls outside 08:00–21:00 local. Queue the first touch
+  // on message-dispatcher's call channel for the next allowed window instead.
+  const now = deps.now?.() ?? new Date();
+  const tz = await businessTimezone(deps, lead.user_id);
+  if (isQuietHours(tz, now)) {
+    let deferError: unknown = null;
+    try {
+      const { error } = await deps.supabase.from('scheduled_messages').insert({
+        user_id: lead.user_id,
+        type: 'followup',
+        channel: 'call',
+        recipient_phone: lead.phone,
+        message_body: 'First-touch AI call deferred for quiet hours',
+        scheduled_for: nextAllowedSendTime(tz, now),
+        status: 'scheduled',
+        metadata: { agent_id: agentId, from_number: fromNumber, lead_id: lead.id, source: lead.source },
+      });
+      deferError = error;
+    } catch (error) {
+      deferError = error;
+    }
+    // A failed queue is carried by the owner alert ("call them back in the morning").
+    warnings.push(deferError ? 'quiet_hours_defer_failed' : 'quiet_hours_deferred');
+    await emitLifecycleEvent(deps, 'first_touch_deferred', lead, {
+      source: lead.source,
+      outcome: deferError ? 'failure' : 'success',
+      timezone: tz,
+    }, eventsEmitted);
+    return 'deferred';
+  }
+
   const emitStarted = (emitted: string[] = eventsEmitted) =>
     emitLifecycleEvent(deps, 'first_touch_started', lead, { source: lead.source }, emitted);
   const emitFailed = (error: any, emitted: string[] = eventsEmitted) =>
@@ -212,6 +288,18 @@ async function startFirstTouch(
   }
 }
 
+function firstTouchNote(status: LeadResponseOutcome['first_touch_status'], warnings: string[]): string {
+  if (status === 'started') return 'Boltcall is calling them now.';
+  if (status === 'deferred') {
+    return warnings.includes('quiet_hours_defer_failed')
+      ? 'It came in outside calling hours (8am to 9pm), so Boltcall did not call. Please call them back first thing in the morning.'
+      : 'It came in outside calling hours (8am to 9pm), so Boltcall will call them at 8am. Call sooner yourself if it is urgent.';
+  }
+  if (warnings.includes('recent_contact_no_second_call')) return 'This person already contacted you in the last 24 hours, so Boltcall did not call them a second time.';
+  if (status === 'not_applicable') return 'No phone number was given, so reply by email.';
+  return 'Boltcall could not call them automatically. Please call them back as soon as you can.';
+}
+
 export async function handleInboundLead(
   input: InboundLeadInput,
   deps: LeadResponseDeps,
@@ -234,6 +322,7 @@ export async function handleInboundLead(
   }
 
   let insertedLead: Record<string, any> | null = null;
+  let recentContact = false;
   try {
     const existingLead = await findExistingIdempotentLead(deps, lead, input.body || {});
     if (existingLead) {
@@ -250,6 +339,7 @@ export async function handleInboundLead(
       };
     }
 
+    recentContact = await hasRecentContact(deps, lead);
     const { data, error } = await deps.supabase
       .from('leads')
       .insert(lead)
@@ -328,7 +418,26 @@ export async function handleInboundLead(
     }
   }
 
-  const firstTouchStatus = await startFirstTouch(deps, insertedLead, eventsEmitted, warnings);
+  let firstTouchStatus: LeadResponseOutcome['first_touch_status'];
+  if (recentContact) {
+    warnings.push('recent_contact_no_second_call');
+    firstTouchStatus = 'skipped';
+  } else {
+    firstTouchStatus = await startFirstTouch(deps, insertedLead, eventsEmitted, warnings);
+  }
+
+  if (insertedLead.user_id) {
+    const name = [insertedLead.first_name, insertedLead.last_name].filter(Boolean).join(' ') || 'Name not given';
+    const sent = await alertOwner(deps.supabase, insertedLead.user_id, `New lead: ${name}`, [
+      `A new inquiry just came in (source: ${insertedLead.source || 'unknown'}).`,
+      `Name: ${name}`,
+      `Phone: ${insertedLead.phone || 'not provided'}`,
+      `Email: ${insertedLead.email || 'not provided'}`,
+      firstTouchNote(firstTouchStatus, warnings),
+      'Open it in Boltcall: https://boltcall.org/dashboard/leads',
+    ]);
+    if (!sent) warnings.push('owner_alert_not_sent');
+  }
 
   if (insertedLead?.user_id && deps.syncCrm) {
     try {

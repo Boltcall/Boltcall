@@ -207,7 +207,7 @@ const Newsletter: React.FC = () => {
       {/* Social Proof */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Join 500+ businesses using Boltcall to capture more leads and grow revenue.</p>
+        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
@@ -235,7 +235,7 @@ const Newsletter: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Used by 500+ local businesses</span>
+              <span>Built for local service businesses</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

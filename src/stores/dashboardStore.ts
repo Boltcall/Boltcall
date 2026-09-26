@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import dayjs from 'dayjs';
-import { fetchDashboardStats, fetchCallbackStats } from '../lib/dashboardApi';
-import type { DashboardStats } from '../lib/dashboardApi';
+import { fetchCallbackStats } from '../lib/dashboardApi';
 import type { Lead, Kpis, TimeSeriesPoint, ChannelPerf, Faq, Transcript, Alert, FunnelStep, Channel, Intent } from '../types/dashboard';
 
 // Empty-state seeds — new users see blank widgets that fill in when
@@ -50,7 +49,6 @@ interface DashboardState {
   funnelSteps: FunnelStep[];
 
   // Live API data
-  liveStats: DashboardStats | null;
   dailyMetrics: any[];
   businessHealth: any;
   callbackStats: any;
@@ -108,7 +106,6 @@ export const useDashboardStore = create<DashboardState>()(
       funnelSteps: [],
 
       // Live data
-      liveStats: null,
       dailyMetrics: [],
       businessHealth: null,
       callbackStats: null,
@@ -176,8 +173,10 @@ export const useDashboardStore = create<DashboardState>()(
         }));
       },
 
-      // Fetch the two live sources the dashboard actually renders:
-      // liveStats (TodayGlanceCard headline metrics) + callbackStats (pending count).
+      // Fetch the one live source the dashboard actually renders: callbackStats
+      // (pending count). dashboard-stats is an admin-only aggregate (403s for
+      // every real customer) — do not call it here; TodayGlanceCard/AnalyticsPage
+      // already read real per-workspace data via getRetellCallHistory/fetchUserCallStats.
       // The `leads` table is owned by SpeedToLeadPage; do not mirror it here from
       // `callbacks` — that was a second, wrong source of truth. KPIs/timeSeries used
       // to be synthesized from mismatched fields (bookings := ai_calls_today); those
@@ -185,27 +184,13 @@ export const useDashboardStore = create<DashboardState>()(
       fetchLiveData: async () => {
         set({ loading: true, fetchError: null });
 
-        const [stats, callbacks] = await Promise.allSettled([
-          fetchDashboardStats(),
-          fetchCallbackStats(),
-        ]);
-
-        const liveStats = stats.status === 'fulfilled' ? stats.value : null;
-        const callbackStats = callbacks.status === 'fulfilled' ? callbacks.value : null;
-
-        // fetchDashboardStats throws on HTTP error / timeout, so a rejection here is a
-        // real outage — surface it instead of silently showing empty widgets.
-        const fetchError =
-          stats.status === 'rejected'
-            ? (stats.reason instanceof Error ? stats.reason.message : 'Failed to load dashboard data')
-            : null;
+        const callbackStats = await fetchCallbackStats();
 
         set({
-          liveStats,
           callbackStats,
           lastFetchedAt: new Date().toISOString(),
           loading: false,
-          fetchError,
+          fetchError: null,
         });
       },
 

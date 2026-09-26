@@ -322,8 +322,9 @@ const KnowledgeBasePage: React.FC = () => {
         });
       }
 
+      let insertFailed = false;
       for (const entry of entries) {
-        await supabase.from('knowledge_base').insert({
+        const { error: insertError } = await supabase.from('knowledge_base').insert({
           user_id: user.id,
           business_profile_id: businessProfileId,
           title: entry.title,
@@ -331,12 +332,19 @@ const KnowledgeBasePage: React.FC = () => {
           content_type: entry.content_type,
           tags: entry.tags,
           status: 'active',
-          priority: 3,
           kb_folder_id: selectedFolderId || null,
         });
+        if (insertError) {
+          console.error('Error inserting KB entry:', insertError);
+          insertFailed = true;
+        }
       }
 
-      showToast({ message: 'Knowledge base updated!', variant: 'success' });
+      if (insertFailed) {
+        showToast({ message: 'Some answers failed to save — try again', variant: 'error' });
+      } else {
+        showToast({ message: 'Knowledge base updated!', variant: 'success' });
+      }
       setShowGapsQuiz(false);
       setQuizStep(0);
       setQuizAnswers({});

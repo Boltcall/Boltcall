@@ -382,9 +382,8 @@ const FreeWebsitePage: React.FC = () => {
       <section id="social-proof" className="py-12 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Trusted by Local Businesses</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
             {[
-              { stat: '500+', label: 'local businesses served' },
               { stat: '4.9/5', label: 'average rating' },
               { stat: '24hr', label: 'delivery time' },
             ].map(({ stat, label }) => (

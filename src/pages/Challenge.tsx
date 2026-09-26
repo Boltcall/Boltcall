@@ -332,7 +332,7 @@ const Challenge: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             {[
               '100% Free — no credit card required',
-              'Used by 500+ local businesses',
+              'Built for local service businesses',
               'Results in 30 days or your money back',
               'Your data is never sold or shared',
             ].map((t) => (

@@ -475,6 +475,8 @@ const PersonalInjury: React.FC = () => {
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  aria-expanded={openFaq === i}
+                  aria-controls={`pi-faq-answer-${i}`}
                   className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-gray-50 transition-colors"
                 >
                   <span className="font-semibold text-gray-900">{faq.q}</span>
@@ -483,7 +485,7 @@ const PersonalInjury: React.FC = () => {
                   />
                 </button>
                 {openFaq === i && (
-                  <div className="px-6 pb-5 text-gray-600 text-sm leading-relaxed border-t border-gray-100 pt-4">
+                  <div id={`pi-faq-answer-${i}`} className="px-6 pb-5 text-gray-600 text-sm leading-relaxed border-t border-gray-100 pt-4">
                     {faq.a}
                   </div>
                 )}

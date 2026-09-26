@@ -1,5 +1,6 @@
 import type { HandlerEvent } from '@netlify/functions';
 import type { User } from '@supabase/supabase-js';
+import * as crypto from 'crypto';
 
 import { getServiceSupabase } from './token-utils';
 
@@ -30,20 +31,33 @@ export function getHeader(event: HandlerEvent, name: string): string | undefined
   return header(event, name);
 }
 
+// Historical: two names for the same value shipped in parallel
+// (INTERNAL_WEBHOOK_SECRET, INTERNAL_API_SECRET). Standardize on
+// INTERNAL_API_SECRET going forward — leave the legacy fallback here
+// so unrotated Netlify environments keep working, and drop it after
+// Week 4 secret rotation. Callers that SEND the x-internal-secret header
+// (not just verify it) should use this too, so a prod that only sets
+// INTERNAL_API_SECRET doesn't silently break internal calls (F116).
+export function internalSecretValue(): string {
+  return process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '';
+}
+
+// Constant-time compare, same pattern as acs-inbound-sms.ts / agency-runner-auth.ts
+// (F78 — this was the one secret check in the file still using `===`).
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
+
 export function hasSharedSecret(event: HandlerEvent): boolean {
-  // Historical: two names for the same value shipped in parallel
-  // (INTERNAL_WEBHOOK_SECRET, INTERNAL_API_SECRET). Standardize on
-  // INTERNAL_API_SECRET going forward — leave the legacy fallback here
-  // so unrotated Netlify environments keep working, and drop it after
-  // Week 4 secret rotation.
-  const internalSecret = process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '';
+  const internalSecret = internalSecretValue();
   const cronSecret = process.env.CRON_SECRET || '';
 
   const providedInternal = header(event, 'x-internal-secret') || '';
-  if (internalSecret && providedInternal === internalSecret) return true;
+  if (internalSecret && providedInternal && safeEqual(providedInternal, internalSecret)) return true;
 
   const providedCron = header(event, 'x-cron-secret') || '';
-  if (cronSecret && providedCron === cronSecret) return true;
+  if (cronSecret && providedCron && safeEqual(providedCron, cronSecret)) return true;
 
   return false;
 }

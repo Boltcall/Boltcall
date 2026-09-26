@@ -647,6 +647,198 @@ async function syncToServiceTitan(
   }
 }
 
+/**
+ * Validate a provider's credentials/config by exercising a real read call — the
+ * same logic the standalone 'test' action uses. connect() calls this before
+ * persisting is_connected:true so a bad key can't produce a fake-green integration.
+ */
+async function runIntegrationTest(
+  provider: string,
+  testApiKey: string | undefined,
+  testWebhookUrl: string | undefined,
+  testConfig: any,
+): Promise<{ statusCode: number; body: Record<string, unknown> }> {
+
+      if (provider === 'hubspot') {
+        const accessToken = testConfig?.access_token || testApiKey;
+        if (!accessToken) return { statusCode: 400, body: { error: 'HubSpot OAuth connection or private app token required' } };
+        const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts?limit=1', {
+          headers: { 'Authorization': `Bearer ${accessToken}` },
+        });
+        if (res.ok) {
+          return { statusCode: 200, body: { success: true, message: 'HubSpot connection verified' } };
+        }
+        return { statusCode: 200, body: { success: false, error: `HubSpot auth failed: ${res.status}` } };
+      }
+
+      if (provider === 'gohighlevel') {
+        if (!testApiKey) return { statusCode: 400, body: { error: 'apiKey required for GoHighLevel' } };
+        const locationId = testConfig?.location_id;
+        if (!locationId) return { statusCode: 400, body: { error: 'Location ID required for GoHighLevel' } };
+        const res = await fetch(`https://services.leadconnectorhq.com/contacts/?locationId=${locationId}&limit=1`, {
+          headers: { 'Authorization': `Bearer ${testApiKey}`, 'Version': '2021-07-28' },
+        });
+        if (res.ok) {
+          return { statusCode: 200, body: { success: true, message: 'GoHighLevel connection verified' } };
+        }
+        const errText = await res.text();
+        return { statusCode: 200, body: { success: false, error: `GoHighLevel auth failed: ${res.status} - ${errText}` } };
+      }
+
+      if (provider === 'zapier') {
+        if (!testWebhookUrl) return { statusCode: 400, body: { error: 'webhookUrl required for Zapier' } };
+        const urlCheck = await validateOutboundHttpsUrl(testWebhookUrl);
+        if (!urlCheck.ok) return { statusCode: 400, body: { error: urlCheck.error } };
+        const result = await syncToZapier(testWebhookUrl, { name: 'Test Lead', email: 'test@boltcall.org', phone: '+447700000000', source: 'test' }, 'test');
+        return { statusCode: 200, body: result };
+      }
+
+      if (provider === 'google_sheets') {
+        if (!testApiKey || !testConfig?.spreadsheet_id) {
+          return { statusCode: 400, body: { error: 'apiKey and config.spreadsheet_id required' } };
+        }
+        // Just check if the sheet is accessible
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${testConfig.spreadsheet_id}?key=${testApiKey}&fields=properties.title`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          return { statusCode: 200, body: { success: true, message: `Connected to "${data.properties?.title}"` } };
+        }
+        return { statusCode: 200, body: { success: false, error: `Google Sheets access failed: ${res.status}` } };
+      }
+
+      if (provider === 'email') {
+        if (!testApiKey) return { statusCode: 400, body: { error: 'Email address required' } };
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(testApiKey)) {
+          return { statusCode: 200, body: { success: false, error: 'Invalid email address format' } };
+        }
+        // Send a test notification email via Brevo
+        const brevoKey = process.env.BREVO_API_KEY;
+        if (brevoKey) {
+          try {
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+              method: 'POST',
+              headers: {
+                'api-key': brevoKey,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                sender: { name: 'Boltcall', email: 'notifications@boltcall.org' },
+                to: [{ email: testApiKey }],
+                subject: 'Boltcall Notifications Connected!',
+                htmlContent: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+                  <h2 style="color:#1e40af">Notifications Connected</h2>
+                  <p>Your Boltcall notifications are now active. You'll receive emails for:</p>
+                  <ul>
+                    <li>New leads captured by your AI receptionist</li>
+                    <li>Missed calls</li>
+                    <li>New appointment bookings</li>
+                  </ul>
+                  <p style="color:#6b7280;font-size:13px">— The Boltcall Team</p>
+                </div>`,
+              }),
+            });
+            if (res.ok) {
+              return { statusCode: 200, body: { success: true, message: `Test email sent to ${testApiKey}` } };
+            }
+          } catch {}
+        }
+        // Even without Brevo, validate the email is correct
+        return { statusCode: 200, body: { success: true, message: `Email address ${testApiKey} verified` } };
+      }
+
+      if (provider === 'pipedrive') {
+        const accessToken = testConfig?.access_token || testApiKey;
+        if (!accessToken) return { statusCode: 400, body: { error: 'Pipedrive OAuth connection or API token required' } };
+        const res = testConfig?.access_token
+          ? await fetch('https://api.pipedrive.com/v1/users/me', { headers: { Authorization: `Bearer ${accessToken}` } })
+          : await fetch(`https://api.pipedrive.com/v1/users/me?api_token=${accessToken}`);
+        if (res.ok) {
+          const data = await res.json();
+          const userName = data.data?.name || 'User';
+          return { statusCode: 200, body: { success: true, message: `Pipedrive connected as ${userName}` } };
+        }
+        return { statusCode: 200, body: { success: false, error: `Pipedrive auth failed: ${res.status}` } };
+      }
+
+      if (provider === 'make') {
+        if (!testWebhookUrl) return { statusCode: 400, body: { error: 'webhookUrl required for Make.com' } };
+        const urlCheck = await validateOutboundHttpsUrl(testWebhookUrl);
+        if (!urlCheck.ok) return { statusCode: 400, body: { error: urlCheck.error } };
+        const result = await syncToZapier(testWebhookUrl, { name: 'Test Lead', email: 'test@boltcall.org', phone: '+447700000000', source: 'test' }, 'test');
+        return { statusCode: 200, body: result };
+      }
+
+      if (provider === 'google_calendar') {
+        // OAuth-based test: use the stored access token from config
+        const accessToken = testConfig?.access_token;
+        if (!accessToken) {
+          return { statusCode: 200, body: { success: false, error: 'Not connected. Use "Connect with Google" to authorize.' } };
+        }
+        const today = new Date().toISOString().split('T')[0];
+        const result = await checkGoogleCalendarAvailability(accessToken, testConfig, today);
+        if (result.success) {
+          return { statusCode: 200, body: { success: true, message: `Calendar connected. ${(result.slots || []).length} events today.` } };
+        }
+        return { statusCode: 200, body: result };
+      }
+
+      if (provider === 'google_business') {
+        if (!testApiKey) return { statusCode: 400, body: { error: 'API key required for Google Business Profile' } };
+        const locationId = testConfig?.location_id;
+        if (!locationId) return { statusCode: 400, body: { error: 'Business Location ID required' } };
+        // Verify access by fetching location reviews
+        const res = await fetch(
+          `https://mybusiness.googleapis.com/v4/${locationId}/reviews?pageSize=1`,
+          { headers: { 'Authorization': `Bearer ${testApiKey}` } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const reviewCount = data.totalReviewCount || 0;
+          return { statusCode: 200, body: { success: true, message: `Google Business Profile connected — ${reviewCount} total reviews` } };
+        }
+        // Fallback: try the Business Profile Performance API (newer)
+        const res2 = await fetch(
+          `https://businessprofileperformance.googleapis.com/v1/${locationId}:getDailyMetricsTimeSeries?dailyMetric=BUSINESS_IMPRESSIONS_DESKTOP_MAPS&dailyRange.startDate.year=2026&dailyRange.startDate.month=3&dailyRange.startDate.day=1&dailyRange.endDate.year=2026&dailyRange.endDate.month=3&dailyRange.endDate.day=28`,
+          { headers: { 'Authorization': `Bearer ${testApiKey}` } }
+        );
+        if (res2.ok) {
+          return { statusCode: 200, body: { success: true, message: 'Google Business Profile connected successfully' } };
+        }
+        return { statusCode: 200, body: { success: false, error: `Google Business Profile auth failed: ${res.status}. Ensure the API is enabled and credentials are valid.` } };
+      }
+
+      if (provider === 'servicetitan') {
+        if (!testApiKey) return { statusCode: 400, body: { error: 'Client ID required for ServiceTitan' } };
+        const clientSecret = testConfig?.client_secret;
+        if (!clientSecret) return { statusCode: 400, body: { error: 'Client Secret required for ServiceTitan' } };
+        const tenantId = testConfig?.tenant_id;
+        if (!tenantId) return { statusCode: 400, body: { error: 'Tenant ID required for ServiceTitan' } };
+
+        const accessToken = await getServiceTitanToken(testApiKey, clientSecret);
+        if (!accessToken) {
+          return { statusCode: 200, body: { success: false, error: 'Authentication failed — check your Client ID and Client Secret' } };
+        }
+
+        const res = await fetch(
+          `https://api.servicetitan.io/crm/v2/tenant/${tenantId}/customers?page=1&pageSize=1`,
+          { headers: { 'Authorization': `Bearer ${accessToken}`, 'ST-App-Key': testApiKey } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const count = data.totalCount ?? 0;
+          return { statusCode: 200, body: { success: true, message: `ServiceTitan connected — ${count} customers in account` } };
+        }
+        const errText = await res.text();
+        return { statusCode: 200, body: { success: false, error: `ServiceTitan access failed: ${res.status} — check your Tenant ID` } };
+      }
+
+      return { statusCode: 200, body: { success: true, message: 'No test available for this provider' } };
+}
+
+
 // ─── Main Handler ───────────────────────────────────────────────────────────
 
 const handler: Handler = async (event) => {
@@ -700,6 +892,23 @@ const handler: Handler = async (event) => {
         const urlCheck = await validateOutboundHttpsUrl(webhookUrl);
         if (!urlCheck.ok) {
           return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
+        }
+      }
+
+      // Integration Hub 'Connect' used to flip is_connected:true on any input with no
+      // credential check ('fake Connected'). google_calendar is excluded: its only
+      // caller here is the settings-merge save (GoogleCalendarTab), which re-sends the
+      // OAuth-issued config without fresh credentials — real OAuth validation already
+      // happened in google-calendar-auth-callback.ts.
+      if (provider !== 'google_calendar') {
+        const validation = await runIntegrationTest(provider, integrationApiKey, webhookUrl, config);
+        const validationBody = validation.body as { success?: boolean; error?: string };
+        if (validation.statusCode !== 200 || validationBody.success === false) {
+          return {
+            statusCode: validation.statusCode === 400 ? 400 : 200,
+            headers,
+            body: JSON.stringify({ success: false, error: validationBody.error || 'Credential validation failed' }),
+          };
         }
       }
 
@@ -769,184 +978,8 @@ const handler: Handler = async (event) => {
     // ─── TEST: Test a specific integration connection ───────────────
     if (action === 'test') {
       const { provider, apiKey: testApiKey, webhookUrl: testWebhookUrl, config: testConfig } = body;
-
-      if (provider === 'hubspot') {
-        const accessToken = testConfig?.access_token || testApiKey;
-        if (!accessToken) return { statusCode: 400, headers, body: JSON.stringify({ error: 'HubSpot OAuth connection or private app token required' }) };
-        const res = await fetch('https://api.hubapi.com/crm/v3/objects/contacts?limit=1', {
-          headers: { 'Authorization': `Bearer ${accessToken}` },
-        });
-        if (res.ok) {
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'HubSpot connection verified' }) };
-        }
-        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `HubSpot auth failed: ${res.status}` }) };
-      }
-
-      if (provider === 'gohighlevel') {
-        if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'apiKey required for GoHighLevel' }) };
-        const locationId = testConfig?.location_id;
-        if (!locationId) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Location ID required for GoHighLevel' }) };
-        const res = await fetch(`https://services.leadconnectorhq.com/contacts/?locationId=${locationId}&limit=1`, {
-          headers: { 'Authorization': `Bearer ${testApiKey}`, 'Version': '2021-07-28' },
-        });
-        if (res.ok) {
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'GoHighLevel connection verified' }) };
-        }
-        const errText = await res.text();
-        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `GoHighLevel auth failed: ${res.status} - ${errText}` }) };
-      }
-
-      if (provider === 'zapier') {
-        if (!testWebhookUrl) return { statusCode: 400, headers, body: JSON.stringify({ error: 'webhookUrl required for Zapier' }) };
-        const urlCheck = await validateOutboundHttpsUrl(testWebhookUrl);
-        if (!urlCheck.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
-        const result = await syncToZapier(testWebhookUrl, { name: 'Test Lead', email: 'test@boltcall.org', phone: '+447700000000', source: 'test' }, 'test');
-        return { statusCode: 200, headers, body: JSON.stringify(result) };
-      }
-
-      if (provider === 'google_sheets') {
-        if (!testApiKey || !testConfig?.spreadsheet_id) {
-          return { statusCode: 400, headers, body: JSON.stringify({ error: 'apiKey and config.spreadsheet_id required' }) };
-        }
-        // Just check if the sheet is accessible
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${testConfig.spreadsheet_id}?key=${testApiKey}&fields=properties.title`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Connected to "${data.properties?.title}"` }) };
-        }
-        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `Google Sheets access failed: ${res.status}` }) };
-      }
-
-      if (provider === 'email') {
-        if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Email address required' }) };
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(testApiKey)) {
-          return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: 'Invalid email address format' }) };
-        }
-        // Send a test notification email via Brevo
-        const brevoKey = process.env.BREVO_API_KEY;
-        if (brevoKey) {
-          try {
-            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-              method: 'POST',
-              headers: {
-                'api-key': brevoKey,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                sender: { name: 'Boltcall', email: 'notifications@boltcall.org' },
-                to: [{ email: testApiKey }],
-                subject: 'Boltcall Notifications Connected!',
-                htmlContent: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-                  <h2 style="color:#1e40af">Notifications Connected</h2>
-                  <p>Your Boltcall notifications are now active. You'll receive emails for:</p>
-                  <ul>
-                    <li>New leads captured by your AI receptionist</li>
-                    <li>Missed calls</li>
-                    <li>New appointment bookings</li>
-                  </ul>
-                  <p style="color:#6b7280;font-size:13px">— The Boltcall Team</p>
-                </div>`,
-              }),
-            });
-            if (res.ok) {
-              return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Test email sent to ${testApiKey}` }) };
-            }
-          } catch {}
-        }
-        // Even without Brevo, validate the email is correct
-        return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Email address ${testApiKey} verified` }) };
-      }
-
-      if (provider === 'pipedrive') {
-        const accessToken = testConfig?.access_token || testApiKey;
-        if (!accessToken) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Pipedrive OAuth connection or API token required' }) };
-        const res = testConfig?.access_token
-          ? await fetch('https://api.pipedrive.com/v1/users/me', { headers: { Authorization: `Bearer ${accessToken}` } })
-          : await fetch(`https://api.pipedrive.com/v1/users/me?api_token=${accessToken}`);
-        if (res.ok) {
-          const data = await res.json();
-          const userName = data.data?.name || 'User';
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Pipedrive connected as ${userName}` }) };
-        }
-        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `Pipedrive auth failed: ${res.status}` }) };
-      }
-
-      if (provider === 'make') {
-        if (!testWebhookUrl) return { statusCode: 400, headers, body: JSON.stringify({ error: 'webhookUrl required for Make.com' }) };
-        const urlCheck = await validateOutboundHttpsUrl(testWebhookUrl);
-        if (!urlCheck.ok) return { statusCode: 400, headers, body: JSON.stringify({ error: urlCheck.error }) };
-        const result = await syncToZapier(testWebhookUrl, { name: 'Test Lead', email: 'test@boltcall.org', phone: '+447700000000', source: 'test' }, 'test');
-        return { statusCode: 200, headers, body: JSON.stringify(result) };
-      }
-
-      if (provider === 'google_calendar') {
-        // OAuth-based test: use the stored access token from config
-        const accessToken = testConfig?.access_token;
-        if (!accessToken) {
-          return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: 'Not connected. Use "Connect with Google" to authorize.' }) };
-        }
-        const today = new Date().toISOString().split('T')[0];
-        const result = await checkGoogleCalendarAvailability(accessToken, testConfig, today);
-        if (result.success) {
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Calendar connected. ${(result.slots || []).length} events today.` }) };
-        }
-        return { statusCode: 200, headers, body: JSON.stringify(result) };
-      }
-
-      if (provider === 'google_business') {
-        if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'API key required for Google Business Profile' }) };
-        const locationId = testConfig?.location_id;
-        if (!locationId) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Business Location ID required' }) };
-        // Verify access by fetching location reviews
-        const res = await fetch(
-          `https://mybusiness.googleapis.com/v4/${locationId}/reviews?pageSize=1`,
-          { headers: { 'Authorization': `Bearer ${testApiKey}` } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const reviewCount = data.totalReviewCount || 0;
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `Google Business Profile connected — ${reviewCount} total reviews` }) };
-        }
-        // Fallback: try the Business Profile Performance API (newer)
-        const res2 = await fetch(
-          `https://businessprofileperformance.googleapis.com/v1/${locationId}:getDailyMetricsTimeSeries?dailyMetric=BUSINESS_IMPRESSIONS_DESKTOP_MAPS&dailyRange.startDate.year=2026&dailyRange.startDate.month=3&dailyRange.startDate.day=1&dailyRange.endDate.year=2026&dailyRange.endDate.month=3&dailyRange.endDate.day=28`,
-          { headers: { 'Authorization': `Bearer ${testApiKey}` } }
-        );
-        if (res2.ok) {
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'Google Business Profile connected successfully' }) };
-        }
-        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `Google Business Profile auth failed: ${res.status}. Ensure the API is enabled and credentials are valid.` }) };
-      }
-
-      if (provider === 'servicetitan') {
-        if (!testApiKey) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Client ID required for ServiceTitan' }) };
-        const clientSecret = testConfig?.client_secret;
-        if (!clientSecret) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Client Secret required for ServiceTitan' }) };
-        const tenantId = testConfig?.tenant_id;
-        if (!tenantId) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Tenant ID required for ServiceTitan' }) };
-
-        const accessToken = await getServiceTitanToken(testApiKey, clientSecret);
-        if (!accessToken) {
-          return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: 'Authentication failed — check your Client ID and Client Secret' }) };
-        }
-
-        const res = await fetch(
-          `https://api.servicetitan.io/crm/v2/tenant/${tenantId}/customers?page=1&pageSize=1`,
-          { headers: { 'Authorization': `Bearer ${accessToken}`, 'ST-App-Key': testApiKey } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const count = data.totalCount ?? 0;
-          return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: `ServiceTitan connected — ${count} customers in account` }) };
-        }
-        const errText = await res.text();
-        return { statusCode: 200, headers, body: JSON.stringify({ success: false, error: `ServiceTitan access failed: ${res.status} — check your Tenant ID` }) };
-      }
-
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true, message: 'No test available for this provider' }) };
+      const result = await runIntegrationTest(provider, testApiKey, testWebhookUrl, testConfig);
+      return { statusCode: result.statusCode, headers, body: JSON.stringify(result.body) };
     }
 
     // ─── SYNC_LEAD: Push a lead to all connected CRMs for a user ────

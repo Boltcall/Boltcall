@@ -495,7 +495,7 @@ export const useTeamStore = create<TeamState>((set, get) => ({
       const { data: newWs, error } = await supabase
         .from('workspaces')
         .insert({
-          owner_id: session.user.id,
+          user_id: session.user.id,
           ...updates,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -516,15 +516,12 @@ export const useTeamStore = create<TeamState>((set, get) => ({
     set({ workspace: { ...ws, ...updates, updated_at: new Date().toISOString() } as WorkspaceSettings });
   },
 
-  transferOwnership: async (newOwnerId: string) => {
-    const ws = get().workspace;
-    if (!ws) return;
-
-    const { error } = await supabase
-      .from('workspaces')
-      .update({ owner_id: newOwnerId })
-      .eq('id', ws.id);
-    if (error) throw error;
+  transferOwnership: async (_newOwnerId: string) => {
+    // ponytail: workspaces.owner_id doesn't exist in prod (ownership is user_id).
+    // Real transfer needs a server-side function to move user_id plus
+    // workspace_members/subscriptions atomically. Fail clearly instead of
+    // silently updating a non-existent column and reporting fake success.
+    throw new Error('Ownership transfer is not supported yet');
   },
 
   deleteWorkspace: async () => {

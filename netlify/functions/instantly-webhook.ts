@@ -38,7 +38,11 @@ const handler: Handler = async (event) => {
     }
     const crypto = await import('node:crypto');
     const expected = crypto.createHmac('sha256', secret).update(event.body || '').digest('hex');
-    if (sig !== expected) {
+    // F112: constant-time compare, matching every other signed webhook in
+    // this codebase (verify-signatures.ts, agency-runner-auth.ts, etc).
+    const sigMatches = sig.length === expected.length
+      && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+    if (!sigMatches) {
       return { statusCode: 401, headers, body: JSON.stringify({ error: 'Bad signature' }) };
     }
   }

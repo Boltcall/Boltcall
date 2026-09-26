@@ -255,14 +255,14 @@ export function PricingTable({
                 <div className="w-3/4 mx-auto border-t border-gray-200 mb-3"></div>
                 
                 <button
-                  onClick={() => (plan.isCustom || plan.level === 'all') ? window.location.href = '/contact' : onPlanSelect?.(plan.level, isYearly ? "yearly" : "monthly")}
+                  onClick={() => plan.isCustom ? window.location.href = '/contact' : onPlanSelect?.(plan.level, isYearly ? "yearly" : "monthly")}
                   className={cn(
                     "w-full px-6 py-3 text-sm font-medium rounded-lg transition-all duration-300 shadow-lg",
                     "bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-600/90 hover:to-blue-400/90 text-white",
                     buttonClassName
                   )}
                 >
-                  {(plan.isCustom || plan.level === 'all') ? "Contact Us" : "Start 7-Day Free Trial"}
+                  {plan.isCustom ? "Contact Us" : "Start 7-Day Free Trial"}
                 </button>
               </div>
             </motion.div>

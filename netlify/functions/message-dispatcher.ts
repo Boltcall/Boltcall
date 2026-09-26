@@ -5,6 +5,7 @@ import { deductTokens, TOKEN_COSTS } from './_shared/token-utils';
 import { notifyError } from './_shared/notify';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { resolveTwilioFromNumber } from './_shared/twilio-from-number';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 const TWILIO_API_BASE = 'https://api.twilio.com/2010-04-01';
@@ -13,10 +14,9 @@ function getServiceClient() {
   return createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY!);
 }
 
-async function sendTwilioSms(to: string, message: string): Promise<{ sid: string } | { error: string }> {
+async function sendTwilioSms(to: string, message: string, fromNumber: string | null): Promise<{ sid: string } | { error: string }> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_FROM_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
     return { error: 'Twilio credentials not configured' };
@@ -126,7 +126,9 @@ const handler: Handler = async (event) => {
     // this run (one query each instead of one per message).
     const smsMessages = messages.filter((m) => m.channel === 'sms' && m.recipient_phone);
     const smsPhones = [...new Set(smsMessages.map((m) => m.recipient_phone as string))];
-    const smsUserIds = [...new Set(smsMessages.map((m) => m.user_id).filter(Boolean))];
+    const smsUserIds = [...new Set(
+      messages.filter((m) => m.channel === 'sms' || m.channel === 'call').map((m) => m.user_id).filter(Boolean)
+    )];
 
     const [optoutsRes, tzRes] = await Promise.all([
       smsPhones.length
@@ -171,7 +173,11 @@ const handler: Handler = async (event) => {
           continue;
         }
 
-        const result = await sendTwilioSms(msg.recipient_phone, msg.message_body);
+        const result = await sendTwilioSms(
+          msg.recipient_phone,
+          msg.message_body,
+          await resolveTwilioFromNumber(supabase, msg.user_id),
+        );
 
         if ('sid' in result) {
           // Success
@@ -311,6 +317,17 @@ const handler: Handler = async (event) => {
           continue;
         }
 
+        // Same TCPA window as SMS: automated calls only 08:00–21:00 local.
+        const tz = businessTz(msg.user_id);
+        if (isQuietHours(tz)) {
+          await supabase
+            .from('scheduled_messages')
+            .update({ scheduled_for: nextAllowedSendTime(tz) })
+            .eq('id', msg.id);
+          deferred++;
+          continue;
+        }
+
         try {
           const retell = new Retell({ apiKey: retellApiKey });
           const callResp = await retell.call.createPhoneCall({
@@ -318,7 +335,10 @@ const handler: Handler = async (event) => {
             to_number: msg.recipient_phone,
             agent_id: agentId,
             metadata: {
-              source: 'followup_sequence',
+              // Deferred first-touch calls keep their lead source + lead_id so
+              // retell-webhook links the lead and runs no-answer follow-up.
+              source: msg.metadata?.source || 'followup_sequence',
+              lead_id: msg.metadata?.lead_id,
               scheduled_message_id: msg.id,
               user_id: msg.user_id,
             },

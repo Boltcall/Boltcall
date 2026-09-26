@@ -33,17 +33,19 @@ describe('PLAN_LIMITS', () => {
     expect(PLAN_LIMITS.free.limits.team_members.limit).toBe(1);
   });
 
-  it('prices increase with tier', () => {
+  it('prices increase with tier through ultimate; enterprise is a separate custom tier', () => {
+    // ponytail: canonical pricing (reference_canonical_pricing.md) puts Enterprise
+    // below Ultimate, so it's excluded from the monotonic ladder here.
     const prices = [
       PLAN_LIMITS.free.monthlyPrice,
       PLAN_LIMITS.starter.monthlyPrice,
       PLAN_LIMITS.pro.monthlyPrice,
       PLAN_LIMITS.ultimate.monthlyPrice,
-      PLAN_LIMITS.enterprise.monthlyPrice,
     ];
     for (let i = 1; i < prices.length; i++) {
       expect(prices[i]).toBeGreaterThan(prices[i - 1]);
     }
+    expect(PLAN_LIMITS.enterprise.monthlyPrice).toBeGreaterThan(PLAN_LIMITS.starter.monthlyPrice);
   });
 });
 

@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { notifyError } from './_shared/notify';
 import { authorizeRunner } from './_shared/agency-runner-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { resolveTwilioFromNumber } from './_shared/twilio-from-number';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
@@ -129,23 +130,17 @@ const handler: Handler = async (event) => {
         messageInsert.subject = subject || 'Follow up';
       } else if (step.channel === 'call' && enrollment.contact_phone) {
         // Look up user's Retell agent + active phone number for call retry
-        const [{ data: agentRow }, { data: phoneRow }] = await Promise.all([
+        // No shared-number fallback: Retell can only dial from the tenant's imported line.
+        const [{ data: agentRow }, fromNumber] = await Promise.all([
           supabase
             .from('agents')
-            .select('api_keys')
+            .select('retell_agent_id, api_keys')
             .eq('user_id', enrollment.user_id)
             .limit(1)
-            .single(),
-          supabase
-            .from('phone_numbers')
-            .select('phone_number')
-            .eq('user_id', enrollment.user_id)
-            .eq('status', 'active')
-            .limit(1)
-            .single(),
+            .maybeSingle(),
+          resolveTwilioFromNumber(supabase, enrollment.user_id, null),
         ]);
-        const agentId = (agentRow?.api_keys as any)?.retell_agent_id;
-        const fromNumber = phoneRow?.phone_number;
+        const agentId = agentRow?.retell_agent_id || (agentRow?.api_keys as any)?.retell_agent_id;
         if (agentId && fromNumber) {
           messageInsert.recipient_phone = enrollment.contact_phone;
           messageInsert.metadata = {

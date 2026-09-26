@@ -37,27 +37,27 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       return;
     }
 
-    // Note: we used to short-circuit here when the URL had `?setupCompleted=true`
-    // and blindly cache SETUP_COMPLETE_KEY. That let a hand-typed
-    // `/dashboard/?setupCompleted=true` (or a Skip after a failed
-    // TalkToAgent) strand the user in an empty dashboard forever because
-    // provisionAgentSetup was skipped from then on. Now we always verify the
-    // business_profiles row exists before caching.
-    const params = new URLSearchParams(location.search);
-    const arrivedFromSetupLoader = params.get('setupCompleted') === 'true';
-
-    // Check if user has completed setup (has a business_profiles row)
+    // F7: a business_profiles row is written before the agents are
+    // provisioned (provisionAgentSetup.ts creates the profile, then the
+    // agents, then calls setup-launch which flips
+    // workspaces.setup_completed). Gating on business_profiles alone let a
+    // provisioning failure (Retell 5xx, tab closed mid-loader) strand the
+    // user on the classic dashboard with no agent and no way back to
+    // /setup. Gate on workspaces.setup_completed instead — the signal
+    // setup-launch actually sets when the run finished — with a fallback
+    // for legacy workspaces that have a working inbound agent but predate
+    // that column being backfilled.
     const checkSetup = async () => {
-      const querySetup = async () => {
+      const queryWorkspace = async () => {
         const { supabase } = await import('../lib/supabase');
         return supabase
-          .from('business_profiles')
-          .select('id')
+          .from('workspaces')
+          .select('setup_completed')
           .eq('user_id', user.id)
           .maybeSingle();
       };
       try {
-        let { data, error } = await querySetup();
+        let { data, error } = await queryWorkspace();
 
         if (error) {
           // One retry before defaulting open — network blips shouldn't
@@ -65,7 +65,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           // dashboard.
           console.warn('Setup check error, retrying once:', error);
           await new Promise((r) => setTimeout(r, 400));
-          ({ data, error } = await querySetup());
+          ({ data, error } = await queryWorkspace());
         }
 
         if (error) {
@@ -74,19 +74,31 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           return;
         }
 
-        if (data) {
+        if (data?.setup_completed) {
           localStorage.setItem(SETUP_COMPLETE_KEY, user.id);
           setSetupCheck('completed');
-        } else if (arrivedFromSetupLoader) {
-          // The URL claims setup finished but no business_profiles row
-          // exists — treat as still-needed so the wizard runs, and drop
-          // the stale cache marker.
-          localStorage.removeItem(SETUP_COMPLETE_KEY);
-          setSetupCheck('needed');
-        } else {
-          localStorage.removeItem(SETUP_COMPLETE_KEY);
-          setSetupCheck('needed');
+          return;
         }
+
+        // Legacy safety net: a workspace with a real inbound agent already
+        // works even if setup_completed was never backfilled for it.
+        const { supabase } = await import('../lib/supabase');
+        const { data: agents } = await supabase
+          .from('agents')
+          .select('id')
+          .eq('user_id', user.id)
+          .or('agent_type.eq.inbound,agent_type.eq.ai_receptionist')
+          .not('retell_agent_id', 'is', null)
+          .limit(1);
+
+        if (agents?.length) {
+          localStorage.setItem(SETUP_COMPLETE_KEY, user.id);
+          setSetupCheck('completed');
+          return;
+        }
+
+        localStorage.removeItem(SETUP_COMPLETE_KEY);
+        setSetupCheck('needed');
       } catch {
         setSetupCheck('completed'); // Don't block on error
       }

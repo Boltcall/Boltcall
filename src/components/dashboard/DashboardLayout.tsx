@@ -966,13 +966,11 @@ const DashboardLayout: React.FC = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-4">{t('help.getSupport')}</h3>
                 <div className="space-y-3">
-                  {/* Create Support Ticket */}
-                  <button
-                    onClick={() => {
-                      // Handle support ticket creation
-                      // TODO: handle support ticket creation
-                      setShowHelpSidebar(false);
-                    }}
+                  {/* Create Support Ticket — real mailto anchor (native OS handler,
+                      not window.open which can get popup-blocked) */}
+                  <a
+                    href="mailto:noam@boltcall.org?subject=Boltcall%20Support%20Ticket"
+                    onClick={() => setShowHelpSidebar(false)}
                     className="w-full flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors group"
                   >
                     <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -984,16 +982,13 @@ const DashboardLayout: React.FC = () => {
                       </div>
                       <div className="text-sm text-gray-500">{t('help.createTicketDesc')}</div>
                     </div>
-                  </button>
+                  </a>
 
-                  {/* Schedule Onboarding - Only for paid plans */}
+                  {/* Schedule Onboarding - Only for paid plans; routes to the real booking page */}
                   {userPlan !== 'free' && (
-                    <button
-                      onClick={() => {
-                        // Handle onboarding scheduling
-                        // TODO: handle onboarding scheduling
-                        setShowHelpSidebar(false);
-                      }}
+                    <Link
+                      to="/book-a-call"
+                      onClick={() => setShowHelpSidebar(false)}
                       className="w-full flex items-center gap-3 p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors group"
                     >
                       <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -1005,17 +1000,14 @@ const DashboardLayout: React.FC = () => {
                         </div>
                         <div className="text-sm text-gray-500">{t('help.scheduleOnboardingDesc')}</div>
                       </div>
-                    </button>
+                    </Link>
                   )}
 
-                  {/* Upgrade Button - Only for free plan */}
+                  {/* Upgrade Button - Only for free plan; routes to real plan/billing settings */}
                   {userPlan === 'free' && (
-                    <button
-                      onClick={() => {
-                        // Handle upgrade
-                        // TODO: handle upgrade
-                        setShowHelpSidebar(false);
-                      }}
+                    <Link
+                      to="/dashboard/settings/plan-billing"
+                      onClick={() => setShowHelpSidebar(false)}
                       className="w-full flex items-center gap-3 p-4 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all group"
                     >
                       <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -1027,7 +1019,7 @@ const DashboardLayout: React.FC = () => {
                         </div>
                         <div className="text-sm text-blue-100">{t('help.upgradeDesc')}</div>
                       </div>
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>

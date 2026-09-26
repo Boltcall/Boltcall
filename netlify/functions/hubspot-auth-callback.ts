@@ -103,11 +103,14 @@ const handler: Handler = async (event) => {
       .maybeSingle();
 
     if (existing) {
+      // F111: don't null out a working refresh_token when a reconnect's OAuth
+      // response omits one — `undefined` makes supabase-js drop the key instead
+      // of overwriting it, matching the gmail/outlook callback pattern.
       await supabase
         .from('user_integrations')
         .update({
           is_connected: true,
-          api_key: refreshToken || null,
+          api_key: refreshToken || undefined,
           config,
           updated_at: new Date().toISOString(),
         })

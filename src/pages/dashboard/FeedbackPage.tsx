@@ -12,6 +12,8 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { authedFetch } from '../../lib/authedFetch';
+import { FUNCTIONS_BASE } from '../../lib/api';
 
 type Category = 'general' | 'bug' | 'feature';
 
@@ -58,19 +60,47 @@ const FeedbackPage: React.FC = () => {
   const [category, setCategory] = useState<Category>('general');
   const [nps, setNps] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const categoryLabel = CATEGORIES.find(c => c.value === category)?.label ?? category;
     const npsLine = nps !== null ? `\n\nLikelihood to recommend (1-10): ${nps}` : '';
     const topicLine = topic ? `Topic: ${topic}\n` : '';
     const bodyText = `${topicLine}Category: ${categoryLabel}\n\n${feedback.trim()}${npsLine}`;
 
-    window.localStorage.setItem(getFeedbackSubmittedStorageKey(user?.id ?? 'anonymous'), 'true');
+    setSending(true);
+    setError(null);
 
-    const subject = encodeURIComponent(`Boltcall Feedback - ${categoryLabel}`);
-    const body = encodeURIComponent(bodyText);
-    window.open(`mailto:noam@boltcall.org?subject=${subject}&body=${body}`, '_blank');
-    setSubmitted(true);
+    try {
+      // Real send through the existing Brevo-backed email function — no more
+      // mailto: (silently no-ops on machines with no default mail client).
+      const res = await authedFetch(`${FUNCTIONS_BASE}/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: 'noam@boltcall.org',
+          subject: `Boltcall Feedback - ${categoryLabel}`,
+          textContent: bodyText,
+          fromName: 'Boltcall Feedback',
+          replyTo: user?.email,
+          userId: user?.id,
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Failed: ${res.status}`);
+      }
+
+      window.localStorage.setItem(getFeedbackSubmittedStorageKey(user?.id ?? 'anonymous'), 'true');
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Feedback submit failed:', err);
+      setError("Couldn't send your feedback. Please try again, or email us directly at noam@boltcall.org.");
+    } finally {
+      setSending(false);
+    }
   };
 
   const resetForm = () => {
@@ -80,6 +110,7 @@ const FeedbackPage: React.FC = () => {
     setNps(null);
     setCategory('general');
     setSubmitted(false);
+    setError(null);
   };
 
   if (submitted) {
@@ -282,11 +313,18 @@ const FeedbackPage: React.FC = () => {
               )}
             </div>
 
+            {error && (
+              <p role="alert" className="text-xs text-red-600 dark:text-red-400">
+                {error}
+              </p>
+            )}
+
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 py-2 px-3 rounded-lg border border-gray-200 dark:border-[#1e1e24] transition-colors"
+                disabled={sending}
+                className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 py-2 px-3 rounded-lg border border-gray-200 dark:border-[#1e1e24] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ArrowLeft className="w-3 h-3" />
                 Back
@@ -294,9 +332,10 @@ const FeedbackPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                disabled={sending}
+                className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Send Feedback
+                {sending ? 'Sending…' : 'Send Feedback'}
               </button>
             </div>
           </>

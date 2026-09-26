@@ -57,7 +57,7 @@ import {
 import { emitAgencyEvent } from './_shared/emit-agency-event';
 import { getServiceSupabase } from './_shared/token-utils';
 import { verifyRetellSignature } from './_shared/verify-signatures';
-import { authorizeSentinel } from './_shared/agency-runner-auth';
+import { authorizeSentinel, authorizeRunner } from './_shared/agency-runner-auth';
 import path from 'node:path';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -907,7 +907,9 @@ const handler: Handler = async (event) => {
         rawBody,
         (event.headers ?? {}) as Record<string, string | undefined>,
       );
-      if (sigResult === 'invalid') {
+      // Fail-closed on both 'invalid' and 'missing' — an absent signature
+      // header must not be treated as valid (F102).
+      if (sigResult === 'invalid' || sigResult === 'missing') {
         return { statusCode: 401, body: 'invalid retell signature' };
       }
       const parsed = JSON.parse(rawBody || '{}') as IntakeWebhookEvent;
@@ -944,7 +946,19 @@ const handler: Handler = async (event) => {
       };
     }
 
-    // Default mode: direct invocation with a payload.
+    // Default mode: direct invocation with a payload. Same cost-sensitive
+    // runner gate every sibling agency-* runner uses (F101) — this path
+    // triggers billed Retell transcript-retrieval + Anthropic profiling
+    // calls on caller-supplied IDs.
+    const runAuthz = await authorizeRunner(event);
+    if (!runAuthz.ok) {
+      return {
+        statusCode: runAuthz.status,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: runAuthz.message }),
+      };
+    }
+
     const body = JSON.parse(event.body ?? '{}') as Partial<RunPayload>;
     if (!body.client_id || !body.retell_call_id) {
       return {

@@ -44,7 +44,7 @@ const CalendarConnectBanner: React.FC<{ className?: string }> = ({ className }) 
     <div className={`flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 ${className || ''}`}>
       <Calendar className="h-4 w-4 shrink-0 text-blue-600" />
       <p className="flex-1 text-sm text-blue-900">
-        Connect your calendar so your agent can book jobs.{' '}
+        Connect your calendar so your agent can book appointments.{' '}
         <Link to="/dashboard/integrations" className="font-semibold underline underline-offset-2 hover:text-blue-700">
           Connect Google Calendar
         </Link>

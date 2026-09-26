@@ -5,6 +5,12 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { notifyInfo } from './_shared/notify';
 import { getServiceSupabase } from './_shared/token-utils';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
+
+// F16/F122: unauthenticated form — every POST writes a DB row + Telegram
+// alert. Cap like the other public lead-magnet forms.
+const SETUP_REQUEST_IP_MAX_ATTEMPTS = 5;
+const SETUP_REQUEST_IP_WINDOW_SECONDS = 60 * 60;
 
 type OfferSlug = 'after-hours-lead-rescue' | 'automatic-reviews-agent' | 'reminders-agent';
 
@@ -161,8 +167,22 @@ const handler: Handler = async (event) => {
     return json(400, headers, { error: validated.error });
   }
 
+  const supabase = getServiceSupabase();
+  const ip = getClientIp(event.headers as Record<string, string | undefined>);
+  const rateLimit = await consumePublicRateLimit(supabase, {
+    bucket: 'setup_request',
+    key: hashRateLimitKey([ip]),
+    maxAttempts: SETUP_REQUEST_IP_MAX_ATTEMPTS,
+    windowSeconds: SETUP_REQUEST_IP_WINDOW_SECONDS,
+  });
+  if (!rateLimit.allowed) {
+    return json(rateLimit.statusCode, {
+      ...headers,
+      ...(rateLimit.retryAfterSeconds ? { 'Retry-After': String(rateLimit.retryAfterSeconds) } : {}),
+    }, { error: 'Too many setup requests from this connection. Try again later.' });
+  }
+
   try {
-    const supabase = getServiceSupabase();
     const row = {
       offer_slug: validated.offerSlug,
       page_path: validated.pagePath,

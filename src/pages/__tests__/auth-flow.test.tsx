@@ -21,6 +21,7 @@ const {
   mockSignInWithMicrosoft,
   mockSignInWithFacebook,
   mockSavePendingAuthRedirect,
+  mockResend,
 } = vi.hoisted(() => ({
   mockLogin: vi.fn(),
   mockSignup: vi.fn(),
@@ -29,6 +30,11 @@ const {
   mockSignInWithMicrosoft: vi.fn(),
   mockSignInWithFacebook: vi.fn(),
   mockSavePendingAuthRedirect: vi.fn(),
+  mockResend: vi.fn(),
+}));
+
+vi.mock('../../lib/supabase', () => ({
+  supabase: { auth: { resend: mockResend } },
 }));
 
 vi.mock('framer-motion', () => ({
@@ -232,6 +238,68 @@ describe('Auth flow — Signup', () => {
     expect(mockSavePendingAuthRedirect).not.toHaveBeenCalled();
   });
 
+});
+
+describe('Auth flow — Signup email confirmation resend', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const submitSignupExpectingConfirmation = async (user: ReturnType<typeof userEvent.setup>) => {
+    const err = new Error('email_confirmation_required');
+    err.name = 'EmailConfirmationRequiredError';
+    mockSignup.mockRejectedValue(err);
+
+    await user.type(screen.getByPlaceholderText('Email'), 'new@example.com');
+    await user.type(screen.getByPlaceholderText('Password'), 'securepass');
+    const buttons = screen.getAllByRole('button', { name: /sign up/i });
+    const submitBtn = buttons.find(b => b.getAttribute('type') === 'submit') || buttons[buttons.length - 1];
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/check your email/i)).toBeInTheDocument();
+    });
+  };
+
+  it('shows a neutral (non-error) confirmation panel and starts a 60s cooldown on resend', async () => {
+    mockResend.mockResolvedValue({ error: null });
+    const { user } = renderAuth('signup');
+
+    await submitSignupExpectingConfirmation(user);
+
+    // Neutral state, not the red error box used for real failures
+    expect(screen.queryByText(/email already registered/i)).not.toBeInTheDocument();
+    const messageBox = screen.getByText(/we sent a confirmation link/i).closest('div');
+    expect(messageBox).not.toHaveClass('bg-red-50');
+
+    const resendBtn = screen.getByRole('button', { name: /resend confirmation email/i });
+    await user.click(resendBtn);
+
+    await waitFor(() => {
+      expect(mockResend).toHaveBeenCalledWith({ type: 'signup', email: 'new@example.com' });
+    });
+
+    // Cooldown engaged — button disabled and relabeled, can't be clicked again
+    const cooldownBtn = screen.getByRole('button', { name: /resend in \d+s/i });
+    expect(cooldownBtn).toBeDisabled();
+    await user.click(cooldownBtn);
+    expect(mockResend).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows an error message (not the cooldown) when resend fails', async () => {
+    mockResend.mockResolvedValue({ error: { message: 'Too many requests' } });
+    const { user } = renderAuth('signup');
+
+    await submitSignupExpectingConfirmation(user);
+
+    await user.click(screen.getByRole('button', { name: /resend confirmation email/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Too many requests')).toBeInTheDocument();
+    });
+    // No cooldown started on failure
+    expect(screen.getByRole('button', { name: /resend confirmation email/i })).not.toBeDisabled();
+  });
 });
 
 describe('Auth flow — Mode switching', () => {

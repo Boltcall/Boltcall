@@ -44,14 +44,16 @@ const handler: Handler = async (event) => {
   const authUserId = authUser.id;
 
   // Confirm the authenticated user has owner|admin authority on a given workspace.
-  // Either via workspaces.owner_id (solo owner) or via workspace_members.role.
+  // Either via workspaces.user_id (solo owner) or via workspace_members.role.
+  // F109: workspaces has no owner_id column in prod (only user_id) — this used
+  // to always evaluate false for the real owner, 403-ing every invite/remove.
   async function isOwnerOrAdmin(workspaceId: string): Promise<boolean> {
     const { data: ws } = await supabase
       .from('workspaces')
-      .select('owner_id')
+      .select('user_id')
       .eq('id', workspaceId)
       .maybeSingle();
-    if (ws && ws.owner_id === authUserId) return true;
+    if (ws && ws.user_id === authUserId) return true;
 
     const { data: membership } = await supabase
       .from('workspace_members')

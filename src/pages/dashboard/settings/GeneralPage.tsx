@@ -12,6 +12,7 @@ import { PopButton } from '../../../components/ui/pop-button';
 import Button from '../../../components/ui/Button';
 import ModalShell from '../../../components/ui/modal-shell';
 import { UnsavedChanges } from '../../../components/ui/unsaved-changes';
+import { usePermission } from '../../../hooks/usePermission';
 
 // Full ISO 3166-1 country list, computed once. There is no built-in enumerator,
 // so we resolve every 2-letter code through Intl.DisplayNames and keep the ones
@@ -39,6 +40,7 @@ const GeneralPage: React.FC = () => {
   const { t } = useTranslation('settings');
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { isOwner } = usePermission();
   const { claimReward } = useTokens();
   const navigate = useNavigate();
   const setBusinessName = useDashboardStore((s) => s.setBusinessName);
@@ -531,23 +533,27 @@ const GeneralPage: React.FC = () => {
               Delete Account
             </Button>
           </div>
-          <div className="border-t border-red-100 dark:border-red-500/20" />
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-1">Delete Workspace</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Once you delete a workspace, there is no going back. Please be certain.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteModal(true)}
-              className="border-red-300 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200 ease-out"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Workspace
-            </Button>
-          </div>
+          {isOwner && (
+            <>
+              <div className="border-t border-red-100 dark:border-red-500/20" />
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-1">Delete Workspace</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Once you delete a workspace, there is no going back. Please be certain.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="border-red-300 dark:border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200 ease-out"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Workspace
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </motion.div>
 

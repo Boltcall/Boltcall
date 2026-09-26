@@ -275,12 +275,15 @@ describe('plan-limits', () => {
       }
     });
 
-    it('should have increasing monthly prices', () => {
+    it('should have increasing monthly prices from free through ultimate', () => {
+      // ponytail: Enterprise is a custom lower-priced tier by canonical pricing
+      // (reference_canonical_pricing.md), not the top of a monotonic ladder — it
+      // sits below Ultimate, so it's checked separately.
       expect(PLAN_LIMITS.free.monthlyPrice).toBe(0);
       expect(PLAN_LIMITS.starter.monthlyPrice).toBeGreaterThan(PLAN_LIMITS.free.monthlyPrice);
       expect(PLAN_LIMITS.pro.monthlyPrice).toBeGreaterThan(PLAN_LIMITS.starter.monthlyPrice);
       expect(PLAN_LIMITS.ultimate.monthlyPrice).toBeGreaterThan(PLAN_LIMITS.pro.monthlyPrice);
-      expect(PLAN_LIMITS.enterprise.monthlyPrice).toBeGreaterThan(PLAN_LIMITS.ultimate.monthlyPrice);
+      expect(PLAN_LIMITS.enterprise.monthlyPrice).toBeGreaterThan(PLAN_LIMITS.starter.monthlyPrice);
     });
   });
 });

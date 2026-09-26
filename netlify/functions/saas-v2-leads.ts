@@ -445,10 +445,11 @@ const handler: Handler = async (event) => {
   if (authErr || !userResult?.user) return unauthorized('Invalid or expired token');
   const userId = userResult.user.id;
 
-  // 2. Resolve workspace + v2_enabled
-  let workspaceRow: { id: string; v2_enabled?: boolean | null } | null;
+  // 2. Resolve workspace. No v2_enabled gate: the classic Leads page
+  // (SpeedToLeadPage) reads this too, and auth + workspace scoping are the real boundary.
+  let workspaceRow: { id: string } | null;
   try {
-    workspaceRow = await findWorkspaceForUser(userId, 'id, v2_enabled');
+    workspaceRow = await findWorkspaceForUser(userId, 'id');
   } catch (error: any) {
     console.warn(`[saas-v2-leads] workspace lookup failed user=${userId} err=${error?.message || error}`);
     return serverError('Failed to resolve workspace');
@@ -460,14 +461,7 @@ const handler: Handler = async (event) => {
       body: JSON.stringify({ error: 'No workspace for this user' }),
     };
   }
-  const workspaceId = (workspaceRow as { id: string }).id;
-  if (!(workspaceRow as { v2_enabled?: boolean }).v2_enabled) {
-    return {
-      statusCode: 403,
-      headers: cors,
-      body: JSON.stringify({ error: 'V2 is not enabled for this workspace' }),
-    };
-  }
+  const workspaceId = workspaceRow.id;
 
   // 3. Parse query
   const q = event.queryStringParameters ?? {};

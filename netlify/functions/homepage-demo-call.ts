@@ -21,6 +21,11 @@ const DEMO_IP_WINDOW_SECONDS = 60 * 60;
 const DEMO_IP_MAX_ATTEMPTS = 5;
 const DEMO_PHONE_WINDOW_SECONDS = 60 * 60;
 const DEMO_PHONE_MAX_ATTEMPTS = 3;
+// F110: the hourly cap alone lets the same number be redialed indefinitely
+// (3/hr * 24 = 72/day). Add a per-day cap on top so a harassment target
+// can't be cold-called all day.
+const DEMO_PHONE_DAY_WINDOW_SECONDS = 24 * 60 * 60;
+const DEMO_PHONE_DAY_MAX_ATTEMPTS = 3;
 
 const DEMO_PROFILES: Record<string, {
   businessName: string;
@@ -208,6 +213,26 @@ const handler: Handler = async (event) => {
       body: JSON.stringify({
         error: 'That number already requested a few demo calls recently. Try again later.',
         code: 'demo_phone_rate_limited',
+      }),
+    };
+  }
+
+  const phoneDayLimit = await consumePublicRateLimit(supabase as any, {
+    bucket: 'homepage_demo_phone_day',
+    key: hashRateLimitKey([phone]),
+    maxAttempts: DEMO_PHONE_DAY_MAX_ATTEMPTS,
+    windowSeconds: DEMO_PHONE_DAY_WINDOW_SECONDS,
+  });
+  if (!phoneDayLimit.allowed) {
+    return {
+      statusCode: phoneDayLimit.statusCode,
+      headers: {
+        ...headers,
+        ...(phoneDayLimit.retryAfterSeconds ? { 'Retry-After': String(phoneDayLimit.retryAfterSeconds) } : {}),
+      },
+      body: JSON.stringify({
+        error: 'That number has reached today’s demo call limit. Try again tomorrow.',
+        code: 'demo_phone_day_rate_limited',
       }),
     };
   }

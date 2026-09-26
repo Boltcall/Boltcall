@@ -16,10 +16,16 @@ export const VERTICAL_KEYWORDS: Array<{ vertical: string; keywords: string[] }> 
   { vertical: 'electrical',   keywords: ['electric', 'electrician', 'electrical', 'wiring', 'circuit', 'generator'] },
 ];
 
+// 'law' is a substring of unrelated trades ('lawn care') so it only matches as
+// a whole word — mirrors generate-agent-prompt.ts's WHOLE_WORD_CATEGORIES/F63 fix.
+const WHOLE_WORD_KEYWORDS = new Set(['law']);
+const keywordHit = (text: string, kw: string): boolean =>
+  WHOLE_WORD_KEYWORDS.has(kw) ? new RegExp(`\\b${kw}\\b`).test(text) : text.includes(kw);
+
 export function inferVertical(text: string): string {
   const lower = text.toLowerCase();
   for (const { vertical, keywords } of VERTICAL_KEYWORDS) {
-    if (keywords.some(kw => lower.includes(kw))) return vertical;
+    if (keywords.some(kw => keywordHit(lower, kw))) return vertical;
   }
   return 'general';
 }

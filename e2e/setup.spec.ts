@@ -1,9 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Setup wizard', () => {
-  test('renders public setup wizard when not authenticated', async ({ page }) => {
+  test('/setup redirects to signup when not authenticated', async ({ page }) => {
+    // V2SetupPage now requires auth (Navigate to /signup?redirect=%2Fsetup) —
+    // there is no public wizard step 1 rendered for anonymous visitors.
     await page.goto('/setup');
-    await expect(page.getByText('Step 1 of 2: Personal Profile')).toBeVisible();
+    await page.waitForURL(/\/signup/);
+    await expect(page).toHaveURL(/\/signup\?redirect=/);
   });
 
   test('setup/loading redirects to login when not authenticated', async ({ page }) => {

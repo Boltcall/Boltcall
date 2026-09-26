@@ -152,7 +152,7 @@ const TalkToAgentPage: React.FC = () => {
 
   const handleEnterDashboard = () => {
     cleanup();
-    navigate('/v2?setupCompleted=true', { replace: true });
+    navigate('/dashboard?setupCompleted=true', { replace: true });
   };
 
   const formatTime = (s: number) =>

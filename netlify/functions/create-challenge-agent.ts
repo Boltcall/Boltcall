@@ -165,7 +165,11 @@ const handler: Handler = async (event) => {
 
   try {
     const prompt = buildChallengePrompt();
-    const wsUrl = process.env.RETELL_LLM_WEBSOCKET_URL;
+    // Same gate as retell-agents.ts's customLlmWebsocketUrl(): the bridge has
+    // no tool calling, so it's opt-in only.
+    const wsUrl = process.env.RETELL_CUSTOM_LLM_ENABLED === 'true'
+      ? process.env.RETELL_LLM_WEBSOCKET_URL || undefined
+      : undefined;
 
     let responseEngine: any;
     let llmId: string | undefined;
@@ -194,7 +198,6 @@ const handler: Handler = async (event) => {
       enable_backchannel: true,
       backchannel_words: ['yeah', 'uh-huh', 'mmhmm'],
       backchannel_frequency: 0.6,
-      ambient_sound: 'coffee-shop',
       response_eagerness: 1,
       interruption_sensitivity: 0.8,
       end_call_after_silence_ms: 30000,

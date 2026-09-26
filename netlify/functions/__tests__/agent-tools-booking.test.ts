@@ -1,13 +1,13 @@
-import { beforeEach, expect, it, vi } from 'vitest';
-const state = vi.hoisted(() => ({ owner: true, persistError: false, google: false, busy: false, booking: { id: 42 } as any }));
+import { afterAll, beforeEach, expect, it, vi } from 'vitest';
+const state = vi.hoisted(() => ({ owner: true, persistError: false, google: false, busy: false, booking: { id: 42 } as any, callIdMissing: false, inserts: [] as any[] }));
 vi.mock('../_shared/verify-signatures', () => ({ verifyRetellSignature: () => 'valid' }));
-vi.mock('../_shared/notify', () => ({ notifyInfo: vi.fn().mockResolvedValue(undefined), notifyError: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('../_shared/notify', () => ({ alertOwner: vi.fn().mockResolvedValue(true), notifyInfo: vi.fn().mockResolvedValue(undefined), notifyError: vi.fn().mockResolvedValue(undefined) }));
 vi.mock('../_shared/booking-value', () => ({ estimateBookingValueCents: async () => 0 }));
 vi.mock('../_shared/token-utils', () => ({ TOKEN_COSTS: { lead_processed: 1 }, deductTokens: vi.fn(), getServiceSupabase: () => ({ from: (table: string) => {
   const q: any = { select: () => q, eq: () => q,
     single: async () => ({ data: state.owner ? { user_id: 'test-owner', language: 'en' } : null }),
     maybeSingle: async () => ({ data: state.google ? { config: { access_token: 'test-only', calendar_id: 'test-calendar' }, api_key: 'test-refresh' } : null }),
-    insert: async () => ({ error: state.persistError ? { message: 'storage unavailable' } : null }) };
+    insert: async (row: any) => { state.inserts.push({ table, row }); return state.callIdMissing && table === 'appointments' && 'call_id' in row ? { error: { code: 'PGRST204' } } : { error: state.persistError ? { message: 'storage unavailable' } : null }; } };
   return q;
 } }) }));
 import { testHandler as handler } from '../agent-tools';
@@ -15,7 +15,8 @@ const args = { name: 'Alec Test', email: 'alec@example.invalid', date: '2026-10-
 const invoke = (body: any) => handler({ httpMethod: 'POST', headers: {}, body: JSON.stringify(body) } as any, {} as any, vi.fn());
 const legacy = () => ({ name: 'book_appointment', call_id: 'test-call', agent_id: 'agent-test', arguments: { ...args } });
 beforeEach(() => {
- state.owner = true; state.persistError = false; state.google = false; state.busy = false; state.booking = { id: 42 };
+ state.owner = true; state.persistError = false; state.google = false; state.busy = false; state.booking = { id: 42 }; state.callIdMissing = false; state.inserts = [];
+ process.env.CALCOM_API_KEY = 'test-cal-key';
  vi.stubGlobal('fetch', vi.fn(async (url: any) => ({ ok: true, json: async () => String(url).includes('/freeBusy') ? { calendars: { 'test-calendar': { busy: state.busy ? [{ start: args.start }] : [] } } } : String(url).includes('/event-types') ? { event_types: [{ id: 1 }] } : state.booking })));
 });
 it('accepts the current Retell custom-function call/args envelope', async () => {
@@ -84,3 +85,29 @@ it('checks the full 25-hour local calendar day at the DST fall transition', asyn
  expect(url.searchParams.get('timeMin')).toBe('2026-11-01T05:00:00.000Z');
  expect(url.searchParams.get('timeMax')).toBe('2026-11-02T06:00:00.000Z');
 });
+it('with no calendar connected, records a callback request and tells the agent to promise a call back', async () => {
+ delete process.env.CALCOM_API_KEY;
+ const r = await invoke({ name: 'book_appointment', call_id: 'test-call', agent_id: 'agent-test', arguments: { name: 'Alec Test', phone: '+15551112222', date: '2026-10-20', time: '10:00' } });
+ const content = JSON.parse(r?.body || '{}').content;
+ expect(content).toMatch(/call them back/i);
+ expect(content).not.toMatch(/contact the team directly/i);
+ expect(state.inserts.find((i) => i.table === 'callbacks')?.row).toMatchObject({ user_id: 'test-owner', client_name: 'Alec Test', client_phone: '+15551112222', status: 'pending' });
+ const { alertOwner } = await import('../_shared/notify');
+ expect(alertOwner).toHaveBeenCalledWith(expect.anything(), 'test-owner', 'Callback requested: Alec Test', expect.any(Array));
+ expect(fetch).not.toHaveBeenCalled();
+});
+it('with no calendar and no caller phone, still records the callback with a non-null phone', async () => {
+ delete process.env.CALCOM_API_KEY;
+ const r = await invoke({ name: 'book_appointment', call_id: 'test-call', agent_id: 'agent-test', arguments: { name: 'Alec Test', date: '2026-10-20', time: '10:00' } });
+ expect(JSON.parse(r?.body || '{}').content).toMatch(/call them back/i);
+ expect(state.inserts.find((i) => i.table === 'callbacks')?.row.client_phone).toBe('not provided');
+});
+it('still saves the booking when appointments.call_id is missing in the schema', async () => {
+ state.callIdMissing = true;
+ const r = await invoke(legacy());
+ expect(JSON.parse(r?.body || '{}').content).toContain('confirmed');
+ const appts = state.inserts.filter((i) => i.table === 'appointments');
+ expect(appts).toHaveLength(2);
+ expect(appts[1].row).not.toHaveProperty('call_id');
+});
+afterAll(() => { delete process.env.CALCOM_API_KEY; });

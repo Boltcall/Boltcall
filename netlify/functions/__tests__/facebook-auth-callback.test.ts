@@ -31,6 +31,7 @@ function makeEvent() {
 describe('facebook-auth-callback', () => {
   let upsertMock: ReturnType<typeof vi.fn>;
   let workspaceMaybeSingleMock: ReturnType<typeof vi.fn>;
+  let connectionMaybeSingleMock: ReturnType<typeof vi.fn>;
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -54,6 +55,8 @@ describe('facebook-auth-callback', () => {
       data: { id: 'workspace-id-1' },
       error: null,
     }));
+    // Default: no pre-existing connection for this page_id (F90/F114 pre-check).
+    connectionMaybeSingleMock = vi.fn(async () => ({ data: null, error: null }));
 
     const workspaceChain: any = {
       select: vi.fn(() => workspaceChain),
@@ -61,7 +64,10 @@ describe('facebook-auth-callback', () => {
       limit: vi.fn(() => workspaceChain),
       maybeSingle: workspaceMaybeSingleMock,
     };
-    const connectionsChain = {
+    const connectionsChain: any = {
+      select: vi.fn(() => connectionsChain),
+      eq: vi.fn(() => connectionsChain),
+      maybeSingle: connectionMaybeSingleMock,
       upsert: upsertMock,
     };
 
@@ -113,6 +119,20 @@ describe('facebook-auth-callback', () => {
 
     expect(res.statusCode).toBe(302);
     expect(res.headers?.Location).toContain('/dashboard/ad-instant-response?fb=store_fail');
+  });
+
+  it('refuses to reassign a Page already connected to a different user (F90/F114)', async () => {
+    connectionMaybeSingleMock.mockResolvedValue({
+      data: { user_id: 'other-user-id' },
+      error: null,
+    });
+    const { testHandler: handler } = await import('../facebook-auth-callback');
+
+    const res = await handler(makeEvent(), {} as any);
+
+    expect(res.statusCode).toBe(302);
+    expect(res.headers?.Location).toContain('/dashboard/ad-instant-response?fb=already_claimed');
+    expect(upsertMock).not.toHaveBeenCalled();
   });
 
   it('does not report success when no Page is subscribed to leadgen webhooks', async () => {

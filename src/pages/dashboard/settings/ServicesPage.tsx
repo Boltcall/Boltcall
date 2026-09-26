@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wrench, Plus, Trash2, DollarSign } from 'lucide-react';
+import { Briefcase, Plus, Trash2, DollarSign } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
@@ -11,6 +11,19 @@ interface ServiceRow {
   price: string; // dollars, as typed
   duration: string; // minutes, as typed
 }
+
+// Vertical-aware example for the service-name placeholder — a law firm
+// shouldn't see "Drain cleaning". Keyed by business_profiles.main_category
+// (see GeneralPage's industries list); anything not listed gets a
+// professional-neutral default rather than a trades-flavored one.
+const SERVICE_NAME_EXAMPLES: Record<string, string> = {
+  legal: 'Family law consultation',
+  dentist: 'Teeth cleaning',
+  medspa: 'Botox consultation',
+  plumber: 'Drain cleaning',
+  hvac: 'AC tune-up',
+};
+const DEFAULT_SERVICE_NAME_EXAMPLE = 'Initial consultation';
 
 const centsToDollarStr = (cents: number | null): string =>
   cents == null ? '' : String(cents / 100);
@@ -29,6 +42,7 @@ const ServicesPage: React.FC = () => {
   const [avgDealValue, setAvgDealValue] = useState('');
   const [profileId, setProfileId] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [industry, setIndustry] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -42,7 +56,7 @@ const ServicesPage: React.FC = () => {
             .order('created_at', { ascending: true }),
           supabase
             .from('business_profiles')
-            .select('id, workspace_id, avg_deal_value_cents')
+            .select('id, workspace_id, avg_deal_value_cents, main_category')
             .eq('user_id', user.id)
             .order('created_at', { ascending: true })
             .limit(1)
@@ -61,6 +75,7 @@ const ServicesPage: React.FC = () => {
           setProfileId(profile.id);
           setWorkspaceId(profile.workspace_id);
           setAvgDealValue(centsToDollarStr(profile.avg_deal_value_cents));
+          setIndustry(profile.main_category || null);
         }
       } catch (err) {
         console.error('Error loading services:', err);
@@ -142,7 +157,7 @@ const ServicesPage: React.FC = () => {
       <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm p-6">
         <div className="flex items-center gap-3 mb-1">
           <div className="p-2 bg-blue-100 dark:bg-blue-500/15 rounded-lg">
-            <Wrench className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Briefcase className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">Services & Pricing</h2>
@@ -155,7 +170,7 @@ const ServicesPage: React.FC = () => {
         <div className="mt-5 space-y-3">
           {rows.length === 0 && (
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No services yet. Add the jobs you offer with typical prices so bookings show real dollar value.
+              No services yet. Add what you offer with typical prices so bookings show real dollar value.
             </p>
           )}
           {rows.map((row, i) => (
@@ -164,7 +179,7 @@ const ServicesPage: React.FC = () => {
                 type="text"
                 value={row.name}
                 onChange={(e) => updateRow(i, { name: e.target.value })}
-                placeholder="Service name (e.g. Drain cleaning)"
+                placeholder={`Service name (e.g. ${industry && SERVICE_NAME_EXAMPLES[industry] ? SERVICE_NAME_EXAMPLES[industry] : DEFAULT_SERVICE_NAME_EXAMPLE})`}
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
               <div className="relative w-32">

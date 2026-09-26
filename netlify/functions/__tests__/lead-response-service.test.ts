@@ -14,6 +14,8 @@ function makeSupabase(overrides: Record<string, any> = {}) {
             const chain: any = {
               eq: () => chain,
               or: () => chain,
+              gte: () => chain,
+              order: () => chain,
               filter: () => chain,
               limit: () => chain,
               maybeSingle: async () => ({ data: overrides.existingLead ?? null, error: null }),
@@ -95,7 +97,7 @@ describe('handleInboundLead', () => {
       retellApiKey: 'retell-key',
       fireWebhooks,
       syncCrm,
-      now: () => new Date('2026-05-30T10:00:00.000Z'),
+      now: () => new Date('2026-05-30T16:00:00.000Z'), // noon ET, outside quiet hours
     });
 
     expect(result.status).toBe('captured');
@@ -135,6 +137,7 @@ describe('handleInboundLead', () => {
         retellFactory: () => retell as any,
         retellApiKey: 'retell-key',
         awaitFirstTouch: false,
+        now: () => new Date('2026-05-30T16:00:00.000Z'),
       }),
       new Promise((resolve) => setTimeout(() => resolve('timed-out'), 20)),
     ]);
@@ -256,6 +259,7 @@ describe('handleInboundLead', () => {
       supabase: h.supabase as any,
       retellApiKey: 'retell-key',
       retellFactory: () => retell as any,
+      now: () => new Date('2026-05-30T16:00:00.000Z'),
     });
 
     expect(result.status).toBe('captured');

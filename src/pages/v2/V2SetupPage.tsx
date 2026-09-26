@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { updateMetaDescription } from '../../lib/utils';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 import V2SetupChat from '../../components/v2/V2SetupChat';
 
@@ -59,9 +60,15 @@ function formatWelcomeFirstName(name: string | null | undefined) {
 }
 
 const V2SetupPage: React.FC = () => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const [showPrompting, setShowPrompting] = useState(false);
-  const firstName = formatWelcomeFirstName(user?.name);
+  // ponytail: auth.ts's User.name falls back to the email prefix
+  // (auth.ts:39), which is wrong for a welcome greeting — intake@/info@
+  // signups (common for law firms) would render "WELCOME TO BOLTCALL INTAKE".
+  // Read the raw Supabase user_metadata name directly instead of trusting
+  // the coerced `user.name`, and fall back to no name (F17).
+  const [metadataName, setMetadataName] = useState<string | null>(null);
+  const firstName = formatWelcomeFirstName(metadataName);
   const welcomeHeading = firstName
     ? `Welcome to Boltcall ${firstName}`
     : 'Welcome to Boltcall';
@@ -72,16 +79,15 @@ const V2SetupPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled) setMetadataName((data.user?.user_metadata?.name as string | undefined) ?? null);
+    });
     return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.documentElement.style.overflow = previousHtmlOverflow;
+      cancelled = true;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isLoading || !isAuthenticated) return;
@@ -101,7 +107,7 @@ const V2SetupPage: React.FC = () => {
   }
 
   return (
-    <div className="dark relative isolate h-screen h-dvh overflow-hidden bg-[#050507] text-white">
+    <div className="dark relative isolate min-h-dvh bg-[#050507] text-white">
       <style>
         {`
           @keyframes boltcallSetupWelcome {
@@ -144,7 +150,7 @@ const V2SetupPage: React.FC = () => {
         `}
       </style>
       <SetupGradientBackground />
-      <main className="mx-auto flex h-full min-h-0 max-w-5xl items-center justify-center px-4 pb-6 pt-24 sm:px-6 sm:pt-28 lg:px-8">
+      <main className="mx-auto flex min-h-dvh max-w-5xl items-start justify-center px-4 pb-12 pt-24 sm:items-center sm:px-6 sm:pb-6 sm:pt-28 lg:px-8">
         {!showPrompting ? (
           <h1
             className="relative z-10 text-center text-3xl font-black uppercase tracking-[0.1em] text-white sm:text-5xl lg:text-6xl"

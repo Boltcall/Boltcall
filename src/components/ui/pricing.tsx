@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
+import { PLAN_LIMITS } from "@/lib/plan-limits";
 import { Briefcase, CheckCheck, Database, Server } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -9,8 +10,8 @@ const plans = [
     {
         name: "Starter",
         description: "AI receptionist, missed call text-back, and instant lead reply",
-        price: 99,
-        yearlyPrice: 948,
+        price: PLAN_LIMITS.starter.monthlyPrice,
+        yearlyPrice: PLAN_LIMITS.starter.yearlyPrice,
         buttonText: "Get started",
         buttonVariant: "outline" as const,
         features: [
@@ -30,8 +31,8 @@ const plans = [
     {
         name: "Pro",
         description: "Best value for growing businesses that need full automation",
-        price: 179,
-        yearlyPrice: 1716,
+        price: PLAN_LIMITS.pro.monthlyPrice,
+        yearlyPrice: PLAN_LIMITS.pro.yearlyPrice,
         buttonText: "Get started",
         buttonVariant: "default" as const,
         popular: true,
@@ -52,8 +53,8 @@ const plans = [
     {
         name: "Ultimate",
         description: "White-glove setup with VIP support and maximum capacity",
-        price: 249,
-        yearlyPrice: 2388,
+        price: PLAN_LIMITS.ultimate.monthlyPrice,
+        yearlyPrice: PLAN_LIMITS.ultimate.yearlyPrice,
         buttonText: "Get started",
         buttonVariant: "outline" as const,
         features: [

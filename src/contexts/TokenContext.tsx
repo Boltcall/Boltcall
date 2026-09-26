@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
-import { TOKEN_REWARDS } from '../lib/tokens';
 import type { TokenRewardType, TokenCostType } from '../lib/tokens';
 
 interface TokenBalance {
@@ -181,84 +180,21 @@ export const TokenProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return { success: false, alreadyClaimed: false, tokensAwarded: 0, error: 'Not authenticated.' };
     }
 
-    const reward = TOKEN_REWARDS[rewardType];
+    // Server decides the amount and enforces once-per-(user,reward) atomically.
+    const { data: awarded, error } = await supabase.rpc('claim_token_reward', { p_reward_type: rewardType });
 
-    // Check if already claimed
-    const { data: existing, error: checkError } = await supabase
-      .from('token_rewards')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('reward_type', rewardType)
-      .single();
-
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking reward:', checkError);
-      return { success: false, alreadyClaimed: false, tokensAwarded: 0, error: 'Failed to check reward status.' };
-    }
-
-    if (existing) {
-      return { success: false, alreadyClaimed: true, tokensAwarded: 0 };
-    }
-
-    // Insert reward record
-    const { error: rewardError } = await supabase
-      .from('token_rewards')
-      .insert({
-        user_id: user.id,
-        reward_type: rewardType,
-        tokens_awarded: reward.tokens,
-      });
-
-    if (rewardError) {
-      console.error('Error inserting reward:', rewardError);
+    if (error) {
+      console.error('Error claiming reward:', error);
       return { success: false, alreadyClaimed: false, tokensAwarded: 0, error: 'Failed to claim reward. Please try again.' };
     }
 
-    // Add to bonus_balance
-    const currentBonus = tokenBalance?.bonus_balance ?? 0;
-    const newBonusBalance = currentBonus + reward.tokens;
-
-    const { error: updateError } = await supabase
-      .from('token_balances')
-      .update({
-        bonus_balance: newBonusBalance,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      console.error('Error updating bonus balance:', updateError);
-      // Reward was inserted but balance update failed — still return success
+    if (!awarded) {
+      return { success: false, alreadyClaimed: true, tokensAwarded: 0 };
     }
 
-    // Insert credit transaction
-    const { error: txError } = await supabase
-      .from('token_transactions')
-      .insert({
-        user_id: user.id,
-        amount: reward.tokens,
-        type: 'credit',
-        category: rewardType,
-        description: reward.label,
-        metadata: { reward_type: rewardType },
-      });
+    await fetchTokenBalance();
 
-    if (txError) {
-      console.error('Error inserting reward transaction:', txError);
-    }
-
-    // Update local state
-    setTokenBalance((prev) =>
-      prev
-        ? {
-            ...prev,
-            bonus_balance: newBonusBalance,
-            updated_at: new Date().toISOString(),
-          }
-        : null
-    );
-
-    return { success: true, alreadyClaimed: false, tokensAwarded: reward.tokens };
+    return { success: true, alreadyClaimed: false, tokensAwarded: awarded };
   };
 
   const value: TokenContextType = {

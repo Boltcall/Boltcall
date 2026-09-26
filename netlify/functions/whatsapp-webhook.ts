@@ -6,6 +6,7 @@ import { notifyError } from './_shared/notify';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { isLocalDev } from './_shared/prod-detect';
 import { findOrCreateLead } from './_shared/lead-linking';
+import { internalSecretValue } from './_shared/user-auth';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://puszjwovldwgitfpsnfm.supabase.co';
 
@@ -192,7 +193,7 @@ const handler: Handler = async (event) => {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'x-internal-secret': process.env.INTERNAL_WEBHOOK_SECRET || '',
+                  'x-internal-secret': internalSecretValue(),
                 },
                 body: JSON.stringify({ messageId: insertedMsg.id, userId, action: 'generate' }),
                 signal: controller.signal,

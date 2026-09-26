@@ -126,10 +126,26 @@ const handler: Handler = async (event) => {
     // Report success only when at least one Page is both stored and subscribed.
     const storedPages: string[] = [];
     const connectedPages: string[] = [];
+    let claimedByOther = false;
 
     for (const page of pages) {
       const pageId = page.id;
       const pageAccessToken = page.access_token;
+
+      // F90/F114: the unique index backing this upsert is on page_id alone, so
+      // reconnecting a Page already claimed by a different Boltcall account would
+      // silently reassign its lead routing. Refuse instead of overwriting.
+      const { data: existingConn } = await supabase
+        .from('facebook_page_connections')
+        .select('user_id')
+        .eq('page_id', pageId)
+        .maybeSingle();
+
+      if (existingConn && existingConn.user_id !== userId) {
+        console.error(`Page ${pageId} already connected to a different user (${existingConn.user_id}); refusing to reassign to ${userId}`);
+        claimedByOther = true;
+        continue;
+      }
 
       // Upsert into facebook_page_connections
       const { error: upsertErr } = await supabase
@@ -170,7 +186,7 @@ const handler: Handler = async (event) => {
     }
 
     if (storedPages.length === 0) {
-      return redirect(`${FACEBOOK_RETURN_PATH}?fb=store_fail`);
+      return redirect(`${FACEBOOK_RETURN_PATH}?fb=${claimedByOther ? 'already_claimed' : 'store_fail'}`);
     }
 
     if (connectedPages.length === 0) {
