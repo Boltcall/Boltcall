@@ -259,9 +259,10 @@ export function useSetupProgress(): SetupProgress {
 
     const core = CORE_TASKS.map((task) => ({ ...task, completed: completedIds.has(task.id) }));
 
-    // Fall back to all features if survey was skipped
+    // Fall back to all features if survey was skipped. Set drops the alias
+    // entries (slow_followup, front_desk), which share their target's object.
     const dynamic = personalized.length === 0
-      ? [...Object.values(PAIN_POINT_TASKS).map((task) => ({ ...task, completed: completedIds.has(task.id) })), ...core]
+      ? [...[...new Set(Object.values(PAIN_POINT_TASKS))].map((task) => ({ ...task, completed: completedIds.has(task.id) })), ...core]
       : [...personalized, ...core];
 
     const steps = [...ENDOWED_TASKS, ...dynamic];
