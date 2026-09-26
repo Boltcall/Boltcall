@@ -378,8 +378,8 @@ const AgentsPage: React.FC = () => {
             : '0m 0s',
           successRate: agent.conversion_rate ? `${agent.conversion_rate}%` : '0%',
           lastActive: agent.updated_at
-            ? new Date(agent.updated_at).toLocaleDateString()
-            : new Date().toLocaleDateString(),
+            ? new Date(agent.updated_at).toLocaleDateString('en-US')
+            : new Date().toLocaleDateString('en-US'),
           agent_type: agent.agent_type,
           description: agent.description,
           created_at: agent.created_at,
@@ -521,7 +521,7 @@ ${template.sampleQuestions.map(q => `- ${q}`).join('\n')}`;
             callsToday: agent.total_calls || 0,
             avgResponseTime: agent.average_call_duration ? `${agent.average_call_duration}s` : 'N/A',
             successRate: agent.conversion_rate ? `${agent.conversion_rate}%` : '0%',
-            lastActive: agent.updated_at ? new Date(agent.updated_at).toLocaleDateString() : 'N/A',
+            lastActive: agent.updated_at ? new Date(agent.updated_at).toLocaleDateString('en-US') : 'N/A',
             agent_type: agent.agent_type,
             description: agent.description,
             created_at: agent.created_at
@@ -680,8 +680,8 @@ ${template.sampleQuestions.map(q => `- ${q}`).join('\n')}`;
             ? `${agent.conversion_rate}%`
             : '0%',
           lastActive: agent.updated_at 
-            ? new Date(agent.updated_at).toLocaleDateString()
-            : new Date().toLocaleDateString(),
+            ? new Date(agent.updated_at).toLocaleDateString('en-US')
+            : new Date().toLocaleDateString('en-US'),
           agent_type: agent.agent_type,
           description: agent.description,
           created_at: agent.created_at,
@@ -1336,7 +1336,7 @@ ${template.sampleQuestions.map(q => `- ${q}`).join('\n')}`;
                 {selectedAgentDetails.status}
               </span>
               <span className="text-sm text-gray-500">
-                Created {selectedAgentDetails.created_at ? new Date(selectedAgentDetails.created_at).toLocaleDateString() : 'Just now'}
+                Created {selectedAgentDetails.created_at ? new Date(selectedAgentDetails.created_at).toLocaleDateString('en-US') : 'Just now'}
               </span>
             </div>
 

@@ -250,9 +250,11 @@ export function useSetupProgress(): SetupProgress {
   }, [user?.id]);
 
   return useMemo(() => {
-    const personalized = painPoints
-      .map((p) => PAIN_POINT_TASKS[p])
-      .filter(Boolean)
+    // Aliases (slow_followup -> slow_response, front_desk -> manual_booking)
+    // resolve to the same task object — dedupe by id or a survey with both
+    // the raw and aliased pain point shows the same step twice.
+    const rawPersonalized = painPoints.map((p) => PAIN_POINT_TASKS[p]).filter(Boolean);
+    const personalized = Array.from(new Map(rawPersonalized.map((task) => [task.id, task])).values())
       .map((task) => ({ ...task, completed: completedIds.has(task.id) }));
 
     const core = CORE_TASKS.map((task) => ({ ...task, completed: completedIds.has(task.id) }));

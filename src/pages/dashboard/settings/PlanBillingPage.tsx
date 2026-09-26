@@ -40,7 +40,7 @@ interface Invoice {
 
 const PlanBillingPage: React.FC = () => {
   const { t } = useTranslation();
-  const { monthlyAllocation, tokensUsed } = useTokens();
+  const { monthlyAllocation, tokensUsed, totalAvailable } = useTokens();
   const [activeTab, setActiveTab] = useState<'plan' | 'invoices'>('plan');
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -150,8 +150,12 @@ const PlanBillingPage: React.FC = () => {
 
   const currentPlan = planDetails[currentPlanLevel] || planDetails.free;
 
-  // Real usage from token context
-  const tokenLimit = monthlyAllocation > 0 ? monthlyAllocation : (TOKEN_PLANS[currentPlanLevel as keyof typeof TOKEN_PLANS]?.monthlyTokens ?? 0);
+  // Real usage from token context. Fall back to totalAvailable (balance +
+  // bonus) so a free-plan account with bonus credits shows "0/50" instead of
+  // a misleading "0/0" that disagrees with the Analytics page's own balance.
+  const tokenLimit = monthlyAllocation > 0
+    ? monthlyAllocation
+    : (TOKEN_PLANS[currentPlanLevel as keyof typeof TOKEN_PLANS]?.monthlyTokens ?? totalAvailable);
   const usageItems = [
     { label: 'Tokens Used', used: tokensUsed, limit: tokenLimit },
   ];

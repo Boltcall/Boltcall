@@ -273,6 +273,7 @@ const GeneralPage: React.FC = () => {
     { value: 'plumber', label: 'Plumber' },
     { value: 'hvac', label: 'HVAC' },
     { value: 'legal', label: 'Legal' },
+    { value: 'law_firm', label: 'Law Firm' },
     { value: 'salon', label: 'Salon' },
     { value: 'fitness', label: 'Fitness' },
     { value: 'restaurant', label: 'Restaurant' },

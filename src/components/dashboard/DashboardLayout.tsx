@@ -82,14 +82,16 @@ const DashboardLayout: React.FC = () => {
   const { isComplete: setupComplete, loading: setupLoading } = useSetupProgress();
 
   // Real plan from SubscriptionContext, mapped onto the three display buckets
-  // the help panel styles. Fresh users with no subscription => 'free'; trial
-  // users become 'pro' via SubscriptionContext.effectivePlan. Never fabricate
-  // 'ultimate' when no billing exists.
-  const { planLevel } = useSubscription();
+  // the help panel styles. Use the raw subscription row, not `planLevel`
+  // (which fabricates 'pro' during the 7-day trial for feature-gating) — the
+  // Plan/Billing page shows the raw plan too, so this must match it or "Home"
+  // and "Billing" disagree about what plan the user is on.
+  const { subscription } = useSubscription();
+  const rawPlanLevel = subscription?.plan_level ?? null;
   const userPlan: 'free' | 'pro' | 'elite' =
-    planLevel === 'ultimate' || planLevel === 'enterprise'
+    rawPlanLevel === 'ultimate' || rawPlanLevel === 'enterprise'
       ? 'elite'
-      : planLevel === 'pro' || planLevel === 'starter'
+      : rawPlanLevel === 'pro' || rawPlanLevel === 'starter'
         ? 'pro'
         : 'free';
   
@@ -474,7 +476,7 @@ const DashboardLayout: React.FC = () => {
            data-onboarding="sidebar"
            className={`fixed lg:static inset-y-0 left-0 z-[9999] transform transition-all duration-300 ease-in-out flex-shrink-0 ${
              sidebarCollapsed ? 'w-16' : 'w-64'
-           } ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} bg-white dark:bg-[#111114] rounded-2xl shadow-lg m-2 dashboard-sidebar lg:z-40 relative group/sidebar`}
+           } ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} bg-white dark:bg-[#111114] rounded-2xl shadow-lg m-2 dashboard-sidebar lg:z-40 group/sidebar`}
          >
           {/* Collapse/Expand toggle arrow — fixed position so it doesn't shift on collapse */}
           <button
