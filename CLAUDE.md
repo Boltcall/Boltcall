@@ -82,16 +82,20 @@ dist/            # Build output (do not edit)
 
 ## MANDATORY: Page Creation & Deploy Protocol
 
-After creating ANY new page (blog post, landing page, tool, comparison, etc.) and deploying:
+Deploys are automatic. Every merge that reaches `main` is tested, built and published to boltcall.org by `.github/workflows/deploy-main.yml` (the deployment agent). It runs one deploy at a time, collapses a burst of merges into one deploy of the newest `main`, skips a commit that is already live, and refuses to publish anything that does not contain the live commit (read from `https://boltcall.org/release.json`), so no session's merged work gets overwritten.
+
+**Never run `netlify deploy --prod` from a session checkout.** A local deploy publishes only that checkout and silently wipes whatever other sessions merged. To ship, merge to main; to retry, dispatch "Auto-deploy Boltcall main" on `main` (with `force_redeploy` to rebuild a live commit).
+
+After creating ANY new page (blog post, landing page, tool, comparison, etc.):
 
 1. **Add to sitemap** — add the route to `scripts/generate-sitemap.mjs` ROUTES array
 2. **Commit** — `git add -A && git commit -m "feat: add [page-name]"`
-3. **Merge to main** — push branch and merge PR (or push directly if on main)
-4. **Deploy** — `npm run build:prerender && netlify deploy --prod --dir=dist --no-build`
+3. **Merge to main** — push branch and merge PR (or push directly if on main). The deployment agent deploys it.
+4. **Wait for the deploy** — the "Auto-deploy Boltcall main" run for your merge (or a later one) is green and `https://boltcall.org/release.json` reports your merge commit or a newer `main` commit.
 5. **GSC submit** — `NEW_URLS="/blog/your-slug" npm run gsc-submit`
 
 Run step 5 with all new page paths comma-separated: `NEW_URLS="/blog/slug-1,/tools/calculator" npm run gsc-submit`
-Never skip steps 4–5. Run them immediately after merge, not later.
+Never skip steps 4–5. Run them as soon as the deploy is live, not later.
 
 ## MANDATORY: Blog Page Creation Rule
 
@@ -106,7 +110,7 @@ tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
 
 - Bugs, errors, "why is this broken", unexpected behavior → invoke investigate
 - "Does this work?", "test this page", verify a deploy → invoke qa-only
-- Ship, deploy, push, create PR → invoke merge-deploy
+- Ship, deploy, push, create PR → invoke merge-deploy (deploying = merging to main; the deployment agent publishes)
 - Code review, check my diff → invoke review
 - Security questions, auth review, API exposure → invoke security-review
 - Architecture or refactor decisions → use Plan agent (no dedicated skill)
