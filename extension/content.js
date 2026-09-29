@@ -18,7 +18,7 @@ if (!document.getElementById('boltcall-lead-orb-host')) {
   const EYE = '#FAFAFA';
 
   const STYLE = `
-    :host { all: initial; }
+    :host { all: initial; display: block; background: transparent; }
     * { box-sizing: border-box; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
     .root {
       position: fixed;
@@ -37,7 +37,7 @@ if (!document.getElementById('boltcall-lead-orb-host')) {
       padding: 0;
       cursor: grab;
       background: radial-gradient(circle at 32% 28%, #3B82F6 0%, ${BLUE} 55%, ${BLUE_DARK} 100%);
-      box-shadow: 0 8px 24px rgb(0 0 0 / .3);
+      box-shadow: 0 6px 16px rgb(30 64 175 / .45);
       transition: transform 150ms cubic-bezier(.16,1,.3,1), box-shadow 150ms cubic-bezier(.16,1,.3,1);
     }
     .trigger:hover { transform: scale(1.04); }
@@ -47,8 +47,8 @@ if (!document.getElementById('boltcall-lead-orb-host')) {
     .trigger.dragging { transition: none; }
     .trigger.pulsing { animation: boltcall-pulse 1.1s cubic-bezier(.16,1,.3,1) 2; }
     @keyframes boltcall-pulse {
-      0%, 100% { box-shadow: 0 8px 24px rgb(0 0 0 / .3), 0 0 0 0 rgb(37 99 235 / .55); }
-      50% { box-shadow: 0 8px 24px rgb(0 0 0 / .3), 0 0 0 14px rgb(37 99 235 / 0); }
+      0%, 100% { box-shadow: 0 6px 16px rgb(30 64 175 / .45), 0 0 0 0 rgb(37 99 235 / .55); }
+      50% { box-shadow: 0 6px 16px rgb(30 64 175 / .45), 0 0 0 14px rgb(37 99 235 / 0); }
     }
     .eyes {
       position: absolute;
@@ -227,6 +227,16 @@ if (!document.getElementById('boltcall-lead-orb-host')) {
   // ---- Host + Shadow DOM ------------------------------------------------
   const host = document.createElement('div');
   host.id = 'boltcall-lead-orb-host';
+  // Inline style beats any host-page selector (tag/class/id/reset) regardless
+  // of its specificity, which `:host { all: initial }` in the shadow
+  // stylesheet alone cannot guarantee — a page rule targeting `div` or `#…`
+  // can still win the cascade against it. This is the actual fix for host
+  // pages leaking a background/box onto the widget's light-DOM anchor.
+  host.setAttribute(
+    'style',
+    'all: initial; display: block; position: static; margin: 0; padding: 0; ' +
+      'border: 0; width: 0; height: 0; overflow: visible; background: transparent; box-shadow: none;'
+  );
   const shadow = host.attachShadow({ mode: 'open' });
   const styleEl = document.createElement('style');
   styleEl.textContent = STYLE;
