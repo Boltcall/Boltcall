@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Boltcall Lead Orb</title>
+<link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="header">
+    <span class="orb-dot" aria-hidden="true"></span>
+    <div>
+      <h1>Boltcall Lead Orb</h1>
+      <p class="subtitle">Speed-to-lead demo widget</p>
+    </div>
+  </header>
+
+  <section class="stats" aria-label="Today's activity">
+    <div class="stat">
+      <span class="stat-value" id="stat-count">0</span>
+      <span class="stat-label">Leads today</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" id="stat-avg">&ndash;</span>
+      <span class="stat-label">Avg response</span>
+    </div>
+  </section>
+
+  <button type="button" class="simulate-btn" id="simulate">Simulate Lead</button>
+
+  <label class="toggle-row" for="auto-toggle">
+    <span>Auto-Demo Leads</span>
+    <span class="switch">
+      <input type="checkbox" id="auto-toggle" />
+      <span class="switch-track"><span class="switch-thumb"></span></span>
+    </span>
+  </label>
+
+  <p class="disclaimer">Demo data only. No real leads, no network calls, nothing is sent anywhere.</p>
+
+  <script src="lead-data.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
