@@ -38,6 +38,13 @@ const FEATURED = [
     tag: 'Report',
   },
   {
+    title: 'The Missed Call Audit',
+    href: '/lead-magnet/test-lead-magnet-delete-me',
+    icon: ClipboardCheck,
+    summary: 'See how many new-client calls your firm missed last week. Count missed calls, check call-back times, and find the gap with three quick questions.',
+    tag: 'Checklist',
+  },
+  {
     title: 'The Speed-to-Lead Stack',
     href: '/lead-magnet/speed-to-lead-stack',
     icon: Zap,
