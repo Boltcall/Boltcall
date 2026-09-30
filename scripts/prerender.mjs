@@ -60,7 +60,6 @@ const ROUTES = [
   '/lead-magnet/speed-to-lead-stack',
   '/lead-magnet/intake-agent-playbook',
   '/lead-magnet/vanishing-client-report',
-  '/lead-magnet/test-lead-magnet-delete-me',
   '/after-hours-lead-rescue',
   '/automatic-reviews-agent',
   '/reminders-agent',
