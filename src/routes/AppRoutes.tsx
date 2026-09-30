@@ -241,6 +241,7 @@ const LeadMagnetAIReceptionistBuyersGuide = React.lazy(() => import('../pages/Le
 const LeadMagnetSpeedToLeadStackPage = React.lazy(() => import('../pages/LeadMagnetSpeedToLeadStackPage'));
 const LeadMagnetIntakeAgentPlaybookPage = React.lazy(() => import('../pages/LeadMagnetIntakeAgentPlaybookPage'));
 const LeadMagnetVanishingClientReportPage = React.lazy(() => import('../pages/LeadMagnetVanishingClientReportPage'));
+const LeadMagnetTestLeadMagnetDeleteMePage = React.lazy(() => import('../pages/LeadMagnetTestLeadMagnetDeleteMePage'));
 const AfterHoursLeadRescuePage = React.lazy(() => import('../pages/AfterHoursLeadRescuePage'));
 const AutomaticReviewsAgentPage = React.lazy(() => import('../pages/AutomaticReviewsAgentPage'));
 const RemindersAgentPage = React.lazy(() => import('../pages/RemindersAgentPage'));
@@ -723,6 +724,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/lead-magnet/speed-to-lead-stack" element={<LeadMagnetSpeedToLeadStackPage />} />
         <Route path="/lead-magnet/intake-agent-playbook" element={<LeadMagnetIntakeAgentPlaybookPage />} />
         <Route path="/lead-magnet/vanishing-client-report" element={<LeadMagnetVanishingClientReportPage />} />
+        <Route path="/lead-magnet/test-lead-magnet-delete-me" element={<LeadMagnetTestLeadMagnetDeleteMePage />} />
         <Route path="/after-hours-lead-rescue" element={<AfterHoursLeadRescuePage />} />
         <Route path="/automatic-reviews-agent" element={<AutomaticReviewsAgentPage />} />
         <Route path="/reminders-agent" element={<RemindersAgentPage />} />
