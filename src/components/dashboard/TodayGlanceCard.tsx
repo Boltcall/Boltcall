@@ -7,6 +7,8 @@ import { supabase } from '../../lib/supabase';
 import { getRetellCallHistory } from '../../lib/retell';
 import { fetchBookedRevenueMTD, type BookedRevenueMTD } from '../../lib/dashboardApi';
 import OverviewMetricCard from './OverviewMetricCard';
+import { useIndustry } from '../../hooks/useIndustry';
+import { countOf } from '../../lib/industryWording';
 
 // No historical series exists for these headline numbers, so the card is left to
 // render its flat "no trend yet" fallback. Do not synthesize a fake slope from the
@@ -71,6 +73,7 @@ async function fetchTodayStats(userId: string): Promise<TodayStats> {
 
 const TodayGlanceCard: React.FC = () => {
   const { user } = useAuth();
+  const { lawFirm, words } = useIndustry();
   const [revenue, setRevenue] = useState<BookedRevenueMTD | null>(null);
   const [stats, setStats] = useState<TodayStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -154,14 +157,14 @@ const TodayGlanceCard: React.FC = () => {
                   caption="Resolved without a human handoff"
                 />
                 <OverviewMetricCard
-                  label="Leads today"
+                  label={lawFirm ? 'Potential clients today' : 'Leads today'}
                   period="Overview"
                   value={leadsToday}
                   badge={leadsToday > 0 ? 'Captured' : 'None yet'}
                   badgeTone={leadsToday > 0 ? 'positive' : 'neutral'}
                   icon={Users}
                   accentColor="#2563eb"
-                  caption="New leads created today"
+                  caption={`New ${words.leads} today`}
                 />
                 <OverviewMetricCard
                   label="AI win rate"
@@ -183,7 +186,7 @@ const TodayGlanceCard: React.FC = () => {
                       badgeTone="neutral"
                       icon={DollarSign}
                       accentColor="#10b981"
-                      caption="Set your service prices to see booked revenue"
+                      caption={lawFirm ? 'Set your practice area fees to see booked value' : 'Set your service prices to see booked revenue'}
                     />
                   </Link>
                 ) : (
@@ -195,7 +198,7 @@ const TodayGlanceCard: React.FC = () => {
                     badgeTone={revenue && revenue.totalCents > 0 ? 'positive' : 'neutral'}
                     icon={DollarSign}
                     accentColor="#10b981"
-                    caption="Estimated value of this month's bookings"
+                    caption={`Estimated value of this month's ${lawFirm ? 'consultations' : 'bookings'}`}
                   />
                 )}
               </>
@@ -209,7 +212,7 @@ const TodayGlanceCard: React.FC = () => {
               to="/dashboard/leads"
               className="inline-flex items-center text-sm font-medium text-slate-600 transition-colors hover:text-slate-900 hover:underline underline-offset-4"
             >
-              {needsAction} call{needsAction !== 1 ? 's' : ''} need a callback right now →
+              {countOf(needsAction, words.call, words.calls)} need a callback right now →
             </Link>
           ) : handled > 0 ? (
             <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">

@@ -50,6 +50,7 @@ import {
 import { provisionAgentSetup } from '../../lib/setup/provisionAgentSetup';
 import { useWebsiteIntel, normalizeWebsite, logoCandidates, type WebsiteIntel } from './useWebsiteIntel';
 import { cn } from '../../lib/utils';
+import { isLawFirm } from '../../lib/industryWording';
 import { PAIN_TO_STORE_KEY, isPainPoint } from '../../lib/setup/painMap';
 import { useSetupStore } from '../../stores/setupStore';
 
@@ -114,11 +115,11 @@ const PAIN_LAUNCH_LINE: Record<PainId, string> = {
   front_desk: 'Wiring call forwarding',
 };
 
-function launchStepsFor(pain: PainId | null): string[] {
+function launchStepsFor(pain: PainId | null, law = false): string[] {
   return [
     'Creating your workspace',
-    'Loading your services and answers',
-    'Training your receptionist',
+    law ? 'Loading your practice areas and answers' : 'Loading your services and answers',
+    law ? 'Training your intake receptionist' : 'Training your receptionist',
     pain ? PAIN_LAUNCH_LINE[pain] : 'Deploying your speed-to-lead agent',
     'Bringing everything online',
   ];
@@ -588,11 +589,18 @@ const IntelScene: React.FC<{
   );
 };
 
-const PainScene: React.FC<{ selected: PainId | null; onSelect: (id: PainId) => void }> = ({ selected, onSelect }) => (
+// Law firms see intake wording on the two titles that read as a trades business.
+const LAW_PAIN_TITLE: Partial<Record<PainId, string>> = {
+  missed_calls: 'Missed intake calls',
+  front_desk: 'Overwhelmed intake team',
+};
+const painTitle = (p: (typeof PAIN_POINTS)[number], law: boolean) => (law && LAW_PAIN_TITLE[p.id]) || p.title;
+
+const PainScene: React.FC<{ selected: PainId | null; onSelect: (id: PainId) => void; law: boolean }> = ({ selected, onSelect, law }) => (
   <SceneShell id="pain" wide>
     <Reveal>
       <h2 className="text-2xl font-semibold leading-tight tracking-[-0.03em] text-white sm:text-3xl">
-        What&rsquo;s costing you the most?
+        {law ? 'What’s costing you the most new matters?' : 'What’s costing you the most?'}
       </h2>
     </Reveal>
     <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
@@ -613,7 +621,7 @@ const PainScene: React.FC<{ selected: PainId | null; onSelect: (id: PainId) => v
               )}
             >
               <Icon className={cn('h-5 w-5 shrink-0 transition-colors', active ? 'text-white' : 'text-white/60')} />
-              <span className="text-sm font-medium text-white">{p.title}</span>
+              <span className="text-sm font-medium text-white">{painTitle(p, law)}</span>
             </button>
           </Reveal>
         );
@@ -734,8 +742,9 @@ const LaunchScene: React.FC<{
   error: string | null;
   onRetry: () => void;
 }> = ({ draft, stepIdx, error, onRetry }) => {
+  const law = isLawFirm(draft.industry);
   const pain = PAIN_POINTS.find((p) => p.id === draft.pain);
-  const steps = launchStepsFor(draft.pain);
+  const steps = launchStepsFor(draft.pain, law);
   return (
     <SceneShell id="launch">
       <div className="flex flex-col items-center text-center">
@@ -756,7 +765,7 @@ const LaunchScene: React.FC<{
         </h2>
         {pain && !error && (
           <p className="mt-3 text-sm text-white/55">
-            First job: fixing <span className="font-semibold text-white/85">{pain.title.toLowerCase()}</span>.
+            {law ? 'First priority' : 'First job'}: fixing <span className="font-semibold text-white/85">{painTitle(pain, law).toLowerCase()}</span>.
           </p>
         )}
 
@@ -1061,6 +1070,7 @@ const StartOnboarding: React.FC = () => {
           <PainScene
             key="pain"
             selected={draft.pain}
+            law={isLawFirm(draft.industry)}
             onSelect={(id) => {
               // Select → brief beat so the choice registers → advance.
               patch({ pain: id });

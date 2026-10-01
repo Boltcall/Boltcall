@@ -4,6 +4,7 @@ import { X, Phone, Mail, Calendar, User, MessageSquare } from 'lucide-react';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
 import type { Lead } from '../../types/dashboard';
+import { useIndustry } from '../../hooks/useIndustry';
 
 interface LeadDrawerProps {
   lead: Lead | null;
@@ -28,6 +29,8 @@ const formatDate = (dateString: string) => {
 };
 
 const LeadDrawer: React.FC<LeadDrawerProps> = ({ lead, isOpen, onClose }) => {
+  const { words } = useIndustry();
+  const Appointment = words.appointment.charAt(0).toUpperCase() + words.appointment.slice(1);
   if (!lead) return null;
   
   return (
@@ -213,7 +216,7 @@ const LeadDrawer: React.FC<LeadDrawerProps> = ({ lead, isOpen, onClose }) => {
                       <div className="flex items-center">
                         <div className="w-2 h-2 bg-green-600 rounded-full mr-3"></div>
                         <div>
-                          <p className="text-sm text-text-main">Appointment booked</p>
+                          <p className="text-sm text-text-main">{Appointment} booked</p>
                           <p className="text-xs text-text-muted">{formatDate(lead.bookingAt)}</p>
                         </div>
                       </div>
@@ -225,7 +228,7 @@ const LeadDrawer: React.FC<LeadDrawerProps> = ({ lead, isOpen, onClose }) => {
                         }`}></div>
                         <div>
                           <p className="text-sm text-text-main">
-                            {lead.showed ? 'Appointment attended' : 'Appointment missed'}
+                            {lead.showed ? `${Appointment} attended` : `${Appointment} missed`}
                           </p>
                           <p className="text-xs text-text-muted">
                             {lead.showed ? 'Client showed up' : 'No-show'}

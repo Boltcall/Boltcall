@@ -5,6 +5,8 @@ import { supabase } from '../../lib/supabase';
 import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useIndustry } from '../../hooks/useIndustry';
+import { localize } from '../../lib/industryWording';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
 import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
@@ -154,6 +156,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   previewLeads,
 }) => {
   const { user } = useAuth();
+  const { lawFirm, words } = useIndustry();
   const handleError = useErrorHandler();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [backendLeads, setBackendLeads] = useState<BackendLeadCard[]>([]);
@@ -493,7 +496,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
           {
-            label: 'Total Leads',
+            label: lawFirm ? 'Potential Clients' : 'Total Leads',
             value: kpis.totalLeads,
             trend: kpis.totalLeadsTrend,
             subtitle: 'Last 7 Days',
@@ -506,7 +509,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
             trend: kpis.conversionTrend,
             subtitle: 'Last 7 Days',
             accentColor: '#059669',
-            caption: 'Share of leads moved into contacted status',
+            caption: `Share of ${words.leads} moved into contacted status`,
           },
         ].map((card, i) => (
           <motion.div
@@ -539,7 +542,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       >
         {/* Chart Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lead Performance</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{lawFirm ? 'Intake Performance' : 'Lead Performance'}</h2>
           <div className="flex items-center gap-3">
             {/* Toggle pills */}
             <div className="flex bg-gray-100 dark:bg-[#17171b] rounded-lg p-0.5">
@@ -659,7 +662,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
 
         {leads.length === 0 && !isLoadingLeads && (
           <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-gray-400 dark:text-gray-500">No lead data yet</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No {words.lead} data yet</p>
           </div>
         )}
       </motion.div>
@@ -673,7 +676,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
           className="bg-white dark:bg-[#111114] rounded-lg border border-gray-200 dark:border-[#1e1e24] p-5"
         >
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lead flow overview</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{lawFirm ? 'Intake flow overview' : 'Lead flow overview'}</h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               A second graph powered by the backend so you can see how leads move from fresh inquiry to booking or loss.
             </p>
@@ -698,7 +701,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       >
         {/* Table Header */}
         <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-[#1e1e24] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Lead List</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{lawFirm ? 'Potential Client List' : 'Lead List'}</h2>
           <div className="flex items-center gap-2 flex-wrap">
             {/* Status filter */}
             <select
@@ -727,7 +730,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
-                placeholder="Search leads..."
+                placeholder={`Search ${words.leads}...`}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="pl-8 pr-3 py-1.5 text-xs border border-gray-200 dark:border-[#1e1e24] rounded-lg bg-white dark:bg-[#0e0e11] text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 w-44"
@@ -745,7 +748,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         ) : filteredLeads.length === 0 ? (
           <div className="p-12 text-center">
             <User className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">{leads.length === 0 ? 'No leads found' : 'No leads match your filters'}</p>
+            <p className="text-gray-500 dark:text-gray-400">{leads.length === 0 ? `No ${words.leads} found` : `No ${words.leads} match your filters`}</p>
             {leads.length === 0 && (
               <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Leads will appear here once you start receiving them</p>
             )}
@@ -790,13 +793,13 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                         </div>
                       </td>
                       <td className="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">{formatShortDate(lead.captured_at)}</td>
-                      <td className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">{lead.ai_summary}</td>
+                      <td className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">{localize(lead.ai_summary, lawFirm)}</td>
                       <td className="px-5 py-3">
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusClass}`}>
                           {lead.status}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-sm font-medium text-blue-600 dark:text-blue-400">{lead.next_action}</td>
+                      <td className="px-5 py-3 text-sm font-medium text-blue-600 dark:text-blue-400">{localize(lead.next_action, lawFirm)}</td>
                     </tr>
                   );
                 })}

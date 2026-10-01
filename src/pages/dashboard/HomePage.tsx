@@ -10,6 +10,7 @@ import { useSetupProgress } from '../../hooks/useSetupProgress';
 import { useFeatureTriggers } from '../../hooks/useFeatureTriggers';
 import { resolveMilestones, unseenMilestones, markMilestoneSeen, type Milestone } from '../../utils/milestones';
 import { supabase } from '../../lib/supabase';
+import { useIndustry } from '../../hooks/useIndustry';
 
 // Zone A copy — time-aware greeting with a real-data outcome line (P15, P19).
 export function buildGreeting(opts: {
@@ -18,8 +19,9 @@ export function buildGreeting(opts: {
   agentName: string;
   businessName: string | null;
   handledSinceYesterday: number;
+  callWord?: string; // 'intake call' for law firms
 }): { hello: string; outcome: string } {
-  const { now, firstName, agentName, businessName, handledSinceYesterday } = opts;
+  const { now, firstName, agentName, businessName, handledSinceYesterday, callWord = 'call' } = opts;
   const hour = now.getHours();
   const timeOfDay = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const hello = `${timeOfDay}, ${firstName}.`;
@@ -29,7 +31,7 @@ export function buildGreeting(opts: {
   const isMonthStart = now.getDate() === 1;
 
   if (handledSinceYesterday > 0) {
-    const base = `${agentName} answered ${handledSinceYesterday} call${handledSinceYesterday !== 1 ? 's' : ''}${forBiz} since yesterday.`;
+    const base = `${agentName} answered ${handledSinceYesterday} ${callWord}${handledSinceYesterday !== 1 ? 's' : ''}${forBiz} since yesterday.`;
     if (isMonday) return { hello, outcome: `New week. ${base}` };
     if (isMonthStart) return { hello, outcome: `New month. ${base}` };
     return { hello, outcome: base };
@@ -72,6 +74,7 @@ const SetupRing: React.FC<{ pct: number }> = ({ pct }) => {
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
+  const { words } = useIndustry();
   const { callbackStats, businessName, setBusinessName, fetchLiveData, fetchError, loading: dashboardLoading } = useDashboardStore();
   const progress = useSetupProgress();
   const [agentName, setAgentName] = useState<string>('Your AI');
@@ -112,10 +115,10 @@ const HomePage: React.FC = () => {
       .eq('user_id', user.id)
       .eq('outcome_type', 'booked')
       .then(({ count }) => {
-        const fresh = unseenMilestones(resolveMilestones({ bookingCount: count ?? 0, callCount: 0 }));
+        const fresh = unseenMilestones(resolveMilestones({ bookingCount: count ?? 0, callCount: 0 }, words));
         if (fresh.length > 0) setMilestone(fresh[0]);
       });
-  }, [user?.id]);
+  }, [user?.id, words]);
 
   useEffect(() => {
     if (hasFetchedLiveData.current) return;
@@ -160,6 +163,7 @@ const HomePage: React.FC = () => {
     agentName,
     businessName: trimmedBusiness || null,
     handledSinceYesterday: handled,
+    callWord: words.call,
   });
 
   const daysLive = daysLiveSince(user?.createdAt, now);
@@ -170,7 +174,7 @@ const HomePage: React.FC = () => {
     ? { label: progress.nextStep.title, description: progress.nextStep.description, link: progress.nextStep.link }
     : suggestion
       ? { label: suggestion.title, description: suggestion.description, link: suggestion.link }
-      : { label: "Review yesterday's calls", description: `See what ${agentName} handled and where leads came from`, link: '/dashboard/conversations/calls' };
+      : { label: `Review yesterday's ${words.calls}`, description: `See what ${agentName} handled and where ${words.leads} came from`, link: '/dashboard/conversations/calls' };
 
   return (
     <div className="space-y-4 px-1 md:px-0 max-w-5xl mx-auto">
@@ -204,7 +208,7 @@ const HomePage: React.FC = () => {
                 {progress.completedCount} of {progress.totalCount} steps done
               </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Finish setup so {agentName} can answer every lead for you.
+                Finish setup so {agentName} can answer every {words.lead} for you.
               </p>
             </div>
           </div>
@@ -245,7 +249,7 @@ const HomePage: React.FC = () => {
               {daysLive} day{daysLive !== 1 ? 's' : ''} with {agentName} on duty
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Every day live is another day no lead waits.
+              Every day live is another day no {words.lead} waits.
             </p>
           </div>
         </div>

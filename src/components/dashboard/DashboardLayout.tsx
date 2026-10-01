@@ -35,6 +35,7 @@ import {
   BarChart3,
   Star,
   Plug,
+  Sparkles,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -52,6 +53,7 @@ import { useDashboardStore } from '../../stores/dashboardStore';
 import { useAgentMilestoneAlerts } from '../../hooks/useAgentMilestoneAlerts';
 import { useSetupProgress } from '../../hooks/useSetupProgress';
 import { useSubscription } from '../../contexts/SubscriptionContext';
+import { useIndustry } from '../../hooks/useIndustry';
 
 const DashboardLayout: React.FC = () => {
   const { t, i18n } = useTranslation('common');
@@ -72,6 +74,10 @@ const DashboardLayout: React.FC = () => {
 
   // Get current user from auth context
   const { user } = useAuth();
+  const { lawFirm } = useIndustry();
+  // Suggestions waiting on the owner (qa_reviews with a fix attached), shown as a badge on
+  // "Agent improvements". Re-counted on navigation so approving/rejecting clears it.
+  const [pendingSuggestions, setPendingSuggestions] = useState(0);
   const { alerts } = useDashboardStore();
   const milestoneAlerts = useAgentMilestoneAlerts();
   const allAlerts = [...milestoneAlerts, ...alerts];
@@ -192,6 +198,23 @@ const DashboardLayout: React.FC = () => {
 
   const location = useLocation();
   const { logout } = useAuth();
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    supabase
+      .from('qa_reviews')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .not('heal_log_id', 'is', null)
+      .then(({ count }) => {
+        if (!cancelled) setPendingSuggestions(count ?? 0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, location.pathname]);
   const mainContentRef = useRef<HTMLElement>(null);
 
   // Scroll main content to top on route change + update page title
@@ -225,7 +248,8 @@ const DashboardLayout: React.FC = () => {
     // Define page name mappings using i18n keys
     const pageNames: Record<string, string> = {
       '/dashboard': t('page.overview'),
-      '/dashboard/leads': t('page.leads'),
+      '/dashboard/leads': lawFirm ? 'Potential Clients' : t('page.leads'),
+      '/dashboard/qa/review': 'Agent improvements',
       '/dashboard/sms': 'SMS Agent',
       '/dashboard/instant-lead-response': t('page.instantLeadResponse'),
       '/dashboard/website-instant-response': 'Website Instant Response',
@@ -365,19 +389,26 @@ const DashboardLayout: React.FC = () => {
   const icon = (I: React.ComponentType<{ className?: string }>) => (
     <I className="w-3.5 h-3.5 scale-[0.95]" />
   );
+  // Law firms get intake wording; ids stay on the generic names so the onboarding tour still finds them.
   const navItemsMain = [
     { to: '/dashboard', label: 'Home', icon: icon(LayoutDashboard) },
-    { to: '/dashboard/leads', label: 'Leads', icon: icon(Inbox) },
-    { to: '/dashboard/conversations/calls', label: 'Calls', icon: icon(PhoneCall) },
+    { to: '/dashboard/leads', label: lawFirm ? 'Potential Clients' : 'Leads', icon: icon(Inbox), onboardingId: 'nav-leads' },
+    { to: '/dashboard/conversations/calls', label: lawFirm ? 'Intake Calls' : 'Calls', icon: icon(PhoneCall), onboardingId: 'nav-calls' },
     { to: '/dashboard/conversations/missed', label: 'Missed Calls', icon: icon(PhoneMissed) },
     { to: '/dashboard/conversations/messages', label: 'Text Messages', icon: icon(MessageSquare) },
     { to: '/dashboard/growth/reminders', label: 'Reminders', icon: icon(Bell) },
-    { to: '/dashboard/ai-receptionist', label: 'Voice Receptionist', icon: icon(Mic) },
+    { to: '/dashboard/ai-receptionist', label: lawFirm ? 'Intake Receptionist' : 'Voice Receptionist', icon: icon(Mic), onboardingId: 'nav-voice-receptionist' },
     { to: '/dashboard/sms', label: 'SMS', icon: icon(MessageSquare) },
     { to: '/dashboard/whatsapp', label: 'WhatsApp', icon: icon(MessageCircle) },
     { to: '/dashboard/email', label: 'Email', icon: icon(Mail) },
     { to: '/dashboard/chat-widget', label: 'Website Chat', icon: icon(Globe) },
     { to: '/dashboard/your-ai/personality', label: 'Agents', icon: icon(Bot) },
+    {
+      to: '/dashboard/qa/review',
+      label: 'Agent improvements',
+      icon: icon(Sparkles),
+      badge: pendingSuggestions > 0 ? String(pendingSuggestions) : undefined,
+    },
     { to: '/dashboard/your-ai/voice', label: 'Voice Library', icon: icon(Volume2) },
     { to: '/dashboard/your-ai/knowledge', label: 'Knowledge Base', icon: icon(BookOpen) },
     { to: '/dashboard/your-ai/phone', label: 'Phone Numbers', icon: icon(Phone) },
@@ -433,7 +464,7 @@ const DashboardLayout: React.FC = () => {
           <span className={`ml-auto px-1.5 py-0.5 text-[9px] font-semibold rounded-full leading-none ${
             item.badge === 'Beta'
               ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-              : item.badge === 'Coming Soon'
+              : item.badge === 'Coming Soon' || /^\d+$/.test(item.badge)
                 ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
               : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
           }`}>

@@ -4,6 +4,7 @@ import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { PopButton } from '../../../components/ui/pop-button';
+import { isLawFirm } from '../../../lib/industryWording';
 
 interface ServiceRow {
   id?: string;
@@ -18,6 +19,7 @@ interface ServiceRow {
 // professional-neutral default rather than a trades-flavored one.
 const SERVICE_NAME_EXAMPLES: Record<string, string> = {
   legal: 'Family law consultation',
+  law_firm: 'Family law',
   dentist: 'Teeth cleaning',
   medspa: 'Botox consultation',
   plumber: 'Drain cleaning',
@@ -43,6 +45,7 @@ const ServicesPage: React.FC = () => {
   const [profileId, setProfileId] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [industry, setIndustry] = useState<string | null>(null);
+  const law = isLawFirm(industry);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -160,9 +163,11 @@ const ServicesPage: React.FC = () => {
             <Briefcase className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Services & Pricing</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{law ? 'Practice Areas & Fees' : 'Services & Pricing'}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Prices here power your booked-revenue dashboard — each booking is valued by its matching service.
+              {law
+                ? 'Fees here power your booked-value dashboard. Leave fee and duration blank for areas you price per matter.'
+                : 'Prices here power your booked-revenue dashboard — each booking is valued by its matching service.'}
             </p>
           </div>
         </div>
@@ -170,7 +175,9 @@ const ServicesPage: React.FC = () => {
         <div className="mt-5 space-y-3">
           {rows.length === 0 && (
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No services yet. Add what you offer with typical prices so bookings show real dollar value.
+              {law
+                ? 'No practice areas yet. Add the areas you take on. Fees and durations are optional.'
+                : 'No services yet. Add what you offer with typical prices so bookings show real dollar value.'}
             </p>
           )}
           {rows.map((row, i) => (
@@ -179,7 +186,7 @@ const ServicesPage: React.FC = () => {
                 type="text"
                 value={row.name}
                 onChange={(e) => updateRow(i, { name: e.target.value })}
-                placeholder={`Service name (e.g. ${industry && SERVICE_NAME_EXAMPLES[industry] ? SERVICE_NAME_EXAMPLES[industry] : DEFAULT_SERVICE_NAME_EXAMPLE})`}
+                placeholder={`${law ? 'Practice area' : 'Service name'} (e.g. ${industry && SERVICE_NAME_EXAMPLES[industry] ? SERVICE_NAME_EXAMPLES[industry] : DEFAULT_SERVICE_NAME_EXAMPLE})`}
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               />
               <div className="relative w-32">
@@ -189,7 +196,7 @@ const ServicesPage: React.FC = () => {
                   min="0"
                   value={row.price}
                   onChange={(e) => updateRow(i, { price: e.target.value })}
-                  placeholder="Price"
+                  placeholder={law ? 'Fee' : 'Price'}
                   className="w-full pl-7 pr-3 py-2 border border-gray-300 dark:border-[#2a2a30] dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
               </div>
@@ -206,7 +213,7 @@ const ServicesPage: React.FC = () => {
               <button
                 onClick={() => deleteRow(i)}
                 className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200 ease-out"
-                title="Delete service"
+                title={law ? 'Delete practice area' : 'Delete service'}
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -218,7 +225,7 @@ const ServicesPage: React.FC = () => {
             className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200 ease-out"
           >
             <Plus className="w-4 h-4" />
-            Add service
+            {law ? 'Add practice area' : 'Add service'}
           </button>
         </div>
       </div>
@@ -230,9 +237,9 @@ const ServicesPage: React.FC = () => {
             <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Average Job Value</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{law ? 'Average Matter Value' : 'Average Job Value'}</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Used when a booking doesn't match any service above.
+              {law ? "Used when a consultation doesn't match any practice area above." : "Used when a booking doesn't match any service above."}
             </p>
           </div>
         </div>

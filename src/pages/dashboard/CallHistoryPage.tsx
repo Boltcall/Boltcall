@@ -24,10 +24,13 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
+import CallReportCard from '../../components/dashboard/CallReportCard';
+import { useIndustry } from '../../hooks/useIndustry';
 
 const CallHistoryPage: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const handleError = useErrorHandler();
+  const { words } = useIndustry();
   const [calls, setCalls] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +43,8 @@ const CallHistoryPage: React.FC = () => {
   });
   const [selectedCall, setSelectedCall] = useState<RetellCall | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  // call_id -> weighted score (0..1) from retell_calls.score_report, for the list's Quality column
+  const [reportScores, setReportScores] = useState<Record<string, number>>({});
 
   // Fetch user's agents from Supabase
   const fetchUserAgents = useCallback(async () => {
@@ -103,6 +108,22 @@ const CallHistoryPage: React.FC = () => {
 
       const response = await getRetellCallHistory(params);
       setCalls(response.calls);
+
+      // Non-blocking: a failure here just leaves the Retell-derived quality label in place.
+      try {
+        const ids = response.calls.map((c) => c.call_id);
+        const { data: reports } = ids.length
+          ? await supabase.from('retell_calls').select('call_id, score_report').in('call_id', ids)
+          : { data: [] };
+        const next: Record<string, number> = {};
+        for (const r of reports ?? []) {
+          const rep = r.score_report as { status?: string; weighted_score?: number } | null;
+          if (rep?.status === 'scored' && typeof rep.weighted_score === 'number') next[r.call_id] = rep.weighted_score;
+        }
+        setReportScores(next);
+      } catch {
+        setReportScores({});
+      }
     } catch (error) {
       handleError('call-history: fetch call history', error, {
         toast: false,
@@ -210,6 +231,16 @@ const CallHistoryPage: React.FC = () => {
     }
   };
 
+  // Report score wins over the Retell-derived label when the call has been scored
+  const reportQuality = (call: RetellCall) => {
+    const score = reportScores[call.call_id];
+    if (score === undefined) return null;
+    return {
+      pct: Math.round(score * 100),
+      dot: score >= 0.8 ? 'bg-green-500' : score >= 0.6 ? 'bg-yellow-500' : 'bg-red-500',
+    };
+  };
+
   // Standard call_analysis keys (everything else is custom)
   const STANDARD_ANALYSIS_KEYS = ['call_summary', 'user_sentiment', 'call_successful'];
 
@@ -219,7 +250,7 @@ const CallHistoryPage: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <OverviewMetricCard
-          label="Total Calls"
+          label={words.calls === 'calls' ? 'Total Calls' : 'Total Intake Calls'}
           value={filteredCalls.length}
           period="Call overview"
           badge="Live"
@@ -321,7 +352,7 @@ const CallHistoryPage: React.FC = () => {
         ) : filteredCalls.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <Phone className="w-8 h-8 text-gray-400" />
-            <span className="ml-3 text-gray-600 dark:text-gray-400">No calls found</span>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">No {words.calls} found</span>
           </div>
         ) : (
           <>
@@ -358,6 +389,7 @@ const CallHistoryPage: React.FC = () => {
                           setSelectedCall(call);
                           setShowDetailsModal(true);
                         }}
+                        aria-label="View call details and report"
                         className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors duration-200 ease-out"
                       >
                         <Eye className="w-4 h-4" />
@@ -383,6 +415,12 @@ const CallHistoryPage: React.FC = () => {
                       <Clock className="w-3 h-3" />
                       {formatDuration(call.duration_ms)}
                     </span>
+                    {reportQuality(call) && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 tabular-nums">
+                        <span className={`w-2.5 h-2.5 rounded-full ${reportQuality(call)!.dot}`} />
+                        {reportQuality(call)!.pct}/100
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -467,8 +505,20 @@ const CallHistoryPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="group relative flex items-center gap-2">
-                          <span className={`w-3 h-3 rounded-full ${getQualityDotColor(getCallQuality(call))}`} />
-                          <span className="text-xs text-gray-500 dark:text-gray-500">{getQualityLabel(getCallQuality(call))}</span>
+                          {(() => {
+                            const rq = reportQuality(call);
+                            return rq ? (
+                              <>
+                                <span className={`w-3 h-3 rounded-full ${rq.dot}`} />
+                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 tabular-nums">{rq.pct}/100</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className={`w-3 h-3 rounded-full ${getQualityDotColor(getCallQuality(call))}`} />
+                                <span className="text-xs text-gray-500 dark:text-gray-500">{getQualityLabel(getCallQuality(call))}</span>
+                              </>
+                            );
+                          })()}
                           {call.call_analysis?.call_summary && (
                             <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 w-64">
                               <div className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg">
@@ -485,6 +535,7 @@ const CallHistoryPage: React.FC = () => {
                               setSelectedCall(call);
                               setShowDetailsModal(true);
                             }}
+                            aria-label="View call details and report"
                             className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400 transition-colors duration-200 ease-out"
                           >
                             <Eye className="w-4 h-4" />
@@ -519,6 +570,13 @@ const CallHistoryPage: React.FC = () => {
       >
         {selectedCall && (
           <div className="max-h-[calc(90vh-180px)] overflow-y-auto">
+            <div className="mb-6">
+              <CallReportCard
+                callId={selectedCall.call_id}
+                durationMs={selectedCall.duration_ms}
+                callStatus={selectedCall.call_status}
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Call Information */}
               <div className="space-y-4">

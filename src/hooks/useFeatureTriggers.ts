@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { avgJobValueFor } from '../data/industryDefaults';
+import { isLawFirm } from '../lib/industryWording';
 
 export type FeatureSuggestion = {
   id: string;
@@ -18,6 +19,7 @@ export type TriggerInputs = {
   reputationOn: boolean;
   avgJobValue: number;
   agentName: string;
+  customerWord?: string; // 'client' for law firms; defaults to 'customer'
 };
 
 // Progressive disclosure (P16): at most ONE suggestion (P3), each backed by a
@@ -25,7 +27,7 @@ export type TriggerInputs = {
 // ponytail: website-chat trigger from the plan is dropped — no chat-volume
 // data source exists in the store yet; add when chatStats is actually fed.
 export function pickFeatureSuggestion(inputs: TriggerInputs): FeatureSuggestion | null {
-  const { missedCalls7d, bookedJobs, smsOn, remindersOn, reputationOn, avgJobValue, agentName } = inputs;
+  const { missedCalls7d, bookedJobs, smsOn, remindersOn, reputationOn, avgJobValue, agentName, customerWord = 'customer' } = inputs;
 
   if (missedCalls7d >= 3 && !smsOn) {
     const est = missedCalls7d * avgJobValue;
@@ -41,7 +43,7 @@ export function pickFeatureSuggestion(inputs: TriggerInputs): FeatureSuggestion 
     return {
       id: 'reminders',
       title: 'Cut no-shows automatically',
-      description: `${agentName} can remind every booked customer before their appointment.`,
+      description: `${agentName} can remind every booked ${customerWord} before their ${customerWord === 'client' ? 'consultation' : 'appointment'}.`,
       link: '/dashboard/growth/reminders',
     };
   }
@@ -49,8 +51,8 @@ export function pickFeatureSuggestion(inputs: TriggerInputs): FeatureSuggestion 
   if (bookedJobs >= 10 && !reputationOn) {
     return {
       id: 'reputation',
-      title: 'Turn happy customers into reviews',
-      description: `${agentName} asks satisfied customers for a Google review after the job.`,
+      title: `Turn happy ${customerWord}s into reviews`,
+      description: `${agentName} asks satisfied ${customerWord}s for a Google review after the ${customerWord === 'client' ? 'matter' : 'job'}.`,
       link: '/dashboard/growth/reputation',
     };
   }
@@ -100,6 +102,7 @@ export function useFeatureTriggers(agentName: string): FeatureSuggestion | null 
         reputationOn: features?.reputation_manager_enabled ?? false,
         avgJobValue: avgJobValueFor(profileRes.data?.main_category),
         agentName,
+        customerWord: isLawFirm(profileRes.data?.main_category) ? 'client' : 'customer',
       }));
     });
 
