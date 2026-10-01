@@ -129,6 +129,11 @@ const handler: Handler = async (event) => {
           method: 'PATCH',
           body: JSON.stringify({ general_prompt: version.prompt_text }),
         });
+        // Mirror the live prompt so the next self-heal/edit builds on it
+        await supabase
+          .from('agents')
+          .update({ system_prompt: version.prompt_text, system_prompt_synced_at: new Date().toISOString() })
+          .eq('id', agent.id);
       }
 
       updatedAgentIds.push(agent.retell_agent_id);

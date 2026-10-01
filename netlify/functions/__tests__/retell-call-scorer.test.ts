@@ -26,8 +26,10 @@ function makePost(call: Record<string, unknown>) {
 
 function makeSupabase() {
   const upserts: Record<string, unknown[]> = {};
+  const updates: Record<string, unknown>[] = [];
   return {
     upserts,
+    updates,
     from: vi.fn((table: string) => {
       if (table === 'agents') {
         return {
@@ -48,11 +50,22 @@ function makeSupabase() {
           }),
         };
       }
+      if (table === 'business_profiles') {
+        return {
+          select: () => ({
+            eq: () => ({
+              limit: () => ({
+                maybeSingle: () => Promise.resolve({ data: { main_category: 'dental' }, error: null }),
+              }),
+            }),
+          }),
+        };
+      }
       if (table === 'retell_prompt_versions') {
         return {
           select: () => ({
             eq: () => ({
-              eq: () => ({
+              contains: () => ({
                 limit: () => ({
                   maybeSingle: () => Promise.resolve({ data: null, error: null }),
                 }),
@@ -70,6 +83,10 @@ function makeSupabase() {
         upsert: (rows: unknown) => {
           upserts[table] = Array.isArray(rows) ? rows : [rows];
           return Promise.resolve({ data: rows, error: null });
+        },
+        update: (patch: Record<string, unknown>) => {
+          updates.push(patch);
+          return { eq: () => Promise.resolve({ data: null, error: null }) };
         },
       };
     }),
@@ -115,9 +132,31 @@ describe('retell-call-scorer', () => {
     expect(chatCompletionMock).toHaveBeenCalledWith(
       expect.any(String),
       expect.stringContaining('Transcript:'),
-      { tier: 'light', maxTokens: 400 },
+      { tier: 'light', maxTokens: 1000 },
     );
     expect(supabase.upserts.retell_calls).toHaveLength(1);
     expect(supabase.upserts.retell_call_scores).toHaveLength(6);
+  });
+
+  it('writes no score rows and flags the call when the judge LLM fails', async () => {
+    chatCompletionMock.mockRejectedValue(new Error('llm down'));
+    const supabase = makeSupabase();
+    getSupabaseMock.mockReturnValue(supabase);
+    const { testHandler: handler } = await import('../retell-call-scorer');
+
+    const res = await handler(
+      makePost({
+        call_id: 'call-2',
+        agent_id: 'retell-agent-1',
+        call_status: 'ended',
+        duration_ms: 45000,
+        transcript: 'user: I need a cleaning appointment next week. agent: I can help with that and book you for Tuesday at 9am.',
+      }),
+      {} as any,
+    );
+
+    expect(JSON.parse(res.body)).toMatchObject({ scored: false, reason: 'scoring_failed' });
+    expect(supabase.upserts.retell_call_scores).toBeUndefined();
+    expect(supabase.updates).toContainEqual({ score_report: { status: 'failed', error: 'scoring_llm_failed' } });
   });
 });

@@ -53,10 +53,18 @@ function makeCustomLlmSupabase() {
     prompt: 'Original custom LLM prompt',
     healInserted: null as Record<string, unknown> | null,
     reviewInserted: null as Record<string, unknown> | null,
+    healUpdates: [] as Record<string, unknown>[],
+    reviewUpdates: [] as Record<string, unknown>[],
   };
 
   const okThenable = {
     then: (resolve: (value: { error: null }) => unknown) => Promise.resolve({ error: null }).then(resolve),
+  };
+  // update(...).eq(...).eq(...)[.select()] chains, awaitable at any point
+  const updateChain: any = {
+    eq: () => updateChain,
+    select: () => Promise.resolve({ data: [{ id: 'review-1' }], error: null }),
+    then: okThenable.then,
   };
 
   return {
@@ -80,6 +88,7 @@ function makeCustomLlmSupabase() {
                       data: { agent_id: 'agent-owned', original_prompt: state.prompt },
                       error: null,
                     }),
+                    maybeSingle: () => Promise.resolve({ data: state.healInserted, error: null }),
                   }),
                 }),
               };
@@ -91,6 +100,10 @@ function makeCustomLlmSupabase() {
                   single: () => Promise.resolve({ data: { id: 'heal-1' }, error: null }),
                 }),
               };
+            },
+            update: (patch: Record<string, unknown>) => {
+              state.healUpdates.push(patch);
+              return updateChain;
             },
           };
         }
@@ -137,13 +150,26 @@ function makeCustomLlmSupabase() {
           return {
             insert: (row: Record<string, unknown>) => {
               state.reviewInserted = row;
-              return okThenable;
+              return {
+                select: () => ({
+                  single: () => Promise.resolve({ data: { id: 'review-1' }, error: null }),
+                }),
+              };
             },
-            update: () => ({
+            select: () => ({
               eq: () => ({
-                eq: () => okThenable,
+                eq: () => ({
+                  maybeSingle: () => Promise.resolve({
+                    data: state.reviewInserted ? { id: 'review-1', ...state.reviewInserted } : null,
+                    error: null,
+                  }),
+                }),
               }),
             }),
+            update: (patch: Record<string, unknown>) => {
+              state.reviewUpdates.push(patch);
+              return updateChain;
+            },
           };
         }
 
@@ -242,7 +268,7 @@ describe('agent-self-heal tenant hardening', () => {
     expect(getServiceSupabaseMock).not.toHaveBeenCalled();
   });
 
-  it('can heal custom-llm agents by updating the mirrored Supabase prompt and verifying all scenarios', async () => {
+  it('verifies a custom-llm fix on temp agents but leaves the mirrored prompt untouched until approval', async () => {
     userOwnsAgentMock.mockResolvedValue(true);
     deductTokensMock.mockResolvedValue({ success: true, tokensDeducted: 20, remainingBalance: 100 });
     const supabase = makeCustomLlmSupabase();
@@ -317,9 +343,9 @@ describe('agent-self-heal tenant hardening', () => {
     expect(res.statusCode).toBe(200);
     expect(body.fix.verified).toBe(true);
     expect(body.fix.passedRuns).toBe(4);
-    expect(supabase.state.prompt).toContain('AUTO-FIX v1');
-    expect(supabase.state.prompt).toContain('Always offer the next available booking slot');
-    expect(supabase.state.healInserted?.status).toBe('fixed');
+    expect(body.fix.applied).toBe(false);
+    expect(supabase.state.prompt).toBe('Original custom LLM prompt');
+    expect(supabase.state.healInserted?.status).toBe('pending_approval');
     expect(supabase.state.reviewInserted?.heal_log_id).toBe('heal-1');
     expect(fetch).not.toHaveBeenCalledWith(
       expect.stringContaining('/update-retell-llm/'),
@@ -581,6 +607,102 @@ describe('agent-self-heal tenant hardening', () => {
     expect(res.statusCode).toBe(200);
     expect(body.fix.verified).toBe(false);
     expect(supabase.state.prompt).toBe('Original custom LLM prompt');
-    expect(supabase.state.healInserted?.status).toBe('max_attempts_reached');
+    expect(supabase.state.healInserted?.status).toBe('failed');
+    expect(supabase.state.reviewInserted).toBeNull();
+  });
+
+  it('approve-first gate: heal never PATCHes the live Retell LLM; approve-fix applies the verified fix', async () => {
+    userOwnsAgentMock.mockResolvedValue(true);
+    deductTokensMock.mockResolvedValue({ success: true, tokensDeducted: 20, remainingBalance: 100 });
+    const supabase = makeCustomLlmSupabase();
+    getServiceSupabaseMock.mockReturnValue(supabase.client);
+    chatCompletionMock.mockImplementation(async (systemPrompt: string) => {
+      if (systemPrompt.includes('voice agent debugger')) {
+        return JSON.stringify({
+          failureType: 'missed_booking',
+          failureSummary: 'The agent did not offer a booking slot.',
+          rootCause: 'Booking instruction was too weak.',
+          testMessages: ['I need an appointment'],
+          promptFix: 'Always offer the next available booking slot.',
+          severity: 'high',
+        });
+      }
+      if (systemPrompt.includes('AI agent test engineer')) {
+        return JSON.stringify([
+          { label: 'similar_1', messages: ['Can I book?'] },
+          { label: 'similar_2', messages: ['Need an appointment'] },
+          { label: 'similar_3', messages: ['Do you have tomorrow?'] },
+          { label: 'exact', messages: ['I need an appointment'] },
+        ]);
+      }
+      if (systemPrompt.includes('verification judge')) {
+        return JSON.stringify({ passed: true, score: 95, notes: 'The fix held.' });
+      }
+      return '{}';
+    });
+
+    const livePatches: string[] = [];
+    (fetch as any).mockImplementation(async (url: string, options?: RequestInit) => {
+      const path = new URL(url).pathname;
+      if (path.includes('/get-agent/')) {
+        return { ok: true, json: async () => ({ agent_id: 'agent-owned', agent_name: 'Retell Agent', response_engine: { type: 'retell-llm', llm_id: 'live-llm' } }) };
+      }
+      if (path.includes('/get-retell-llm/')) {
+        return { ok: true, json: async () => ({ llm_id: 'live-llm', general_prompt: 'Original live prompt' }) };
+      }
+      if (path.includes('/update-retell-llm/')) {
+        livePatches.push(String(options?.body));
+        return { ok: true, json: async () => ({}) };
+      }
+      if (path.endsWith('/create-retell-llm')) {
+        return { ok: true, json: async () => ({ llm_id: `temp-llm-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat-agent')) {
+        return { ok: true, json: async () => ({ agent_id: `chat-agent-${Math.random()}` }) };
+      }
+      if (path.endsWith('/create-chat')) {
+        return { ok: true, json: async () => ({ chat_id: `chat-${Math.random()}`, first_message: 'Hi.' }) };
+      }
+      if (path.endsWith('/create-chat-completion')) {
+        return { ok: true, json: async () => ({ messages: [{ role: 'assistant', content: 'I can book the next slot.' }] }) };
+      }
+      if (path.includes('/get-chat/')) {
+        return { ok: true, json: async () => ({ chat_analysis: { call_successful: false } }) };
+      }
+      if (path.includes('/end-chat/') || path.includes('/delete-chat-agent/') || path.includes('/delete-retell-llm/')) {
+        return { ok: true, status: 204, json: async () => ({}) };
+      }
+      throw new Error(`Unexpected Retell path: ${path}`);
+    });
+
+    const { testHandler: handler } = await import('../agent-self-heal');
+    const healRes = await handler(
+      makePost({
+        action: 'heal',
+        userId: 'user-a',
+        agentId: 'agent-owned',
+        transcript: 'lead: I need an appointment\nagent: Please call later',
+        callAnalysis: { call_successful: false },
+      }),
+      {} as any,
+    );
+
+    const healBody = JSON.parse(healRes.body);
+    expect(healBody.fix.verified).toBe(true);
+    expect(healBody.fix.pendingApproval).toBe(true);
+    expect(healBody.fix.reviewId).toBe('review-1');
+    expect(livePatches).toHaveLength(0);
+    expect(supabase.state.reviewInserted?.status).toBe('pending');
+
+    const approveRes = await handler(makePost({ action: 'approve-fix', reviewId: 'review-1', userId: 'user-a' }), {} as any);
+
+    expect(approveRes.statusCode).toBe(200);
+    expect(JSON.parse(approveRes.body)).toMatchObject({ success: true, status: 'approved', applied: true });
+    expect(livePatches).toHaveLength(1);
+    expect(livePatches[0]).toContain('Original live prompt');
+    expect(livePatches[0]).toContain('Always offer the next available booking slot.');
+    expect(supabase.state.prompt).toContain('AUTO-FIX v1'); // agents.system_prompt mirror
+    expect(supabase.state.reviewUpdates[0]).toMatchObject({ status: 'approved', reviewed_by: 'user-a' });
+    expect(supabase.state.healUpdates).toContainEqual(expect.objectContaining({ status: 'fixed', original_prompt: 'Original live prompt' }));
   });
 });

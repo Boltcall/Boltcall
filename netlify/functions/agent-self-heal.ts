@@ -18,8 +18,8 @@ import { buildAgentOwnerOrFilter, sanitizeRetellAgentId } from './_shared/lookup
  *   4. Fix the prompt
  *   5. Retest all 4 — ALL must pass (100% threshold)
  *   6. If not all pass, re-analyze and re-fix (up to MAX_HEAL_ITERATIONS attempts)
- *   7. Deploy the verified fix or revert after max attempts
- *   8. Notify via Telegram + store in DB
+ *   7. Store the verified fix as a PENDING qa_reviews item (nothing touches the live agent)
+ *   8. Notify via Telegram; action 'approve-fix' applies it, 'reject-fix' discards it
  */
 
 const RETELL_API = 'https://api.retellai.com';
@@ -614,7 +614,6 @@ const handler: Handler = async (event) => {
       let currentPromptFix = analysis.promptFix;
       const priorFailedFixes: string[] = [];
       let failedScenarioLabels: string[] = [];
-      let verifiedPrompt: string | null = null;
 
       while (iteration < MAX_HEAL_ITERATIONS && !fixVerified) {
         iteration++;
@@ -647,7 +646,6 @@ const handler: Handler = async (event) => {
         }
 
         fixVerified = passedAfterFix === VERIFY_RUNS;
-        if (fixVerified) verifiedPrompt = candidatePrompt;
 
         if (!fixVerified && iteration < MAX_HEAL_ITERATIONS) {
           // Re-analyze: inform LLM which scenarios still failed
@@ -658,18 +656,11 @@ const handler: Handler = async (event) => {
         }
       }
 
-      if (fixVerified && verifiedPrompt) {
-        await setPromptTarget(promptTarget, verifiedPrompt, supabase, userId, agentId);
-        promptTarget.originalPrompt = verifiedPrompt;
-      }
-
+      // Approve-first: the verified fix is NOT applied here. It waits as a
+      // pending qa_reviews item; action 'approve-fix' applies it to the live agent.
       const elapsedMs = Date.now() - startTime;
       const fixSuccessRate = Math.round((passedAfterFix / VERIFY_RUNS) * 100);
-      const finalStatus = fixVerified
-        ? 'fixed'
-        : iteration >= MAX_HEAL_ITERATIONS
-          ? 'max_attempts_reached'
-          : 'reverted';
+      const finalStatus = fixVerified ? 'pending_approval' : 'failed';
 
       // Store result in Supabase
       const healRecord = {
@@ -687,7 +678,7 @@ const handler: Handler = async (event) => {
         fix_success_rate: fixSuccessRate,
         fix_pass_count: passedAfterFix,
         fix_total_runs: VERIFY_RUNS,
-        prompt_reverted: !fixVerified,
+        prompt_reverted: false,
         elapsed_ms: elapsedMs,
         status: finalStatus,
         heal_iterations: iteration,
@@ -704,9 +695,10 @@ const handler: Handler = async (event) => {
         console.error('[self-heal] Failed to store record:', insertError);
       }
 
-      // Create QA review entry for human oversight
-      if (insertedRecord?.id && userId) {
-        supabase.from('qa_reviews').insert({
+      // Queue the verified fix for owner approval (unverified fixes are logged only)
+      let reviewId: string | null = null;
+      if (fixVerified && insertedRecord?.id && userId) {
+        const { data: reviewRow, error: reviewErr } = await supabase.from('qa_reviews').insert({
           user_id: userId,
           agent_id: agentId,
           call_id: callId || null,
@@ -714,19 +706,17 @@ const handler: Handler = async (event) => {
           call_type: 'failure',
           status: 'pending',
           overall_score: fixSuccessRate,
-          auto_summary: `${analysis.failureType} — ${analysis.failureSummary} | Fix: ${finalStatus} (${passedAfterFix}/${VERIFY_RUNS} passed)`,
-        }).then(({ error: reviewErr }) => {
-          if (reviewErr) console.warn('[self-heal] qa_reviews insert failed:', reviewErr.message);
-        });
+          auto_summary: `${analysis.failureSummary} Suggested fix passed ${passedAfterFix}/${VERIFY_RUNS} test calls and is waiting for your approval.`,
+        }).select('id').single();
+        if (reviewErr) console.warn('[self-heal] qa_reviews insert failed:', reviewErr.message);
+        reviewId = reviewRow?.id || null;
       }
 
       // Notify via Telegram
-      const statusEmoji = fixVerified ? '✅' : finalStatus === 'max_attempts_reached' ? '🔴' : '⚠️';
+      const statusEmoji = fixVerified ? '✅' : '🔴';
       const fixStatus = fixVerified
-        ? `Verified \\(all 4/4 passed, ${iteration} iteration${iteration > 1 ? 's' : ''}\\)`
-        : finalStatus === 'max_attempts_reached'
-          ? `Max attempts reached \\(${MAX_HEAL_ITERATIONS}\\) \\— reverted`
-          : 'Reverted \\— fix did not hold';
+        ? `Verified \\(all 4/4 passed, ${iteration} iteration${iteration > 1 ? 's' : ''}\\), awaiting approval`
+        : `Not verified after ${MAX_HEAL_ITERATIONS} attempts, nothing changed`;
 
       const notification =
         `${statusEmoji} *Agent Self\\-Heal*\n\n` +
@@ -753,13 +743,14 @@ const handler: Handler = async (event) => {
           },
           reproduction: { runs: 3, reproduced },
           fix: {
-            applied: true,
+            applied: false,
+            pendingApproval: fixVerified,
+            reviewId,
             verified: fixVerified,
             successRate: fixSuccessRate,
             passedRuns: passedAfterFix,
             totalRuns: VERIFY_RUNS,
             iterations: iteration,
-            reverted: !fixVerified,
             status: finalStatus,
           },
           elapsedMs,
@@ -891,6 +882,86 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
       };
     }
 
+    // ─── ACTION: approve-fix / reject-fix ──────────────────────────────────────
+    // Owner decision on a qa_reviews item. Approve applies a pending fix
+    // (self-heal or objection-miner) to the live agent; reject discards it.
+    // Reviews without a pending fix (success calls) are just marked decided.
+    if (action === 'approve-fix' || action === 'reject-fix') {
+      const { reviewId, userId } = body;
+      if (!reviewId || !userId) {
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'reviewId and userId are required' }) };
+      }
+      const auth = await requireInternalOrMatchingUser(event, userId, headers);
+      if (!auth.ok) return auth.response;
+
+      const supabase = getServiceSupabase();
+      const { data: review } = await supabase
+        .from('qa_reviews')
+        .select('id, agent_id, heal_log_id, status')
+        .eq('id', reviewId)
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (!review) {
+        return { statusCode: 404, headers, body: JSON.stringify({ error: 'Review not found' }) };
+      }
+      if (review.status !== 'pending' && review.status !== 'flagged') {
+        return { statusCode: 409, headers, body: JSON.stringify({ error: `Review already ${review.status}` }) };
+      }
+
+      const { data: healLog } = review.heal_log_id
+        ? await supabase
+          .from('agent_self_heal_log')
+          .select('agent_id, status, prompt_fix_applied, heal_iterations')
+          .eq('id', review.heal_log_id)
+          .eq('user_id', userId)
+          .maybeSingle()
+        : { data: null };
+      const agentId: string = healLog?.agent_id || review.agent_id;
+      const ownershipError = await requireAgentOwnership(userId, agentId);
+      if (ownershipError) return ownershipError;
+
+      const approve = action === 'approve-fix';
+      const newStatus = approve ? 'approved' : 'rejected';
+      // Claim the review first so a double click can't apply the fix twice.
+      const { data: claimed } = await supabase
+        .from('qa_reviews')
+        .update({ status: newStatus, reviewed_at: new Date().toISOString(), reviewed_by: userId })
+        .eq('id', reviewId)
+        .eq('status', review.status)
+        .select('id');
+      if (!claimed?.length) {
+        return { statusCode: 409, headers, body: JSON.stringify({ error: 'Review was already decided' }) };
+      }
+
+      const pendingFix = healLog?.status === 'pending_approval' && healLog.prompt_fix_applied ? healLog : null;
+      if (pendingFix && !approve) {
+        await supabase.from('agent_self_heal_log')
+          .update({ status: 'rejected', updated_at: new Date().toISOString() })
+          .eq('id', review.heal_log_id);
+      }
+      if (!pendingFix || !approve) {
+        return { statusCode: 200, headers, body: JSON.stringify({ success: true, status: newStatus, applied: false }) };
+      }
+
+      try {
+        const voiceAgent = await retellFetch(`/get-agent/${agentId}`);
+        const promptTarget = await resolvePromptTarget(voiceAgent, agentId, userId, supabase);
+        const newPrompt = buildPromptWithFix(promptTarget.originalPrompt, pendingFix.prompt_fix_applied, pendingFix.heal_iterations || 1);
+        await setPromptTarget(promptTarget, newPrompt, supabase, userId, agentId);
+        // original_prompt = the prompt we just replaced, so revert-fix is exact.
+        await supabase.from('agent_self_heal_log')
+          .update({ status: 'fixed', original_prompt: promptTarget.originalPrompt, updated_at: new Date().toISOString() })
+          .eq('id', review.heal_log_id);
+      } catch (err) {
+        await supabase.from('qa_reviews')
+          .update({ status: review.status, reviewed_at: null, reviewed_by: null })
+          .eq('id', reviewId);
+        throw err;
+      }
+
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true, status: newStatus, applied: true, agentId }) };
+    }
+
     // ─── ACTION: revert-fix ───────────────────────────────────────────────────
     if (action === 'revert-fix') {
       const { healLogId, userId } = body;
@@ -904,13 +975,17 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
 
       const { data: healLog, error: fetchErr } = await supabase
         .from('agent_self_heal_log')
-        .select('agent_id, original_prompt')
+        .select('agent_id, original_prompt, status')
         .eq('id', healLogId)
         .eq('user_id', userId)
         .single();
 
       if (fetchErr || !healLog) {
         return { statusCode: 404, headers, body: JSON.stringify({ error: 'Heal log not found' }) };
+      }
+      // Only an applied fix can be reverted; a pending one is rejected via reject-fix.
+      if (healLog.status !== 'fixed') {
+        return { statusCode: 409, headers, body: JSON.stringify({ error: 'This fix is not live, nothing to revert' }) };
       }
 
       const { agent_id: agentId, original_prompt: storedOriginalPrompt } = healLog;
@@ -932,12 +1007,15 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
 
       await setPromptTarget(promptTarget, restoredPrompt, supabase, userId, agentId);
 
-      supabase
+      await supabase
+        .from('agent_self_heal_log')
+        .update({ status: 'reverted', prompt_reverted: true, updated_at: new Date().toISOString() })
+        .eq('id', healLogId);
+      await supabase
         .from('qa_reviews')
         .update({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: userId || null })
         .eq('heal_log_id', healLogId)
-        .eq('user_id', userId)
-        .then(() => {});
+        .eq('user_id', userId);
 
       const esc = (s: string) => s.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
       await notifyInfo(
@@ -959,7 +1037,7 @@ friction_score: 0 = perfectly smooth, 10 = very rough despite success.`;
       };
     }
 
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid action. Use: analyze, heal, history, analyze-success, revert-fix' }) };
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid action. Use: analyze, heal, history, analyze-success, approve-fix, reject-fix, revert-fix' }) };
 
   } catch (err) {
     console.error('[agent-self-heal] Error:', err);

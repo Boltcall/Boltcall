@@ -179,7 +179,7 @@ describe('conversation-outcome tenant hardening', () => {
     });
     expect(supabase.inserted).toHaveLength(0);
     expect(fetch).toHaveBeenCalledWith(
-      'https://boltcall.test/.netlify/functions/agent-self-heal',
+      'https://boltcall.test/.netlify/functions/agent-self-heal-background',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({ 'x-internal-secret': 'test-internal-secret' }),

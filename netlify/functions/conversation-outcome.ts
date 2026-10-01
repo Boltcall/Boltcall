@@ -34,7 +34,7 @@ function internalHeaders(): Record<string, string> {
 async function postSelfHeal(body: Record<string, unknown>): Promise<{ ok: true } | { ok: false; error: string }> {
   const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
   try {
-    const res = await fetch(`${baseUrl}/.netlify/functions/agent-self-heal`, {
+    const res = await fetch(`${baseUrl}/.netlify/functions/agent-self-heal-background`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...internalHeaders() },
       body: JSON.stringify(body),
