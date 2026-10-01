@@ -1,0 +1,102 @@
+name: Auto-deploy Boltcall main
+run-name: Auto-deploy main ${{ github.sha }}
+
+# Deployment agent: every merge that reaches main is tested, built and published
+# to boltcall.org, so no session has to deploy from its own checkout.
+#   push         — merges pushed to main (PR merges, session merges).
+#   workflow_run — merges made by integrate-boltcall-pr.yml, which pushes with
+#                  GITHUB_TOKEN and so never raises a push event of its own.
+#   workflow_dispatch — manual retry of current main (force_redeploy rebuilds a live commit).
+# Safety:
+#   * shares the `netlify-production-deploy` lock with the prepared-release path,
+#     so only one production deploy ever runs; a burst of merges collapses to the
+#     newest pending run (GitHub cancels the older pending one), and that newest
+#     main commit already contains every earlier session's merge;
+#   * a commit already live is skipped (no double deploys);
+#   * a commit that does not contain the live commit is refused (no rollback over
+#     another session's work). The live commit is read from /release.json.
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ['Integrate Owner Reviewed Boltcall PR']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      force_redeploy:
+        description: 'Rebuild and publish main even if it is already live'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-production-deploy
+  cancel-in-progress: false
+
+env:
+  NETLIFY_SITE_ID: 8ec31e2a-c9cf-42e7-9b3d-7b7c04ed2613
+  PRODUCTION_URL: https://boltcall.org
+
+jobs:
+  deploy:
+    if: >-
+      github.ref == 'refs/heads/main' && github.repository == 'Boltcall/Boltcall' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Skip live duplicates and refuse rollbacks
+        id: live
+        env:
+          FORCE_REDEPLOY: ${{ github.event_name == 'workflow_dispatch' && inputs.force_redeploy }}
+        run: node scripts/check-live-commit.mjs
+      - if: steps.live.outputs.deploy == 'true'
+        run: npm ci
+      - if: steps.live.outputs.deploy == 'true'
+        run: npm run typecheck
+      - if: steps.live.outputs.deploy == 'true'
+        run: npm run test:run
+      - name: Build production site including prerender and SEO checks
+        if: steps.live.outputs.deploy == 'true'
+        run: npm run build:prerender
+      - name: Stamp the live-commit marker
+        if: steps.live.outputs.deploy == 'true'
+        run: |
+          set -euo pipefail
+          test -s dist/index.html
+          printf '{"schema_version":1,"project_id":"boltcall","sha":"%s","source":"auto-deploy-main","run_id":%s,"run_attempt":%s}\n' \
+            "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > dist/release.json
+          printf '\n/release.json\n  Cache-Control: no-store, max-age=0\n  Content-Type: application/json\n' >> dist/_headers
+      - name: Publish site and functions to production
+        if: steps.live.outputs.deploy == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo '::error::NETLIFY_AUTH_TOKEN secret is missing'; exit 1; }
+          npm install --global netlify-cli@26.2.0
+          netlify deploy --prod --dir=dist --no-build \
+            --site "$NETLIFY_SITE_ID" --message "Auto-deploy main $GITHUB_SHA run $GITHUB_RUN_ID"
+      - name: Verify production serves this commit
+        if: steps.live.outputs.deploy == 'true'
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            got=$(curl -fsS -m 15 "$PRODUCTION_URL/release.json?check=$(date +%s%N)" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(JSON.parse(s).sha||"")}catch{}})' || true)
+            if [ "$got" = "$GITHUB_SHA" ] && curl -fsS -m 15 -o /dev/null "$PRODUCTION_URL/"; then
+              echo "deployed $GITHUB_SHA verified live on attempt $i/30"; exit 0
+            fi
+            echo "attempt $i/30: live=${got:-none} expected=$GITHUB_SHA"; sleep 10
+          done
+          echo '::error::boltcall.org never reported the deployed commit'
+          exit 1
