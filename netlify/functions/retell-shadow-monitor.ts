@@ -104,7 +104,7 @@ const handler: Handler = async (event) => {
   const shadowCutoff = new Date(now.getTime() - SHADOW_WINDOW_H * 3600 * 1000).toISOString();
   const { data: versions, error: versErr } = await supabase
     .from('retell_prompt_versions')
-    .select('id, vertical, prompt_text, shadow_started_at, rollback_data, shadow_agent_ids')
+    .select('id, scope, agent_id, vertical, prompt_text, shadow_started_at, rollback_data, shadow_agent_ids')
     .eq('status', 'shadowing')
     .lt('shadow_started_at', shadowCutoff);
 
@@ -119,18 +119,21 @@ const handler: Handler = async (event) => {
     const shadowStart: string = version.shadow_started_at;
     const shadowEnd = now.toISOString();
     const shadowAgeH = (now.getTime() - new Date(shadowStart).getTime()) / 3600000;
+    // Customer versions are judged (and supersede) on the patched agent only;
+    // template versions stay vertical-wide.
+    const customerAgentId: string | null = version.scope === 'customer' ? version.agent_id : null;
+    const scopeCalls = (q: any) => (customerAgentId ? q.eq('agent_id', customerAgentId) : q.eq('vertical', version.vertical));
 
     // Shadow window calls
-    const { data: shadowCalls } = await supabase
+    const { data: shadowCalls } = await scopeCalls(supabase
       .from('retell_calls')
-      .select('call_id, outcome')
-      .eq('vertical', version.vertical)
+      .select('call_id, outcome'))
       .gte('started_at', shadowStart)
       .lte('started_at', shadowEnd);
 
-    const shadowConfirmed = await confirmedCallIds(supabase, (shadowCalls || []).map(c => c.call_id));
+    const shadowConfirmed = await confirmedCallIds(supabase, (shadowCalls || []).map((c: any) => c.call_id));
     const shadowRate = bookRate(shadowCalls || [], shadowConfirmed);
-    const shadowQualifying = (shadowCalls || []).filter(c => QUALIFYING_OUTCOMES.has(c.outcome) || shadowConfirmed.has(c.call_id)).length;
+    const shadowQualifying = (shadowCalls || []).filter((c: any) => QUALIFYING_OUTCOMES.has(c.outcome) || shadowConfirmed.has(c.call_id)).length;
 
     // Not enough data yet — wait, unless we've hit the 96 h max
     if (shadowRate === null || shadowQualifying < MIN_SHADOW_CALLS) {
@@ -145,14 +148,13 @@ const handler: Handler = async (event) => {
 
     // Baseline calls (30 days before shadow_started_at)
     const baselineStart = new Date(new Date(shadowStart).getTime() - BASELINE_DAYS * 86400000).toISOString();
-    const { data: baselineCalls } = await supabase
+    const { data: baselineCalls } = await scopeCalls(supabase
       .from('retell_calls')
-      .select('call_id, outcome')
-      .eq('vertical', version.vertical)
+      .select('call_id, outcome'))
       .gte('started_at', baselineStart)
       .lt('started_at', shadowStart);
 
-    const baselineConfirmed = await confirmedCallIds(supabase, (baselineCalls || []).map(c => c.call_id));
+    const baselineConfirmed = await confirmedCallIds(supabase, (baselineCalls || []).map((c: any) => c.call_id));
     const baselineRate = bookRate(baselineCalls || [], baselineConfirmed) ?? FALLBACK_BASELINE_RATE;
 
     const effectiveRate = shadowRate ?? 0;
@@ -169,13 +171,16 @@ const handler: Handler = async (event) => {
           .update({ status: 'live', shadow_ended_at: shadowEnd, applied_at: shadowEnd })
           .eq('id', version.id);
 
-        // Retire any older live version for this vertical
-        await supabase
+        // Retire the older live version in the same scope: the same agent for
+        // customer versions, the vertical's template for template versions.
+        const retire = supabase
           .from('retell_prompt_versions')
           .update({ status: 'superseded', retired_at: shadowEnd })
-          .eq('vertical', version.vertical)
           .eq('status', 'live')
           .neq('id', version.id);
+        await (customerAgentId
+          ? retire.eq('agent_id', customerAgentId)
+          : retire.eq('scope', 'template').eq('vertical', version.vertical));
 
       } else {
         // Revert: re-push original prompts to each Retell agent
@@ -188,6 +193,11 @@ const handler: Handler = async (event) => {
               method: 'PATCH',
               body: JSON.stringify({ general_prompt: original_prompt }),
             });
+            // Keep the agents.system_prompt mirror in step with the live LLM
+            await supabase
+              .from('agents')
+              .update({ system_prompt: original_prompt, system_prompt_synced_at: shadowEnd })
+              .eq('retell_agent_id', retellAgentId);
           } catch (err: any) {
             const msg = `agent ${retellAgentId}: ${err?.message || err}`;
             console.error(`[shadow-monitor] Revert failed for ${msg}`);
@@ -345,12 +355,12 @@ const handler: Handler = async (event) => {
           .from('retell_prompt_versions')
           .update({ status: 'live', shadow_ended_at: nowIso, applied_at: nowIso, shadow_book_rate: Math.round((variantRate ?? 0) * 10000) / 10000 })
           .eq('id', version.id);
-        await supabase
+        const retire = supabase
           .from('retell_prompt_versions')
           .update({ status: 'superseded', retired_at: nowIso })
-          .eq('vertical', version.vertical)
           .eq('status', 'live')
           .neq('id', version.id);
+        await (version.agent_id ? retire.eq('agent_id', version.agent_id) : retire.eq('vertical', version.vertical));
       } else {
         await supabase
           .from('retell_prompt_versions')

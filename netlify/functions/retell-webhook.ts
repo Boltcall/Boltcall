@@ -90,22 +90,35 @@ async function triggerOutcomeEvaluation(call: any, agentId: string, userId: stri
 
   const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
 
-  // Fire-and-forget: conversation-outcome handles win recording OR self-heal trigger
-  fetch(`${baseUrl}/.netlify/functions/conversation-outcome`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...internalHeaders() },
-    body: JSON.stringify({
-      channel: 'voice',
-      agentId,
-      userId: userId || '',
-      conversationId: call.call_id,
-      transcript,
-      callAnalysis: call.call_analysis || null,
-    }),
-  }).catch(err => {
-    console.error('[retell-webhook] Outcome evaluation trigger failed (non-blocking):', err);
-    notifyError('retell-webhook: outcome-eval', err, { callId: call.call_id, userId: userId || undefined });
-  });
+  // conversation-outcome handles win recording OR self-heal trigger
+  await dispatchInternal(`${baseUrl}/.netlify/functions/conversation-outcome`, {
+    channel: 'voice',
+    agentId,
+    userId: userId || '',
+    conversationId: call.call_id,
+    transcript,
+    callAnalysis: call.call_analysis || null,
+  }, 'outcome-eval', call.call_id, userId || undefined);
+}
+
+// An unawaited fetch can be frozen with the Lambda once the webhook returns.
+// Await it, but only long enough to be sure the target function was invoked:
+// on timeout we stop waiting and the target keeps running on its own
+// invocation. Keeps the webhook well inside Retell's response window.
+const DISPATCH_TIMEOUT_MS = 3000;
+async function dispatchInternal(url: string, body: unknown, label: string, callId: string, userId?: string): Promise<void> {
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...internalHeaders() },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(DISPATCH_TIMEOUT_MS),
+    });
+  } catch (err) {
+    if ((err as Error)?.name === 'TimeoutError') return; // dispatched, still running
+    console.error(`[retell-webhook] ${label} trigger failed (non-blocking):`, err);
+    await notifyError(`retell-webhook: ${label}`, err, { callId, userId });
+  }
 }
 
 // ─── Post-call intake + urgent alert ─────────────────────────────────────────
@@ -372,6 +385,7 @@ const handler: Handler = async (event) => {
 
       // Fire call_completed webhook for non-missed calls
       if (call.call_status === 'ended' && (call.duration_ms || 0) > 0) {
+        let outcomeTrigger: Promise<void> | undefined;
         const supabaseForWebhook = getServiceSupabase();
         // Look up agent owner by direct retell_agent_id column first, then
         // fall back to legacy api_keys.retell_agent_id JSONB path. Newer
@@ -476,26 +490,18 @@ const handler: Handler = async (event) => {
           // once, on the analyzed event (final call_analysis). Event-less legacy
           // payloads still evaluate.
           if (payload.event !== 'call_ended') {
-            await triggerOutcomeEvaluation(call, agentId, agentOwner.user_id);
+            outcomeTrigger = triggerOutcomeEvaluation(call, agentId, agentOwner.user_id);
           }
         }
 
         // ── Self-improvement loop: score every completed call ─────────────
-        // Fire-and-forget — scorer writes to retell_calls + retell_call_scores
+        // scorer writes to retell_calls + retell_call_scores; runs in parallel
+        // with the outcome evaluation, both awaited (bounded) before we return.
         const baseUrl = process.env.URL || process.env.DEPLOY_URL || 'https://boltcall.org';
-        fetch(`${baseUrl}/.netlify/functions/retell-call-scorer`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET
-              ? { 'x-internal-secret': process.env.INTERNAL_API_SECRET || process.env.INTERNAL_WEBHOOK_SECRET || '' }
-              : {}),
-          },
-          body: JSON.stringify({ call }),
-        }).catch(err => {
-          console.error('[retell-webhook] Call scorer trigger failed (non-blocking):', err);
-          notifyError('retell-webhook: call-scorer', err, { callId: call.call_id, userId: agentOwner?.user_id });
-        });
+        await Promise.all([
+          outcomeTrigger,
+          dispatchInternal(`${baseUrl}/.netlify/functions/retell-call-scorer`, { call }, 'call-scorer', call.call_id, agentOwner?.user_id),
+        ]);
       }
 
       return {
