@@ -62,7 +62,7 @@ jobs:
           echo "payload_sha256=$(sha256sum payload.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
       - name: Retain immutable prepared payload
         id: payload
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: boltcall-payload-${{ github.run_id }}-${{ github.run_attempt }}
           path: payload.tar.gz
