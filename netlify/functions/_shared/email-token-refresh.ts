@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { publicEnv } from './public-config';
 
 /**
  * Email account type matching the email_accounts table.
@@ -54,7 +55,7 @@ export async function getValidAccessToken(
 }
 
 async function refreshGmailToken(account: EmailAccount, supabase: SupabaseClient): Promise<string> {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientId = publicEnv('GOOGLE_CLIENT_ID');
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) throw new Error('Missing Google OAuth credentials');
 

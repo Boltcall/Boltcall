@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { verifyOAuthState } from './_shared/oauth-state';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 /**
  * Facebook OAuth — Step 2: Exchange the authorization code for tokens, store page connection.
@@ -63,7 +64,7 @@ const handler: Handler = async (event) => {
     return redirect(`${FACEBOOK_RETURN_PATH}?fb=missing_user`);
   }
 
-  const appId = process.env.FB_APP_ID || process.env.FACEBOOK_APP_ID;
+  const appId = publicEnv('FB_APP_ID') || process.env.FACEBOOK_APP_ID;
   const appSecret = process.env.FB_APP_SECRET || process.env.FACEBOOK_APP_SECRET;
   if (!appId || !appSecret) {
     console.error('Missing FB_APP_ID/FACEBOOK_APP_ID or FB_APP_SECRET/FACEBOOK_APP_SECRET');

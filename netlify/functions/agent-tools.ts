@@ -9,6 +9,7 @@ import { resolveTwilioFromNumber } from './_shared/twilio-from-number';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { estimateBookingValueCents } from './_shared/booking-value';
+import { publicEnv } from './_shared/public-config';
 
 dayjs.extend(utc);
 dayjs.extend(timezonePlugin);
@@ -373,7 +374,7 @@ async function getGoogleCalendarForUser(userId: string): Promise<{ accessToken: 
 
   // Refresh if expired (5-min buffer)
   if (accessToken && expiresAt && Date.now() >= new Date(expiresAt).getTime() - 5 * 60 * 1000) {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientId = publicEnv('GOOGLE_CLIENT_ID');
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     if (clientId && clientSecret && refreshToken) {
       try {

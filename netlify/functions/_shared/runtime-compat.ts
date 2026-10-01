@@ -1,5 +1,6 @@
 import type { Context, Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import { getV2CorsHeaders } from './cors-v2';
+import { notifyError } from './notify';
 
 function toCanonicalHeaderName(header: string) {
   return header
@@ -112,7 +113,14 @@ function applyStrictCors(result: HandlerResponse, request: Request): HandlerResp
 // Bridge the repo's legacy Handler-event functions onto Netlify's current Request/Response runtime.
 export function withLegacyHandler(handler: Handler, options: { strictCors?: boolean } = {}) {
   return async (request: Request, context: Context) => {
-    let result = (await handler(await toLegacyEvent(request, context), {} as never)) ?? { statusCode: 204, body: '' };
+    let result: HandlerResponse;
+    try {
+      result = (await handler(await toLegacyEvent(request, context), {} as never)) ?? { statusCode: 204, body: '' };
+    } catch (err) {
+      // Uncaught crash: without this Netlify returns a bare 500 and nobody hears about it.
+      await notifyError(`function crash: ${new URL(request.url).pathname}`, err);
+      result = { statusCode: 500, body: JSON.stringify({ error: 'Internal server error' }) };
+    }
     if (options.strictCors) result = applyStrictCors(result, request);
     return toModernResponse(result);
   };

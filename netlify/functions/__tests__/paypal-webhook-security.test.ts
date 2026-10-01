@@ -6,7 +6,11 @@ const getServiceSupabaseMock = vi.hoisted(() => vi.fn());
 vi.mock('../_shared/paypal-client', () => ({
   PAYPAL_API_BASE: 'https://api-m.sandbox.paypal.com',
   PAYPAL_WEBHOOK_ID: '',
+  PAYPAL_TIERS: [],
+  PAYPAL_INTERVALS: [],
   getPayPalAccessToken: getPayPalAccessTokenMock,
+  paypalFetch: vi.fn(),
+  paypalPlanId: vi.fn(),
 }));
 
 vi.mock('../_shared/token-utils', () => ({

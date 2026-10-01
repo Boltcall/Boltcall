@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import type { Handler } from '@netlify/functions';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 const GRAPH_VERSION = 'v20.0';
 
@@ -70,7 +71,7 @@ const handler: Handler = async (event) => {
   const auth = requireInternalSecret(event);
   if (!auth.ok) return json(auth.statusCode || 403, { error: auth.error || 'Forbidden' });
 
-  const appId = process.env.FB_APP_ID || process.env.FACEBOOK_APP_ID || '';
+  const appId = publicEnv('FB_APP_ID') || process.env.FACEBOOK_APP_ID || '';
   const appSecret = process.env.FB_APP_SECRET || process.env.FACEBOOK_APP_SECRET || '';
   const webhookVerifyToken = process.env.FB_WEBHOOK_VERIFY_TOKEN || process.env.FACEBOOK_WEBHOOK_VERIFY_TOKEN || '';
 

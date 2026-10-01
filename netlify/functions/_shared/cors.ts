@@ -1,9 +1,10 @@
+import { publicEnv } from './public-config';
 /**
  * Shared CORS headers for Netlify functions.
- * Uses ALLOWED_ORIGIN env var in production, falls back to '*' in development.
+ * Origins from ALLOWED_ORIGINS (env, else the prod list in public-config); set it to '' to allow '*'.
  */
 
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*').split(',').map(o => o.trim());
+const ALLOWED_ORIGINS = (publicEnv('ALLOWED_ORIGINS') || '*').split(',').map(o => o.trim());
 
 export function getCorsHeaders(requestOrigin?: string | null): Record<string, string> {
   // In development or if no restriction is set, allow all

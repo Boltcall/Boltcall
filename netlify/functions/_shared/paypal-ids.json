@@ -1,0 +1,22 @@
+{
+  "live": {
+    "product_id": "PROD-0UN86585MB7994415",
+    "webhook_id": "7VT6453877759514H",
+    "plans": {
+      "starter_monthly": "P-5EW708822P386781VNIBPVYQ",
+      "pro_monthly": "P-3RD37747DP330542SNIBPV2Q",
+      "ultimate_monthly": "P-3G466106YK386322SNIBPV5I",
+      "enterprise_monthly": ""
+    }
+  },
+  "sandbox": {
+    "product_id": "PROD-690886583N803121V",
+    "webhook_id": "",
+    "plans": {
+      "starter_monthly": "P-61W11334W0151483WNH7ZMGA",
+      "pro_monthly": "P-8JL96664V11333455NH7ZMHA",
+      "ultimate_monthly": "P-4C952863WJ142334SNH7ZMIY",
+      "enterprise_monthly": "P-5JB21964333978516NK7HVHA"
+    }
+  }
+}

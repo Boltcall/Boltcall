@@ -65,6 +65,22 @@ function localHour(tz: string, now: Date = new Date()): number {
   }
 }
 
+// Firm timezone for quiet hours, first usable wins: sms_settings.business_timezone
+// (explicit; its column default 'UTC' means "never set"), then the primary
+// location's timezone (captured from the browser at setup), then US Eastern.
+export function pickTimezone(...candidates: Array<string | null | undefined>): string {
+  for (const tz of candidates) {
+    if (!tz || tz === 'UTC') continue;
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: tz });
+      return tz;
+    } catch {
+      // not an IANA zone — try the next candidate
+    }
+  }
+  return 'America/New_York';
+}
+
 export function isQuietHours(tz: string, now: Date = new Date()): boolean {
   const h = localHour(tz, now);
   return h >= QUIET_START_HOUR || h < QUIET_END_HOUR;
@@ -130,24 +146,26 @@ const handler: Handler = async (event) => {
       messages.filter((m) => m.channel === 'sms' || m.channel === 'call').map((m) => m.user_id).filter(Boolean)
     )];
 
-    const [optoutsRes, tzRes] = await Promise.all([
+    const [optoutsRes, tzRes, locRes] = await Promise.all([
       smsPhones.length
         ? supabase.from('sms_optouts').select('phone').in('phone', smsPhones)
         : Promise.resolve({ data: [] as { phone: string }[] }),
       smsUserIds.length
         ? supabase.from('sms_settings').select('user_id, business_timezone').in('user_id', smsUserIds)
         : Promise.resolve({ data: [] as { user_id: string; business_timezone: string | null }[] }),
+      smsUserIds.length
+        ? supabase.from('locations').select('user_id, timezone').in('user_id', smsUserIds).eq('is_primary', true)
+        : Promise.resolve({ data: [] as { user_id: string; timezone: string | null }[] }),
     ]);
     const optedOut = new Set((optoutsRes.data || []).map((r) => r.phone));
     const tzByUser = new Map(
       (tzRes.data || []).map((r) => [r.user_id, r.business_timezone])
     );
-    // 'UTC' is the sms_settings column default, i.e. "never configured".
-    // ponytail: default US-Eastern for this US-local-business product until a real tz is set.
-    const businessTz = (userId: string | null): string => {
-      const tz = userId ? tzByUser.get(userId) : null;
-      return tz && tz !== 'UTC' ? tz : 'America/New_York';
-    };
+    const locTzByUser = new Map(
+      (locRes.data || []).map((r) => [r.user_id, r.timezone])
+    );
+    const businessTz = (userId: string | null): string =>
+      userId ? pickTimezone(tzByUser.get(userId), locTzByUser.get(userId)) : pickTimezone();
 
     for (const msg of messages) {
       if (msg.channel === 'sms' && msg.recipient_phone) {

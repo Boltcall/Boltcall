@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isQuietHours, nextAllowedSendTime } from '../message-dispatcher';
+import { isQuietHours, nextAllowedSendTime, pickTimezone } from '../message-dispatcher';
 
 // 2026-07-11 is EDT (UTC-4): 03:00 UTC = 23:00 EDT, 16:00 UTC = 12:00 EDT
 const NY = 'America/New_York';
@@ -40,5 +40,17 @@ describe('quiet hours (TCPA)', () => {
   it('falls back to UTC on a bad timezone string', () => {
     expect(isQuietHours('Not/AZone', new Date('2026-07-11T23:00:00Z'))).toBe(true);
     expect(isQuietHours('Not/AZone', new Date('2026-07-11T12:00:00Z'))).toBe(false);
+  });
+
+  it('uses the firm timezone: SMS setting, then setup location, then Eastern', () => {
+    expect(pickTimezone('America/Chicago', 'America/Los_Angeles')).toBe('America/Chicago');
+    // 'UTC' = sms_settings column default (never set) -> location captured at setup
+    expect(pickTimezone('UTC', 'America/Los_Angeles')).toBe('America/Los_Angeles');
+    expect(pickTimezone(null, 'Not/AZone')).toBe(NY);
+    expect(pickTimezone(undefined, null)).toBe(NY);
+    // 13:00Z = 06:00 in LA (quiet for an LA firm) but 09:00 Eastern (open)
+    const sixAmLA = new Date('2026-07-11T13:00:00Z');
+    expect(isQuietHours(pickTimezone('UTC', 'America/Los_Angeles'), sixAmLA)).toBe(true);
+    expect(isQuietHours(pickTimezone(null, null), sixAmLA)).toBe(false);
   });
 });

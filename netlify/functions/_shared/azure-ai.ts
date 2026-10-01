@@ -1,3 +1,4 @@
+import { publicEnv } from './public-config';
 /**
  * Azure OpenAI helper — supports Foundry (Responses API) + legacy resource (chat/completions).
  *
@@ -45,14 +46,14 @@ export type Tier = 'light' | 'heavy' | 'nano' | 'codex';
 
 function isFoundryConfigured(): boolean {
   return !!(
-    process.env.AZURE_OPENAI_FOUNDRY_ENDPOINT &&
+    publicEnv('AZURE_OPENAI_FOUNDRY_ENDPOINT') &&
     process.env.AZURE_OPENAI_FOUNDRY_KEY
   );
 }
 
 function isLegacyAzureConfigured(): boolean {
   return !!(
-    process.env.AZURE_OPENAI_ENDPOINT && process.env.AZURE_OPENAI_API_KEY
+    publicEnv('AZURE_OPENAI_ENDPOINT') && process.env.AZURE_OPENAI_API_KEY
   );
 }
 
@@ -206,7 +207,7 @@ async function foundryResponsesCompletion(
   maxTokens: number,
   tier: Tier,
 ): Promise<string> {
-  const endpoint = process.env.AZURE_OPENAI_FOUNDRY_ENDPOINT!.replace(/\/$/, '');
+  const endpoint = publicEnv('AZURE_OPENAI_FOUNDRY_ENDPOINT')!.replace(/\/$/, '');
   const apiKey = process.env.AZURE_OPENAI_FOUNDRY_KEY!;
   const model = getAzureDeployment(tier, 'foundry');
   const url = `${endpoint}/openai/responses?api-version=${FOUNDRY_API_VERSION}`;
@@ -272,7 +273,7 @@ async function legacyAzureChatCompletion(
   maxTokens: number,
   tier: Tier,
 ): Promise<string> {
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT!.replace(/\/$/, '');
+  const endpoint = publicEnv('AZURE_OPENAI_ENDPOINT')!.replace(/\/$/, '');
   const apiKey = process.env.AZURE_OPENAI_API_KEY!;
   const deployment = getAzureDeployment(tier, 'legacy');
   const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=${LEGACY_API_VERSION}`;
@@ -308,7 +309,7 @@ async function legacyAzureChatCompletion(
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const endpoint = (
-    process.env.AZURE_OPENAI_FOUNDRY_ENDPOINT || process.env.AZURE_OPENAI_ENDPOINT
+    publicEnv('AZURE_OPENAI_FOUNDRY_ENDPOINT') || publicEnv('AZURE_OPENAI_ENDPOINT')
   )?.replace(/\/$/, '');
   const apiKey =
     process.env.AZURE_OPENAI_FOUNDRY_KEY || process.env.AZURE_OPENAI_API_KEY;
@@ -386,7 +387,7 @@ export async function transcribeAudio(
     );
   }
 
-  const endpoint = process.env.AZURE_OPENAI_FOUNDRY_ENDPOINT!.replace(/\/$/, '');
+  const endpoint = publicEnv('AZURE_OPENAI_FOUNDRY_ENDPOINT')!.replace(/\/$/, '');
   const apiKey = process.env.AZURE_OPENAI_FOUNDRY_KEY!;
   const deployment = process.env.AZURE_OPENAI_AUDIO_DEPLOYMENT || 'gpt-audio-1.5';
   const url = `${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=2025-01-01-preview`;
@@ -434,7 +435,7 @@ export async function generateImage(
     );
   }
   const { size = '1024x1024', quality = 'high' } = options;
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT!.replace(/\/$/, '');
+  const endpoint = publicEnv('AZURE_OPENAI_ENDPOINT')!.replace(/\/$/, '');
   const apiKey = process.env.AZURE_OPENAI_API_KEY!;
   const deployment = process.env.AZURE_OPENAI_IMAGE_DEPLOYMENT || 'gpt-image-2';
   const url = `${endpoint}/openai/deployments/${deployment}/images/generations?api-version=2024-05-01-preview`;

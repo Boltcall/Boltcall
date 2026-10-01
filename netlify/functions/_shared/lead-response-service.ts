@@ -1,4 +1,4 @@
-import { isQuietHours, nextAllowedSendTime } from '../message-dispatcher';
+import { isQuietHours, nextAllowedSendTime, pickTimezone } from '../message-dispatcher';
 import { alertOwner } from './notify';
 import { toE164 } from './twilio-from-number';
 
@@ -120,20 +120,17 @@ async function hasRecentContact(deps: LeadResponseDeps, lead: Record<string, any
   }
 }
 
-// Same source and default as message-dispatcher's SMS quiet hours: sms_settings,
-// where 'UTC' is the column default ("never configured").
+// Same sources and order as message-dispatcher's quiet hours (see pickTimezone).
 async function businessTimezone(deps: LeadResponseDeps, userId: string): Promise<string> {
   try {
-    const { data } = await deps.supabase
-      .from('sms_settings')
-      .select('business_timezone')
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (data?.business_timezone && data.business_timezone !== 'UTC') return data.business_timezone;
+    const [{ data: sms }, { data: loc }] = await Promise.all([
+      deps.supabase.from('sms_settings').select('business_timezone').eq('user_id', userId).maybeSingle(),
+      deps.supabase.from('locations').select('timezone').eq('user_id', userId).eq('is_primary', true).limit(1).maybeSingle(),
+    ]);
+    return pickTimezone(sms?.business_timezone, loc?.timezone);
   } catch {
-    // fall through to the default
+    return pickTimezone();
   }
-  return 'America/New_York';
 }
 
 async function emitLifecycleEvent(
