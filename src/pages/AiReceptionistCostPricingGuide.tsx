@@ -532,7 +532,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                         ROI Calculation: ($2,011 net gain ÷ $549 cost) × 100 = 517% monthly ROI
                       </p>
                       <p className="text-blue-700 text-sm mt-1">
-                        Most businesses see their AI receptionist pay for itself within the first week.
+                        Whether an AI receptionist pays for itself depends on your average fee and how many inquiries you lose today.
                       </p>
                     </div>
                   </div>

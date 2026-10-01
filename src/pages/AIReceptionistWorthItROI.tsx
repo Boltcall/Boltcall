@@ -486,7 +486,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
                     </div>
                   </div>
                   
-                  <p>Most businesses see initial results within 2-3 weeks, with full optimization typically achieved by month 2. The key is choosing a provider with <Link to="/demo" className="text-blue-600 hover:underline">comprehensive onboarding support</Link> to minimize implementation friction.</p>
+                  <p>Timelines vary by business. The key is choosing a provider with <Link to="/demo" className="text-blue-600 hover:underline">comprehensive onboarding support</Link> to minimize implementation friction.</p>
                 </motion.section>
 
                 <motion.section

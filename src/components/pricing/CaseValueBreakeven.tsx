@@ -13,8 +13,8 @@ const DEFAULT_VALUE = 2500;
 function breakEven(price: number, caseValue: number): string {
   if (!caseValue || caseValue <= 0) return 'Enter a case value';
   const ratio = price / caseValue;
-  if (ratio <= 1) return `1 extra signed case every ${(1 / ratio).toFixed(1)} months`;
-  return `${ratio.toFixed(1)} extra signed cases per month`;
+  if (ratio <= 1) return `1 case every ${(1 / ratio).toFixed(1)} months`;
+  return `${ratio.toFixed(1)} cases per month`;
 }
 
 const CaseValueBreakeven: React.FC = () => {
@@ -41,12 +41,12 @@ const CaseValueBreakeven: React.FC = () => {
       </div>
 
       <div className="mt-6 overflow-x-auto">
-        <table className="w-full min-w-[420px] text-left text-sm">
+        <table className="w-full text-left text-sm">
           <thead>
             <tr className="text-xs uppercase tracking-wider text-gray-500">
               <th scope="col" className="pb-2 font-semibold">Plan</th>
-              <th scope="col" className="pb-2 font-semibold">Monthly price</th>
-              <th scope="col" className="pb-2 font-semibold">Covered by</th>
+              <th scope="col" className="pb-2 font-semibold">Price</th>
+              <th scope="col" className="pb-2 font-semibold">Extra signed cases to cover it</th>
             </tr>
           </thead>
           <tbody aria-live="polite">

@@ -665,7 +665,7 @@ const FiveMinuteResponsePlaybook: React.FC = () => {
 
             <motion.p variants={fadeUp} className="text-gray-600 text-lg max-w-2xl mx-auto">
 
-              Everything you need to stop losing leads to slow response — backed by real data from 10,000+ businesses.
+              Everything you need to stop losing leads to slow response — built for firms that want to respond first.
 
             </motion.p>
 

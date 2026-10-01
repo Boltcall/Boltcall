@@ -152,7 +152,7 @@ export default function ChatbotVsLiveChatVsPhoneAnswering() {
                 The answer isn't as simple as picking the newest technology. While AI chatbots get attention for their 24/7 availability and live chat feels modern and convenient, the data tells a different story about what actually converts leads into paying customers.
               </p>
               <p className="text-gray-700 mb-6">
-                At Boltcall, we've analyzed thousands of local business interactions across all three channels—AI chatbots, live chat, and phone answering services. The results might surprise you, especially if you've been focused on digital-first solutions while overlooking the power of good old-fashioned phone conversations.
+                AI chatbots, live chat, and phone answering each suit different situations. The answer might surprise you if you've been focused on digital-first solutions while overlooking phone conversations.
               </p>
             </motion.section>
 
@@ -272,7 +272,7 @@ export default function ChatbotVsLiveChatVsPhoneAnswering() {
 
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Chatbot Limitations</h3>
               <p className="text-gray-700 mb-4">
-                However, our analysis of over 10,000 chatbot interactions reveals significant limitations for local businesses:
+                However, chatbots have significant limitations for local businesses:
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-start">
@@ -293,15 +293,6 @@ export default function ChatbotVsLiveChatVsPhoneAnswering() {
                 </li>
               </ul>
 
-              <div className="bg-blue-50 p-6 rounded-lg mb-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Chatbot Conversion Data</h3>
-                <p className="text-gray-700 mb-3">Based on industry research from Drift and our internal data:</p>
-                <ul className="space-y-2 text-gray-700">
-                  <li>• Average lead-to-quote rate: 12-18%</li>
-                  <li>• Quote-to-close rate: 15-25%</li>
-                  <li>• Overall conversion rate: 2-4%</li>
-                </ul>
-              </div>
             </motion.section>
 
             {/* Live Chat */}
@@ -342,19 +333,9 @@ export default function ChatbotVsLiveChatVsPhoneAnswering() {
                 The biggest challenge with live chat for local businesses is staffing. Unlike large companies with dedicated chat teams, most local business owners handle chat themselves—when they're available.
               </p>
               <p className="text-gray-700 mb-6">
-                Our research shows that 67% of local business live chats go unanswered during business hours, and 89% go unanswered after hours. When customers see a chat widget but get no response, it actually hurts your reputation more than having no chat option at all.
+                Live chats often go unanswered when no one is watching the widget. When customers see a chat widget but get no response, it actually hurts your reputation more than having no chat option at all.
               </p>
 
-              <div className="bg-amber-50 p-6 rounded-lg mb-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Live Chat Conversion Data</h3>
-                <p className="text-gray-700 mb-3">Performance varies significantly based on response time:</p>
-                <ul className="space-y-2 text-gray-700">
-                  <li>• Response under 1 minute: 25-35% lead-to-quote rate</li>
-                  <li>• Response 1-5 minutes: 15-25% lead-to-quote rate</li>
-                  <li>• Response over 5 minutes: 5-12% lead-to-quote rate</li>
-                  <li>• Overall conversion rate: 3-8% (highly variable)</li>
-                </ul>
-              </div>
 
               <p className="text-gray-700 mb-6">
                 The key insight: live chat can be highly effective, but only when someone skilled is consistently available to respond immediately. For most local businesses, this requirement makes live chat impractical as a primary lead capture method.
@@ -493,58 +474,6 @@ export default function ChatbotVsLiveChatVsPhoneAnswering() {
             </motion.section>
 
             {/* Conversion Data Comparison */}
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mb-12"
-              id="conversion-data-comparison"
-            >
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Conversion Data: Chatbot vs Live Chat vs Phone by Industry</h2>
-              <p className="text-gray-700 mb-6">
-                To provide concrete guidance, we analyzed conversion rates across different local business types. The data reveals clear patterns about which lead capture methods work best for different industries.
-              </p>
-
-              <div className="overflow-x-auto mb-8">
-                <table className="w-full border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-900">Industry</th>
-                      <th className="border border-gray-300 px-4 py-2 text-center font-semibold text-gray-900">AI Chatbot</th>
-                      <th className="border border-gray-300 px-4 py-2 text-center font-semibold text-gray-900">Live Chat</th>
-                      <th className="border border-gray-300 px-4 py-2 text-center font-semibold text-gray-900">Phone Answering</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2 font-medium">Dental/Medical</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">18%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">12%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center text-green-600 font-semibold">32%</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2 font-medium">Legal Services</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">15%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">10%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center text-green-600 font-semibold">28%</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2 font-medium">Home Services</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center text-green-600 font-semibold">22%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">14%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">20%</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2 font-medium">Real Estate</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">20%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">16%</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center text-green-600 font-semibold">25%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-            </motion.section>
 
           </article>
         </div>

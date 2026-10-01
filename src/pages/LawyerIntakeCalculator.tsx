@@ -275,7 +275,7 @@ const LawyerIntakeCalculator: React.FC = () => {
           name: 'Can AI handle legal intake calls 24/7?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Boltcall answers every intake call in under 11 seconds, qualifies the potential client, collects key case details, and books a consultation on the attorney\'s calendar — automatically, any time of day or night.',
+            text: 'Yes. Boltcall answers every intake call within seconds, qualifies the potential client, collects key case details, and books a consultation on the attorney\'s calendar — automatically, any time of day or night.',
           },
         },
       ],

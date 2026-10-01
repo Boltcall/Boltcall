@@ -79,7 +79,7 @@ const faqs = [
   },
   {
     question: 'What is the ROI of an AI receptionist for a law firm?',
-    answer: 'The average law firm that deploys an AI receptionist recovers 15-30 leads per month that were previously lost to missed calls, voicemail, and slow follow-up. With an average personal injury case worth $5,000-$15,000 in fees and an average family law case worth $3,000-$8,000, capturing even 2-3 additional cases per month generates $10,000-$45,000 in new revenue against a monthly cost of $549ג€“$4997. Firms also report a 40-60% reduction in receptionist overtime costs and a measurable improvement in Google review ratings due to faster, more consistent client communication.',
+    answer: 'The return depends on your average fee and how many inquiries you lose to voicemail and slow follow-up today. A new inquiry can be worth $2,500 or more to a law firm, so one extra signed matter every few months can cover a plan that starts at $549 per month. Boltcall cannot promise how many extra cases you will sign.',
   },
   {
     question: 'How does an AI receptionist compare to a legal answering service?',

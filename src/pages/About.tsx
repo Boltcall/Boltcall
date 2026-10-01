@@ -209,7 +209,7 @@ const About: React.FC = () => {
                 {[
                   { title: "Built for local businesses", desc: "Not an enterprise tool with a SMB price tag — built ground-up for owners who wear every hat" },
                   { title: "No tech team required", desc: "30-minute setup, plain-English configuration, and a team that picks up the phone when you need help" },
-                  { title: "Pays for itself", desc: "One extra captured lead per month covers the entire monthly cost — most businesses see ROI in week one" },
+                  { title: "Pays for itself", desc: "One extra signed matter can cover the monthly cost. See the pricing page for the break-even math." },
                   { title: "Sounds like you", desc: "Trained on your services, pricing, and FAQs so every caller gets an answer, not a hold message" },
                 ].map((item) => (
                   <div key={item.title} className="bg-white rounded-xl p-4 shadow-sm">

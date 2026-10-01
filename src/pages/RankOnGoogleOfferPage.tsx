@@ -115,7 +115,7 @@ const RankOnGoogleOfferPage = () => {
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                     {[
-                        { title: 'Google SEO Setup', desc: 'We optimize your Google Business Profile, build local citations, and target the keywords your customers are actually searching. Most clients see ranking improvements within 30–60 days.' },
+                        { title: 'Google SEO Setup', desc: 'We optimize your Google Business Profile, build local citations, and target the keywords your customers are actually searching.' },
                         { title: 'Google Reviews System', desc: 'An automated review request system that contacts customers after each job, dramatically increasing your review velocity and average star rating over time.' },
                         { title: 'Lead Reactivation Campaign', desc: 'We reach out to your existing leads and past customers who never converted. This campaign typically covers the cost of the entire first month through recovered revenue.' },
                         { title: 'Free Website Rebranding', desc: 'A professional website redesign optimized for conversion — clear headline, prominent call-to-action, trust signals, and mobile-first layout. Delivered as part of your onboarding.' },

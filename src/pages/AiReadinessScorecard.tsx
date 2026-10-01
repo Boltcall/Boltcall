@@ -812,19 +812,13 @@ const AiReadinessScorecard: React.FC = () => {
                 What missed calls cost local businesses
               </motion.h3>
 
-              <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                 {[
                   {
                     stat: '62%',
                     label: 'of calls missed',
                     description: 'by small businesses happen outside business hours',
                     icon: Phone,
-                  },
-                  {
-                    stat: '$50K',
-                    label: 'lost to missed calls/year',
-                    description: 'the average revenue lost by businesses without AI',
-                    icon: TrendingUp,
                   },
                   {
                     stat: '391%',
