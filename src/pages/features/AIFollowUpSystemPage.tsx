@@ -371,55 +371,6 @@ const AIFollowUpSystemPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Use Cases Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
-              <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-              <span>Real-World Results</span>
-            </h2>
-            
-            <div className="space-y-8">
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">B2B Service Company</h3>
-                <p className="text-gray-600 leading-relaxed mb-3">
-                  A B2B service company was losing 70% of leads because they couldn't follow up consistently. 
-                  After implementing AI Follow-Up System, they saw a 45% increase in lead conversion rates. 
-                  The system automatically nurtured leads for weeks, providing value and building relationships 
-                  until leads were ready to buy.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  The company's sales team now focuses on hot leads while the AI handles nurturing for 
-                  warm and cold leads. This division of labor increased overall sales productivity by 60% 
-                  and reduced the sales cycle length by 30%, as leads were better qualified and more 
-                  engaged when they reached the sales team.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">E-commerce Business</h3>
-                <p className="text-gray-600 leading-relaxed mb-3">
-                  An e-commerce business used AI Follow-Up System to re-engage customers who abandoned 
-                  shopping carts. The system sent personalized follow-ups with product recommendations, 
-                  special offers, and helpful information. Cart abandonment recovery increased from 5% 
-                  to 18%, generating $45,000 in additional monthly revenue.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  The follow-ups weren't just promotional—they provided value through product tips, 
-                  usage guides, and customer success stories. This value-first approach built trust and 
-                  encouraged purchases without feeling pushy or salesy.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Best Practices Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -535,26 +486,6 @@ const AIFollowUpSystemPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
-            { quote: "I was skeptical about AI, but it just works. Our front desk handles 30% fewer interruptions now.", name: "Priya S.", role: "Dental Practice Manager, California" },
-            { quote: "We were losing 15-20 calls a week to voicemail. Boltcall captures every single one now.", name: "James R.", role: "Plumbing Business Owner, Florida" },
-          ].map((item) => (
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">{item.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="bg-gray-50 border-t border-gray-100 py-8">
@@ -566,7 +497,7 @@ const AIFollowUpSystemPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -584,13 +515,13 @@ const AIFollowUpSystemPage: React.FC = () => {
       {/* Why Boltcall */}
       <section className="py-14 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Businesses Choose Boltcall</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Law Firms Choose Boltcall</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
               { title: 'Setup in 30 minutes', desc: 'No developers, no tech team. Answer 5 questions about your business and your AI receptionist is live — configured to your services, hours, and voice.' },
-              { title: 'Flat monthly pricing', desc: 'Unlike per-call services that penalize you for growth, Boltcall charges a flat monthly fee. Handle 500 calls or 5,000 — your cost stays predictable.' },
+              { title: 'Flat monthly pricing', desc: 'Boltcall is a flat monthly subscription with no per-case fees and no share of your fees. Each plan includes a monthly credit pool shared across calls, texts, and chat.' },
               { title: 'Trained on your business', desc: 'Not a generic bot. Boltcall learns your specific services, pricing, FAQs, and booking rules — so every interaction sounds like your best team member.' },
-              { title: 'ROI from day one', desc: 'One recovered call per month covers the entire subscription cost. Most customers see 5–10x ROI within the first 30 days from calls they would have otherwise missed.' },
+              { title: 'One signed case can cover it', desc: 'One extra signed matter can cover the subscription. Use the break-even calculator on the pricing page with your own average fee.' },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-xl p-5 shadow-sm border border-white">
                 <h3 className="font-bold text-gray-900 mb-2">✓ {item.title}</h3>

@@ -22,16 +22,16 @@ const Pricing: React.FC = () => {
   // PricingTable data
   const pricingFeatures = [
     // Starter Plan Features
-    { name: "AI receptionist", included: "starter" },
+    { name: "AI intake receptionist", included: "starter" },
     { name: "Missed call text-back", included: "starter" },
     { name: "Instant lead reply", included: "starter" },
-    { name: "Appointment reminders", included: "starter" },
+    { name: "Consultation reminders", included: "starter" },
     { name: "Reports dashboard", included: "starter" },
 
     // Pro Plan Features (includes everything from Starter)
     { name: "Full lead follow-up system", included: "pro" },
     { name: "SMS conversations", included: "pro" },
-    { name: "Automatic follow-ups after jobs", included: "pro" },
+    { name: "Follow-ups after consultations", included: "pro" },
     { name: "Website chat widget", included: "pro" },
     
     // Agency Plan Features (includes everything from Pro)
@@ -44,7 +44,7 @@ const Pricing: React.FC = () => {
       name: "Starter",
       level: "starter",
       price: { monthly: 549, yearly: 4941 },
-      description: "Get started with lead management.",
+      description: "Answer and book every new inquiry.",
       tokens: "1,000 tokens/mo",
     },
     {
@@ -66,7 +66,7 @@ const Pricing: React.FC = () => {
       name: "Enterprise",
       level: "custom",
       price: { monthly: 997, yearly: 11964 },
-      description: "Tailored solutions for your business:",
+      description: "Tailored solutions for your firm:",
       isCustom: true,
       excludeFromTable: true,
     },

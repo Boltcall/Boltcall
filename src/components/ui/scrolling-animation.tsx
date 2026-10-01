@@ -9,12 +9,12 @@ interface Channel {
 }
 
 const channels: Channel[] = [
-  { title: "Reminders", icon: AlarmClock, href: "/features/automated-reminders", description: "Automatically send appointment reminders so clients show up — fewer no-shows, zero manual effort." },
-  { title: "Follow Ups", icon: RefreshCcw, href: "/features/ai-follow-up-system", description: "Re-engage leads who didn't book with smart follow-up messages sent at the right time." },
-  { title: "Ads", icon: Megaphone, href: "/features/instant-form-reply", description: "Instantly reply to Facebook and Google ad form leads before a competitor gets there first." },
-  { title: "SMS", icon: MessageSquare, href: "/features/sms-booking-assistant", description: "Book appointments via two-way SMS — customers reply in their own time, Boltcall handles the rest." },
-  { title: "Website", icon: Globe, href: "/features/website-widget", description: "Capture leads from your website with a smart chat widget that qualifies and books in real time." },
-  { title: "AI Receptionist", icon: Phone, href: "/features/ai-receptionist", description: "Answer every call 24/7, collect lead info, and book appointments — even while you're on another job." },
+  { title: "Reminders", icon: AlarmClock, href: "/features/automated-reminders", description: "Send consultation reminders so prospective clients show up. Fewer no-shows, zero manual effort." },
+  { title: "Follow Ups", icon: RefreshCcw, href: "/features/ai-follow-up-system", description: "Re-engage inquiries who did not book with timely follow-up messages." },
+  { title: "Ads", icon: Megaphone, href: "/features/instant-form-reply", description: "Reply to Facebook and Google ad form leads within seconds, before another firm does." },
+  { title: "SMS", icon: MessageSquare, href: "/features/sms-booking-assistant", description: "Book consultations by two-way text. Callers reply in their own time and Boltcall handles the rest." },
+  { title: "Website", icon: Globe, href: "/features/website-widget", description: "Capture inquiries from your site with a chat widget that screens the matter and books a consultation." },
+  { title: "AI Receptionist", icon: Phone, href: "/features/ai-receptionist", description: "Answer every intake call 24/7, screen the matter, and book consultations, even while you are in court." },
 ]
 
 const ANGLE_STEP = (2 * Math.PI) / channels.length
@@ -98,7 +98,7 @@ export function ScrollingAnimation({ onNavigate }: ScrollingAnimationProps) {
                     All <span className="text-blue-400">Channels.</span>
                   </h2>
                   <p className="text-white/70 text-center max-w-[150px] sm:max-w-[240px] text-xs sm:text-sm md:text-base">
-                    Get your agent ready in just a few minutes. Free to set up — no credit card needed.
+                    Get your intake assistant ready in a few minutes. Free to set up, no credit card needed.
                   </p>
                 </div>
               </div>

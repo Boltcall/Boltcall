@@ -823,39 +823,6 @@ const BlogCenter: React.FC = () => {
         </div>
       </section>
 
-      {/* Expert Insights */}
-      <section id="expert-insights" className="py-14 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">What Industry Experts Say</h2>
-          <div className="space-y-6">
-            {[
-              {
-                quote: "The businesses that respond to a lead within 60 seconds are 391% more likely to qualify them. Speed isn't a nice-to-have — it's the single biggest lever in local service sales.",
-                expert: "Dr. James Oldroyd",
-                title: "Lead Response Management researcher, MIT/Kellogg joint study",
-              },
-              {
-                quote: "Local service businesses lose between 40% and 60% of inbound leads simply because no one answers. AI voice systems eliminate that gap completely — they're available at 2am on a Sunday without overtime.",
-                expert: "Sarah Chen",
-                title: "Small Business Technology Analyst, Local Business Insider",
-              },
-              {
-                quote: "An AI receptionist doesn't just answer calls — it qualifies, books, and follows up. The businesses using them are seeing 30–50% increases in booked jobs without adding headcount.",
-                expert: "Boltcall Team",
-                title: "AI Receptionist Platform for Local Businesses — boltcall.org",
-              },
-            ].map((item, i) => (
-              <div key={i} className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                <p className="text-gray-700 text-base leading-relaxed mb-4">"{item.quote}"</p>
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm">{item.expert}</p>
-                  <p className="text-gray-500 text-xs">{item.title}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Pros & Cons */}
       <section id="pros-cons" className="py-14 bg-gray-50">

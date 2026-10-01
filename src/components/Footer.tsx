@@ -79,10 +79,11 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
     ],
     industries: [
       { label: 'Lawyer Answering Service', labelHe: 'שירות מענה לעורכי דין', href: '/industries/lawyer-answering-service' },
-      { label: 'Voice Agent Setup', labelHe: 'הגדרת סוכן קולי', href: '/start' },
-      { label: 'Rank on Google Offer', labelHe: 'הצעת דירוג בגוגל', href: '/rank-on-google-offer' },
-      { label: 'Free Website Offer', labelHe: 'הצעת אתר חינם', href: '/free-website' },
-      { label: 'Giveaway', labelHe: 'הגרלה', href: '/giveaway' },
+      { label: 'Personal Injury Intake', labelHe: 'קליטת פניות לנזקי גוף', href: '/personal-injury' },
+      { label: 'Lawyer Intake Calculator', labelHe: 'מחשבון קליטת לקוחות למשרד עורכי דין', href: '/tools/lawyer-intake-calculator' },
+      { label: 'Speed to Lead for Law Firms', labelHe: 'מהירות מענה למשרדי עורכי דין', href: '/blog/speed-to-lead-for-law-firms' },
+      { label: 'AI Receptionist for Law Firms', labelHe: 'מזכירה AI למשרדי עורכי דין', href: '/blog/ai-receptionist-for-law-firms' },
+      { label: 'Security for Law Firms', labelHe: 'אבטחה למשרדי עורכי דין', href: '/law-firm-security' },
     ],
     comparisons: [
       { label: 'All Comparisons', labelHe: 'כל ההשוואות', href: '/comparisons' },
@@ -150,7 +151,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
                     <source srcSet="/boltcall_full_logo.webp" type="image/webp" />
                     <img
                       src="/boltcall_full_logo.png"
-                      alt="Boltcall - AI Receptionist, Follow Ups, Reminders"
+                      alt="Boltcall - Speed-to-lead for law firms"
                       className="h-12 mb-3"
                       width="97"
                       height="48"

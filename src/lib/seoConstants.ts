@@ -18,7 +18,7 @@
  */
 
 export const SITE_DATE_PUBLISHED = '2024-01-01';
-export const SITE_DATE_MODIFIED = '2026-05-24';
+export const SITE_DATE_MODIFIED = '2026-10-01';
 
 export const ORG_NAME = 'Boltcall';
 export const ORG_URL = 'https://boltcall.org';
@@ -26,30 +26,16 @@ export const ORG_LOGO_URL = 'https://boltcall.org/logo.png';
 export const ORG_OG_IMAGE_URL = 'https://boltcall.org/og-image.jpg';
 
 /**
- * Aggregate rating advertised on the site. Tied to public testimonials in
- * `<Testimonials />`. Update if the underlying review base grows materially.
- */
-export const SITE_AGGREGATE_RATING = {
-  ratingValue: '4.9',
-  reviewCount: '500',
-  bestRating: '5',
-  worstRating: '1',
-} as const;
-
-/**
  * Schema.org Audience block — surfaces in AI Overview citations when a query
- * specifies a vertical (e.g. "best AI receptionist for plumbers").
+ * specifies a vertical (e.g. "best AI intake for personal injury firms").
  */
 export const SITE_AUDIENCE = [
-  'Plumbers',
-  'HVAC contractors',
-  'Dental practices',
   'Law firms',
-  'Med spas',
-  'Roofing contractors',
-  'Solar installers',
-  'Veterinary clinics',
-  'Local service businesses',
+  'Personal injury law firms',
+  'Family law firms',
+  'Criminal defense firms',
+  'Immigration law firms',
+  'Estate planning firms',
 ] as const;
 
 /**

@@ -186,20 +186,8 @@ const SpeedTestLanding: React.FC = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Built for local service businesses &middot; Free forever &middot; No signup required
+            Built for law firms &middot; Free forever &middot; No signup required
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Found 3 issues I had no idea about. Fixed them and rankings improved."', author: 'Plumber, Ohio' },
-              { quote: '"Fast, accurate, and free. Runs in seconds."', author: 'HVAC contractor, Georgia' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
         <Footer />

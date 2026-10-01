@@ -475,32 +475,6 @@ const BlogSEO: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Case Studies */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.65 }}
-          className="mb-16"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
-            <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-            Case Studies: Local Businesses That Grew with SEO
-          </h2>
-          <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">🔑 Locksmith — QuickKey Locksmith Services</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">QuickKey optimised their Google Business Profile with 47 new keyword-rich reviews and added location-specific service pages for each city they serve. Within four months they moved from position 11 to position 2 for “emergency locksmith [city],” tripling inbound call volume and adding roughly $8,000/month in new revenue without increasing ad spend.</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">🌿 Landscaping — GreenScape Lawn Care</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">GreenScape published a 12-article blog series answering hyper-local lawn care questions and built citations in 30 local directories. Organic traffic grew 210% year-over-year and seasonal quote requests increased from an average of 14 per week to 41 — all driven by first-page rankings for 18 target keywords.</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">🍕 Restaurant — Mama Rosa’s Pizzeria</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">Mama Rosa’s claimed and fully optimised their Google Business Profile, added schema markup for menu items, and responded to every review within 24 hours for six months. Their local pack ranking jumped to the top-3 map result for “pizza near me,” driving a 35% lift in Friday and Saturday foot traffic compared to the prior year.</p>
-            </div>
-          </div>
-        </motion.section>
 
         {/* Conclusion */}
         <motion.section

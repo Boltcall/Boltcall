@@ -378,23 +378,6 @@ const FreeWebsitePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section id="social-proof" className="py-12 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">Trusted by Local Businesses</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
-            {[
-              { stat: '4.9/5', label: 'average rating' },
-              { stat: '24hr', label: 'delivery time' },
-            ].map(({ stat, label }) => (
-              <div key={label} className="text-center p-6 rounded-xl border border-gray-100 shadow-sm">
-                <div className="text-3xl font-extrabold text-blue-600 mb-1">{stat}</div>
-                <div className="text-sm text-gray-500">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="py-8 bg-gray-50 border-t border-gray-100">

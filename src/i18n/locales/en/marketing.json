@@ -33,6 +33,7 @@
       "freeAiCourse": "Free AI Course"
     },
     "freeToolsItems": {
+      "lawyerIntakeCalculator": "Lawyer Intake Calculator",
       "leadResponseSpeedTest": "Lead Response Speed Test",
       "aiRevenueAudit": "AI Revenue Audit",
       "leadResponseScorecard": "Lead Response Scorecard",
@@ -50,36 +51,39 @@
       "claudeCodeOvernightKit": "Claude Code Overnight Kit",
       "freeWebsiteOffer": "Free Website Offer",
       "giveaway": "Giveaway"
-    }
+    },
+    "lawFirms": "For Law Firms"
   },
   "hero": {
     "neverMiss": "NEVER MISS",
     "a": "A ",
-    "rotatingWords": ["CALL", "LEAD", "TEXT", "REVIEW", "REPLY"],
-    "subtitle": "The all-in-one speed-to-lead\nsystem for law firms.",
+    "rotatingWords": ["CALL", "CASE", "CLIENT", "LEAD", "TEXT"],
+    "subtitle": "The first firm to call back signs the case.\nBoltcall answers and books every new inquiry in seconds, 24/7.",
     "startFree": "Start For Free",
-    "seeHowItWorks": "See How It Works"
+    "seeHowItWorks": "See How It Works",
+    "trust": "It says it is an AI and that the call is recorded. It never gives legal advice.",
+    "hearDemo": "Hear it handle a live intake call"
   },
   "howItWorks": {
     "label": "How It Works",
-    "heading1": "Close leads in ",
-    "heading2": "lightning speed.",
-    "description": "BoltCall transforms how you capture and convert leads. Our AI-powered system works 24/7 to ensure you never miss an opportunity, responding instantly to every inquiry and booking qualified appointments automatically.",
+    "heading1": "Answer first. ",
+    "heading2": "Sign the case.",
+    "description": "A new inquiry rarely waits. Boltcall picks up the call, answers the web form, and texts back within seconds, so your firm is the one that responds first. Every matter reaches your team already screened and ready for a consultation.",
     "phases": {
       "receptionist": {
-        "title": "Capture the Lead",
-        "description": "Every call, text, web form, and ad lead is caught the moment it comes in — before a competitor gets the chance.",
-        "checklist": ["Instant call answer", "Web form capture", "Ad lead sync", "Zero missed contacts"]
+        "title": "Answer every inquiry",
+        "description": "Calls, missed calls, web forms, and texts get a response in seconds, day or night. No voicemail, no waiting until Monday.",
+        "checklist": ["Live call answering, 24/7", "Missed-call text-back", "Web form and ad lead reply", "Cover for court and depositions"]
       },
       "adsReplies": {
-        "title": "Qualify & Engage",
-        "description": "Your AI asks the right questions, filters serious buyers, and keeps every prospect warm around the clock.",
-        "checklist": ["Smart qualification flow", "Instant follow-up texts", "24/7 availability", "Lead scoring"]
+        "title": "Screen the matter",
+        "description": "The AI collects what your intake team needs: matter type, key dates, and names for conflict checks. It flags urgent matters like arrests and deadlines. It never gives legal advice.",
+        "checklist": ["Matter type and key dates", "Conflict-check names captured", "Urgent matter alerts", "No legal advice, ever"]
       },
       "smsBooking": {
-        "title": "Book the Appointment",
-        "description": "Qualified leads get booked directly onto your calendar — no back-and-forth, no delays, no dropped balls.",
-        "checklist": ["Automatic scheduling", "Calendar integration", "Instant confirmations", "Reminder messages"]
+        "title": "Book the consultation",
+        "description": "Qualified callers get a consultation on your calendar while they are still on the line. You get a summary by email, so an attorney or intake coordinator steps in with context.",
+        "checklist": ["Books into your calendar", "Instant text confirmation", "Summary sent to your team", "Callback request if no slot fits"]
       }
     }
   },
@@ -88,16 +92,20 @@
     "heading2": "Questions",
     "items": [
       {
-        "q": "What exactly does Boltcall do?",
-        "a": "Boltcall is an AI receptionist that answers your calls 24/7, books appointments, captures leads, sends follow-up texts, and reminds customers about upcoming visits. It works even when you're busy or closed."
+        "q": "What does Boltcall do for a law firm?",
+        "a": "Boltcall answers new inquiries by phone, text, and web form within seconds, 24/7. It screens the matter, flags urgent ones, and books a consultation on your calendar. Your team gets a summary of every inquiry."
       },
       {
-        "q": "Can it transfer calls to a real person?",
-        "a": "Yes. You set the rules — transfer during business hours, for VIP customers, or urgent calls. If no one picks up, it takes a message and books a callback."
+        "q": "Does it give legal advice?",
+        "a": "No. It handles intake only. It does not assess a case, quote fees, or tell a caller what their rights are. If asked, it explains that an attorney will follow up."
       },
       {
-        "q": "Does it sound like a real person?",
-        "a": "Yes. You choose the voice and tone — friendly, calm, or professional. Callers often can't tell it's AI."
+        "q": "Does the caller know it is an AI?",
+        "a": "Yes. Every call opens by saying the caller is speaking with an AI assistant and that the call is recorded. That disclosure cannot be switched off."
+      },
+      {
+        "q": "What happens with an urgent matter?",
+        "a": "Arrests, custody emergencies, and deadline-driven matters are flagged as urgent and your team is alerted right away. You can also set rules to transfer calls to a person. If no one picks up, it takes a message and requests a callback."
       },
       {
         "q": "Can I keep my current phone number?",
@@ -105,38 +113,38 @@
       },
       {
         "q": "How long does setup take?",
-        "a": "About 5 minutes. Enter your business details, pick a voice, and your AI receptionist is live. No technical skills needed."
+        "a": "About 5 minutes to start. Enter your firm details, pick a voice, and your AI intake assistant is live. Connect a calendar so it can book consultations."
       },
       {
-        "q": "Does it connect to my CRM or calendar?",
-        "a": "Yes. Boltcall integrates with HubSpot, Google Sheets, Zapier, Cal.com, and more. Every lead and booking syncs automatically to the tools you already use."
+        "q": "Does it connect to my calendar or case management software?",
+        "a": "Boltcall books into Google Calendar and Cal.com. It can send new matters to other tools through Zapier, Make, or webhooks. There is no native Clio or MyCase connection yet."
       }
     ]
   },
   "finalCta": {
     "default": {
       "headline": "Fast. Simple. Scalable.",
-      "description": "Get your helper ready in 5 minutes. It is free. Connect it to your phone, website, and messages.",
+      "description": "Get your intake assistant ready in 5 minutes. Setup is free. Connect it to your phone, website, and messages.",
       "button": "Start the free setup"
     },
     "calculator": {
-      "headline": "Stop Losing Revenue to Missed Calls.",
-      "description": "See how much you're leaving on the table. Set up your AI receptionist in 5 minutes. It's free.",
+      "headline": "Answer the next inquiry first.",
+      "description": "See what slow follow-up costs your firm, then set up your AI intake assistant in 5 minutes. Setup is free.",
       "button": "Start the free setup"
     },
     "howTo": {
       "headline": "See It Working in 5 Minutes.",
-      "description": "Set up your AI receptionist now. It answers calls, books appointments, and follows up automatically.",
+      "description": "Set up your AI intake assistant now. It answers calls, screens new matters, and books consultations.",
       "button": "Try it free"
     },
     "comparison": {
       "headline": "Ready to Switch?",
-      "description": "Try Boltcall free. No contract, no commitment. See the difference in your first week.",
+      "description": "Try Boltcall free. No long-term contract. See how fast your firm can answer every new inquiry.",
       "button": "Start free"
     },
     "blog": {
       "headline": "Fast. Simple. Scalable.",
-      "description": "Get your helper ready in 5 minutes. It is free. Connect it to your phone, website, and messages.",
+      "description": "Get your intake assistant ready in 5 minutes. Setup is free. Connect it to your phone, website, and messages.",
       "button": "Start the free setup"
     }
   },
@@ -146,7 +154,7 @@
       "freeTools": "Free Tools",
       "calculators": "Calculators",
       "learn": "Learn",
-      "industries": "Industries & Offers",
+      "industries": "For Law Firms",
       "comparisons": "Comparisons",
       "company": "Company"
     },
@@ -160,36 +168,54 @@
   },
   "stickyScroll": {
     "label": "PRODUCT",
-    "heading1": "Why Businesses",
+    "heading1": "Why Law Firms",
     "heading2": "Choose",
     "heading3": "BoltCall"
   },
   "features": {
     "closingRates": {
-      "title": "Increased closing rates",
-      "description": "If you talk to a new customer in 60 seconds, you get 4 times more customers. Being fast is very important."
+      "title": "Be the first to respond",
+      "description": "Callers rarely stop at one firm. The firm that answers first gets the first conversation.",
+      "example": "Example, Friday night",
+      "steps": [
+        {
+          "time": "8:04 pm",
+          "text": "A caller reaches your intake line after hours"
+        },
+        {
+          "time": "8:04 pm",
+          "text": "Boltcall answers and asks the intake questions"
+        },
+        {
+          "time": "8:07 pm",
+          "text": "Consultation booked, confirmation texted"
+        },
+        {
+          "time": "8:30 am",
+          "text": "Summary waiting in your inbox"
+        }
+      ]
     },
-    "salesConversions": "Sales conversions",
     "revenue": {
-      "title": "Increased Revenue",
-      "description": "When you answer fast, you get more customers. This makes you more money."
+      "title": "Fewer lost cases",
+      "description": "Every after-hours call and missed call becomes a screened inquiry on your calendar, not a voicemail."
     },
     "saveTime": {
-      "title": "Save time",
-      "description": "BoltCall does the boring work for you. You can focus on making your business bigger."
+      "title": "Protect attorney time",
+      "description": "Intake questions get handled before anyone interrupts a client meeting or a filing."
     },
     "customerSatisfaction": {
-      "title": "Customer satisfaction",
-      "description": "Make your customers happy. Answer them right away. Talk to them in a nice way. They will trust you and come back."
+      "title": "A calm first call",
+      "description": "Callers are heard, asked the right questions, and told what happens next, even at 2am. It says it is an AI and that the call is recorded."
     }
   },
   "integrationHero": {
     "heading": "Integrate with favorite tools",
-    "description": "Connect your CRM, calendar, and automation tools — all in one place."
+    "description": "Connect your CRM, calendar, and automation tools, all in one place."
   },
   "bentoCard": {
     "preview": "Platform Preview",
-    "tagline": "Every lead answered. Every booking locked in. Automatically."
+    "tagline": "Every inquiry answered. Every consultation booked. Automatically."
   },
   "pricing": {
     "heading1": "Pricing That",

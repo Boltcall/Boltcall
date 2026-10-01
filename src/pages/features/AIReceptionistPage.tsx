@@ -297,78 +297,6 @@ const AIReceptionistPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Use Cases Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-              <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-              <span>Real-World Use Cases</span>
-            </h2>
-            
-            <div className="space-y-8">
-              <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Dental Practice</h3>
-                <p className="text-gray-600 leading-relaxed mb-3">
-                  A dental practice receives 200 calls per month. Before setting up an AI receptionist, 
-                  they missed 30% of calls during peak hours and after hours. The AI now answers every call, 
-                  schedules appointments, sends reminders, and handles insurance questions. Result: 100% call 
-                  answer rate, 25% increase in new patient bookings, and $15,000 saved annually on receptionist costs.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  The AI handles common questions about services, insurance acceptance, office hours, and 
-                  appointment availability. It can also provide directions to the office, explain preparation 
-                  requirements for procedures, and send post-appointment follow-up messages. This comprehensive 
-                  coverage ensures patients always get the information they need, when they need it.
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Legal Firm</h3>
-                <p className="text-gray-600 leading-relaxed mb-3">
-                  A small law firm was losing potential clients because calls went to voicemail after hours. 
-                  The AI receptionist now answers calls 24/7, asks about case type and
-                  urgency to figure out who needs help most, and schedules consultations. The firm saw a 40% increase in consultation bookings
-                  and turned 15% more callers into paying clients.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  The AI can ask the first round of questions, explain how consultations work, share
-                  info about what the firm handles, and even collect basic case details before passing the call
-                  to an attorney. For urgent matters, it can immediately connect callers to the on-call 
-                  attorney or schedule same-day consultations when available.
-                </p>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Law Firm</h3>
-                <p className="text-gray-600 leading-relaxed mb-3">
-                  A law firm was missing new-matter calls during depositions and court appearances.
-                  The AI receptionist now handles all incoming intake calls, screens case type and
-                  urgency, and books consultations, so no call sits in voicemail while attorneys are
-                  unavailable.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  The system can screen practice area, capture incident or matter details, route
-                  urgent calls (arrests, custody emergencies, deadline-sensitive filings), and confirm
-                  the next step by text while the caller is still deciding which firm to hire.
-                </p>
-                <p className="text-gray-600 leading-relaxed mt-3">
-                  For the main category page built around this buyer intent, see{' '}
-                  <Link className="font-semibold text-blue-700 hover:underline" to="/industries/lawyer-answering-service">
-                    lawyer answering service
-                  </Link>
-                  .
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* How It Works Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
@@ -810,26 +738,6 @@ const AIReceptionistPage: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Social Proof */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
-            { quote: "I was skeptical about AI, but it just works. Our front desk handles 30% fewer interruptions now.", name: "Priya S.", role: "Dental Practice Manager, California" },
-            { quote: "We were losing 15-20 calls a week to voicemail. Boltcall captures every single one now.", name: "James R.", role: "Plumbing Business Owner, Florida" },
-          ].map((item) => (
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">{item.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="bg-gray-50 border-t border-gray-100 py-8">
@@ -841,7 +749,7 @@ const AIReceptionistPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -859,13 +767,13 @@ const AIReceptionistPage: React.FC = () => {
       {/* Why Boltcall */}
       <section className="py-14 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Businesses Choose Boltcall</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Law Firms Choose Boltcall</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
               { title: 'Setup in 30 minutes', desc: 'No developers, no tech team. Answer 5 questions about your business and your AI receptionist is live — configured to your services, hours, and voice.' },
-              { title: 'Flat monthly pricing', desc: 'Unlike per-call services that penalize you for growth, Boltcall charges a flat monthly fee. Handle 500 calls or 5,000 — your cost stays predictable.' },
+              { title: 'Flat monthly pricing', desc: 'Boltcall is a flat monthly subscription with no per-case fees and no share of your fees. Each plan includes a monthly credit pool shared across calls, texts, and chat.' },
               { title: 'Trained on your business', desc: 'Not a generic bot. Boltcall learns your specific services, pricing, FAQs, and booking rules — so every interaction sounds like your best team member.' },
-              { title: 'ROI from day one', desc: 'One recovered call per month covers the entire subscription cost. Most customers see 5–10x ROI within the first 30 days from calls they would have otherwise missed.' },
+              { title: 'One signed case can cover it', desc: 'One extra signed matter can cover the subscription. Use the break-even calculator on the pricing page with your own average fee.' },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-xl p-5 shadow-sm border border-white">
                 <h3 className="font-bold text-gray-900 mb-2">✓ {item.title}</h3>

@@ -495,54 +495,6 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                 </p>
               </motion.section>
 
-              {/* Case Studies */}
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="mb-12"
-                id="case-studies"
-              >
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Real Results: Small Business Case Studies</h2>
-                
-                <p className="text-gray-700 leading-relaxed mb-8">
-                  These real-world examples demonstrate how AI receptionists transform small business operations and growth:
-                </p>
-
-                <div className="space-y-8">
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="bg-blue-100 rounded-full p-3">
-                        <Users className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Martinez Plumbing - Phoenix, AZ</h3>
-                        <p className="text-gray-600 mb-4">3-person plumbing company serving residential customers</p>
-                        
-                        <div className="grid md:grid-cols-3 gap-4 mb-4">
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-green-600">156%</div>
-                            <div className="text-sm text-gray-600">Revenue increase</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600">89%</div>
-                            <div className="text-sm text-gray-600">Call capture rate</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-2xl font-bold text-purple-600">24/7</div>
-                            <div className="text-sm text-gray-600">Emergency coverage</div>
-                          </div>
-                        </div>
-                        
-                        <p className="text-gray-700 text-sm">
-                          "Before Boltcall, we were missing 40% of our calls during busy periods. Now our AI handles initial screening and books emergency repairs automatically. We've doubled our after-hours revenue."
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.section>
             </div>
           </div>
         </div>
@@ -575,20 +527,8 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
+            Built for law firms &middot; No credit card required &middot; Cancel anytime
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
       <Footer />

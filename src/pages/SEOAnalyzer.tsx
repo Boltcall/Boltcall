@@ -352,33 +352,13 @@ const SEOAnalyzer: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { quote: "The SEO audit flagged 12 issues we had no idea about. After fixing them, our Google ranking jumped from page 3 to page 1 for our main keyword.", name: "Lisa M.", role: "Roofing Company Owner, Ohio" },
-            { quote: "Free, instant, and actually useful. I used the report to guide our website redesign and saw 60% more organic traffic in 90 days.", name: "Carlos R.", role: "HVAC Business Owner, Texas" },
-            { quote: "I sent this audit to my web developer and it saved hours of guesswork. Very clear and actionable.", name: "Janet K.", role: "Dental Practice Manager, Georgia" },
-          ].map((item) => (
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">{item.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="bg-gray-50 border-t border-gray-100 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for local service businesses</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for law firms</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Report delivered to your inbox in minutes</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
@@ -460,58 +440,6 @@ const SEOAnalyzer: React.FC = () => {
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section id="use-cases" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Real Results from Real Local Businesses</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm max-w-xl mx-auto">
-          See what happened when these businesses fixed the issues uncovered in their free SEO audit.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            {
-              industry: 'HVAC Company',
-              location: 'Phoenix, AZ',
-              result: 'Fixed 3 citation errors → ranked #1 in local pack in 6 weeks, +40% inbound calls',
-              bg: 'bg-orange-50',
-              border: 'border-orange-200',
-              dot: 'bg-orange-500',
-            },
-            {
-              industry: 'Dental Practice',
-              location: 'Chicago, IL',
-              result: 'Optimized GBP + added 23 missing citations → +67% new patient calls in 60 days',
-              bg: 'bg-blue-50',
-              border: 'border-blue-200',
-              dot: 'bg-blue-500',
-            },
-            {
-              industry: 'Law Firm',
-              location: 'Austin, TX',
-              result: 'Improved page speed from 7s to 2.1s → +34% organic traffic, 19 more consultation requests/month',
-              bg: 'bg-green-50',
-              border: 'border-green-200',
-              dot: 'bg-green-500',
-            },
-            {
-              industry: 'Home Services',
-              location: 'Seattle, WA',
-              result: 'Fixed mobile usability issues + keyword headings → +52% Google impressions in 30 days',
-              bg: 'bg-purple-50',
-              border: 'border-purple-200',
-              dot: 'bg-purple-500',
-            },
-          ].map((item) => (
-            <div key={item.industry} className={`${item.bg} border ${item.border} rounded-xl p-6`}>
-              <div className="flex items-center gap-2 mb-3">
-                <span className={`w-2.5 h-2.5 rounded-full ${item.dot} flex-shrink-0`}></span>
-                <span className="font-semibold text-gray-900 text-sm">{item.industry}</span>
-                <span className="text-gray-500 text-xs">— {item.location}</span>
-              </div>
-              <p className="text-gray-700 text-sm leading-relaxed">{item.result}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Competitive Differentiators */}
       <section id="why-boltcall-seo" className="py-12 bg-gray-50 border-t border-gray-100">

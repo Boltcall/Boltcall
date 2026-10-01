@@ -349,55 +349,6 @@ const AutomatedRemindersPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Use Cases Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
-              <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-              <span>Real-World Impact</span>
-            </h2>
-            
-            <div className="space-y-8">
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Healthcare Practice</h3>
-                <p className="text-gray-600 leading-relaxed mb-3">
-                  A medical practice with 500 appointments per month had a 25% no-show rate, costing 
-                  $18,750 monthly in lost revenue. After implementing automated reminders with 24-hour 
-                  and 2-hour notifications, no-shows dropped to 8%. This saved $12,750 monthly ($153,000 
-                  annually) and improved patient satisfaction significantly.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  The reminders also included preparation instructions (like fasting requirements or 
-                  bringing insurance cards), which reduced confusion and improved appointment quality. 
-                  Patients appreciated the proactive communication, and the practice saw improved patient 
-                  retention and referrals.
-                </p>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Service Business</h3>
-                <p className="text-gray-600 leading-relaxed mb-3">
-                  A home services company reduced no-shows from 30% to 10% with automated reminders. 
-                  The reminders included service details, what to expect, and preparation requirements. 
-                  This not only reduced no-shows but also improved customer satisfaction because customers 
-                  were better prepared for their appointments.
-                </p>
-                <p className="text-gray-600 leading-relaxed">
-                  The company also used the reminder system to send follow-up messages after service, 
-                  asking for feedback and offering additional services. This created additional revenue 
-                  opportunities and improved customer relationships beyond just reducing no-shows.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* ROI Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
@@ -490,26 +441,6 @@ const AutomatedRemindersPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
-            { quote: "I was skeptical about AI, but it just works. Our front desk handles 30% fewer interruptions now.", name: "Priya S.", role: "Dental Practice Manager, California" },
-            { quote: "We were losing 15-20 calls a week to voicemail. Boltcall captures every single one now.", name: "James R.", role: "Plumbing Business Owner, Florida" },
-          ].map((item) => (
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">{item.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="bg-gray-50 border-t border-gray-100 py-8">
@@ -521,7 +452,7 @@ const AutomatedRemindersPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -539,13 +470,13 @@ const AutomatedRemindersPage: React.FC = () => {
       {/* Why Boltcall */}
       <section className="py-14 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Businesses Choose Boltcall</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Law Firms Choose Boltcall</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
               { title: 'Setup in 30 minutes', desc: 'No developers, no tech team. Answer 5 questions about your business and your AI receptionist is live — configured to your services, hours, and voice.' },
-              { title: 'Flat monthly pricing', desc: 'Unlike per-call services that penalize you for growth, Boltcall charges a flat monthly fee. Handle 500 calls or 5,000 — your cost stays predictable.' },
+              { title: 'Flat monthly pricing', desc: 'Boltcall is a flat monthly subscription with no per-case fees and no share of your fees. Each plan includes a monthly credit pool shared across calls, texts, and chat.' },
               { title: 'Trained on your business', desc: 'Not a generic bot. Boltcall learns your specific services, pricing, FAQs, and booking rules — so every interaction sounds like your best team member.' },
-              { title: 'ROI from day one', desc: 'One recovered call per month covers the entire subscription cost. Most customers see 5–10x ROI within the first 30 days from calls they would have otherwise missed.' },
+              { title: 'One signed case can cover it', desc: 'One extra signed matter can cover the subscription. Use the break-even calculator on the pricing page with your own average fee.' },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-xl p-5 shadow-sm border border-white">
                 <h3 className="font-bold text-gray-900 mb-2">✓ {item.title}</h3>

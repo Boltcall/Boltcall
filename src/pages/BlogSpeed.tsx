@@ -143,7 +143,6 @@ const BlogSpeed: React.FC = () => {
                   <li key="the-real-cost-of-being-slow"><a href="#the-real-cost-of-being-slow" className="text-blue-600 hover:underline text-sm">The Real Cost of Being Slow</a></li>
                   <li key="how-to-respond-in-60-seconds-without-wor"><a href="#how-to-respond-in-60-seconds-without-wor" className="text-blue-600 hover:underline text-sm">How to Respond in 60 Seconds (Without Working 24/7)</a></li>
                   <li key="the-bottom-line"><a href="#the-bottom-line" className="text-blue-600 hover:underline text-sm">The Bottom Line</a></li>
-                  <li key="real-world-case-studies-speed-in-action"><a href="#real-world-case-studies-speed-in-action" className="text-blue-600 hover:underline text-sm">Real-World Case Studies: Speed in Action</a></li>
                   <li key="how-to-implement-60-second-response-time"><a href="#how-to-implement-60-second-response-time" className="text-blue-600 hover:underline text-sm">How to Implement 60-Second Response Times</a></li>
                   <li key="common-mistakes-that-kill-response-speed"><a href="#common-mistakes-that-kill-response-speed" className="text-blue-600 hover:underline text-sm">Common Mistakes That Kill Response Speed</a></li>
                   <li key="calculating-your-roi-from-instant-respon"><a href="#calculating-your-roi-from-instant-respon" className="text-blue-600 hover:underline text-sm">Calculating Your ROI from Instant Response</a></li>
@@ -384,64 +383,6 @@ const BlogSpeed: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Case Studies Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mb-16"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 flex items-start gap-3">
-            <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-            Real-World Case Studies: Speed in Action
-          </h2>
-          
-          <div className="space-y-8">
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Case Study 1: Home Services Company</h3>
-              <p className="text-gray-700 leading-relaxed mb-3">
-                A home services company was receiving 150 leads per month through their website contact 
-                form. Their previous process involved manually checking emails every few hours and 
-                responding within 4-6 hours on average. They converted approximately 8% of leads (12 
-                customers per month) at an average value of $500 per customer, generating $6,000 monthly.
-              </p>
-              <p className="text-gray-700 leading-relaxed mb-3">
-                After implementing instant lead response (responding within 60 seconds), their conversion 
-                rate increased to 31% (46.5 customers per month). This generated $23,250 monthly—a 287% 
-                increase. The instant response system paid for itself in the first week and continues to 
-                generate significant ROI.
-              </p>
-              <p className="text-gray-700 leading-relaxed">
-                The key difference wasn't just speed—it was the quality of the instant response. The 
-                AI system could answer questions immediately, provide quotes for standard services, and 
-                schedule consultations on the spot. This immediate value creation kept leads engaged 
-                and moving through the sales funnel.
-              </p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Case Study 2: Professional Services Firm</h3>
-              <p className="text-gray-700 leading-relaxed mb-3">
-                A professional services firm was losing potential clients because they couldn't respond 
-                to inquiries quickly enough. Their average response time was 8 hours during business 
-                days, and inquiries received over weekends or holidays waited until Monday. This delay 
-                caused them to lose 40% of potential clients to competitors who responded faster.
-              </p>
-              <p className="text-gray-700 leading-relaxed mb-3">
-                After implementing instant response, they began responding to every inquiry within 60 
-                seconds, regardless of time or day. Their conversion rate increased from 12% to 35%, and 
-                they recovered the 40% of leads they were previously losing. This resulted in a 192% 
-                increase in new client acquisitions.
-              </p>
-              <p className="text-gray-700 leading-relaxed">
-                The instant response system also improved their professional image. Clients commented 
-                on how impressed they were with the quick response time, and this positive first 
-                impression carried through the entire client relationship. The firm saw improved client 
-                satisfaction scores and increased referrals as a result.
-              </p>
-            </div>
-          </div>
-        </motion.section>
 
         {/* Implementation Guide Section */}
         <motion.section

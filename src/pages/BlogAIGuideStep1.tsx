@@ -301,45 +301,6 @@ const BlogAIGuideStep1: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Case Study Style Mini-Stories */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mb-16"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
-            <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-            Real Results from Real Businesses
-          </h2>
-          
-          <div className="space-y-6">
-            <div>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                <strong className="text-gray-900">Dental Practice, Chicago:</strong> "We were losing 3-4 patients 
-                per week to missed calls. After implementing Boltcall's AI receptionist, we haven't missed a single 
-                call in 6 months. Our appointment bookings increased by 28%."
-              </p>
-            </div>
-
-            <div>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                <strong className="text-gray-900">HVAC Company, Dallas:</strong> "The SMS booking feature changed 
-                everything. Our customers love being able to text us at any time. We've reduced no-shows by 85% 
-                thanks to automated reminders, and our team saves 12 hours per week on scheduling."
-              </p>
-            </div>
-
-            <div>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                <strong className="text-gray-900">Auto Repair Shop, Phoenix:</strong> "Before AI, we'd get 20-30 
-                calls per day and miss about 40% of them. Now our AI handles everything, qualifies leads, and 
-                books appointments. We've increased revenue by $15,000 per month just from capturing leads we 
-                used to miss."
-              </p>
-            </div>
-          </div>
-        </motion.section>
 
         {/* FAQ */}
         <motion.section

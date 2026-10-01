@@ -155,109 +155,7 @@ const RankOnGoogleOfferPage = () => {
 
             <FAQ />
 
-            {/* Use Cases / Case Studies */}
-            <section id="use-cases" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Local Businesses That Improved Their Google Rankings</h2>
-                <p className="text-gray-500 text-center mb-8 text-sm max-w-2xl mx-auto">
-                    Real results from local businesses that used our Google SEO system to move up in rankings, capture more calls, and grow revenue.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {[
-                        {
-                            business: 'HVAC Company',
-                            location: 'Phoenix, AZ',
-                            before: 'Ranking #8 in the local pack — invisible to most searchers.',
-                            actions: 'Fixed citation inconsistencies and fully optimized Google Business Profile.',
-                            result: 'Moved to #2 in the local pack within 6 weeks.',
-                            stat: '+38% inbound calls',
-                            color: 'blue',
-                        },
-                        {
-                            business: 'Dental Practice',
-                            location: 'San Diego, CA',
-                            before: 'Stuck on page 2 of Google with thin review volume.',
-                            actions: 'Added missing schema markup and launched an automated review strategy.',
-                            result: 'Moved to the top 3 results in 45 days.',
-                            stat: '12 new patients/month',
-                            color: 'green',
-                        },
-                        {
-                            business: 'Law Firm',
-                            location: 'Atlanta, GA',
-                            before: 'Low organic traffic and slow mobile load times hurting rankings.',
-                            actions: 'Rewrote keyword-aligned headings and resolved mobile page speed issues.',
-                            result: '+51% organic traffic with consistent top-page placement.',
-                            stat: '9 more consultation calls/month',
-                            color: 'purple',
-                        },
-                        {
-                            business: 'Plumbing Company',
-                            location: 'Chicago, IL',
-                            before: 'Not appearing in the local pack for high-intent plumbing searches.',
-                            actions: 'Claimed and optimized 4 key citation sources for NAP consistency.',
-                            result: 'Entered the local pack within 30 days of citation work.',
-                            stat: '$14,200 additional monthly revenue',
-                            color: 'orange',
-                        },
-                    ].map((item) => {
-                        const borderColor =
-                            item.color === 'blue' ? 'border-blue-200' :
-                            item.color === 'green' ? 'border-green-200' :
-                            item.color === 'purple' ? 'border-purple-200' :
-                            'border-orange-200';
-                        const badgeBg =
-                            item.color === 'blue' ? 'bg-blue-50 text-blue-700' :
-                            item.color === 'green' ? 'bg-green-50 text-green-700' :
-                            item.color === 'purple' ? 'bg-purple-50 text-purple-700' :
-                            'bg-orange-50 text-orange-700';
-                        const statBg =
-                            item.color === 'blue' ? 'bg-blue-600' :
-                            item.color === 'green' ? 'bg-green-600' :
-                            item.color === 'purple' ? 'bg-purple-600' :
-                            'bg-orange-600';
-                        return (
-                            <div key={item.business} className={`bg-white border-2 ${borderColor} rounded-xl p-6 shadow-sm flex flex-col gap-3`}>
-                                <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <p className="font-bold text-gray-900 text-base">{item.business}</p>
-                                        <p className="text-xs text-gray-500">{item.location}</p>
-                                    </div>
-                                    <span className={`text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap ${badgeBg}`}>{item.stat}</span>
-                                </div>
-                                <div className="space-y-1.5 text-sm text-gray-600">
-                                    <p><span className="font-medium text-gray-700">Before:</span> {item.before}</p>
-                                    <p><span className="font-medium text-gray-700">What we did:</span> {item.actions}</p>
-                                    <p><span className="font-medium text-gray-700">Outcome:</span> {item.result}</p>
-                                </div>
-                                <div className={`${statBg} text-white text-sm font-semibold rounded-lg px-4 py-2 text-center mt-auto`}>
-                                    {item.stat}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
 
-            {/* Social Proof */}
-            <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-              <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
-                  { quote: "I was skeptical about AI, but it just works. Our front desk handles 30% fewer interruptions now.", name: "Priya S.", role: "Dental Practice Manager, California" },
-                  { quote: "We were losing 15-20 calls a week to voicemail. Boltcall captures every single one now.", name: "James R.", role: "Plumbing Business Owner, Florida" },
-                ].map((item) => (
-                  <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                    <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                      <p className="text-xs text-gray-500">{item.role}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
 
             {/* Trust Signals */}
             <section className="bg-gray-50 border-t border-gray-100 py-8">
@@ -269,7 +167,7 @@ const RankOnGoogleOfferPage = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span>Built for local service businesses</span>
+                    <span>Built for law firms</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -288,20 +186,8 @@ const RankOnGoogleOfferPage = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
+            Built for law firms &middot; No credit card required &middot; Cancel anytime
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

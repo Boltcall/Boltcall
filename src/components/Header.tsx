@@ -28,6 +28,9 @@ const Header: React.FC = () => {
   const tickingRef = useRef(false);
   const { isAuthenticated } = useAuth();
 
+  // Law firms lead the nav (beachhead ICP). Other verticals are intentionally not in primary nav.
+  const lawFirmsItem = { labelKey: 'header.lawFirms', href: '/industries/lawyer-answering-service' };
+
   const navItems = [
     { labelKey: 'header.pricing', href: '/pricing' },
     { labelKey: 'header.contact', href: '/contact' },
@@ -53,6 +56,7 @@ const Header: React.FC = () => {
   ];
 
   const freeToolsItems = [
+    { labelKey: 'header.freeToolsItems.lawyerIntakeCalculator', href: '/tools/lawyer-intake-calculator', icon: Calculator },
     { labelKey: 'header.freeToolsItems.leadResponseSpeedTest', href: '/speed-test', icon: Zap },
     { labelKey: 'header.freeToolsItems.aiRevenueAudit', href: '/ai-revenue-audit', icon: Calculator },
     { labelKey: 'header.freeToolsItems.leadResponseScorecard', href: '/lead-response-scorecard', icon: Target },
@@ -347,7 +351,7 @@ const Header: React.FC = () => {
             <Link to="/">
               <div className="flex items-center cursor-pointer motion-safe:transition-transform motion-safe:duration-200 motion-safe:hover:scale-105">
                 <BoltcallLogoReveal
-                  alt="Boltcall - AI Receptionist, Follow Ups, Reminders"
+                  alt="Boltcall - Speed-to-lead for law firms"
                   invert={isOverBlueBackground}
                 />
               </div>
@@ -355,6 +359,15 @@ const Header: React.FC = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8 ltr:ml-4 rtl:mr-4 rtl:flex-row-reverse">
+              {/* Law firms: primary industry page */}
+              <Link
+                to={lawFirmsItem.href}
+                className={`group relative font-semibold py-2 transition-colors duration-300 ${isOverBlueBackground ? 'text-white' : 'text-blue-600'}`}
+              >
+                {t(lawFirmsItem.labelKey)}
+                <NavUnderline isBlue={isOverBlueBackground} />
+              </Link>
+
               {/* Features Dropdown */}
               <div
                 ref={featuresRef}
@@ -595,6 +608,7 @@ const Header: React.FC = () => {
 
             <div className="px-6 pt-16 pb-8 space-y-1">
               {[
+                lawFirmsItem,
                 { labelKey: 'header.about', href: '/about' },
                 ...navItems,
               ].map((item) => (
