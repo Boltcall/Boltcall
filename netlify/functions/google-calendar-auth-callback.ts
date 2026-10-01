@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { getServiceSupabase } from './_shared/token-utils';
 import { verifyOAuthState } from './_shared/oauth-state';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 /**
  * Google Calendar OAuth — Step 2: Exchange the authorization code for tokens.
@@ -54,7 +55,7 @@ const handler: Handler = async (event) => {
     return redirect('/dashboard/integrations?gcal=missing_user');
   }
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientId = publicEnv('GOOGLE_CLIENT_ID');
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
     console.error('Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET');

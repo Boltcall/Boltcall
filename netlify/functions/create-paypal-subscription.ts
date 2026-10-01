@@ -3,8 +3,8 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 //
 // Flow:
 //   1. Verify caller's Supabase JWT — never trust userId from request body.
-//   2. Look up the PayPal Plan ID for the requested tier+interval from env
-//      (mode-aware: PAYPAL_MODE=sandbox uses *_SANDBOX vars).
+//   2. Look up the PayPal Plan ID for the requested tier+interval
+//      (_shared/paypal-ids.json; env PAYPAL_PLAN_* overrides; mode-aware).
 //   3. Call PayPal /v1/billing/subscriptions to create a subscription.
 //      Attach the user's UUID via `custom_id` so the webhook can match the
 //      activation back to a Supabase user without an email lookup.
@@ -14,36 +14,13 @@ import { withLegacyHandler } from './_shared/runtime-compat';
 // the BILLING.SUBSCRIPTION.ACTIVATED webhook persists the subscription row.
 
 import type { Handler } from '@netlify/functions';
-import { paypalFetch } from './_shared/paypal-client';
+import { paypalFetch, paypalPlanId } from './_shared/paypal-client';
 import { isAllowedRedirect } from './_shared/redirect-allowlist';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { getServiceSupabase } from './_shared/token-utils';
 
-const isSandbox = process.env.PAYPAL_MODE === 'sandbox';
-
 const ALLOWED_PLANS = new Set(['starter', 'pro', 'ultimate']);
 const ALLOWED_INTERVALS = new Set(['monthly', 'yearly']);
-
-const PLAN_MAP: Record<string, string | undefined> = {
-  starter_monthly: isSandbox
-    ? process.env.PAYPAL_PLAN_STARTER_MONTHLY_SANDBOX
-    : process.env.PAYPAL_PLAN_STARTER_MONTHLY,
-  starter_yearly: isSandbox
-    ? process.env.PAYPAL_PLAN_STARTER_YEARLY_SANDBOX
-    : process.env.PAYPAL_PLAN_STARTER_YEARLY,
-  pro_monthly: isSandbox
-    ? process.env.PAYPAL_PLAN_PRO_MONTHLY_SANDBOX
-    : process.env.PAYPAL_PLAN_PRO_MONTHLY,
-  pro_yearly: isSandbox
-    ? process.env.PAYPAL_PLAN_PRO_YEARLY_SANDBOX
-    : process.env.PAYPAL_PLAN_PRO_YEARLY,
-  ultimate_monthly: isSandbox
-    ? process.env.PAYPAL_PLAN_ULTIMATE_MONTHLY_SANDBOX
-    : process.env.PAYPAL_PLAN_ULTIMATE_MONTHLY,
-  ultimate_yearly: isSandbox
-    ? process.env.PAYPAL_PLAN_ULTIMATE_YEARLY_SANDBOX
-    : process.env.PAYPAL_PLAN_ULTIMATE_YEARLY,
-};
 
 const handler: Handler = async (event) => {
   const v2cors = getV2CorsHeaders(
@@ -104,14 +81,11 @@ const handler: Handler = async (event) => {
     };
   }
 
-  const planKey = `${plan}_${interval}`;
-  const planId = PLAN_MAP[planKey];
+  const planId = paypalPlanId(plan, interval);
   if (!planId) {
-    // Env var missing for a valid tier — server misconfig. Log the specifics
-    // server-side; the client only learns the plan is unavailable (no env-name leak).
-    console.error(
-      `create-paypal-subscription: missing PAYPAL_PLAN_${plan.toUpperCase()}_${interval.toUpperCase()}${isSandbox ? '_SANDBOX' : ''}`,
-    );
+    // No plan ID for a valid tier — server misconfig. Log the specifics
+    // server-side; the client only learns the plan is unavailable.
+    console.error(`create-paypal-subscription: no PayPal plan id for ${plan}_${interval}`);
     return {
       statusCode: 503,
       headers,

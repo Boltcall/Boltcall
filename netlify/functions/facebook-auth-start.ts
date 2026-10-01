@@ -2,6 +2,7 @@ import { Handler } from '@netlify/functions';
 import { createOAuthState } from './_shared/oauth-state';
 import { requireMatchingUser } from './_shared/user-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 /**
  * Facebook OAuth — Step 1: Generate the OAuth authorization URL.
@@ -39,7 +40,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const clientId = process.env.FB_APP_ID || process.env.FACEBOOK_APP_ID;
+  const clientId = publicEnv('FB_APP_ID') || process.env.FACEBOOK_APP_ID;
   if (!clientId) {
     return {
       statusCode: 500,

@@ -5,6 +5,7 @@ import type { Handler } from '@netlify/functions';
 
 import { paypalFetch } from './_shared/paypal-client';
 import { signPayPalTestState } from './capture-paypal-test-return';
+import { publicEnv } from './_shared/public-config';
 
 const TEST_AMOUNT = '2.00';
 const TEST_CURRENCY = 'USD';
@@ -41,7 +42,7 @@ const handler: Handler = async (event) => {
     return json(403, { error: 'Forbidden' });
   }
 
-  const founderUserId = process.env.FOUNDER_UUID || '';
+  const founderUserId = publicEnv('FOUNDER_UUID') || '';
   const siteUrl = (process.env.SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, '');
   if (!founderUserId) {
     return json(500, { error: 'FOUNDER_UUID is required' });

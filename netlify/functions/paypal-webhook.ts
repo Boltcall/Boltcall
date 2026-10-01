@@ -1,9 +1,14 @@
 import type { Handler } from '@netlify/functions';
 import {
   PAYPAL_API_BASE,
+  PAYPAL_INTERVALS,
+  PAYPAL_TIERS,
   PAYPAL_WEBHOOK_ID,
   getPayPalAccessToken,
+  paypalFetch,
+  paypalPlanId,
 } from './_shared/paypal-client';
+import { notifyError } from './_shared/notify';
 import { getServiceSupabase } from './_shared/token-utils';
 import { withLegacyHandler } from './_shared/runtime-compat';
 
@@ -142,7 +147,7 @@ async function handleSubscriptionActivated(resource: any) {
     // so PayPal retries and Noam fixes the env var mapping.
     console.error(`[paypal-webhook] Unknown planId ${planId} — refusing to default-map`);
     await sendTelegramNotification(
-      `❌ PayPal plan mapping missing!\n\nPlan: ${planId}\nSub: ${subscriptionId}\nEmail: ${payerEmail}\n\nSet PAYPAL_PLAN_*_MONTHLY / _YEARLY env vars and let PayPal retry.`
+      `❌ PayPal plan mapping missing!\n\nPlan: ${planId}\nSub: ${subscriptionId}\nEmail: ${payerEmail}\n\nAdd it to netlify/functions/_shared/paypal-ids.json (or a PAYPAL_PLAN_* env var) and let PayPal retry.`
     );
     throw new Error(`Unknown PayPal plan id: ${planId}`);
   }
@@ -192,6 +197,40 @@ async function handleSubscriptionActivated(resource: any) {
       console.error('Error upserting PayPal subscription:', error);
       throw error;
     }
+
+    // Upgrade/downgrade creates a NEW PayPal subscription; cancel the one it
+    // replaces or PayPal keeps billing both.
+    const { data: superseded } = await supabaseAdmin()
+      .from('subscriptions')
+      .select('paypal_subscription_id')
+      .eq('user_id', userId)
+      .eq('payment_provider', 'paypal')
+      .in('status', ['active', 'past_due'])
+      .neq('paypal_subscription_id', subscriptionId);
+    for (const old of superseded || []) {
+      const res = await paypalFetch(`/v1/billing/subscriptions/${old.paypal_subscription_id}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: `Replaced by ${subscriptionId}` }),
+      });
+      // 422 = already cancelled/expired at PayPal.
+      if (!res.ok && res.status !== 422) {
+        await notifyError('paypal-webhook: could not cancel superseded subscription', new Error(`PayPal ${res.status}`), {
+          oldSubscription: old.paypal_subscription_id,
+          newSubscription: subscriptionId,
+          userId,
+        });
+        continue;
+      }
+      await supabaseAdmin()
+        .from('subscriptions')
+        .update({ status: 'canceled', canceled_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq('paypal_subscription_id', old.paypal_subscription_id);
+    }
+  } else {
+    await notifyError('paypal-webhook: paid subscription matched no Boltcall account', new Error(subscriptionId), {
+      payerEmail,
+      planId,
+    });
   }
 
   await sendTelegramNotification(
@@ -266,8 +305,9 @@ async function handlePaymentSaleCompleted(resource: any) {
     .maybeSingle();
 
   if (subFetchErr || !sub) {
-    console.error('[paypal-webhook] Sale for unknown subscription', subscriptionId, subFetchErr);
-    return;
+    // PayPal can deliver the first SALE before ACTIVATED created the row.
+    // Throw -> 500 -> PayPal retries, instead of dropping the invoice forever.
+    throw new Error(`Sale ${saleId} for unknown subscription ${subscriptionId}`);
   }
 
   // Roll the subscription period forward.
@@ -311,21 +351,16 @@ async function handlePaymentSaleCompleted(resource: any) {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-// Reverse-lookup: PayPal Plan ID → { level, interval }. Built from env vars
-// at module load so a missing var doesn't crash the handler — unknown plans
-// fall back to 'starter monthly' and a Telegram alert fires.
-type PlanInfo = { level: 'starter' | 'pro' | 'ultimate'; interval: 'monthly' | 'yearly' };
+// Reverse-lookup: PayPal Plan ID → { level, interval }, from the same
+// resolver checkout uses (paypal-ids.json, env override). Unknown plans throw
+// (no silent default) so PayPal retries once the mapping is fixed.
+type PlanInfo = { level: (typeof PAYPAL_TIERS)[number]; interval: (typeof PAYPAL_INTERVALS)[number] };
 
 function buildPlanReverseMap(): Record<string, PlanInfo> {
-  const isSandbox = process.env.PAYPAL_MODE === 'sandbox';
-  const suffix = isSandbox ? '_SANDBOX' : '';
-  const tiers: PlanInfo['level'][] = ['starter', 'pro', 'ultimate'];
-  const intervals: PlanInfo['interval'][] = ['monthly', 'yearly'];
   const map: Record<string, PlanInfo> = {};
-  for (const level of tiers) {
-    for (const interval of intervals) {
-      const key = `PAYPAL_PLAN_${level.toUpperCase()}_${interval.toUpperCase()}${suffix}`;
-      const id = process.env[key];
+  for (const level of PAYPAL_TIERS) {
+    for (const interval of PAYPAL_INTERVALS) {
+      const id = paypalPlanId(level, interval);
       if (id) map[id] = { level, interval };
     }
   }
@@ -422,6 +457,7 @@ const handler: Handler = async (event) => {
     return { statusCode: 200, body: JSON.stringify({ received: true }) };
   } catch (error: any) {
     console.error('PayPal webhook handler error:', error);
+    await notifyError(`paypal-webhook: ${eventType} failed (PayPal will retry)`, error, { resourceId: resource?.id });
     return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };

@@ -2,6 +2,9 @@
  * Telegram notification helpers for critical error alerting.
  * Used across all Netlify functions to notify the owner when something goes wrong.
  */
+import { getServiceSupabase } from './token-utils';
+import { consumePublicRateLimit, hashRateLimitKey } from './public-rate-limit';
+import { publicEnv } from './public-config';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 // Chat id is not a secret (useless without the bot token); default kept in code
@@ -64,6 +67,32 @@ export async function notifyError(
     await sendTelegramMessage({ chat_id: CHAT_ID, text, parse_mode: 'Markdown' });
   } catch (e) {
     console.error('Failed to send Telegram error notification:', e);
+  }
+  await emailFounder(context, errorMessage, metadata);
+}
+
+// Founder copy of every notifyError by email (Brevo, via alertOwner) so alerts
+// don't hinge on Telegram alone (its bot token returned 401 on 2026-10-01).
+// DB rate limit keeps an error storm off the Brevo quota: 1/hour per context,
+// 20/hour overall. Never throws.
+async function emailFounder(context: string, errorMessage: string, metadata?: Record<string, any>): Promise<void> {
+  if (!process.env.BREVO_API_KEY) return;
+  try {
+    const sb = getServiceSupabase();
+    for (const [key, maxAttempts] of [[hashRateLimitKey([context]), 1], ['all', 20]] as const) {
+      const limit = await consumePublicRateLimit(sb, { bucket: 'founder_error_email', key, maxAttempts, windowSeconds: 3600 });
+      if (!limit.allowed) return;
+    }
+    const details = Object.entries(metadata || {}).map(
+      ([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`,
+    );
+    await alertOwner(sb, publicEnv('FOUNDER_UUID'), `[Boltcall error] ${context}`.slice(0, 150), [
+      `Context: ${context}`,
+      `Error: ${errorMessage}`,
+      ...details,
+    ], { urgent: true });
+  } catch (e) {
+    console.error('[notify] founder error email failed:', e);
   }
 }
 

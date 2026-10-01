@@ -87,8 +87,8 @@ const handler: Handler = async (event) => {
   //    by Postgres; we only delete rows Postgres won't (or where we want to be
   //    explicit for auditability).
   const cascadeTables = [
+    'invoices', // before subscriptions: invoices.subscription_id FK has no ON DELETE
     'subscriptions',
-    'invoices',
     'agents',
     'workspace_members',
     'business_features',

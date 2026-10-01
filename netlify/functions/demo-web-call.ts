@@ -3,6 +3,7 @@ import Retell from 'retell-sdk';
 import { getServiceSupabase } from './_shared/token-utils';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -22,7 +23,7 @@ const handler: Handler = async (event) => {
   }
 
   const retellApiKey = process.env.RETELL_API_KEY;
-  const agentId = process.env.RETELL_DEMO_AGENT_ID;
+  const agentId = publicEnv('RETELL_DEMO_AGENT_ID');
 
   if (!retellApiKey) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'RETELL_API_KEY not configured' }) };

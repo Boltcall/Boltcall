@@ -6,7 +6,13 @@
 // Set PAYPAL_MODE=sandbox during development so the same code path serves
 // both environments — the only thing that changes is which env vars get read.
 
+import PAYPAL_IDS from './paypal-ids.json';
+
 const isSandbox = process.env.PAYPAL_MODE === 'sandbox';
+// ponytail: plan/webhook/product IDs are public identifiers, so they live in
+// paypal-ids.json (written by scripts/paypal-create-plans.mjs), not in the
+// 4KB-capped Lambda env. A same-named env var still overrides.
+const IDS = PAYPAL_IDS[isSandbox ? 'sandbox' : 'live'];
 
 export const PAYPAL_API_BASE = isSandbox
   ? 'https://api-m.sandbox.paypal.com'
@@ -20,9 +26,18 @@ export const PAYPAL_CLIENT_SECRET = isSandbox
   ? (process.env.PAYPAL_SANDBOX_CLIENT_SECRET || '')
   : (process.env.PAYPAL_CLIENT_SECRET || '');
 
-export const PAYPAL_WEBHOOK_ID = isSandbox
-  ? (process.env.PAYPAL_SANDBOX_WEBHOOK_ID || '')
-  : (process.env.PAYPAL_WEBHOOK_ID || '');
+export const PAYPAL_WEBHOOK_ID = (isSandbox
+  ? process.env.PAYPAL_SANDBOX_WEBHOOK_ID
+  : process.env.PAYPAL_WEBHOOK_ID) || IDS.webhook_id;
+
+export const PAYPAL_TIERS = ['starter', 'pro', 'ultimate', 'enterprise'] as const;
+export const PAYPAL_INTERVALS = ['monthly', 'yearly'] as const;
+
+/** Plan ID for tier+interval: env PAYPAL_PLAN_<TIER>_<INTERVAL>[_SANDBOX] wins, else paypal-ids.json. */
+export function paypalPlanId(tier: string, interval: string): string | undefined {
+  const envKey = `PAYPAL_PLAN_${tier.toUpperCase()}_${interval.toUpperCase()}${isSandbox ? '_SANDBOX' : ''}`;
+  return process.env[envKey] || (IDS.plans as Record<string, string>)[`${tier}_${interval}`] || undefined;
+}
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 

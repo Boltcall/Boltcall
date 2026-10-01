@@ -4,6 +4,7 @@ import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { getServiceSupabase } from './_shared/token-utils';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 /**
  * response-time-demo-call
@@ -58,7 +59,7 @@ const handler: Handler = async (event) => {
     process.env.RETELL_DEMO_FROM_NUMBER || process.env.RETELL_PHONE_NUMBER,
     30,
   );
-  const agentId = clean(process.env.RETELL_DEMO_AGENT_ID, 160);
+  const agentId = clean(publicEnv('RETELL_DEMO_AGENT_ID'), 160);
 
   if (!retellApiKey) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Retell API key not configured' }) };

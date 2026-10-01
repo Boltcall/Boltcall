@@ -12,6 +12,7 @@ import {
 } from './_shared/retell-call-list';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { toE164 } from './_shared/twilio-from-number';
+import { publicEnv } from './_shared/public-config';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -22,17 +23,17 @@ const headers = {
 
 function getOpenAIClient(): OpenAI {
   // Foundry resource (preferred) — gpt-5.x family
-  if (process.env.AZURE_OPENAI_FOUNDRY_ENDPOINT && process.env.AZURE_OPENAI_FOUNDRY_KEY) {
+  if (publicEnv('AZURE_OPENAI_FOUNDRY_ENDPOINT') && process.env.AZURE_OPENAI_FOUNDRY_KEY) {
     return new AzureOpenAI({
-      endpoint: process.env.AZURE_OPENAI_FOUNDRY_ENDPOINT,
+      endpoint: publicEnv('AZURE_OPENAI_FOUNDRY_ENDPOINT'),
       apiKey: process.env.AZURE_OPENAI_FOUNDRY_KEY,
       apiVersion: process.env.AZURE_OPENAI_FOUNDRY_API_VERSION || '2025-04-01-preview',
     });
   }
   // Legacy resource — gpt-4o family
-  if (process.env.AZURE_OPENAI_ENDPOINT && process.env.AZURE_OPENAI_API_KEY) {
+  if (publicEnv('AZURE_OPENAI_ENDPOINT') && process.env.AZURE_OPENAI_API_KEY) {
     return new AzureOpenAI({
-      endpoint: process.env.AZURE_OPENAI_ENDPOINT,
+      endpoint: publicEnv('AZURE_OPENAI_ENDPOINT'),
       apiKey: process.env.AZURE_OPENAI_API_KEY,
       apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2024-02-01',
     });

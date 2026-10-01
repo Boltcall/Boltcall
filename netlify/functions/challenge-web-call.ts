@@ -5,6 +5,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { getStrongEnvSecret, signJsonToken } from './_shared/signed-token';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CHALLENGE_LOCK_WINDOW_SECONDS = 10 * 365 * 24 * 60 * 60;
@@ -29,7 +30,7 @@ const handler: Handler = async (event) => {
   }
 
   const retellApiKey = process.env.RETELL_API_KEY;
-  const agentId = process.env.CHALLENGE_AGENT_ID;
+  const agentId = publicEnv('CHALLENGE_AGENT_ID');
   const secretWord = process.env.CHALLENGE_SECRET_WORD;
   const secretClue = clean(process.env.CHALLENGE_SECRET_CLUE, 180);
   const sessionSecret = getStrongEnvSecret('CHALLENGE_SESSION_SECRET', 'CHALLENGE_CLAIM_SECRET', 'INTERNAL_API_SECRET');

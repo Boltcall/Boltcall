@@ -4,6 +4,7 @@ import { getServiceSupabase } from './_shared/token-utils';
 import { hasSharedSecret, requireMatchingUser } from './_shared/user-auth';
 import { validateOutboundHttpsUrl } from './_shared/outbound-url';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { publicEnv } from './_shared/public-config';
 
 /**
  * Integration Sync Function
@@ -291,7 +292,7 @@ async function syncToGoogleSheets(apiKey: string, config: any, lead: any): Promi
  * Updates the token in Supabase and returns the new access token.
  */
 async function refreshGoogleToken(refreshToken: string, integrationId: string): Promise<string | null> {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientId = publicEnv('GOOGLE_CLIENT_ID');
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret || !refreshToken) return null;
 
