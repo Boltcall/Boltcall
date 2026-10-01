@@ -781,19 +781,13 @@ const AiReceptionistRoi: React.FC = () => {
               The cost of missed calls is real
             </motion.h3>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
               {[
                 {
                   stat: '62%',
                   label: 'of calls go unanswered',
                   description: 'outside business hours — every one is potential revenue walking out the door',
                   icon: Phone,
-                },
-                {
-                  stat: '$50K+',
-                  label: 'recovered annually',
-                  description: 'by businesses that stop missing calls — with AI answering 24/7',
-                  icon: TrendingUp,
                 },
                 {
                   stat: '391%',
@@ -857,7 +851,7 @@ const AiReceptionistRoi: React.FC = () => {
                 },
                 {
                   q: 'How long until I see results?',
-                  a: 'Most businesses see measurable improvement within the first 30 days — starting from the first calls handled by AI.',
+                  a: 'Results depend on your call volume and how many inquiries you lose today. Improvement starts with the first calls the AI handles.',
                 },
                 {
                   q: "What if AI can't handle my industry's calls?",

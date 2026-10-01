@@ -532,7 +532,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                         ROI Calculation: ($2,011 net gain ÷ $549 cost) × 100 = 517% monthly ROI
                       </p>
                       <p className="text-blue-700 text-sm mt-1">
-                        Most businesses see their AI receptionist pay for itself within the first week.
+                        Whether an AI receptionist pays for itself depends on your average fee and how many inquiries you lose today.
                       </p>
                     </div>
                   </div>
@@ -659,42 +659,13 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
     </main>
 
 
-      {/* Use Cases / Success Stories */}
-      <section className="py-14 bg-white border-t border-gray-100">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">Real-World Use Cases</h2>
-          <div className="space-y-6">
-            {[
-              { title: "Cost vs. In-House Receptionist", story: "A dental practice replaced a part-time front desk position ($28,000/year salary + benefits) with an AI receptionist at $897/month ($2,148/year). The AI answered 3x as many calls and was available 24/7 — resulting in $800+ in captured after-hours revenue every month." },
-              { title: "Competing Against Larger Firms", story: "A two-person law firm used AI call answering to match the responsiveness of 5-lawyer competitors. By answering every call instantly and qualifying leads automatically, their intake conversion rate rose from 15% to 38% over 6 months." },
-            ].map((item) => (
-              <div key={item.title} className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-700 text-sm leading-relaxed">{item.story}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Trust + Social Proof */}
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
+            Built for law firms &middot; No credit card required &middot; Cancel anytime
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
     <Footer />

@@ -481,33 +481,6 @@ const BlogAIGuideStep3: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Success Stories */}
-        <motion.section
-          id="success-stories"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.46 }}
-          className="mb-16"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 flex items-start gap-3">
-            <div className="w-1 self-stretch bg-purple-600 rounded-full"></div>
-            Success Stories
-          </h2>
-          <div className="space-y-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">🛁 Plumbing Company — Blue Ridge Plumbing</h3>
-              <p className="text-gray-700 text-sm leading-relaxed">Blue Ridge Plumbing went live in under 30 minutes using Boltcall’s setup wizard, forwarding their existing number to the AI receptionist. In the first week their dispatcher reported zero missed calls and four new emergency bookings that previously would have gone to voicemail overnight.</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">💇 Salon — Luxe Hair Studio</h3>
-              <p className="text-gray-700 text-sm leading-relaxed">Luxe Hair Studio’s front desk was spending 90 minutes a day answering booking calls between client sessions. After connecting their Google Calendar to Boltcall, the AI handles all appointment scheduling autonomously — freeing the stylist-owner to take on two additional clients per day and grow monthly revenue by roughly $2,400.</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">🏡 Real Estate Team — The Caldwell Group</h3>
-              <p className="text-gray-700 text-sm leading-relaxed">The Caldwell Group, a four-agent real estate team, set up Boltcall during an active listing weekend and responded to every inbound lead in under 60 seconds. The team closed two additional buyer contracts that month which they directly attribute to speed-to-lead — a combined commission gain of over $18,000.</p>
-            </div>
-          </div>
-        </motion.section>
 
         {/* Sources & Further Reading */}
         <motion.section

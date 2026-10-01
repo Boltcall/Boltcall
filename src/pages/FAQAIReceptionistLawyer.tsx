@@ -79,7 +79,7 @@ const faqs = [
   },
   {
     question: 'What is the ROI of an AI receptionist for a law firm?',
-    answer: 'The average law firm that deploys an AI receptionist recovers 15-30 leads per month that were previously lost to missed calls, voicemail, and slow follow-up. With an average personal injury case worth $5,000-$15,000 in fees and an average family law case worth $3,000-$8,000, capturing even 2-3 additional cases per month generates $10,000-$45,000 in new revenue against a monthly cost of $549ג€“$4997. Firms also report a 40-60% reduction in receptionist overtime costs and a measurable improvement in Google review ratings due to faster, more consistent client communication.',
+    answer: 'The return depends on your average fee and how many inquiries you lose to voicemail and slow follow-up today. A new inquiry can be worth $2,500 or more to a law firm, so one extra signed matter every few months can cover a plan that starts at $549 per month. Boltcall cannot promise how many extra cases you will sign.',
   },
   {
     question: 'How does an AI receptionist compare to a legal answering service?',
@@ -497,20 +497,8 @@ const FAQAIReceptionistLawyer: React.FC = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
+            Built for law firms &middot; No credit card required &middot; Cancel anytime
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
       <section className="py-12 bg-white border-t border-gray-100">

@@ -76,7 +76,7 @@ const benefits = [
   {
     icon: Shield,
     title: 'Proven Product',
-    desc: 'Boltcall is already handling thousands of calls for local businesses. Your clients get a product that works on day one.',
+    desc: 'Boltcall is built for law firms that live and die by response speed. Your clients get a product that works on day one.',
   },
   {
     icon: TrendingUp,

@@ -362,79 +362,7 @@ const BusinessAuditPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* Social Proof */}
-            <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-                <p className="text-gray-500 text-center mb-8 text-sm">Businesses use our audit to uncover hidden growth opportunities.</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[
-                        {
-                            quote: "The audit immediately showed us we were invisible on Google Maps. Within 30 days of fixing it, our call volume doubled.",
-                            name: "Marcus T.",
-                            role: "HVAC Company Owner, Texas"
-                        },
-                        {
-                            quote: "I had no idea how many leads I was losing until I saw the report. It flagged our slow website and missing review strategy right away.",
-                            name: "Priya S.",
-                            role: "Dental Practice Manager, California"
-                        },
-                        {
-                            quote: "Free, fast, and actually useful. The audit gave us a prioritized list — we focused on the top 3 things and saw results within weeks.",
-                            name: "James R.",
-                            role: "Plumbing Business Owner, Florida"
-                        },
-                    ].map((item) => (
-                        <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                            <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-                            <div>
-                                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                                <p className="text-xs text-gray-500">{item.role}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
 
-            {/* Use Cases & Case Studies */}
-            <section className="py-12 bg-gray-50">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Use Cases: Who Benefits Most from the Audit</h2>
-                    <p className="text-gray-600 mb-8 text-sm">The business audit is most valuable for local service businesses where missed calls directly mean lost revenue.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {[
-                            {
-                                industry: 'HVAC & Plumbing',
-                                scenario: 'A Texas HVAC company was answering only 58% of calls. The audit flagged 3 peak hours where calls spiked but staff was unavailable. After adding AI coverage, call answer rate hit 100% and monthly bookings increased by 31%.',
-                                result: '+31% monthly bookings',
-                            },
-                            {
-                                industry: 'Dental Practices',
-                                scenario: 'A California dental office discovered their Google Business Profile had 40% of fields incomplete and zero photos — suppressing their local search ranking. Fixing the profile added 12 new patient inquiries per month.',
-                                result: '+12 new patients/month',
-                            },
-                            {
-                                industry: 'Law Firms',
-                                scenario: 'A personal injury law firm learned 70% of after-hours calls were going to voicemail with no follow-up. The audit recommended an AI intake agent. Within 60 days, they captured 8 additional consultations per month.',
-                                result: '+8 consultations/month',
-                            },
-                            {
-                                industry: 'Home Services (General)',
-                                scenario: 'A roofing contractor in Florida found their average job value was $1,200, and they were missing roughly 18 calls per month. The audit\'s missed call revenue estimate showed $21,600/month in lost potential — the clearest motivator to act.',
-                                result: '$21,600 in identified lost revenue',
-                            },
-                        ].map((item, i) => (
-                            <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                                <div className="inline-flex items-center bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-3">{item.industry}</div>
-                                <p className="text-gray-700 text-sm leading-relaxed mb-3">{item.scenario}</p>
-                                <div className="flex items-center gap-2 text-green-700 font-semibold text-sm">
-                                    <CheckCircle className="w-4 h-4 text-green-500" />
-                                    {item.result}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             {/* Competitive Differentiators */}
             <section className="py-12 bg-white">
@@ -494,7 +422,7 @@ const BusinessAuditPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-2">
                             <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                            <span>Built for local service businesses</span>
+                            <span>Built for law firms</span>
                         </div>
                     </div>
                 </div>

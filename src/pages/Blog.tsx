@@ -168,7 +168,6 @@ const Blog: React.FC = () => {
                   <li key="the-shifting-economy-what-changed"><a href="#the-shifting-economy-what-changed" className="text-blue-600 hover:underline text-sm">The Shifting Economy: What Changed?</a></li>
                   <li key="why-traditional-methods-are-failing"><a href="#why-traditional-methods-are-failing" className="text-blue-600 hover:underline text-sm">Why Traditional Methods Are Failing</a></li>
                   <li key="why-ai-services-are-critical-now"><a href="#why-ai-services-are-critical-now" className="text-blue-600 hover:underline text-sm">Why AI Services Are Critical Now</a></li>
-                  <li key="real-world-success-stories"><a href="#real-world-success-stories" className="text-blue-600 hover:underline text-sm">Real-World Success Stories</a></li>
                   <li key="the-choice-is-yours"><a href="#the-choice-is-yours" className="text-blue-600 hover:underline text-sm">The Choice Is Yours</a></li>
           </ol>
         </div>
@@ -496,101 +495,6 @@ const Blog: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Section 4 - Real World Examples */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mb-16"
-        >
-          <h2 id="real-world-success-stories" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
-            <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-            Real-World Success Stories
-          </h2>
-          
-          <div className="space-y-6 text-gray-700 leading-relaxed">
-            <p>
-              The best way to understand the impact of AI services is to see them in action. 
-              Here are real examples of businesses that transformed their operations with AI.
-            </p>
-            
-            <div className="bg-blue-50 border-l-4 border-blue-600 p-6 my-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Case Study 1: The Dental Practice</h3>
-              <p className="mb-3">
-                A mid-sized dental practice in suburban California was struggling with call 
-                management. They had one receptionist handling all calls, and during peak hours, 
-                calls would go to voicemail. After hours, there was no coverage at all.
-              </p>
-              <p className="mb-3">
-                They implemented an AI receptionist that answered every call, 24/7. The AI 
-                could answer common questions about services, insurance acceptance, and office 
-                hours. It could schedule appointments by checking the calendar in real-time. 
-                It could even send appointment reminders and handle rescheduling requests.
-              </p>
-              <p>
-                <strong>Results:</strong> Call answer rate went from 70% to 100%. New patient 
-                bookings increased by 25%. No-show rate decreased by 40% thanks to automated 
-                reminders. The practice saved $15,000 annually on receptionist costs while 
-                providing better service coverage than before.
-              </p>
-            </div>
-            
-            <div className="bg-green-50 border-l-4 border-green-600 p-6 my-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Case Study 2: The Home Services Company</h3>
-              <p className="mb-3">
-                A home services company with 10 technicians was losing business because they 
-                couldn't answer calls when technicians were on-site. Customers would call, get 
-                voicemail, and move on to competitors.
-              </p>
-              <p className="mb-3">
-                They implemented an AI system that handled all incoming calls, qualified leads, 
-                scheduled service appointments based on technician availability and location, 
-                and even provided quotes for common services. The AI could handle emergency 
-                calls by immediately routing them to the on-call technician.
-              </p>
-              <p>
-                <strong>Results:</strong> Call answer rate increased to 100%. Booking rate 
-                increased by 50%. Average time to schedule an appointment decreased from 
-                24 hours to 5 minutes. Revenue increased by $180,000 annually.
-              </p>
-            </div>
-            
-            <div className="bg-purple-50 border-l-4 border-purple-600 p-6 my-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Case Study 3: The Legal Firm</h3>
-              <p className="mb-3">
-                A small law firm was losing potential clients because calls went to voicemail 
-                after hours and on weekends. By the time they called back, potential clients 
-                had often already hired someone else.
-              </p>
-              <p className="mb-3">
-                They implemented an AI receptionist that answered calls 24/7, qualified leads 
-                by asking about case type and urgency, scheduled consultations, and could even 
-                handle initial intake questions. For urgent matters, the AI could immediately 
-                connect callers to the on-call attorney.
-              </p>
-              <p>
-                <strong>Results:</strong> Consultation bookings increased by 40%. Lead 
-                conversion rate improved by 15%. The firm captured $120,000 in additional 
-                revenue from leads that would have been lost before. Client satisfaction 
-                improved because they could always reach someone immediately.
-              </p>
-            </div>
-            
-            <p>
-              These aren't isolated examples. Across industries, businesses are seeing similar 
-              results. The common thread? They all recognized that customer expectations had 
-              changed, and they adapted. They didn't wait for the perfect solution—they found 
-              a solution that worked and implemented it.
-            </p>
-            
-            <p>
-              The businesses that are struggling are the ones still operating like it's 2015. 
-              They're the ones with answering machines, limited hours, and manual processes. 
-              They're the ones losing customers to competitors who answered the phone, responded 
-              to the text, or were available when the customer needed them.
-            </p>
-          </div>
-        </motion.section>
 
         {/* Section 5 */}
         <motion.section

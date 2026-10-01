@@ -145,7 +145,7 @@ const ChatbotVsLivePhoneComparison: React.FC = () => {
                   Local business owners face a critical decision: how to handle customer communications when you can't be available 24/7. With 80% of customers expecting immediate responses, choosing between AI chatbots, live chat, or phone answering services can make or break your lead conversion rates.
                 </p>
                 <p className="text-lg text-gray-700 mb-6">
-                  After analyzing response data from over 10,000 local businesses, we've discovered significant differences in lead quality, conversion rates, and customer satisfaction across these three communication methods. Boltcall's AI receptionist combines the best of all worlds, delivering phone-quality conversations at chatbot pricing.
+                  These three communication methods differ in lead quality, conversion, and customer satisfaction. Boltcall's AI receptionist combines the best of all worlds, delivering phone-quality conversations at chatbot pricing.
                 </p>
               </motion.section>
 
@@ -327,7 +327,7 @@ const ChatbotVsLivePhoneComparison: React.FC = () => {
                 </div>
 
                 <p className="text-lg text-gray-700 mb-6">
-                  Boltcall's AI receptionist technology demonstrates this advantage clearly. Our clients see 3-5x higher conversion rates from phone leads compared to chat interactions, with average job values 40% higher than web-generated leads.
+                  Phone conversations tend to carry higher intent than chat, which is why Boltcall is built around the phone call.
                 </p>
 
                 <div className="bg-white p-6 rounded-lg shadow-lg border mb-6">
@@ -357,7 +357,7 @@ const ChatbotVsLivePhoneComparison: React.FC = () => {
               >
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Response Speed & Lead Quality Comparison</h2>
                 <p className="text-lg text-gray-700 mb-6">
-                  Response speed directly impacts conversion rates, but lead quality determines actual revenue. Our analysis of 25,000+ customer interactions reveals significant differences across communication methods.
+                  Response speed directly impacts conversion rates, but lead quality determines actual revenue. Communication methods differ significantly on both.
                 </p>
 
                 <div className="overflow-x-auto mb-8">
@@ -535,20 +535,8 @@ const ChatbotVsLivePhoneComparison: React.FC = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Built for local service businesses &middot; No credit card required &middot; Cancel anytime
+            Built for law firms &middot; No credit card required &middot; Cancel anytime
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {[
-              { quote: '"Paid for itself within the first week."', author: 'HVAC contractor, Texas' },
-              { quote: '"Set up in 30 minutes. Never missed a lead since."', author: 'Dental practice, Florida' },
-            ].map((t) => (
-              <div key={t.author} className="bg-white rounded-xl border border-gray-100 shadow-sm px-6 py-4 text-left max-w-xs">
-                <div className="text-yellow-400 text-sm mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                <p className="text-gray-700 text-sm leading-relaxed italic">{t.quote}</p>
-                <p className="text-gray-400 text-xs mt-2">&mdash; {t.author}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
       <Footer />

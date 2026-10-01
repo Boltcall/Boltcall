@@ -209,7 +209,7 @@ const About: React.FC = () => {
                 {[
                   { title: "Built for local businesses", desc: "Not an enterprise tool with a SMB price tag — built ground-up for owners who wear every hat" },
                   { title: "No tech team required", desc: "30-minute setup, plain-English configuration, and a team that picks up the phone when you need help" },
-                  { title: "Pays for itself", desc: "One extra captured lead per month covers the entire monthly cost — most businesses see ROI in week one" },
+                  { title: "Pays for itself", desc: "One extra signed matter can cover the monthly cost. See the pricing page for the break-even math." },
                   { title: "Sounds like you", desc: "Trained on your services, pricing, and FAQs so every caller gets an answer, not a hold message" },
                 ].map((item) => (
                   <div key={item.title} className="bg-white rounded-xl p-4 shadow-sm">
@@ -282,7 +282,7 @@ const About: React.FC = () => {
               </div>
             </div>
             <h2 className="text-gray-900 font-medium mt-4 text-4xl">Ready to Get Started?</h2>
-            <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Built for local service businesses ready to transform their customer communication.</p>
+            <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Built for law firms ready to transform their customer communication.</p>
             <Link
               to="/setup"
               className="inline-block mt-6"
@@ -298,26 +298,6 @@ const About: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* Social Proof */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
-            { quote: "I was skeptical about AI, but it just works. Our front desk handles 30% fewer interruptions now.", name: "Priya S.", role: "Dental Practice Manager, California" },
-            { quote: "We were losing 15-20 calls a week to voicemail. Boltcall captures every single one now.", name: "James R.", role: "Plumbing Business Owner, Florida" },
-          ].map((item) => (
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">{item.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="bg-gray-50 border-t border-gray-100 py-8">
@@ -329,7 +309,7 @@ const About: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

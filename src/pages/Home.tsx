@@ -4,7 +4,6 @@ import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import {
   SITE_DATE_PUBLISHED,
   SITE_DATE_MODIFIED,
-  SITE_AGGREGATE_RATING,
   SITE_AUDIENCE,
   ORG_LOGO_URL,
 } from '../lib/seoConstants';
@@ -12,6 +11,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import LazySection from '../components/LazySection';
 import BentoCard from '../components/ui/bento-card';
+import { PRACTICE_AREAS } from '../data/practiceAreas';
 // ponytail: old interactive dashboard bento is parked in legacy-bento-card.tsx; swap the import if we want it back.
 
 // Lazy load below-the-fold components to reduce initial bundle
@@ -25,16 +25,14 @@ const Footer = lazy(() => import('../components/Footer'));
 const StickyScrollSection = lazy(() => import('../components/StickyScrollSection').then(module => ({ default: module.StickyScrollSection })));
 
 const HOMEPAGE_AI_CONTEXT =
-  'Instant lead response. Built to answer, qualify, and book law firm leads before they go cold. ' +
-  'Boltcall is speed-to-lead software for law firms that cannot afford to let intake calls, web forms, missed calls, texts, or after-hours inquiries sit unanswered. ' +
+  'The first firm to call a potential client back signs the case. Boltcall is speed-to-lead software for law firms: it answers every new inquiry by phone, text, and web form within seconds, 24/7, screens the matter, and books the consultation. ' +
   'When someone calls a law firm after an accident, an arrest, or a family emergency, they are usually calling more than one firm. The firm that responds first gets the best chance to sign the case. ' +
-  'Instead of sending another passive notification into a CRM, Boltcall responds in seconds, captures the matter details, triages urgency, and moves the caller toward a booked consultation or a clean intake handoff. ' +
-  'That makes it useful for personal injury, family law, criminal defense, immigration, and general practice firms where missed calls and slow follow-up turn paid demand into lost cases. It also serves other local service businesses (HVAC, plumbers, dentists, med spas) on the same core engine. ' +
-  'Use Boltcall to protect the first minute of every lead: answer live calls, recover missed calls with follow-up, handle after-hours capture, and keep the next step clear for the caller and the intake team. ' +
+  'Instead of sending another passive notification into a CRM, Boltcall responds in seconds, captures the matter details, flags urgent matters, and moves the caller toward a booked consultation or a clean intake handoff. ' +
+  'That makes it useful for personal injury, family law, criminal defense, immigration, estate planning, and general practice firms where missed calls and slow follow-up turn paid demand into lost cases. ' +
+  'Boltcall handles intake only. It tells every caller it is an AI and that the call is recorded, and it never gives legal advice. ' +
   'The workflow is intentionally simple: a new inquiry comes in, Boltcall responds, asks the practical intake questions, and gives the caller a path forward instead of making them wait for office hours. ' +
   'The team sees the lead details in a cleaner format, so an intake coordinator, paralegal, or managing partner can step in with context instead of piecing together a voicemail, form note, and half-finished text thread. ' +
-  'That speed-to-lead layer is most valuable when demand is already expensive to create. If you are buying Google Ads, running referral campaigns, or earning repeat calls from past clients, every delayed response wastes work you already paid for. ' +
-  'Boltcall helps turn that demand into a signed case while the caller is still ready to act.';
+  'That speed-to-lead layer is most valuable when demand is already expensive to create. If you are buying Google Ads, running referral campaigns, or earning repeat calls from past clients, every delayed response wastes work you already paid for.';
 
 const HOMEPAGE_AI_LINKS = [
   'https://boltcall.org/industries/lawyer-answering-service',
@@ -55,7 +53,7 @@ const Home: React.FC = () => {
 
   useEffect(() => {
     document.title = 'Speed-to-Lead Software for Law Firms | Boltcall';
-    updateMetaDescription('Boltcall is speed-to-lead software for law firms: instant intake response, missed-call recovery, AI qualification, consultation booking, and after-hours capture.');
+    updateMetaDescription('The first firm to call back signs the case. Boltcall answers every new law firm inquiry in seconds, screens the matter, and books the consultation, 24/7.');
 
     const speakableSchema = {
       "@context": "https://schema.org",
@@ -78,9 +76,9 @@ const Home: React.FC = () => {
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Instant lead response",
+      "name": "Speed-to-lead software for law firms",
       "url": "https://boltcall.org/",
-      "headline": "Built to answer, qualify, and book law firm leads before they go cold",
+      "headline": "The first firm to call back signs the case",
       "description": HOMEPAGE_AI_CONTEXT,
       "abstract": HOMEPAGE_AI_CONTEXT,
       "about": [
@@ -101,7 +99,7 @@ const Home: React.FC = () => {
           "name": "What is Boltcall?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall is speed-to-lead software for law firms. It uses AI to answer intake calls, recover missed calls, qualify leads, book consultations, and follow up automatically before callers move to a competing firm."
+            "text": "Boltcall is speed-to-lead software for law firms. It uses AI to answer intake calls, recover missed calls, screen new matters, and book consultations within seconds, before callers move to a competing firm."
           }
         },
         {
@@ -109,7 +107,7 @@ const Home: React.FC = () => {
           "name": "Is Boltcall an AI or a human answering service?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall is a fully automated AI service. There are no human receptionists involved. The platform uses conversational AI to answer calls, qualify leads, and book appointments automatically — 24 hours a day, 7 days a week, with no staffing costs or hold times."
+            "text": "Boltcall is a fully automated AI service. There are no human receptionists involved. Every call opens by telling the caller they are speaking with an AI assistant and that the call is recorded. It handles intake only and never gives legal advice."
           }
         },
         {
@@ -117,15 +115,15 @@ const Home: React.FC = () => {
           "name": "How much does Boltcall cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall starts at $549 per month for the Starter plan. The Pro plan is $897 per month. All plans include unlimited AI call answering, appointment booking, lead capture, and follow-up texts with no per-call fees. Enterprise pricing is available for multi-location businesses."
+            "text": "Boltcall starts at $549 per month for the Starter plan. The Pro plan is $897 per month and the Ultimate plan is $4,997 per month. Enterprise pricing is available for larger firms and multiple offices."
           }
         },
         {
           "@type": "Question",
-          "name": "What types of businesses use Boltcall?",
+          "name": "Which law firms is Boltcall built for?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall serves local service businesses including HVAC companies, plumbers, dentists, law firms, med spas, roofing contractors, and solar installers. Any business that receives phone inquiries and needs to respond quickly benefits from Boltcall's speed-to-lead automation."
+            "text": "Boltcall is built for solo practitioners and small to mid-size firms, including personal injury, family law, criminal defense, immigration, estate planning, and general practice. Any firm that receives new-client calls and needs to respond first benefits from automatic intake."
           }
         },
         {
@@ -133,7 +131,7 @@ const Home: React.FC = () => {
           "name": "How does the speed-to-lead system work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall answers every new lead within seconds — picking up calls, replying to web forms, and texting follow-ups with no human action. The first business to respond wins the customer 78% of the time, including at 2am."
+            "text": "Boltcall answers every new inquiry within seconds: picking up calls, replying to web forms, and texting follow-ups with no human action, including at 2am. It screens the matter, flags urgent ones, and books a consultation on your calendar."
           }
         }
       ]
@@ -147,7 +145,7 @@ const Home: React.FC = () => {
         "@type": "ImageObject",
         "url": "https://boltcall.org/logo.png"
       },
-      "description": "Speed-to-lead software for local service businesses. Boltcall answers calls, recovers missed calls, books appointments, and captures after-hours leads automatically.",
+      "description": "Speed-to-lead software for law firms. Boltcall answers new inquiries, recovers missed calls, books consultations, and captures after-hours leads automatically.",
       "sameAs": [
         "https://www.linkedin.com/company/boltcall"
       ],
@@ -156,7 +154,7 @@ const Home: React.FC = () => {
         "contactType": "sales",
         "url": "https://boltcall.org/book-a-call"
       },
-      "knowsAbout": ["speed to lead", "AI receptionist", "lead capture", "appointment booking", "local service businesses"]
+      "knowsAbout": ["speed to lead", "legal intake", "law firm lead capture", "consultation booking", "missed-call recovery"]
     },
     {
       "@context": "https://schema.org",
@@ -167,7 +165,7 @@ const Home: React.FC = () => {
       "operatingSystem": "Web",
       "url": "https://boltcall.org",
       "inLanguage": "en-US",
-      "description": "Speed-to-lead software that answers calls, recovers missed calls, qualifies leads, books appointments, and sends follow-up texts for local service businesses.",
+      "description": "Speed-to-lead software that answers calls, recovers missed calls, screens new matters, books consultations, and sends follow-up texts for law firms.",
       "image": ORG_LOGO_URL,
       "offers": {
         "@type": "Offer",
@@ -177,25 +175,19 @@ const Home: React.FC = () => {
         "url": "https://boltcall.org/pricing",
         "availability": "https://schema.org/InStock"
       },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": SITE_AGGREGATE_RATING.ratingValue,
-        "reviewCount": SITE_AGGREGATE_RATING.reviewCount,
-        "bestRating": SITE_AGGREGATE_RATING.bestRating,
-        "worstRating": SITE_AGGREGATE_RATING.worstRating
-      },
       "audience": {
         "@type": "BusinessAudience",
         "audienceType": Array.from(SITE_AUDIENCE).join(', ')
       },
       "featureList": [
         "24/7 AI call answering",
-        "Instant lead reply (under 11 seconds)",
-        "Appointment booking into Google/Outlook/Cal.com",
+        "Instant lead reply within seconds",
+        "Consultation booking into Google Calendar and Cal.com",
         "Missed call text-back",
         "SMS follow-up sequences",
         "Multilingual support (English + Spanish)",
-        "CRM integration (Clio, MyCase, Jobber, ServiceTitan, HouseCallPro)"
+        "Zapier, Make, and webhook connections for case-management tools",
+        "Discloses AI and call recording on every call"
       ],
       "datePublished": SITE_DATE_PUBLISHED,
       "dateModified": SITE_DATE_MODIFIED
@@ -211,7 +203,7 @@ const Home: React.FC = () => {
           <Hero />
 
           {/* Boltcall Platform Preview — interactive dark bento card */}
-          <section className="relative z-[2] mt-4 px-4 py-8 sm:-mt-[360px] sm:px-8 lg:px-16">
+          <section id="live-demo" className="relative z-[2] mt-4 scroll-mt-24 px-4 py-8 sm:-mt-[360px] sm:px-8 lg:px-16">
             <BentoCard />
           </section>
 
@@ -266,6 +258,33 @@ const Home: React.FC = () => {
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-10">
                 <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-950 mb-3">
+                  Intake that fits your practice area
+                </h2>
+                <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+                  A custody emergency, an arrest, and a will update need different questions. Boltcall asks the right ones for each, and never gives legal advice.
+                </p>
+              </div>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                {PRACTICE_AREAS.map((area) => (
+                  <li key={area.id}>
+                    <a
+                      href={`/industries/lawyer-answering-service#${area.id}`}
+                      className="block h-full rounded-xl border border-gray-200 bg-white p-5 hover:border-blue-500 hover:shadow-md transition"
+                    >
+                      <area.icon className="mb-3 h-5 w-5 text-blue-600" strokeWidth={2.5} aria-hidden="true" />
+                      <span className="block text-base font-semibold text-gray-950">{area.name}</span>
+                      <p className="mt-1 text-sm text-gray-600 leading-snug">{area.short}</p>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
+          <section className="relative bg-white py-16 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-950 mb-3">
                   How Boltcall compares
                 </h2>
                 <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
@@ -276,7 +295,7 @@ const Home: React.FC = () => {
                 {[
                   { slug: 'boltcall-vs-podium', name: 'Podium', angle: 'The speed-to-lead alternative to an all-in-one comms hub.' },
                   { slug: 'boltcall-vs-gohighlevel', name: 'GoHighLevel', angle: 'A simpler speed-to-lead alternative to a full CRM stack.' },
-                  { slug: 'boltcall-vs-smith-ai', name: 'Smith.ai', angle: 'AI legal intake at a fraction of the per-call cost.' },
+                  { slug: 'boltcall-vs-smith-ai', name: 'Smith.ai', angle: 'Pure AI intake versus a hybrid human and AI service.' },
                   { slug: 'boltcall-vs-birdeye', name: 'Birdeye', angle: 'Speed-to-lead vs reputation-management focus — which wins.' },
                   { slug: 'boltcall-vs-goodcall', name: 'GoodCall', angle: 'AI receptionist head-to-head for law firms.' },
                   { slug: 'boltcall-vs-lindy', name: 'Lindy', angle: 'Purpose-built intake vs a generalist AI assistant.' },

@@ -779,26 +779,6 @@ const AIRevenueAudit: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Trusted by Local Business Owners</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Built for local service businesses that can't afford to miss a lead.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { quote: "Boltcall paid for itself in the first week. We stopped losing calls after hours and our bookings jumped 40%.", name: "Marcus T.", role: "HVAC Owner, Texas" },
-            { quote: "I was skeptical about AI, but it just works. Our front desk handles 30% fewer interruptions now.", name: "Priya S.", role: "Dental Practice Manager, California" },
-            { quote: "We were losing 15-20 calls a week to voicemail. Boltcall captures every single one now.", name: "James R.", role: "Plumbing Business Owner, Florida" },
-          ].map((item) => (
-            <div key={item.name} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-              <p className="text-gray-700 text-sm leading-relaxed mb-4">"{item.quote}"</p>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{item.name}</p>
-                <p className="text-xs text-gray-500">{item.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Trust Signals */}
       <section className="bg-gray-50 border-t border-gray-100 py-8">
@@ -810,7 +790,7 @@ const AIRevenueAudit: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -899,57 +879,6 @@ const AIRevenueAudit: React.FC = () => {
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section id="use-cases" className="py-12 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Real-World Revenue Recovery Stories</h2>
-          <p className="text-gray-500 mb-8 text-sm">How local businesses used AI audit data to identify and recover lost revenue.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                industry: 'HVAC Contractor',
-                location: 'Dallas, TX',
-                problem: 'Revenue audit identified $23,400/month in after-hours missed revenue.',
-                result: 'Implemented AI receptionist and recovered $19,800 within 45 days.',
-                tag: 'After-Hours Coverage',
-              },
-              {
-                industry: 'Dental Practice',
-                location: 'Miami, FL',
-                problem: 'Audit revealed 31 missed new-patient calls per month at $340 average value.',
-                result: 'Added $10,540/month in revenue after switching to AI answering.',
-                tag: 'New Patient Acquisition',
-              },
-              {
-                industry: 'Plumber',
-                location: 'Denver, CO',
-                problem: 'Emergency calls after hours going to voicemail — $8,200/month slipping away.',
-                result: '$8,200/month recovered after switching to 24/7 AI answering.',
-                tag: 'Emergency Call Capture',
-              },
-              {
-                industry: 'Law Firm',
-                location: 'New York, NY',
-                problem: 'Speed-to-lead gap costing $41,000/quarter in lost consultations.',
-                result: 'Reduced response time from 6 hours to 45 seconds — consultations recovered.',
-                tag: 'Speed-to-Lead',
-              },
-            ].map((item) => (
-              <div key={item.industry + item.location} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="font-bold text-gray-900 text-base">{item.industry}</p>
-                    <p className="text-xs text-gray-500">{item.location}</p>
-                  </div>
-                  <span className="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-1 rounded-full whitespace-nowrap">{item.tag}</span>
-                </div>
-                <p className="text-sm text-gray-600 mb-2"><span className="font-semibold text-gray-800">Challenge:</span> {item.problem}</p>
-                <p className="text-sm text-green-700 font-semibold">{item.result}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Competitive Differentiators */}
       <section id="why-boltcall-audit" className="py-12 bg-gray-50">

@@ -348,7 +348,7 @@ const Hero: React.FC = () => {
                 C A L L" in prerendered HTML — a broken ranking signal per
                 the 2026-08-29 audit. */}
             <h1 className="sr-only">
-              {t('hero.neverMiss')} {t('hero.a')} {rotatingWords?.[0] || 'CALL'}. Speed-to-lead software for law firms — Boltcall answers every intake call, replies to every form, and books every consultation automatically.
+              {t('hero.neverMiss')} {t('hero.a')} {rotatingWords?.[0] || 'CALL'}. Speed-to-lead software for law firms. The first firm to call back signs the case, and Boltcall answers every intake call, replies to every form, and books every consultation automatically.
             </h1>
 
             <motion.div
@@ -399,8 +399,8 @@ const Hero: React.FC = () => {
                 inputMode="url"
                 value={auditUrl}
                 onChange={(e) => setAuditUrl(e.target.value)}
-                placeholder="yourwebsite.com"
-                aria-label="Your website URL"
+                placeholder="yourfirm.com"
+                aria-label="Your firm's website URL"
                 className="flex-1 min-w-0 px-3 py-1.5 text-sm bg-transparent text-gray-900 placeholder:text-gray-400 focus:outline-none"
               />
               <button
@@ -412,6 +412,18 @@ const Hero: React.FC = () => {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </motion.form>
+
+            <motion.div
+              className={`mt-5 flex flex-col gap-2 text-sm text-text-muted ${isRtl ? 'items-end' : 'items-center'}`}
+              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24 }}
+              transition={{ duration: FADE_DURATION, ease: SMOOTH_EASE, delay: 0.7 }}
+            >
+              <a href="#live-demo" className="font-semibold text-blue-600 underline-offset-4 hover:text-blue-700 hover:underline">
+                {t('hero.hearDemo')} &darr;
+              </a>
+              <p className="max-w-md px-2">{t('hero.trust')}</p>
+            </motion.div>
 
           </div>
         </div>

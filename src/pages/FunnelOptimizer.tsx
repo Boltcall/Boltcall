@@ -471,26 +471,6 @@ const FunnelOptimizer: React.FC = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <p className="text-gray-500 text-sm mb-4">Trusted by local business owners</p>
-          <div className="grid grid-cols-3 gap-8">
-            <div>
-              <div className="text-3xl font-bold text-gray-900">500+</div>
-              <div className="text-sm text-gray-500">Reports Generated</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-gray-900">$2.4M</div>
-              <div className="text-sm text-gray-500">Revenue Leaks Found</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-gray-900">33%</div>
-              <div className="text-sm text-gray-500">Avg Revenue Increase</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* What is a Funnel Optimizer */}
       <section className="py-16 bg-white">
@@ -633,7 +613,7 @@ const FunnelOptimizer: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

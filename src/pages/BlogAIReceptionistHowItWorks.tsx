@@ -163,7 +163,6 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
                   <li key="how-ai-receptionists-learn-your-business"><a href="#how-ai-receptionists-learn-your-business" className="text-blue-600 hover:underline text-sm">How AI Receptionists Learn Your Business</a></li>
                   <li key="why-this-technology-matters"><a href="#why-this-technology-matters" className="text-blue-600 hover:underline text-sm">Why This Technology Matters</a></li>
                   <li key="the-bottom-line"><a href="#the-bottom-line" className="text-blue-600 hover:underline text-sm">The Bottom Line</a></li>
-                  <li key="real-world-use-cases"><a href="#real-world-use-cases" className="text-blue-600 hover:underline text-sm">Real-World Use Cases</a></li>
             </ol>
           </div>
 
@@ -393,48 +392,6 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
           </div>
         </motion.section>
 
-        {/* Mini Case Studies */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.52 }}
-          className="mb-16"
-        >
-          <h2 id="real-world-use-cases" className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 flex items-start gap-3">
-            <div className="w-1 self-stretch bg-blue-600 rounded-full"></div>
-            Real-World Use Cases
-          </h2>
-          <div className="space-y-6">
-            <div className="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-600">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Dental Practice — Westside Family Dental</h3>
-              <p className="text-gray-700 mb-3 text-sm leading-relaxed">
-                A 3-dentist practice in Phoenix was losing roughly 40 calls per month to voicemail after 5 PM —
-                mostly patients trying to book emergency appointments. After deploying an AI receptionist, the
-                system handled after-hours intake, collected patient details, and scheduled same-next-day slots
-                directly into the practice management software.
-              </p>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="bg-white rounded-lg px-3 py-1 font-semibold text-blue-700">+38 bookings/month captured</span>
-                <span className="bg-white rounded-lg px-3 py-1 font-semibold text-green-700">ROI achieved in week 1</span>
-                <span className="bg-white rounded-lg px-3 py-1 font-semibold text-gray-700">Setup time: 25 minutes</span>
-              </div>
-            </div>
-            <div className="bg-orange-50 rounded-xl p-6 border-l-4 border-orange-500">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">HVAC Company — CoolBreeze Heating & Air</h3>
-              <p className="text-gray-700 mb-3 text-sm leading-relaxed">
-                A solo-operator HVAC business in Dallas could not answer calls while on a job — meaning peak summer
-                emergency calls went straight to voicemail. The AI receptionist now handles triage: classifying calls
-                as emergency vs. routine, capturing contact info and system details, and texting the owner a summary
-                within 15 seconds of the call ending.
-              </p>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <span className="bg-white rounded-lg px-3 py-1 font-semibold text-orange-700">Zero missed emergency calls</span>
-                <span className="bg-white rounded-lg px-3 py-1 font-semibold text-green-700">+$4,200 captured in first month</span>
-                <span className="bg-white rounded-lg px-3 py-1 font-semibold text-gray-700">Owner reviews texts, not voicemails</span>
-              </div>
-            </div>
-          </div>
-        </motion.section>
 
           {/* Pros & Cons Section */}
         <motion.section

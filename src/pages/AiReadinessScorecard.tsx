@@ -812,19 +812,13 @@ const AiReadinessScorecard: React.FC = () => {
                 What missed calls cost local businesses
               </motion.h3>
 
-              <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                 {[
                   {
                     stat: '62%',
                     label: 'of calls missed',
                     description: 'by small businesses happen outside business hours',
                     icon: Phone,
-                  },
-                  {
-                    stat: '$50K',
-                    label: 'lost to missed calls/year',
-                    description: 'the average revenue lost by businesses without AI',
-                    icon: TrendingUp,
                   },
                   {
                     stat: '391%',
@@ -866,7 +860,7 @@ const AiReadinessScorecard: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

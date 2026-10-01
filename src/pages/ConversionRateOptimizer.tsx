@@ -737,7 +737,7 @@ const ConversionRateOptimizer: React.FC = () => {
 
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
 
-              <span>Built for local service businesses</span>
+              <span>Built for law firms</span>
 
             </div>
 
