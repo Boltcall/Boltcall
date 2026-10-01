@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { checkLiveCommit } from './check-live-commit.mjs';
 import { materializeFunctionCache, withFreshFunctionCache } from './release-functions.mjs';
 import { redactReleaseOutput } from './release-diagnostics.mjs';
 import { DEPLOY_ID, fingerprint, assertProductionPointer, readDeploymentReceipt, saveDeploymentReceipt } from './release-upload.mjs';
@@ -355,6 +356,9 @@ export async function deployPrepared({ env = process.env, api = githubApi(), run
   await assertNoPriorDeployment(api, env);
   const previousSite = await netlify(`sites/${SITE_ID}`);
   assertNetlifySite(previousSite);
+  // Main auto-deploys on every merge, so production may already be ahead of this
+  // approved release. Never roll it back over other sessions' merged work.
+  await checkLiveCommit({ sha: manifest.source_sha, force: true });
   const previousDeployId = previousSite.published_deploy?.id;
   if (!/^[a-f0-9]{24}$/.test(previousDeployId || '')) throw Error('Current production deployment is unavailable');
   const artifact = await api(`actions/artifacts/${manifest.artifact.id}`);
