@@ -4,6 +4,8 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useIndustry } from '../../hooks/useIndustry';
+import { countOf } from '../../lib/industryWording';
 
 dayjs.extend(relativeTime);
 
@@ -18,6 +20,7 @@ interface Summary {
 
 const WhileYouWereGone: React.FC = () => {
   const { user } = useAuth();
+  const { words } = useIndustry();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
@@ -72,7 +75,7 @@ const WhileYouWereGone: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" />
                 <span className="text-sm font-semibold text-foreground">
-                  {summary.newLeads} new lead{summary.newLeads !== 1 ? 's' : ''} captured
+                  {countOf(summary.newLeads, `new ${words.lead}`, `new ${words.leads}`)} captured
                 </span>
               </div>
             )}
@@ -88,7 +91,7 @@ const WhileYouWereGone: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-purple-400 shrink-0" />
                 <span className="text-sm font-semibold text-purple-600 dark:text-purple-400">
-                  {summary.booked} appointment{summary.booked !== 1 ? 's' : ''} booked automatically
+                  {countOf(summary.booked, words.appointment, words.appointments)} booked automatically
                 </span>
               </div>
             )}

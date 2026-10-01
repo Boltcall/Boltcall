@@ -4,12 +4,14 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useIndustry } from '../../hooks/useIndustry';
+import type { Wording } from '../../lib/industryWording';
 
 dayjs.extend(relativeTime);
 
 interface FeedEvent {
   id: string;
-  label: string;
+  label: (w: Wording) => string;
   dot: string;
   created_at: string;
   channel?: string;
@@ -26,6 +28,7 @@ const CHANNEL_BADGE: Record<string, string> = {
 
 const WinFeed: React.FC = () => {
   const { user } = useAuth();
+  const { words } = useIndustry();
   const [events, setEvents] = useState<FeedEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,14 +55,14 @@ const WinFeed: React.FC = () => {
     ]).then(([callbacksResult, winsResult]) => {
       const callbackEvents: FeedEvent[] = (callbacksResult.data || []).map((c: any) => ({
         id: `cb-${c.id}`,
-        label: buildCallbackLabel(c),
+        label: (w) => buildCallbackLabel(c, w),
         dot: callbackDot(c.status),
         created_at: c.created_at,
       }));
 
       const winEvents: FeedEvent[] = (winsResult.data || []).map((w: any) => ({
         id: `win-${w.id}`,
-        label: buildWinLabel(w),
+        label: (words) => buildWinLabel(w, words),
         dot: 'bg-emerald-400',
         created_at: w.created_at,
         channel: w.channel,
@@ -106,7 +109,7 @@ const WinFeed: React.FC = () => {
               {event.channel && CHANNEL_BADGE[event.channel] ? (
                 <span className="mr-1">{CHANNEL_BADGE[event.channel]}</span>
               ) : null}
-              {event.label}
+              {event.label(words)}
             </span>
             <span className="ml-auto text-[10px] text-foreground/40 shrink-0 tabular-nums">
               {dayjs(event.created_at).fromNow()}
@@ -118,23 +121,23 @@ const WinFeed: React.FC = () => {
   );
 };
 
-function buildCallbackLabel(c: { client_name?: string; status: string }): string {
-  const name = c.client_name || 'A lead';
+function buildCallbackLabel(c: { client_name?: string; status: string }, w: Wording): string {
+  const name = c.client_name || `A ${w.lead}`;
   switch (c.status) {
     case 'completed': return `Booking confirmed with ${name}`;
-    case 'scheduled': return `AI booked ${name} for an appointment`;
-    case 'pending':   return `New lead captured — ${name} waiting for callback`;
-    default:          return `Lead captured: ${name}`;
+    case 'scheduled': return `AI booked ${name} for ${w.appointment === 'appointment' ? 'an appointment' : `a ${w.appointment}`}`;
+    case 'pending':   return `New ${w.lead} captured: ${name} waiting for callback`;
+    default:          return `${w.lead.charAt(0).toUpperCase()}${w.lead.slice(1)} captured: ${name}`;
   }
 }
 
-function buildWinLabel(w: { channel?: string; outcome_type?: string; summary?: string }): string {
+function buildWinLabel(w: { channel?: string; outcome_type?: string; summary?: string }, words: Wording): string {
   const channel = w.channel || 'unknown';
   if (w.outcome_type === 'booked') {
-    return `AI booked appointment via ${channel}`;
+    return `AI booked ${words.appointment} via ${channel}`;
   }
   if (w.outcome_type === 'answered') {
-    return `Lead question resolved via ${channel}`;
+    return `${words.lead.charAt(0).toUpperCase()}${words.lead.slice(1)} question resolved via ${channel}`;
   }
   return w.summary || `Conversation resolved via ${channel}`;
 }

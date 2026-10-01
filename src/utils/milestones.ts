@@ -5,13 +5,16 @@ export type Milestone = {
   detail: string;
 };
 
-export function resolveMilestones(counts: { bookingCount: number; callCount: number }): Milestone[] {
+export function resolveMilestones(
+  counts: { bookingCount: number; callCount: number },
+  w: { job: string; jobs: string } = { job: 'job', jobs: 'jobs' },
+): Milestone[] {
   const events: Milestone[] = [];
   if (counts.bookingCount >= 1) {
-    events.push({ id: 'first_booking', title: 'First booking!', detail: 'Your AI booked its first job. This is what it was built for.' });
+    events.push({ id: 'first_booking', title: 'First booking!', detail: `Your AI booked its first ${w.job}. This is what it was built for.` });
   }
   if (counts.bookingCount >= 10) {
-    events.push({ id: 'tenth_booking', title: '10 bookings', detail: '10 jobs booked without you lifting a finger.' });
+    events.push({ id: 'tenth_booking', title: '10 bookings', detail: `10 ${w.jobs} booked without you lifting a finger.` });
   }
   if (counts.callCount >= 100) {
     events.push({ id: 'hundredth_call', title: '100 calls answered', detail: '100 conversations handled. No lead left waiting.' });

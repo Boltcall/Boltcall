@@ -8,6 +8,7 @@ export const INDUSTRY_AVG_JOB_VALUE: Record<string, number> = {
   dental: 600,
   lawyer: 2500,
   legal: 2500,
+  law_firm: 2500,
   hvac: 550,
   'med spa': 350,
   medspa: 350,
