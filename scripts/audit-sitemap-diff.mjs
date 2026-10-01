@@ -88,9 +88,6 @@ const SITEMAP_OPTOUT = new Set([
   '/blog/plumbing-lead-response-time',
   '/blog/solar-lead-response-time',
   '/blog/speed-to-lead-for-plumbers',
-  // Lead magnet page shipped without the >=3 inbound links seo-precommit-check
-  // requires for new sitemap routes; reachable from /lead-magnet.
-  '/lead-magnet/test-lead-magnet-delete-me',
 ]);
 
 function normalize(p) {
