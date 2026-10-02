@@ -38,8 +38,8 @@ const LeadMagnetThankYouPage: React.FC = () => {
             You're in
           </h1>
           <p className="text-[#e0e0e0]/80 text-lg max-w-md">
-            Check your inbox — we just sent you everything. Or grab it right
-            here:
+            Your request was received. Check your inbox for the resource,
+            including your spam folder. You can also download it here:
           </p>
 
           {downloadUrl && (

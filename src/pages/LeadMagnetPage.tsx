@@ -119,6 +119,7 @@ const LeadMagnetPage: React.FC<LeadMagnetPageProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const mouseX = useRef(0);
   const mouseY = useRef(0);
 
@@ -129,24 +130,30 @@ const LeadMagnetPage: React.FC<LeadMagnetPageProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
     const form = e.currentTarget;
-    const name = (form.elements.namedItem('name') as HTMLInputElement).value;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    if (isSubmitting || !form.reportValidity()) return;
+    setIsSubmitting(true);
+    setSubmitError('');
+    const name = (form.elements.namedItem('name') as HTMLInputElement).value.trim();
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
     try {
-      await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/lead-magnet', {
+      const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/lead-magnet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, source }),
+        signal: AbortSignal.timeout(20000),
       });
+      if (!response.ok) throw new Error('Delivery request failed');
+      const params = new URLSearchParams();
+      if (downloadUrl) params.set('download', downloadUrl);
+      if (source !== 'general') params.set('source', source);
+      const query = params.toString();
+      navigate(`/lead-magnet/thank-you${query ? `?${query}` : ''}`);
     } catch (_) {
-      // don't block the user if webhook fails
+      setSubmitError('We could not confirm your request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    const params = new URLSearchParams();
-    if (downloadUrl) params.set('download', downloadUrl);
-    if (source !== 'general') params.set('source', source);
-    const query = params.toString();
-    navigate(`/lead-magnet/thank-you${query ? `?${query}` : ''}`);
   };
 
   const handleSectionMouseMove = (e: React.MouseEvent<HTMLElement>) => {
@@ -199,6 +206,7 @@ const LeadMagnetPage: React.FC<LeadMagnetPageProps> = ({
               <input
                 type="text"
                 name="name"
+                aria-label="Name"
                 placeholder="Name"
                 autoComplete="name"
                 className="w-full min-h-[44px] h-12 pl-12 pr-4 bg-white/5 border border-white/10 rounded-none text-white placeholder:text-[#e0e0e0]/40 focus:outline-none focus:border-brand-blue transition-colors text-base"
@@ -210,6 +218,8 @@ const LeadMagnetPage: React.FC<LeadMagnetPageProps> = ({
                 <input
                   type="email"
                   name="email"
+                  required
+                  aria-label="Email"
                   placeholder="Email"
                   inputMode="email"
                   autoComplete="email"
@@ -228,6 +238,8 @@ const LeadMagnetPage: React.FC<LeadMagnetPageProps> = ({
               )}
             </button>
             </div>
+            <p className="text-xs text-white/60">Get the resource and follow-up emails from Noam at Boltcall. Unsubscribe anytime.</p>
+            {submitError && <p role="alert" className="text-sm text-red-400">{submitError}</p>}
           </form>
         </div>
       </section>
