@@ -73,10 +73,10 @@ const Comparisons: React.FC = () => {
     },
     {
       title: 'Boltcall vs <span class="text-blue-600">Smith.ai</span>',
-      description: 'Compare Boltcall\'s speed-to-lead software with Smith.ai\'s virtual receptionist and intake services.',
+      description: 'For law firms: published pricing side by side, intake, conflict checks, Clio and MyCase. Every Smith.ai figure links to its source.',
       href: '/compare/boltcall-vs-smith-ai',
-      category: 'Virtual Receptionist',
-      date: 'April 8, 2026',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
       readTime: '8 min read'
     },
     {
@@ -113,7 +113,7 @@ const Comparisons: React.FC = () => {
     },
     {
       title: 'Boltcall vs <span class="text-blue-600">Convin.ai</span>',
-      description: 'Speed-to-lead receptionist vs contact-center QA / agent coaching. Different products entirely — here is when each one wins.',
+      description: 'Speed-to-lead receptionist vs contact-center QA / agent coaching. Different products entirely. Here is when each one wins.',
       href: '/compare/boltcall-vs-convin',
       category: 'Contact Center',
       date: 'May 24, 2026',
@@ -121,7 +121,7 @@ const Comparisons: React.FC = () => {
     },
     {
       title: 'Boltcall vs <span class="text-blue-600">SoundHound AI</span>',
-      description: 'SMB speed-to-lead vs enterprise conversational AI (Amelia, drive-thru, automotive). Why local businesses pick Boltcall — and why SoundHound is not for them.',
+      description: 'SMB speed-to-lead vs enterprise conversational AI (Amelia, drive-thru, automotive). Why local businesses pick Boltcall, and why SoundHound is not for them.',
       href: '/compare/boltcall-vs-soundhound',
       category: 'Enterprise Voice AI',
       date: 'May 24, 2026',
@@ -238,7 +238,7 @@ const Comparisons: React.FC = () => {
               <Link to="/compare/boltcall-vs-smith-ai" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">
                 Boltcall vs Smith.ai
               </Link>
-              <p className="text-gray-600 text-xs mt-1">AI 24/7 with no per-call fees vs human virtual receptionists.</p>
+              <p className="text-gray-600 text-xs mt-1">For law firms: AI-only flat plan vs live human and hybrid answering, with sources.</p>
             </div>
             <div>
               <Link to="/compare/boltcall-vs-birdeye" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">
@@ -256,7 +256,7 @@ const Comparisons: React.FC = () => {
               <Link to="/comparisons/receptionist-vs-boltcall" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">
                 Human Receptionist vs Boltcall
               </Link>
-              <p className="text-gray-600 text-xs mt-1">Never sick, never on break, answers in under 11 seconds.</p>
+              <p className="text-gray-600 text-xs mt-1">AI that answers every call, 24/7, versus a staffed front desk.</p>
             </div>
             <div>
               <Link to="/comparisons/answering-services-vs-boltcall" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">
@@ -313,48 +313,6 @@ const Comparisons: React.FC = () => {
       </section>
 
 
-      {/* AI Receptionist Comparison Summary Table */}
-      <section className="bg-white py-12 border-t border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">Boltcall vs. Competitors: Quick Comparison</h2>
-          <p className="text-gray-500 text-sm text-center mb-6">How Boltcall compares to the most common alternatives for local business phone handling</p>
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-left">
-                  <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200">Feature</th>
-                  <th className="px-4 py-3 font-semibold text-indigo-700 border-b border-gray-200 bg-indigo-50 text-center">Boltcall</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200 text-center">Smith.ai</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200 text-center">Podium</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 border-b border-gray-200 text-center">GoHighLevel</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['AI phone answering', '\u2713', '\u2713', '\u2717', 'Partial'],
-                  ['24/7 coverage', '\u2713', '\u2713', '\u2713', '\u2713'],
-                  ['Live appointment booking', '\u2713', 'Message only', '\u2717', '\u2713'],
-                  ['SMS follow-up automation', '\u2713', '\u2717', '\u2713', '\u2713'],
-                  ['No-show reminders', '\u2713', '\u2717', '\u2717', '\u2713'],
-                  ['Google review automation', '\u2713', '\u2717', '\u2713', '\u2717'],
-                  ['Setup time', '30 min', '1-2 days', '1-2 weeks', '2-4 weeks'],
-                  ['Starting price', '$79/mo', '$292.50/mo', '$399/mo', '$97/mo'],
-                  ['Per-minute fees', 'None', '$7-9/call', 'None', 'None'],
-                ].map(([feature, boltcall, smith, podium, ghl]) => (
-                  <tr key={feature} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-gray-700 font-medium">{feature}</td>
-                    <td className="px-4 py-3 text-center bg-indigo-50/30 text-indigo-700 font-semibold">{boltcall}</td>
-                    <td className="px-4 py-3 text-center text-gray-600">{smith}</td>
-                    <td className="px-4 py-3 text-center text-gray-600">{podium}</td>
-                    <td className="px-4 py-3 text-center text-gray-600">{ghl}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
       {/* Next Steps CTA */}
       <section className="py-10 bg-white border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -385,7 +343,7 @@ const Comparisons: React.FC = () => {
       <section className="py-10 bg-gray-50 border-t border-gray-100">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm font-medium text-gray-500 mb-5">
-            Built for law firms &middot; No credit card required &middot; Cancel anytime
+            Built for law firms &middot; No credit card to start &middot; Cancel any time
           </p>
         </div>
       </section>

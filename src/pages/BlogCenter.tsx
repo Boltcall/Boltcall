@@ -288,9 +288,9 @@ const blogPosts: BlogPost[] = [
     image: '/images/blog/comparison-generic.png',
   },
   {
-    title: 'Boltcall vs Smith.ai: AI Receptionist Compared for Small Business (2026)',
+    title: 'Boltcall vs Smith.ai for Law Firms: Pricing, Intake & Fit (2026)',
     slug: '/compare/boltcall-vs-smith-ai',
-    excerpt: 'Boltcall vs Smith.ai compared head-to-head. Flat pricing vs per-call fees, pure AI vs hybrid, and which AI receptionist is better for your small business.',
+    excerpt: 'Boltcall vs Smith.ai for law firms. Published pricing side by side, intake, conflict checks, Clio and MyCase, and where each one fits. Sources linked.',
     date: 'March 23, 2026',
     readTime: '10 min read',
     category: 'Comparison',

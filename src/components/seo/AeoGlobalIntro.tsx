@@ -56,12 +56,19 @@ const AeoGlobalIntro: React.FC = () => {
     '/features/ai-receptionist',
   ]);
 
+  // ponytail: pages on the sourced LegalComparisonPage template emit their own
+  // Article/FAQ schema, verified date and Sources list. The generic block below
+  // would add a second BreadcrumbList and a "Last updated: today" that moves daily.
+  // Add each new template page's path here.
+  const ownSchemaPaths = new Set(['/compare/boltcall-vs-smith-ai']);
+  const ownsSchema = ownSchemaPaths.has(path);
+
   const isComparisonsRoute =
     path === '/comparisons' || path.startsWith('/comparisons/') || path.startsWith('/compare/');
   const isBlogRoute = path === '/blog' || path.startsWith('/blog/');
   const shouldShow =
-    articleExact.has(path) || articlePrefixes.some((prefix) => path.startsWith(prefix));
-  const shouldRenderFooterContent = isComparisonsRoute;
+    !ownsSchema && (articleExact.has(path) || articlePrefixes.some((prefix) => path.startsWith(prefix)));
+  const shouldRenderFooterContent = isComparisonsRoute && !ownsSchema;
 
   const title = isComparisonsRoute ? 'Comparison Summary' : 'Page Summary';
 
