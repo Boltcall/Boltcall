@@ -114,7 +114,7 @@ const smithAi: LegalComparisonData = {
           ['Free', '$0', '25', 'n/a', '$3.00'],
           ['Pro', '$150', '75', '$2.00', '$2.50'],
           ['Pro', '$270', '150', '$1.80', '$2.30'],
-          ['Pro', '$500', '300', '$1.67', '$2.17'],
+          ['Pro (Enterprise starts here)', '$500', '300', '$1.67', '$2.17'],
           ['Enterprise', '$800', '500', '$1.60', '$2.10'],
           ['Enterprise', 'Custom', '1,000+', 'Custom', 'Custom'],
         ],

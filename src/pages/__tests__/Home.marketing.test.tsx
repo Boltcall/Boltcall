@@ -96,7 +96,7 @@ describe('Home marketing page', () => {
     const schemas = vi.mocked(useSchemaInjector).mock.calls[0][0];
     expect(schemas[0]).toMatchObject({
       '@type': 'WebPage',
-      name: 'Instant lead response',
+      name: 'Speed-to-lead software for law firms',
       significantLink: [
         'https://boltcall.org/industries/lawyer-answering-service',
         'https://boltcall.org/blog/speed-to-lead-for-law-firms',
