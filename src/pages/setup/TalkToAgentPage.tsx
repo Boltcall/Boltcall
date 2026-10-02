@@ -10,6 +10,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { VoicePoweredOrb } from '../../components/ui/voice-powered-orb';
 import { SetupGradientBackground } from '../../components/setup/SetupGradientBackground';
 
+const TEST_CALL_UNAVAILABLE = 'The test call is unavailable right now. You can test your agent from the dashboard later.';
+
 type Phase = 'idle' | 'provisioning' | 'connecting' | 'live' | 'ended' | 'error';
 
 const TalkToAgentPage: React.FC = () => {
@@ -137,7 +139,7 @@ const TalkToAgentPage: React.FC = () => {
       const isBillingError = /402|payment overdue|service stopped/i.test(rawMsg);
       setErrorMessage(
         isBillingError
-          ? 'Test call is unavailable right now. Your agent is set up; you can test it from the dashboard later.'
+          ? TEST_CALL_UNAVAILABLE
           : rawMsg || 'Could not start the call.',
       );
     }
@@ -192,7 +194,7 @@ const TalkToAgentPage: React.FC = () => {
             )}
             {phase !== 'live' && phase !== 'ended' && (
               <h1 className="text-2xl sm:text-3xl font-bold text-white">
-                Your agent is almost ready
+                {phase === 'error' && errorMessage === TEST_CALL_UNAVAILABLE ? 'Your agent is set up' : 'Your agent is almost ready'}
               </h1>
             )}
             {phase === 'ended' && (

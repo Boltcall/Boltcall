@@ -56,7 +56,7 @@ export const PAIN_POINT_TASKS: Record<string, Omit<SetupStep, 'completed'>> = {
     id: 'after_hours',
     title: 'Enable 24/7 AI Receptionist',
     description: 'Pick up every call after hours and on weekends',
-    link: '/dashboard/ai-receptionist',
+    link: '/dashboard/your-ai/phone',
     icon: Moon,
     timeEstimate: 'About 2 min',
     credits: 4,
@@ -120,7 +120,8 @@ export function resolveCompletedStepIds(signals: CompletionSignals): Set<string>
 
   if (signals.hasKnowledgeBase) completed.add('knowledge_base');
   if (signals.hasPhoneNumber) completed.add('missed_calls');
-  if (signals.hasInboundAgent) completed.add('after_hours');
+  // An agent with no number can't pick up anything — don't tell the owner it's live.
+  if (signals.hasInboundAgent && signals.hasPhoneNumber) completed.add('after_hours');
   if (signals.hasSpeedToLeadAgent) completed.add('slow_response');
   if (signals.hasLeadTracking) completed.add('no_system');
   if (signals.hasCompletedAgentTest) completed.add('test_agent');
@@ -160,7 +161,7 @@ export async function fetchCompletionSignals(userId: string): Promise<Completion
       .eq('user_id', userId),
     supabase
       .from('business_features')
-      .select('reminders_config, google_lead_form_key')
+      .select('reminders_config, last_google_test_ping_at')
       .eq('user_id', userId)
       .maybeSingle(),
     supabase
@@ -205,8 +206,9 @@ export async function fetchCompletionSignals(userId: string): Promise<Completion
       providers.has('google_calendar'),
     hasAdLeadConnection:
       (facebookRes.count ?? 0) > 0 ||
-      (typeof featureRes.data?.google_lead_form_key === 'string' &&
-        featureRes.data.google_lead_form_key.trim().length > 0),
+      // google_lead_form_key has a column default, so every row has one; only a
+      // ping from Google proves the lead form is actually wired up.
+      !!featureRes.data?.last_google_test_ping_at,
     hasSubmittedFeedback:
       typeof window !== 'undefined' &&
       window.localStorage.getItem(`boltcall_feedback_submitted:${userId}`) === 'true',
@@ -220,6 +222,7 @@ export interface SetupProgress {
   pct: number;              // includes endowed steps — never 0 for a fresh user
   nextStep: SetupStep | null;
   isComplete: boolean;
+  hasPhoneNumber: boolean;
   loading: boolean;
 }
 
@@ -227,6 +230,7 @@ export function useSetupProgress(): SetupProgress {
   const { user } = useAuth();
   const painPoints = useSetupStore((s) => s.survey.painPoints);
   const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
+  const [hasPhoneNumber, setHasPhoneNumber] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -235,7 +239,9 @@ export function useSetupProgress(): SetupProgress {
 
     fetchCompletionSignals(user.id)
       .then((signals) => {
-        if (!cancelled) setCompletedIds(resolveCompletedStepIds(signals));
+        if (cancelled) return;
+        setCompletedIds(resolveCompletedStepIds(signals));
+        setHasPhoneNumber(signals.hasPhoneNumber);
       })
       .catch((error) => {
         console.error('Failed to detect setup progress:', error);
@@ -278,7 +284,8 @@ export function useSetupProgress(): SetupProgress {
       pct,
       nextStep,
       isComplete: nextStep === null,
+      hasPhoneNumber,
       loading,
     };
-  }, [painPoints, completedIds, loading]);
+  }, [painPoints, completedIds, hasPhoneNumber, loading]);
 }
