@@ -20,13 +20,15 @@ export function buildGreeting(opts: {
   businessName: string | null;
   handledSinceYesterday: number;
   callWord?: string; // 'intake call' for law firms
+  hasPhoneNumber?: boolean; // false = nothing can reach the agent yet
 }): { hello: string; outcome: string } {
-  const { now, firstName, agentName, businessName, handledSinceYesterday, callWord = 'call' } = opts;
+  const { now, firstName, agentName, businessName, handledSinceYesterday, callWord = 'call', hasPhoneNumber = true } = opts;
   const hour = now.getHours();
   const timeOfDay = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const hello = `${timeOfDay}, ${firstName}.`;
 
-  const forBiz = businessName ? ` for ${businessName}` : '';
+  // Agent names usually embed the business name; don't repeat it.
+  const forBiz = businessName && !agentName.toLowerCase().includes(businessName.toLowerCase()) ? ` for ${businessName}` : '';
   const isMonday = now.getDay() === 1;
   const isMonthStart = now.getDate() === 1;
 
@@ -37,6 +39,9 @@ export function buildGreeting(opts: {
     return { hello, outcome: base };
   }
 
+  if (!hasPhoneNumber) {
+    return { hello, outcome: `${agentName} is set up${forBiz}. Next step: get a phone number or forward your line so ${callWord === 'call' ? 'customers' : 'potential clients'} can reach it.` };
+  }
   if (isMonday) return { hello, outcome: `New week. ${agentName} is standing by${forBiz}.` };
   return { hello, outcome: `${agentName} is standing by${forBiz}.` };
 }
@@ -164,6 +169,7 @@ const HomePage: React.FC = () => {
     businessName: trimmedBusiness || null,
     handledSinceYesterday: handled,
     callWord: words.call,
+    hasPhoneNumber: progress.loading || progress.hasPhoneNumber,
   });
 
   const daysLive = daysLiveSince(user?.createdAt, now);
@@ -195,7 +201,17 @@ const HomePage: React.FC = () => {
       {/* Zone A — greeting strip */}
       <div className="pt-2">
         <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{hello}</h2>
-        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">{outcome}</p>
+        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
+          {outcome}
+          {!progress.loading && !progress.hasPhoneNumber && (
+            <>
+              {' '}
+              <Link to="/dashboard/your-ai/phone" className="font-medium text-blue-600 hover:underline">
+                Get a phone number
+              </Link>
+            </>
+          )}
+        </p>
       </div>
 
       {/* Zone B — setup progress ring until complete, then streak card */}

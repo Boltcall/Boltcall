@@ -47,4 +47,20 @@ describe('resolveCompletedStepIds', () => {
     expect(completed.has('no_system')).toBe(true);
     expect(completed.has('test_agent')).toBe(false);
   });
+
+  it('keeps 24/7 receptionist open until the agent has a phone number', () => {
+    const signals: CompletionSignals = {
+      hasKnowledgeBase: false,
+      hasPhoneNumber: false,
+      hasInboundAgent: true,
+      hasSpeedToLeadAgent: false,
+      hasLeadTracking: false,
+      hasCompletedAgentTest: false,
+      hasCalendarConnection: false,
+      hasAdLeadConnection: false,
+      hasSubmittedFeedback: false,
+    };
+
+    expect(resolveCompletedStepIds(signals).has('after_hours')).toBe(false);
+  });
 });
