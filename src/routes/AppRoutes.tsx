@@ -305,6 +305,7 @@ const CompareBoltcallVsCalomation = React.lazy(() => import('../pages/CompareBol
 const CompareBoltcallVsSmithAi = React.lazy(() => import('../pages/CompareBoltcallVsSmithAi'));
 const CompareBoltcallVsRuby = React.lazy(() => import('../pages/CompareBoltcallVsRuby'));
 const CompareBoltcallVsAnsweringLegal = React.lazy(() => import('../pages/CompareBoltcallVsAnsweringLegal'));
+const CompareBoltcallVsLexReception = React.lazy(() => import('../pages/CompareBoltcallVsLexReception'));
 const CompareBoltcallVsGoodCall = React.lazy(() => import('../pages/CompareBoltcallVsGoodCall'));
 const CompareBoltcallVsCallin = React.lazy(() => import('../pages/CompareBoltcallVsCallin'));
 const CompareBoltcallVsLindy = React.lazy(() => import('../pages/CompareBoltcallVsLindy'));
@@ -827,6 +828,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/compare/boltcall-vs-smith-ai" element={<CompareBoltcallVsSmithAi />} />
         <Route path="/compare/boltcall-vs-ruby" element={<CompareBoltcallVsRuby />} />
         <Route path="/compare/boltcall-vs-answering-legal" element={<CompareBoltcallVsAnsweringLegal />} />
+        <Route path="/compare/boltcall-vs-lex-reception" element={<CompareBoltcallVsLexReception />} />
         <Route path="/compare/boltcall-vs-goodcall" element={<CompareBoltcallVsGoodCall />} />
         <Route path="/compare/boltcall-vs-callin" element={<CompareBoltcallVsCallin />} />
         <Route path="/compare/boltcall-vs-lindy" element={<CompareBoltcallVsLindy />} />

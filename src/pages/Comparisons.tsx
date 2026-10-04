@@ -83,6 +83,11 @@ const Comparisons: React.FC = () => {
       title: 'Boltcall vs <span class="text-blue-600">Ruby</span>',
       description: 'For law firms: live receptionists billed per minute vs a flat AI speed-to-lead plan. Pricing, HIPAA, Clio and refunds, every Ruby figure sourced.',
       href: '/compare/boltcall-vs-ruby',
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">LEX Reception</span>',
+      description: 'For law firms: human-only legal answering vs AI speed-to-lead. How LEX bills, intake, Spanish, Clio and MyCase. Every LEX fact links to its source.',
+      href: '/compare/boltcall-vs-lex-reception',
       category: 'Law Firms',
       date: 'October 2, 2026',
       readTime: '8 min read'
@@ -94,6 +99,8 @@ const Comparisons: React.FC = () => {
       category: 'Law Firms',
       date: 'October 2, 2026',
       readTime: '9 min read'
+    },
+    {
     },
     {
       title: '5 Best <span class="text-blue-600">Podium Alternatives</span> for Local Businesses (2026)',
