@@ -80,6 +80,14 @@ const Comparisons: React.FC = () => {
       readTime: '8 min read'
     },
     {
+      title: 'Boltcall vs <span class="text-blue-600">Ruby</span>',
+      description: 'For law firms: live receptionists billed per minute vs a flat AI speed-to-lead plan. Pricing, HIPAA, Clio and refunds, every Ruby figure sourced.',
+      href: '/compare/boltcall-vs-ruby',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '8 min read'
+    },
+    {
       title: '5 Best <span class="text-blue-600">Podium Alternatives</span> for Local Businesses (2026)',
       description: 'Five Podium alternatives ranked by lead-conversion focus, response speed, and pricing transparency. Honest strengths and weaknesses for each.',
       href: '/compare/podium-alternatives',

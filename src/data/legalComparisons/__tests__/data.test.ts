@@ -1,7 +1,8 @@
 import smithAi from '../smithAi';
+import ruby from '../ruby';
 
 // Add each new legal comparison data file here.
-const pages = [smithAi];
+const pages = [smithAi, ruby];
 
 describe.each(pages.map((p) => [p.competitor, p] as const))('%s legal comparison data', (_, page) => {
   const json = JSON.stringify(page);
