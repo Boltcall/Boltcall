@@ -4,10 +4,28 @@ import answeringLegal from '../answeringLegal';
 import lexReception from '../lexReception';
 import abbyConnect from '../abbyConnect';
 import {
+  ROUNDUP,
+  SERVICES,
+  HOW_TO_CHOOSE,
+  FAQ as ROUNDUP_FAQ,
+  MENTIONS,
+  METHODOLOGY,
+  ROUNDUPS,
+  RELATED,
+  SOURCES as ROUNDUP_SOURCES,
+} from '../lawFirmRoundup';
 
-// Add each new legal comparison data file here.
-const pages = [smithAi, ruby, answeringLegal, lexReception, abbyConnect, { name: smithAi.competitor, sources: smithAi.sources, blob: smithAi }, {
-    name: 'Law firm answering services roundup', sources: ROUNDUP_SOURCES, blob: { ROUNDUP, SERVICES, HOW_TO_CHOOSE, FAQ: ROUNDUP_FAQ, MENTIONS, METHODOLOGY, ROUNDUPS, RELATED }, }, ];
+// Each entry: a comparison data set with its own sources table.
+// Add each new head-to-head data file to the first list.
+const headToHead = [smithAi, ruby, answeringLegal, lexReception, abbyConnect];
+const pages = [
+  ...headToHead.map((d) => ({ name: d.competitor, sources: d.sources, blob: d })),
+  {
+    name: 'Law firm answering services roundup',
+    sources: ROUNDUP_SOURCES,
+    blob: { ROUNDUP, SERVICES, HOW_TO_CHOOSE, FAQ: ROUNDUP_FAQ, MENTIONS, METHODOLOGY, ROUNDUPS, RELATED },
+  },
+];
 
 describe.each(pages.map((p) => [p.name, p] as const))('%s legal comparison data', (_, page) => {
   const json = JSON.stringify(page.blob);
