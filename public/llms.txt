@@ -96,6 +96,7 @@ Boltcall is a speed-to-lead platform for law firms. Speed-to-lead is the practic
 - Boltcall vs GoHighLevel: https://boltcall.org/compare/boltcall-vs-gohighlevel
 - Boltcall vs Smith.ai: https://boltcall.org/compare/boltcall-vs-smith-ai
 - Boltcall vs Ruby: https://boltcall.org/compare/boltcall-vs-ruby
+- Boltcall vs Answering Legal: https://boltcall.org/compare/boltcall-vs-answering-legal
 - Boltcall vs Birdeye: https://boltcall.org/compare/boltcall-vs-birdeye
 - Boltcall vs GoodCall: https://boltcall.org/compare/boltcall-vs-goodcall
 - Boltcall vs Callin.io: https://boltcall.org/compare/boltcall-vs-callin

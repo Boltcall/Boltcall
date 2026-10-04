@@ -88,6 +88,14 @@ const Comparisons: React.FC = () => {
       readTime: '8 min read'
     },
     {
+      title: 'Boltcall vs <span class="text-blue-600">Answering Legal</span>',
+      description: 'For law firms: per-minute live answering vs an AI speed-to-lead plan, legal integrations, the free trial, and what to check in the Terms. Sources linked.',
+      href: '/compare/boltcall-vs-answering-legal',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '9 min read'
+    },
+    {
       title: '5 Best <span class="text-blue-600">Podium Alternatives</span> for Local Businesses (2026)',
       description: 'Five Podium alternatives ranked by lead-conversion focus, response speed, and pricing transparency. Honest strengths and weaknesses for each.',
       href: '/compare/podium-alternatives',
