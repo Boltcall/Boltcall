@@ -197,6 +197,8 @@ const CreditsPage = React.lazy(() => import('../pages/CreditsPage'));
 const Newsletter = React.lazy(() => import('../pages/Newsletter'));
 const PricingPage = React.lazy(() => import('../pages/PricingPage'));
 const PersonalInjury = React.lazy(() => import('../pages/PersonalInjury'));
+const PiIntakeLanding = React.lazy(() => import('../pages/pi-intake/PiIntakeLanding'));
+const PiIntakeDashboard = React.lazy(() => import('../pages/pi-intake/PiIntakeDashboard'));
 const AiCoursePage = React.lazy(() => import('../pages/AiCoursePage'));
 const Documentation = React.lazy(() => import('../pages/Documentation'));
 const ApiDocsPage = React.lazy(() => import('../pages/ApiDocsPage'));
@@ -414,6 +416,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/loading-demo" element={<LoadingDemo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/tools/pi-sms-intake-agent" element={<PiIntakeLanding />} />
+        <Route path="/pi-intake" element={<PiIntakeDashboard />} />
         <Route
           path="/dashboard/*"
           element={

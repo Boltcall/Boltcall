@@ -11,6 +11,7 @@ const TODAY = new Date().toISOString().split("T")[0];
 // Excluded: /dashboard/*, /admin*, /auth/*, /setup*, /payment/*,
 // *-demo pages, /login, /signup, and redirect-only routes (Navigate components)
 const ROUTES = [
+  { path: "/tools/pi-sms-intake-agent", priority: "0.8", changefreq: "monthly" },
   // Core
   { path: "/",                                                    priority: "1.0", changefreq: "weekly"  },
   { path: "/pricing",                                             priority: "0.9", changefreq: "monthly" },
