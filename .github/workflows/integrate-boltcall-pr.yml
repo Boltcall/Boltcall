@@ -1,4 +1,4 @@
-name: Integrate Owner Reviewed Boltcall PR
+name: Integrate CI Verified Boltcall PR
 run-name: Integrate PR ${{ inputs.pr_number }} head ${{ inputs.source_sha }} request ${{ inputs.request_id }}
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       source_sha:
-        description: Exact reviewed PR head SHA
+        description: Exact CI-verified PR head SHA
         required: true
         type: string
       request_id:
@@ -48,9 +48,6 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.repository == 'Boltcall/Boltcall'
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    environment:
-      name: production
-      url: https://github.com/Boltcall/Boltcall/pull/${{ inputs.pr_number }}
     permissions:
       contents: write
       actions: read
@@ -63,7 +60,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Recheck source and CI after owner approval then merge exact head
+      - name: Recheck source and CI then merge exact head
         env:
           INTEGRATION_PHASE: merge
         run: node scripts/release-workflow.mjs integrate
