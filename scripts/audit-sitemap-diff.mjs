@@ -25,6 +25,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
 
 const EXCLUDE_PREFIXES = [
+  '/pi-intake', // Authenticated free-product workspace; the offer lives under /tools/.
   '/dashboard', '/admin', '/auth', '/setup',
   '/payment', '/checkout', '/reset-password', '/login', '/signup',
   // Demo / component playgrounds — not indexable.
