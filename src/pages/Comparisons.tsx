@@ -72,6 +72,14 @@ const Comparisons: React.FC = () => {
       readTime: '7 min read'
     },
     {
+      title: 'Best <span class="text-blue-600">Law Firm Answering Services</span> (2026)',
+      description: '11 compared with published prices and sources: Ruby, Smith.ai, Answering Legal, LEX, Abby, PATLive, Nexa, Back Office Betties, Posh, Moneypenny and Boltcall. "Best for" picks, not a #1 ranking.',
+      href: '/compare/best-law-firm-answering-services',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '12 min read'
+    },
+    {
       title: 'Boltcall vs <span class="text-blue-600">Smith.ai</span>',
       description: 'For law firms: published pricing side by side, intake, conflict checks, Clio and MyCase. Every Smith.ai figure links to its source.',
       href: '/compare/boltcall-vs-smith-ai',
@@ -233,6 +241,12 @@ const Comparisons: React.FC = () => {
                 Boltcall vs GoHighLevel
               </Link>
               <p className="text-gray-600 text-xs mt-1">Speed-to-lead instead of an all-in-one CRM stack.</p>
+            </div>
+            <div>
+              <Link to="/compare/best-law-firm-answering-services" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                Best Law Firm Answering Services (2026)
+              </Link>
+              <p className="text-gray-600 text-xs mt-1">11 legal answering services compared on published price, Clio and Spanish. Sources linked.</p>
             </div>
             <div>
               <Link to="/compare/boltcall-vs-smith-ai" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">

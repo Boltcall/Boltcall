@@ -110,6 +110,7 @@ const ROUTES = [
   '/compare/boltcall-vs-emitrr',
   '/compare/boltcall-vs-calomation',
   '/compare/boltcall-vs-smith-ai',
+  '/compare/best-law-firm-answering-services',
   '/compare/boltcall-vs-goodcall',
   '/compare/boltcall-vs-callin',
   '/compare/boltcall-vs-lindy',
