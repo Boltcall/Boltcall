@@ -98,6 +98,7 @@ Boltcall is a speed-to-lead platform for law firms. Speed-to-lead is the practic
 - Boltcall vs Ruby: https://boltcall.org/compare/boltcall-vs-ruby
 - Boltcall vs Answering Legal: https://boltcall.org/compare/boltcall-vs-answering-legal
 - Boltcall vs LEX Reception: https://boltcall.org/compare/boltcall-vs-lex-reception
+- Boltcall vs Abby Connect: https://boltcall.org/compare/boltcall-vs-abby-connect
 - Boltcall vs Birdeye: https://boltcall.org/compare/boltcall-vs-birdeye
 - Boltcall vs GoodCall: https://boltcall.org/compare/boltcall-vs-goodcall
 - Boltcall vs Callin.io: https://boltcall.org/compare/boltcall-vs-callin

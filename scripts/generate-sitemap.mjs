@@ -139,6 +139,7 @@ const ROUTES = [
   { path: "/compare/boltcall-vs-ruby",                          priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-answering-legal",               priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-lex-reception",                 priority: "0.8", changefreq: "monthly" },
+  { path: "/compare/boltcall-vs-abby-connect",                  priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-goodcall",                      priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-callin",                        priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-lindy",                         priority: "0.8", changefreq: "monthly" },
