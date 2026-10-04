@@ -44,11 +44,12 @@ describe('trusted integration command', () => {
       throw Error(`Unexpected API path ${endpoint}`);
     });
   }
-  it('rechecks source after approval and sends GitHub the exact-head merge precondition', async () => {
+  it('merges a CI-verified exact head without reading reviewer environments', async () => {
     const api = fakeApi();
     expect((await runIntegration({ env, api })).merged).toBe(true);
+    expect(api.mock.calls.some(([path]) => path.startsWith('environments/'))).toBe(false);
     expect(api.mock.calls.at(-2)).toEqual([`statuses/${sha}`, { method: 'POST', body: {
-      state: 'success', context: 'atlas-owner-integration', description: 'Owner approved exact PR head after latest CI passed',
+      state: 'success', context: 'atlas-owner-integration', description: 'Exact PR head verified against latest successful CI',
       target_url: 'https://github.com/Boltcall/Boltcall/actions/runs/987',
     } }]);
     expect(api).toHaveBeenLastCalledWith('pulls/7/merge', { method: 'PUT', body: { sha, merge_method: 'merge' } });
@@ -67,11 +68,10 @@ describe('trusted integration command', () => {
     await runIntegration({ env: { ...env, GITHUB_JOB: 'inspect', INTEGRATION_PHASE: 'inspect' }, api });
     expect(api.mock.calls.some(([, options]) => options?.method)).toBe(false);
   });
-  it.each(['owner gate', 'latest CI'])('does not publish approval status when %s fails', async reason => {
+  it.each(['latest CI'])('does not publish integration status when %s fails', async reason => {
     const base = fakeApi();
     const api = vi.fn(async (endpoint, options) => {
       const result = await base(endpoint, options);
-      if (reason === 'owner gate' && endpoint === 'environments/production') return { ...result, can_admins_bypass: true };
       if (reason === 'latest CI' && endpoint.startsWith('actions/workflows')) return { ...result,
         workflow_runs: result.workflow_runs.map(run => ({ ...run, status: 'in_progress', conclusion: null })) };
       return result;
@@ -120,11 +120,11 @@ describe('trusted integration command', () => {
 });
 
 describe('release workflow boundaries', () => {
-  it('grants status publication only to the owner-protected integration merge job', () => {
+  it('keeps status publication in the trusted merge job without a manual reviewer gate', () => {
     const integration = workflow('integrate-boltcall-pr');
     expect(integration.permissions.statuses).toBeUndefined();
     expect(integration.jobs.inspect.permissions?.statuses).toBeUndefined();
-    expect(integration.jobs.merge.environment.name).toBe('production');
+    expect(integration.jobs.merge.environment).toBeUndefined();
     expect(integration.jobs.merge.permissions.statuses).toBe('write');
     for (const job of Object.values(integration.jobs)) expect(job.steps[0].with['persist-credentials']).toBe(false);
   });

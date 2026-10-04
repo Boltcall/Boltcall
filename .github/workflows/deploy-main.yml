@@ -20,7 +20,7 @@ on:
   push:
     branches: [main]
   workflow_run:
-    workflows: ['Integrate Owner Reviewed Boltcall PR']
+    workflows: ['Integrate CI Verified Boltcall PR']
     types: [completed]
   workflow_dispatch:
     inputs:

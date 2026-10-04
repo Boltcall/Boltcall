@@ -1,5 +1,11 @@
 # Boltcall release workflow
 
+## Normal release policy (2026-10-04)
+
+Noam requested no mandatory human reviews for normal releases. Use `integrate-boltcall-pr.yml` (Integrate CI Verified Boltcall PR): it executes trusted main code, checks the latest successful PR CI for the exact head, publishes the existing required `atlas-owner-integration` status as a CI attestation, and merges with GitHub's SHA precondition. It does not use a reviewer-gated environment. `deploy-main.yml` then tests, builds/prerenders, deploys, and verifies main automatically, including after GitHub-token integration merges. Keep both required checks, PR protection, credential isolation and the deployment concurrency lock.
+
+The older prepared-manifest workflow below is a separate optional path; its reviewer environments are not part of normal merge/main deployment. Do not send routine releases through that legacy approval path. The status context retains its historical name to avoid weakening branch protection.
+
 Atlas proposes an exact PR, prepares a tested build, and dispatches a deployment request. GitHub owns integration and deployment authority. Production verification requires NJ44's separate browser acceptance and a fresh Netlify/public-marker check.
 
 ## One-time owner configuration
