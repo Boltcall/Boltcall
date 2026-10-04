@@ -134,6 +134,7 @@ const PersonalInjury: React.FC = () => {
             >
               Hear a live intake call
             </a>
+            <Link to="/tools/pi-sms-intake-agent" className="inline-flex items-center justify-center rounded-full border border-gray-300 px-6 py-4 font-semibold text-gray-900">Build your free SMS intake agent</Link>
           </motion.div>
         </div>
       </section>

@@ -80,6 +80,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
     industries: [
       { label: 'Lawyer Answering Service', labelHe: 'שירות מענה לעורכי דין', href: '/industries/lawyer-answering-service' },
       { label: 'Personal Injury Intake', labelHe: 'קליטת פניות לנזקי גוף', href: '/personal-injury' },
+      { label: 'Free PI SMS Intake Agent', labelHe: 'סוכן קליטה חינמי', href: '/tools/pi-sms-intake-agent' },
       { label: 'Lawyer Intake Calculator', labelHe: 'מחשבון קליטת לקוחות למשרד עורכי דין', href: '/tools/lawyer-intake-calculator' },
       { label: 'Speed to Lead for Law Firms', labelHe: 'מהירות מענה למשרדי עורכי דין', href: '/blog/speed-to-lead-for-law-firms' },
       { label: 'AI Receptionist for Law Firms', labelHe: 'מזכירה AI למשרדי עורכי דין', href: '/blog/ai-receptionist-for-law-firms' },

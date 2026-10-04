@@ -23,6 +23,7 @@ let port = Number(process.env.PRERENDER_PORT) || 0;
 
 // All public routes to prerender (no dashboard, auth, or dynamic routes)
 const ROUTES = [
+  '/tools/pi-sms-intake-agent',
   // Core pages
   '/',
   '/about',

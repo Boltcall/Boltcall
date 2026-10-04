@@ -56,6 +56,7 @@ const Header: React.FC = () => {
   ];
 
   const freeToolsItems = [
+    { labelKey: 'Free PI SMS Intake Agent', href: '/tools/pi-sms-intake-agent', icon: MessageSquare },
     { labelKey: 'header.freeToolsItems.lawyerIntakeCalculator', href: '/tools/lawyer-intake-calculator', icon: Calculator },
     { labelKey: 'header.freeToolsItems.leadResponseSpeedTest', href: '/speed-test', icon: Zap },
     { labelKey: 'header.freeToolsItems.aiRevenueAudit', href: '/ai-revenue-audit', icon: Calculator },
