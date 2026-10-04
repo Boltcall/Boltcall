@@ -60,7 +60,7 @@ const AeoGlobalIntro: React.FC = () => {
   // Article/FAQ schema, verified date and Sources list. The generic block below
   // would add a second BreadcrumbList and a "Last updated: today" that moves daily.
   // Add each new template page's path here.
-  const ownSchemaPaths = new Set(['/compare/boltcall-vs-smith-ai']);
+  const ownSchemaPaths = new Set(['/compare/boltcall-vs-smith-ai', '/compare/boltcall-vs-abby-connect']);
   const ownsSchema = ownSchemaPaths.has(path);
 
   const isComparisonsRoute =

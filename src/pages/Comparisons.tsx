@@ -80,6 +80,14 @@ const Comparisons: React.FC = () => {
       readTime: '8 min read'
     },
     {
+      title: 'Boltcall vs <span class="text-blue-600">Abby Connect</span>',
+      description: 'For law firms: per-minute human and AI answering vs a flat AI-only plan, with Clio and MyCase, intake and contract terms. Every Abby figure links to its source.',
+      href: '/compare/boltcall-vs-abby-connect',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '8 min read'
+    },
+    {
       title: '5 Best <span class="text-blue-600">Podium Alternatives</span> for Local Businesses (2026)',
       description: 'Five Podium alternatives ranked by lead-conversion focus, response speed, and pricing transparency. Honest strengths and weaknesses for each.',
       href: '/compare/podium-alternatives',
