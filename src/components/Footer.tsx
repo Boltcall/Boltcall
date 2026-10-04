@@ -83,6 +83,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'Rank on Google Offer', labelHe: 'הצעת דירוג בגוגל', href: '/rank-on-google-offer' },
       { label: 'Free Website Offer', labelHe: 'הצעת אתר חינם', href: '/free-website' },
       { label: 'Giveaway', labelHe: 'הגרלה', href: '/giveaway' },
+      { label: 'Free PI SMS Intake Agent', labelHe: 'סוכן קליטה חינמי', href: '/tools/pi-sms-intake-agent' },
     ],
     comparisons: [
       { label: 'All Comparisons', labelHe: 'כל ההשוואות', href: '/comparisons' },
