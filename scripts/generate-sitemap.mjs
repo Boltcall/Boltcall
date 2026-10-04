@@ -135,6 +135,7 @@ const ROUTES = [
   { path: "/compare/boltcall-vs-gohighlevel",                   priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-birdeye",                       priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-smith-ai",                      priority: "0.8", changefreq: "monthly" },
+  { path: "/compare/boltcall-vs-answering-legal",               priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-goodcall",                      priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-callin",                        priority: "0.8", changefreq: "monthly" },
   { path: "/compare/boltcall-vs-lindy",                         priority: "0.8", changefreq: "monthly" },
