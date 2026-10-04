@@ -115,6 +115,7 @@ const ROUTES = [
   '/compare/boltcall-vs-answering-legal',
   '/compare/boltcall-vs-lex-reception',
   '/compare/boltcall-vs-abby-connect',
+  '/compare/best-law-firm-answering-services',
   '/compare/boltcall-vs-goodcall',
   '/compare/boltcall-vs-callin',
   '/compare/boltcall-vs-lindy',
