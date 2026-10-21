@@ -5,6 +5,11 @@
 # Security headers — applied to every route. Keep in sync with any CSP
 # expectations added by future integrations (Retell embed, PostHog, Stripe).
 [[headers]]
+  for = "/reports/magnan-family-law*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"

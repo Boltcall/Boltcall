@@ -23,6 +23,8 @@ let port = Number(process.env.PRERENDER_PORT) || 0;
 
 // All public routes to prerender (no dashboard, auth, or dynamic routes)
 const ROUTES = [
+  // Direct-link, noindex personalised report. Intentionally not in the sitemap.
+  '/reports/magnan-family-law',
   '/tools/pi-sms-intake-agent',
   // Core pages
   '/',

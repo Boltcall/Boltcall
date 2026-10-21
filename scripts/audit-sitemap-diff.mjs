@@ -74,6 +74,8 @@ const EXCLUDE_SUFFIXES = ['/thank-you'];
 // to prioritize them. Listed here so this gate does not treat the opt-out as
 // drift. Remove an entry to re-list it.
 const SITEMAP_OPTOUT = new Set([
+  // Personalised direct-link report with explicit noindex metadata and headers.
+  '/reports/magnan-family-law',
   '/blog/commercial-cleaning-lead-response-time',
   '/blog/commercial-roofing-lead-response-time',
   '/blog/electrician-lead-response-time',

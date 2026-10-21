@@ -1,0 +1,91 @@
+{
+  "title": "Magnan Family Law",
+  "subtitle": "From First Enquiry to Consultation",
+  "recipient": "Prepared for Jordan Magnan",
+  "date": "21 October 2026",
+  "intro": "A personalised speed-to-lead review of your public enquiry journey. Three practical changes to make the next step clearer while protecting the personal service your firm is known for.",
+  "pages": [
+    {
+      "label": "The opportunity",
+      "blocks": [
+        {"type": "heading", "text": "01  Make the first reply as clear as the first impression"},
+        {"type": "paragraph", "text": "Jordan, your website presents a practice built around personal attention and accessible communication [1]. The opportunity is to make that promise equally clear to someone who has not spoken to your team yet."},
+        {"type": "paragraph", "text": "Your contact page lists a Friday noon close and asks visitors to choose at least two contact methods [2]. In the page reviewed, no new-enquiry reply timeframe was stated. Those are useful starting points for a review, not evidence that your team is slow."},
+        {"type": "heading", "text": "A useful change you can make in ten minutes", "level": 3},
+        {"type": "paragraph", "text": "Choose a reply window your team can reliably meet. Add it beside the form, along with what a visitor should expect outside office hours. Keep receipt acknowledgement separate from an attorney's response."},
+        {"type": "image", "file": "contact-evidence.png", "alt": "Magnan Family Law contact page showing Friday noon closing and the instruction to select at least two contact methods. No enquiry was submitted.", "caption": "Public contact page, captured in Chrome on 21 October 2026. Source [2]."},
+        {"type": "heading", "text": "What this review can and cannot tell you", "level": 3},
+        {"type": "paragraph", "text": "We reviewed published page content and the visible, unsubmitted form. We did not call, submit an enquiry or access your intake systems. Actual response times, acknowledgements, call coverage, available appointments and conversion rates remain unmeasured. No lost-client estimate or speed grade is assigned."}
+      ]
+    },
+    {
+      "label": "Three practical findings",
+      "blocks": [
+        {"type": "heading", "text": "02  Three points worth checking"},
+        {"type": "heading", "text": "1  What happens after the office closes", "level": 3},
+        {"type": "paragraph", "text": "Observed: Published hours are Monday to Thursday, 9am to 5pm, and Friday, 9am to noon [2]. After-hours handling is not established by those hours."},
+        {"type": "paragraph", "text": "Question to resolve: If someone enquires on Friday afternoon, can they tell when and how your team will respond?"},
+        {"type": "paragraph", "text": "Recommended fix: Publish a realistic reply window. If you already provide after-hours acknowledgement, explain it. Otherwise evaluate a receipt-only acknowledgement through a contact method the person has explicitly marked safe."},
+        {"type": "heading", "text": "2  A safe contact preference should be enough", "level": 3},
+        {"type": "paragraph", "text": "Observed: The form instructs people to select at least two methods, offering phone, email and text. It also warns that contact details should be private and secure [2]. We did not test submission enforcement."},
+        {"type": "paragraph", "text": "Question to resolve: Can a prospective client proceed when only one channel is safe? That matters in a family-law intake journey."},
+        {"type": "paragraph", "text": "Recommended fix: Let visitors identify one safe channel, a safe contact time and whether voicemail is allowed. Collect additional methods only when safe and useful. Have the firm approve the wording and consent process before changing the form."},
+        {"type": "heading", "text": "3  Separate a consultation request from a confirmed appointment", "level": 3},
+        {"type": "paragraph", "text": "Observed: The form asks about consultation readiness and collects the opposing party's name [2]. A completed request does not by itself establish that an appointment is booked."},
+        {"type": "paragraph", "text": "Question to resolve: Does the confirmation explain the next human step and any required conflict review?"},
+        {"type": "paragraph", "text": "Recommended fix: Explain the sequence: request received, firm review, then scheduling. Preserve your conflict checks, confidentiality warnings and attorney-client disclaimer. Do not add automatic booking that bypasses the firm's approval process."}
+      ]
+    },
+    {
+      "label": "Local context and proposed workflow",
+      "blocks": [
+        {"type": "heading", "text": "03  How nearby firms present the next step"},
+        {"type": "paragraph", "text": "A narrow comparison of public contact pages, not a ranking of service quality or response speed. These firms operate in the same regional market but are not identical practices."},
+        {"type": "table", "headers": ["Firm", "Published enquiry route", "Useful distinction"], "rows": [
+          ["Magnan Family Law [2]", "Phone and detailed consultation request form", "Contact preferences and opposing-party information are collected up front."],
+          ["Hoover Krepelka [3]", "Phone and consultation intake form", "Also requests the other party's name and contact preference. Detailed screening is not unique to your firm."],
+          ["McManis Faulkner [4]", "Phone and email-us form", "The published form lists subject, name, email, phone and message. Its public entry point is more general."]
+        ]},
+        {"type": "paragraph", "text": "Takeaway: Do not strip out necessary screening to make the form shorter. Make the first commitment easier to understand. No response-time promise was found in the reviewed contact-page text for any of these firms; actual performance is unknown."},
+        {"type": "heading", "text": "04  A safer after-hours enquiry path"},
+        {"type": "paragraph", "text": "Proposed workflow, not a description of your current systems:"},
+        {"type": "list", "items": [
+          "Capture only firm-approved preliminary information and an explicitly safe contact preference.",
+          "Acknowledge receipt only if that channel and time are safe. Use a neutral message with no case details.",
+          "Route to the named intake owner. Apply your conflict review and any urgent human escalation protocol.",
+          "Offer scheduling only when the firm permits it. State fees and availability accurately.",
+          "Log the first substantive reply and consultation outcome. Honour opt-outs and stop unwanted follow-up."
+        ]},
+        {"type": "paragraph", "text": "Automation must not give legal advice, imply representation or promise an emergency response. If voice AI is used, disclose it and handle recording consent under a firm-approved process. Review vendor access, retention and confidentiality before using real client information."}
+      ]
+    },
+    {
+      "label": "Measure before you scale",
+      "blocks": [
+        {"type": "heading", "text": "05  Measure the gap with your own enquiries"},
+        {"type": "paragraph", "text": "Use existing, permitted intake records for a one-week baseline. Keep client identities and case details inside the firm's approved systems. Separate business-hours from after-hours enquiries."},
+        {"type": "table", "headers": ["Measure", "Business hours", "After hours"], "rows": [
+          ["New enquiries received", "To record", "To record"],
+          ["Median time to receipt acknowledgement", "To measure", "To measure"],
+          ["Median time to substantive human reply", "To measure", "To measure"],
+          ["Enquiries contacted through a safe channel", "To verify", "To verify"],
+          ["Consultations booked after required review", "To record", "To record"]
+        ]},
+        {"type": "paragraph", "text": "An automated receipt is not a substantive reply. Track these separately. If you change the process, compare equivalent enquiry groups and check quality as well as speed. Do not attribute a booking improvement to automation without enough evidence."},
+        {"type": "heading", "text": "06  Where Boltcall could help"},
+        {"type": "paragraph", "text": "Boltcall offers AI reception, form replies and booking support [5]. For your firm, the first discussion should be about safe acknowledgement and reliable routing around your existing intake process, not replacing your personal client relationship."},
+        {"type": "paragraph", "text": "Any rollout would need your approved scripts, contact permissions, conflict-review gates and verified integrations. No integration or performance result has been tested for Magnan Family Law."},
+        {"type": "paragraph", "text": "If useful, reply to Noam with the step you would like to examine first: after-hours acknowledgement, safe contact preferences or consultation handoff. No client data is needed for that conversation."},
+        {"type": "heading", "text": "07  Sources and review scope"},
+        {"type": "sources", "items": [
+          {"id": 1, "label": "Magnan Family Law  Our Firm", "url": "https://magnanfamilylaw.com/our-firm/"},
+          {"id": 2, "label": "Magnan Family Law  Contact Us", "url": "https://magnanfamilylaw.com/contact-us/"},
+          {"id": 3, "label": "Hoover Krepelka  Contact", "url": "https://hooverkrepelka.com/contact/"},
+          {"id": 4, "label": "McManis Faulkner  Contact", "url": "https://www.mcmanislaw.com/contact/"},
+          {"id": 5, "label": "Boltcall  Product overview", "url": "https://boltcall.org/"}
+        ]},
+        {"type": "paragraph", "text": "Public pages reviewed on 21 October 2026. Magnan's visible form was also verified in regular Chrome; no values were entered or submitted. Competitor comparison uses published page text only. Interpretation and proposed changes are labelled above. This is an intake-process review, not legal advice."}
+      ]
+    }
+  ]
+}
