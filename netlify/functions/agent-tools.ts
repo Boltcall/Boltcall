@@ -1,8 +1,8 @@
 import { Handler, HandlerEvent } from '@netlify/functions';
 import * as crypto from 'crypto';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezonePlugin from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc.js';
+import timezonePlugin from 'dayjs/plugin/timezone.js';
 import { deductTokens, getServiceSupabase, TOKEN_COSTS } from './_shared/token-utils';
 import { alertOwner, notifyError, notifyInfo } from './_shared/notify';
 import { resolveTwilioFromNumber } from './_shared/twilio-from-number';
