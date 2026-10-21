@@ -8,6 +8,7 @@ import { requireInternalOrMatchingUser } from './_shared/user-auth';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { appendChatMessage } from './_shared/chats-sync';
 import { ensureWorkspaceForUser } from './_shared/setup-workspace';
+import { getCalcomEventType, getCalcomSlots } from './_shared/calcom-v2';
 
 /**
  * SMS AI Responder — Generates AI-powered responses for inbound SMS.
@@ -111,7 +112,7 @@ const handler: Handler = async (event) => {
 
     let availabilityContext = '';
     if (smsSettings.booking_enabled && smsSettings.calcom_event_slug) {
-      availabilityContext = await getCalcomAvailability(smsSettings.calcom_event_slug);
+      availabilityContext = await getCalcomAvailability(smsSettings.calcom_event_slug, userId, smsSettings.business_timezone || 'UTC');
     }
 
     const biz = businessProfile;
@@ -330,21 +331,23 @@ function buildThreadId(phone1: string, phone2: string): string {
   return [phone1, phone2].sort().join('_');
 }
 
-async function getCalcomAvailability(eventSlug: string): Promise<string> {
-  const calcomApiKey = process.env.CALCOM_API_KEY;
-  if (!calcomApiKey) return '';
+export async function getCalcomAvailability(eventSlug: string, userId: string, timeZone: string): Promise<string> {
   try {
+    const db = getServiceSupabase();
+    const { data: integration } = await db.from('user_integrations').select('api_key').eq('user_id', userId).eq('provider', 'calcom').eq('is_connected', true).maybeSingle();
+    const { data: features } = await db.from('business_features').select('reminders_config').eq('user_id', userId).maybeSingle();
+    const config = features?.reminders_config || {};
+    const calcomApiKey = integration?.api_key || (config.cal_connected ? config.cal_api_key : '') || process.env.CALCOM_API_KEY || process.env.CAL_API_KEY;
+    if (!calcomApiKey) return '';
     const now = new Date();
     const endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const params = new URLSearchParams({ apiKey: calcomApiKey, dateFrom: now.toISOString(), dateTo: endDate.toISOString(), eventTypeSlug: eventSlug });
-    const res = await fetch(`https://api.cal.com/v1/availability?${params.toString()}`);
-    if (!res.ok) return '';
-    const data = await res.json();
-    const slots = data.slots || {};
+    const event = await getCalcomEventType(calcomApiKey, eventSlug);
+    if (!event) return '';
+    const slots = await getCalcomSlots(calcomApiKey, event.id, now.toISOString(), endDate.toISOString(), timeZone);
     const slotLines: string[] = [];
     for (const [date, times] of Object.entries(slots)) {
       if (Array.isArray(times) && times.length > 0) {
-        const timeStrs = times.slice(0, 4).map((t: any) => new Date(t.time || t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
+        const timeStrs = times.slice(0, 4).map((t: any) => `${new Date(t.start).toLocaleTimeString('en-US', { timeZone, hour: 'numeric', minute: '2-digit' })} (${timeZone}; exact start: ${t.start})`);
         slotLines.push(`${date}: ${timeStrs.join(', ')}`);
       }
     }

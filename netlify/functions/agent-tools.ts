@@ -10,6 +10,7 @@ import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { estimateBookingValueCents } from './_shared/booking-value';
 import { publicEnv } from './_shared/public-config';
+import { calcomFetch, getCalcomEventType, getCalcomSlots } from './_shared/calcom-v2';
 
 dayjs.extend(utc);
 dayjs.extend(timezonePlugin);
@@ -27,7 +28,6 @@ dayjs.extend(timezonePlugin);
  *   { tool_call_id, content: "..." }
  */
 
-const CAL_BASE_URL = 'https://api.cal.com/v1';
 const TWILIO_API_BASE = 'https://api.twilio.com/2010-04-01';
 
 const headers = {
@@ -79,34 +79,11 @@ function isAuthorizedToolRequest(event: HandlerEvent): boolean {
 
 // ── Cal.com helpers ──
 
-// Keyed by calApiKey so different users never share cached event type IDs.
-const eventTypeIdCache = new Map<string, number>();
-
 async function getEventTypeId(calApiKey: string): Promise<number | null> {
-  const cached = eventTypeIdCache.get(calApiKey);
-  if (cached != null) return cached;
-
   try {
-    const response = await fetch(`${CAL_BASE_URL}/event-types?apiKey=${calApiKey}`);
-
-    if (!response.ok) {
-      console.error('[agent-tools] Failed to fetch event types:', response.status, await response.text());
-      return null;
-    }
-
-    const data = await response.json();
-    const eventTypes = data.event_types || data.data || [];
-    if (eventTypes.length === 0) return null;
-
-    // Prefer "Free Consultation" event type, fall back to first
-    const consultation = eventTypes.find((e: any) =>
-      e.title?.toLowerCase().includes('consultation') || e.slug?.includes('consultation')
-    );
-    const id: number = consultation?.id || eventTypes[0].id;
-    eventTypeIdCache.set(calApiKey, id);
-    return id;
+    return (await getCalcomEventType(calApiKey))?.id || null;
   } catch (err) {
-    console.error('[agent-tools] Error fetching event types:', err);
+    console.error('[agent-tools] Cal.com event lookup failed');
     return null;
   }
 }
@@ -189,6 +166,11 @@ async function getCalApiKey(userId: string | null): Promise<string> {
         .maybeSingle();
 
       if (data?.api_key) return data.api_key;
+      // The existing Cal.com connection UI stores credentials here.
+      const { data: features } = await supabase.from('business_features')
+        .select('reminders_config').eq('user_id', userId).maybeSingle();
+      const config = features?.reminders_config;
+      if (config?.cal_connected && config?.cal_api_key) return config.cal_api_key;
     } catch (err) {
       console.error('[agent-tools] Failed to fetch user Cal.com API key, falling back to env:', err);
     }
@@ -503,17 +485,7 @@ async function handleCheckAvailability(args: any, calApiKey: string, userId: str
   if (!eventTypeId) return NO_CALENDAR_AVAILABILITY;
 
   try {
-    const url = `${CAL_BASE_URL}/slots?apiKey=${calApiKey}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&eventTypeId=${eventTypeId}&timeZone=${encodeURIComponent(timezone)}`;
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('[agent-tools] Cal.com slots error:', response.status, errText);
-      return 'Sorry, I could not check availability right now. Please try again.';
-    }
-
-    const data = await response.json();
-    const slots = data.data?.slots || data.slots || {};
+    const slots = await getCalcomSlots(calApiKey, eventTypeId, startTime, endTime, timezone);
     const dateSlots = slots[date] || [];
 
     if (dateSlots.length === 0) {
@@ -635,34 +607,37 @@ async function handleBookAppointment(
         return 'Appointment scheduling is not configured. Nothing was booked. Tell the caller the office will call them back, and confirm their best number.';
       }
 
-      const endDate = new Date(startISO);
-      endDate.setMinutes(endDate.getMinutes() + 20);
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return 'Please provide a valid email address before booking. No appointment was made.';
+      }
 
       const bookingBody: any = {
         eventTypeId,
         start: startISO,
-        end: endDate.toISOString(),
-        responses: { name, email: email || 'noemail@placeholder.com', location: { value: 'integrations:daily', optionValue: '' } },
+        attendee: { name, email, timeZone: timezone, language: locale.split('-')[0], ...(phone ? { phoneNumber: phone } : {}) },
         metadata: { source: 'ai_receptionist', call_id: callId, phone: phone || '', service: service || '', notes: notes || '' },
-        timeZone: timezone,
-        language: 'en',
       };
 
-      const response = await fetch(`${CAL_BASE_URL}/bookings?apiKey=${calApiKey}`, {
+      const response = await calcomFetch(calApiKey, '/bookings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingBody),
       });
 
       if (!response.ok) {
-        console.error('[agent-tools] Cal.com booking error:', response.status, await response.text());
+        console.error('[agent-tools] Cal.com booking error:', response.status);
         if (response.status >= 500 || response.status === 408) return 'The calendar outcome is uncertain. Do not book again until the team checks whether an appointment was created.';
         return `I wasn't able to book that time slot. It may no longer be available. Would you like to try a different time?`;
       }
 
       const bookingData = await response.json();
-      const booking = bookingData.data || bookingData;
-      bookingId = booking.id || booking.uid || 'N/A';
+      const booking = bookingData.status === 'success' ? bookingData.data : null;
+      bookingId = booking?.uid || 'N/A';
+      if (booking?.uid && booking.status === 'pending') {
+        return `Your booking request is pending host approval, reference ${booking.uid}. It is not confirmed. Do not book again; ask the team to track this request.`;
+      }
+      if (booking?.status !== 'accepted') {
+        return 'The calendar did not confirm an accepted booking. The outcome is uncertain; do not book again. Ask the team to reconcile the calendar.';
+      }
     }
 
     if (!bookingId || bookingId === 'N/A') {
@@ -742,6 +717,56 @@ async function handleBookAppointment(
 
 // ── Tool: cancel_appointment ──
 
+async function changeCalcomAppointment(args: any, userId: string, callId: string, reschedule: boolean): Promise<string> {
+  // Names are not unique. Resolve from tenant-owned local records using a
+  // contact value and refuse multiple matches rather than changing the first.
+  if (!args.email && !args.phone) return 'Please provide the booking email or phone number to identify one appointment. No appointment was changed.';
+  let start: string | undefined;
+  if (reschedule) {
+    try {
+      if (typeof args.new_start !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/.test(args.new_start) || !args.timezone) throw new Error('ambiguous slot');
+      const instant = new Date(args.new_start);
+      const parts = new Intl.DateTimeFormat('en-CA', { timeZone: args.timezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(instant);
+      const part = (key: string) => parts.find(p=>p.type===key)?.value;
+      if (`${part('year')}-${part('month')}-${part('day')}` !== args.new_date || `${part('hour')}:${part('minute')}` !== args.new_time) throw new Error('slot mismatch');
+      start = instant.toISOString();
+    } catch { return 'Please confirm an exact new calendar slot with its UTC offset and IANA timezone. No appointment was changed.'; }
+  }
+  const db = getServiceSupabase();
+  const { data: appointments, error } = await db.from('appointments')
+    .select('cal_booking_id,raw_webhook').eq('user_id', userId).eq('status', 'confirmed')
+    .eq(args.email ? 'client_email' : 'client_phone', args.email || args.phone)
+    .gte('starts_at', new Date().toISOString()).order('starts_at').limit(2);
+  if (error) return 'Appointment records could not be checked. No appointment was changed.';
+  if (!appointments?.length) return 'No matching upcoming appointment was found. No appointment was changed.';
+  if (appointments.length !== 1) return 'More than one appointment matches. Ask the team to identify the exact appointment. No appointment was changed.';
+  const appointment = appointments[0];
+  if (appointment.raw_webhook?.booked_via !== 'cal.com' || !appointment.cal_booking_id || /^\d+$/.test(appointment.cal_booking_id)) {
+    return 'The calendar booking UID could not be verified. Ask the team to reconcile the appointment. No appointment was changed.';
+  }
+  const key = await getCalApiKey(userId);
+  if (!key) return 'Calendar connection is unavailable. No appointment was changed.';
+  try {
+    const path = `/bookings/${encodeURIComponent(appointment.cal_booking_id)}/${reschedule ? 'reschedule' : 'cancel'}`;
+    const response = await calcomFetch(key, path, { method: 'POST', body: JSON.stringify(reschedule
+      ? { start, reschedulingReason: args.reason || 'Caller requested reschedule' }
+      : { cancellationReason: args.reason || 'Caller requested cancellation' }) });
+    const result = response.ok ? await response.json() : null;
+    const booking = result?.status === 'success' ? result.data : null;
+    if (!booking?.uid || booking.status !== (reschedule ? 'accepted' : 'cancelled')) {
+      return 'The calendar outcome is uncertain. Do not repeat the change until the team checks the calendar.';
+    }
+    const { error: saveError } = await db.from('appointments').update({
+      status: reschedule ? 'confirmed' : 'cancelled', cal_booking_id: booking.uid,
+      ...(reschedule ? { starts_at: start, timezone: args.timezone } : {}),
+      raw_webhook: { ...appointment.raw_webhook, call_id: callId, reason: args.reason, changed_via: 'agent_tool' },
+    }).eq('user_id', userId).eq('cal_booking_id', appointment.cal_booking_id);
+    if (saveError) return `The calendar changed reference ${booking.uid}, but local records could not be saved. Do not repeat the change. Ask the team to reconcile it.`;
+    return reschedule ? `Your appointment has been rescheduled to ${args.new_date} at ${args.new_time} (${args.timezone}). Reference ${booking.uid}.`
+      : `Your appointment has been cancelled. Reference ${booking.uid}.`;
+  } catch { return 'The calendar outcome could not be verified. Do not repeat the change until the team checks the calendar.'; }
+}
+
 async function handleCancelAppointment(args: any, userId: string | null, callId: string, locale = 'en-US'): Promise<string> {
   const { name, phone, email, reason } = args;
   if (!name && !phone && !email) return 'I need your name, phone number, or email to find your appointment.';
@@ -797,7 +822,8 @@ async function handleCancelAppointment(args: any, userId: string | null, callId:
     }
   }
 
-  return 'Sorry, I was unable to cancel the appointment right now. Let me note your request and have someone follow up with you shortly.';
+  if (!gcal) return changeCalcomAppointment(args, userId, callId, false);
+  return 'The cancellation could not be verified. Ask the team to check the calendar before trying again.';
 }
 
 // ── Tool: reschedule_appointment ──
@@ -854,7 +880,8 @@ async function handleRescheduleAppointment(args: any, userId: string | null, cal
     }
   }
 
-  return 'Sorry, I was unable to reschedule right now. Let me note your preferred time and have someone follow up.';
+  if (!gcal) return changeCalcomAppointment(args, userId, callId, true);
+  return 'The reschedule could not be verified. Ask the team to check the calendar before trying again.';
 }
 
 // ── Tool: send_sms ──

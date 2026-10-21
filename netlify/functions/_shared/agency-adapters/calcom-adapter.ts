@@ -5,14 +5,14 @@
  *   - Stateless. All state lives in Supabase.
  *   - Idempotent where possible (external IDs as keys).
  *   - Emit `agency_events` on every call (debug success / error failure).
- *   - Single retry with backoff on transient errors. No silent retries.
+ *   - One retry for transient read errors; never retry uncertain mutations.
  *   - Field-whitelist all outbound payloads (no leaking caller data into Cal.com).
  *
  * This is the ONLY place in the OS that talks to Cal.com's API.
  * Agents (intake-officer, agent-architect, etc.) call these functions —
  * never `fetch('https://api.cal.com/...')` from anywhere else.
  *
- * Wire mirrors the live pattern in netlify/functions/calcom-webhook.ts.
+ * Uses the shared Cal.com v2 header-authenticated transport.
  */
 
 import {
@@ -20,12 +20,11 @@ import {
   type AgencyEventType,
   type AgencyEventSeverity,
 } from '../emit-agency-event';
+import { CALCOM_API_BASE, calcomHeaders, calcomUrl } from '../calcom-v2';
 
 // ───────────────────────────── Config ─────────────────────────────
 
-const CAL_API_BASE = 'https://api.cal.com/v1';
-const CAL_API_KEY =
-  process.env.CALCOM_API_KEY || process.env.CAL_API_KEY || '';
+const CAL_API_BASE = CALCOM_API_BASE;
 
 const RETRY_BACKOFF_MS = 750; // single retry, then give up
 const FETCH_TIMEOUT_MS = 15_000;
@@ -59,6 +58,7 @@ export interface GetBookingsOpts {
 
 export interface BookingRecord {
   booking_id: number;
+  booking_uid: string;
   started_at: string;
   attendee_email: string;
   attendee_name: string;
@@ -66,7 +66,8 @@ export interface BookingRecord {
 }
 
 export interface CancelBookingOpts {
-  booking_id: number;
+  booking_id?: number;
+  booking_uid?: string;
   reason: string;
 }
 
@@ -100,17 +101,16 @@ export interface SetupClientIntakeBookingOpts {
 const EVENT_TYPE_CREATE_WHITELIST = [
   'title',
   'slug',
-  'length',
+  'lengthInMinutes',
   'description',
   'hidden',
-  'requiresConfirmation',
-  'disableGuests',
+  'confirmationPolicy',
   'schedulingType',
 ] as const;
 
 const BOOKING_CANCEL_WHITELIST = ['cancellationReason'] as const;
 
-const EVENT_TYPE_UPDATE_WHITELIST = ['hidden', 'length', 'title'] as const;
+const EVENT_TYPE_UPDATE_WHITELIST = ['hidden', 'lengthInMinutes', 'title'] as const;
 
 function pick(
   source: Record<string, any>,
@@ -202,21 +202,17 @@ class CalcomError extends Error {
 }
 
 function requireApiKey(): string {
-  if (!CAL_API_KEY) {
+  const key = process.env.CALCOM_API_KEY || process.env.CAL_API_KEY;
+  if (!key) {
     throw new Error(
       '[calcom-adapter] CALCOM_API_KEY (or CAL_API_KEY) is not set',
     );
   }
-  return CAL_API_KEY;
+  return key;
 }
 
-function withApiKey(path: string, qs: Record<string, string> = {}): string {
-  const url = new URL(`${CAL_API_BASE}${path}`);
-  url.searchParams.set('apiKey', requireApiKey());
-  for (const [k, v] of Object.entries(qs)) {
-    if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
-  }
-  return url.toString();
+function requestUrl(path: string, qs: Record<string, string> = {}): string {
+  return calcomUrl(path, qs);
 }
 
 async function fetchWithTimeout(
@@ -233,8 +229,8 @@ async function fetchWithTimeout(
 }
 
 /**
- * One retry with linear backoff on transient errors (network failure, 429,
- * 5xx). 4xx (other than 429) are caller errors — fail fast, do not retry.
+ * One retry for transient GET failures. Mutations are never automatically
+ * repeated: a timeout or 5xx can happen after the provider committed a write.
  */
 async function calRequest<T = any>(opts: {
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -244,10 +240,11 @@ async function calRequest<T = any>(opts: {
   context: string; // for event payload
   client_id?: string;
 }): Promise<T> {
-  const url = withApiKey(opts.path, opts.query);
+  const url = requestUrl(opts.path, opts.query);
   const init: RequestInit = {
     method: opts.method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: calcomHeaders(requireApiKey(), opts.path),
+    redirect: 'error',
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   };
 
@@ -269,18 +266,20 @@ async function calRequest<T = any>(opts: {
           latency_ms,
           attempt,
         });
-        return text ? (JSON.parse(text) as T) : (undefined as unknown as T);
+        if (!text) return undefined as unknown as T;
+        const result = JSON.parse(text);
+        if (result.status !== 'success' || result.data === undefined) throw new CalcomError(502, 'Malformed Cal.com response');
+        return result.data as T;
       }
 
       // Retry only on 429 / 5xx
       const transient = res.status === 429 || res.status >= 500;
-      if (transient && attempt === 0) {
+      if (transient && attempt === 0 && opts.method === 'GET') {
         warnRetry(opts.context, {
           method: opts.method,
           path: opts.path,
           status: res.status,
           latency_ms,
-          body_snippet: text.slice(0, 300),
         });
         await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
         continue;
@@ -294,15 +293,15 @@ async function calRequest<T = any>(opts: {
           path: opts.path,
           status: res.status,
           duration_ms: latency_ms,
-          error: text.slice(0, 500),
+          error: `Cal.com returned HTTP ${res.status}`,
         },
       });
-      throw new CalcomError(res.status, text);
+      throw new CalcomError(res.status, `Cal.com returned HTTP ${res.status}`);
     } catch (err: any) {
       lastErr = err;
       const isAbort = err?.name === 'AbortError';
       const isNetwork = !(err instanceof CalcomError);
-      if (isNetwork && attempt === 0) {
+      if (isNetwork && attempt === 0 && opts.method === 'GET') {
         warnRetry(opts.context, {
           method: opts.method,
           path: opts.path,
@@ -348,18 +347,13 @@ export async function createEventType(
     {
       title: opts.name,
       slug: opts.slug,
-      length: opts.duration_min,
+      lengthInMinutes: opts.duration_min,
       hidden: false,
-      requiresConfirmation: false,
-      disableGuests: false,
     },
     EVENT_TYPE_CREATE_WHITELIST,
   );
 
-  const result = await calRequest<{
-    event_type?: { id: number };
-    id?: number;
-  }>({
+  const result = await calRequest<{ id: number }>({
     method: 'POST',
     path: '/event-types',
     body: payload,
@@ -367,8 +361,7 @@ export async function createEventType(
     client_id: opts.client_id,
   });
 
-  const event_type_id =
-    (result as any)?.event_type?.id ?? (result as any)?.id;
+  const event_type_id = result?.id;
   if (!event_type_id || typeof event_type_id !== 'number') {
     await emitEvent({
       client_id: opts.client_id,
@@ -379,7 +372,7 @@ export async function createEventType(
         operation: 'createEventType.malformed_response',
         op: 'createEventType.malformed_response',
         error_message: 'Cal.com did not return an event_type id',
-        description: JSON.stringify(result).slice(0, 500),
+        description: 'Cal.com returned an unexpected event type response',
       },
     });
     throw new Error(
@@ -420,12 +413,13 @@ export async function getBookings(
   opts: GetBookingsOpts,
 ): Promise<BookingRecord[]> {
   const query: Record<string, string> = {
-    dateFrom: opts.since,
-    dateTo: opts.until,
+    afterStart: opts.since,
+    beforeEnd: opts.until,
+    take: '100',
   };
-  if (opts.event_type_id) query.eventTypeId = String(opts.event_type_id);
+  if (opts.event_type_id) query.eventTypeIds = String(opts.event_type_id);
 
-  const raw = await calRequest<{ bookings?: any[] }>({
+  const raw = await calRequest<any[]>({
     method: 'GET',
     path: '/bookings',
     query,
@@ -433,7 +427,8 @@ export async function getBookings(
     client_id: opts.client_id,
   });
 
-  const items = Array.isArray(raw?.bookings) ? raw.bookings : [];
+  if (!Array.isArray(raw)) throw new Error('Invalid Cal.com bookings response');
+  const items = raw;
   const bookings: BookingRecord[] = items.map((b: any) => {
     const attendee = Array.isArray(b?.attendees) ? b.attendees[0] : null;
     const noShow = attendee?.noShow === true || b?.noShow === true;
@@ -445,7 +440,8 @@ export async function getBookings(
 
     return {
       booking_id: Number(b?.id),
-      started_at: String(b?.startTime || b?.start_time || ''),
+      booking_uid: String(b?.uid || ''),
+      started_at: String(b?.start || ''),
       attendee_email: String(attendee?.email || ''),
       attendee_name: String(attendee?.name || ''),
       status,
@@ -479,9 +475,10 @@ export async function cancelBooking(
     BOOKING_CANCEL_WHITELIST,
   );
 
+  if (!opts.booking_uid) throw new Error('Cal.com cancellation requires a booking UID, not a numeric ID');
   await calRequest<unknown>({
-    method: 'DELETE',
-    path: `/bookings/${encodeURIComponent(String(opts.booking_id))}/cancel`,
+    method: 'POST',
+    path: `/bookings/${encodeURIComponent(opts.booking_uid)}/cancel`,
     body,
     context: 'cancelBooking',
   });
@@ -536,26 +533,27 @@ export async function pauseEventType(
 export async function getAvailability(
   opts: GetAvailabilityOpts,
 ): Promise<AvailabilitySlot[]> {
-  const raw = await calRequest<{ slots?: Record<string, any[]> }>({
+  const raw = await calRequest<Record<string, any[]>>({
     method: 'GET',
-    path: '/availability',
+    path: '/slots',
     query: {
       eventTypeId: String(opts.event_type_id),
-      dateFrom: opts.date_from,
-      dateTo: opts.date_to,
+      start: opts.date_from,
+      end: opts.date_to,
+      timeZone: 'UTC',
     },
     context: 'getAvailability',
   });
 
-  // Cal.com returns { slots: { 'YYYY-MM-DD': [{ time: ISO }, ...] } }
+  // v2 data is keyed by local date, each slot has an offset-bearing start.
   const out: AvailabilitySlot[] = [];
-  const slotsByDay = raw?.slots ?? {};
+  const slotsByDay = raw ?? {};
   for (const day of Object.keys(slotsByDay)) {
     const arr = slotsByDay[day];
-    if (!Array.isArray(arr)) continue;
+    if (!Array.isArray(arr)) throw new Error('Invalid Cal.com slots response');
     for (const s of arr) {
-      const slot_start = String(s?.time || s?.start || '');
-      if (!slot_start) continue;
+      const slot_start = String(s?.start || '');
+      if (!Number.isFinite(Date.parse(slot_start))) throw new Error('Invalid Cal.com slot');
       // Cal.com's /availability does not always include slot length; derive
       // from the start by adding `length` if present on the slot, otherwise
       // leave end == start so consumers can re-derive from event type.

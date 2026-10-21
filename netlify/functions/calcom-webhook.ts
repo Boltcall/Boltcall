@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { calcomFetch } from './_shared/calcom-v2';
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -73,14 +74,14 @@ const handler: Handler = async (event) => {
       // Register webhook on Cal.com — include the shared secret so Cal.com
       // signs each delivery and appointment-handler can verify it.
       const calcomSecret = process.env.CALCOM_WEBHOOK_SECRET;
-      const calResponse = await fetch(
-        `https://api.cal.com/v1/webhooks?apiKey=${encodeURIComponent(cal_api_key.trim())}`,
+      if (!calcomSecret) return { statusCode: 503, headers, body: JSON.stringify({ error: 'Calendar webhook signing is not configured. Contact support.' }) };
+      const calResponse = await calcomFetch(cal_api_key.trim(), '/webhooks',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             subscriberUrl: APPOINTMENT_HANDLER_URL,
-            eventTriggers: CALCOM_EVENT_TRIGGERS,
+            triggers: CALCOM_EVENT_TRIGGERS,
             active: true,
             ...(calcomSecret ? { secret: calcomSecret } : {}),
           }),
@@ -88,8 +89,7 @@ const handler: Handler = async (event) => {
       );
 
       if (!calResponse.ok) {
-        const calError = await calResponse.text();
-        console.error('Cal.com API error:', calResponse.status, calError);
+        console.error('Cal.com API error:', calResponse.status);
         return {
           statusCode: 400,
           headers,
@@ -101,10 +101,10 @@ const handler: Handler = async (event) => {
       }
 
       const calData = await calResponse.json();
-      const webhookId = calData.webhook?.id || calData.id;
+      const webhookId = calData.status === 'success' ? calData.data?.id : null;
 
       if (!webhookId) {
-        console.error('Cal.com response missing webhook ID:', calData);
+        console.error('Cal.com response missing webhook ID');
         return {
           statusCode: 500,
           headers,
@@ -138,14 +138,13 @@ const handler: Handler = async (event) => {
       if (updateError) {
         console.error('Supabase update error:', updateError);
         // Webhook was created on Cal.com but we failed to store it — try to clean up
-        await fetch(
-          `https://api.cal.com/v1/webhooks/${webhookId}?apiKey=${encodeURIComponent(cal_api_key.trim())}`,
+        await calcomFetch(cal_api_key.trim(), `/webhooks/${encodeURIComponent(webhookId)}`,
           { method: 'DELETE' }
         ).catch(() => {});
         return {
           statusCode: 500,
           headers,
-          body: JSON.stringify({ error: 'Failed to save configuration. Please try again.' }),
+          body: JSON.stringify({ error: 'Failed to save configuration. Check Cal.com for a residual webhook before reconnecting.' }),
         };
       }
 
@@ -159,11 +158,11 @@ const handler: Handler = async (event) => {
         }),
       };
     } catch (err: any) {
-      console.error('POST /calcom-webhook error:', err);
+      console.error('POST /calcom-webhook failed');
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: err.message || 'Internal server error' }),
+        body: JSON.stringify({ error: 'Calendar connection outcome is uncertain. Check Cal.com before reconnecting.' }),
       };
     }
   }
@@ -198,14 +197,13 @@ const handler: Handler = async (event) => {
       }
 
       // Delete webhook from Cal.com
-      const calResponse = await fetch(
-        `https://api.cal.com/v1/webhooks/${cal_webhook_id}?apiKey=${encodeURIComponent(cal_api_key)}`,
+      const calResponse = await calcomFetch(cal_api_key, `/webhooks/${encodeURIComponent(cal_webhook_id)}`,
         { method: 'DELETE' }
       );
 
-      // Even if Cal.com delete fails (e.g. webhook already removed), we still clear our config
-      if (!calResponse.ok) {
-        console.warn('Cal.com webhook delete returned:', calResponse.status, await calResponse.text().catch(() => ''));
+      // Preserve credentials on uncertain deletion so it can be reconciled.
+      if (!calResponse.ok && calResponse.status !== 404) {
+        return { statusCode: 502, headers, body: JSON.stringify({ error: 'Cal.com did not confirm webhook removal. Integration remains configured; retry after checking Cal.com.' }) };
       }
 
       // Clear Cal.com fields from config, preserve other settings
@@ -240,11 +238,11 @@ const handler: Handler = async (event) => {
         }),
       };
     } catch (err: any) {
-      console.error('DELETE /calcom-webhook error:', err);
+      console.error('DELETE /calcom-webhook failed');
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({ error: err.message || 'Internal server error' }),
+        body: JSON.stringify({ error: 'Calendar disconnect could not be verified. Check Cal.com before retrying.' }),
       };
     }
   }
