@@ -10,6 +10,7 @@ const TODAY = new Date().toISOString().split("T")[0];
 // ─── ADD NEW ROUTES HERE when you add them to AppRoutes.tsx ───────────────────
 // Excluded: /dashboard/*, /admin*, /auth/*, /setup*, /payment/*,
 // *-demo pages, /login, /signup, and redirect-only routes (Navigate components)
+// /reports/magnan-family-law is a direct-link noindex report, not an SEO page.
 const ROUTES = [
   { path: "/tools/pi-sms-intake-agent", priority: "0.8", changefreq: "monthly" },
   // Core
