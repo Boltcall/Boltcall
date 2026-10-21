@@ -11,7 +11,7 @@ import { useDirection } from '../hooks/useDirection';
 
 const HEADER_LANGS = ['en', 'he'] as const;
 
-const Header: React.FC = () => {
+const Header: React.FC<{ showPromotion?: boolean }> = ({ showPromotion = true }) => {
   const location = useLocation();
   const { t } = useTranslation('marketing');
   const dir = useDirection();
@@ -342,7 +342,7 @@ const Header: React.FC = () => {
       className="fixed top-0 left-0 right-0 z-[110] bg-transparent backdrop-blur-md transition-all duration-300 overflow-visible shadow-none border-none ring-0"
       style={{ contain: 'layout style' }}
     >
-      {!isSticky && (
+      {showPromotion && !isSticky && (
         <GiveawayBar />
       )}
       <div className="w-full px-2 sm:px-4 lg:px-6 overflow-visible">
