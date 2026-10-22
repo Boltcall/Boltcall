@@ -88,7 +88,7 @@ jobs:
       # report file. A crash (exit 2, no file) shouldn't spam an empty issue.
       - name: Open / update regression issue
         if: steps.audit.outcome == 'failure' && hashFiles('.seo-baseline/latest-report.md') != ''
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
