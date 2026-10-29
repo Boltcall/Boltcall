@@ -200,7 +200,7 @@ const LeadMagnetHub: React.FC = () => {
               <span className="block text-blue-600">we publish in one place</span>
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-gray-700">
-              Boltcall publishes free resources for local service businesses — calculators that quantify your missed-revenue gap, audits that compare you against three local competitors, buyer\'s guides that strip out vendor marketing, and Claude Code plugins you can deploy tonight. Pick the resource that matches your current bottleneck. Everything below is free, no credit card, no demo call required.
+              Boltcall publishes free resources for local service businesses: calculators that quantify your missed-revenue gap, audits that compare you against three local competitors, buyer's guides that strip out vendor marketing, and Claude Code plugins you can deploy tonight. Pick the resource that matches your current bottleneck. Everything below is free, no credit card, no demo call required.
             </p>
           </motion.div>
         </div>
