@@ -50,7 +50,7 @@ const svgLoader = new SVGLoader()
 // y-down is flipped to three's y-up as part of the same scale step.
 function iconMesh(svg: string, color: number, size = 0.22) {
   const paths = svgLoader.parse(svg).paths
-  const shapes = paths.flatMap((p) => p.toShapes(false))
+  const shapes = paths.flatMap((p) => p.toShapes())
   const geo = new THREE.ExtrudeGeometry(shapes, {
     depth: 6,
     bevelEnabled: true,
