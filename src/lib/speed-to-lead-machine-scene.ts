@@ -621,7 +621,7 @@ export function initMachineScene(root: HTMLElement): () => void {
       mobile = width <= 900
     function project(pos: THREE.Vector3) {
       projected.copy(pos).project(camera)
-      const margin = mobile ? 92 : 150
+      const margin = mobile ? 112 : 150
       return {
         x: THREE.MathUtils.clamp((projected.x * 0.5 + 0.5) * width, margin, width - margin),
         y: (-projected.y * 0.5 + 0.5) * height,

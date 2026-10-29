@@ -412,6 +412,7 @@
 }
 .stl-machine .footer-center {
   position: absolute;
+  bottom: 67px;
   left: 50%;
   transform: translateX(-50%);
   font:
@@ -508,13 +509,15 @@
   .stl-machine .story-steps button { white-space: normal; padding: 6px 7px; font-size: 10px; }
   .stl-machine .footer .wordmark { display: none; }
   .stl-machine .stats {
-    top: auto;
-    bottom: 168px;
+    top: 158px;
+    bottom: auto;
+    left: 18px;
     right: 18px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .stl-machine .stats div {
-    padding: 7px 11px;
-    min-width: 74px;
+    padding: 7px 5px;
+    min-width: 0;
   }
   .stl-machine .stats strong {
     font-size: 13px;
@@ -537,7 +540,7 @@
   }
   .stl-machine .footer-center {
     display: block;
-    bottom: 62px;
+    bottom: 124px;
     width: 100%;
     text-align: center;
     font-size: 7px;
