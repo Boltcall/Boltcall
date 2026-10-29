@@ -19,8 +19,9 @@ export const useLenis = () => {
     const isDashboardPage = location.pathname.startsWith('/dashboard');
     const isBlogPage = location.pathname.startsWith('/blog');
     const isAppPage = ['/login', '/signup', '/setup'].includes(location.pathname);
+    const isRailsDemo = location.pathname === '/demo/speed-to-lead';
 
-    if (isDashboardPage || isAppPage || isBlogPage) {
+    if (isDashboardPage || isAppPage || isBlogPage || isRailsDemo) {
       return;
     }
 

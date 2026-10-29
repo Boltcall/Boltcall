@@ -4,6 +4,11 @@
   "recipient": "Prepared for Jordan Magnan",
   "date": "21 October 2026",
   "intro": "A personalised speed-to-lead review of your public enquiry journey. Three practical changes to make the next step clearer while protecting the personal service your firm is known for.",
+  "logo": {
+    "file": "/images/reports/magnan-family-law-logo.png",
+    "alt": "Magnan Family Law official logo",
+    "source": "https://magnanfamilylaw.com/wp-content/uploads/2025/05/Magnan-Family-Law-Logo.png"
+  },
   "pages": [
     {
       "label": "The opportunity",
@@ -11,6 +16,13 @@
         {"type": "heading", "text": "01  Make the first reply as clear as the first impression"},
         {"type": "paragraph", "text": "Jordan, your website presents a practice built around personal attention and accessible communication [1]. The opportunity is to make that promise equally clear to someone who has not spoken to your team yet."},
         {"type": "paragraph", "text": "Your contact page lists a Friday noon close and asks visitors to choose at least two contact methods [2]. In the page reviewed, no new-enquiry reply timeframe was stated. Those are useful starting points for a review, not evidence that your team is slow."},
+        {"type": "officeHoursChart", "title": "Your published working week", "source": "https://magnanfamilylaw.com/contact-us/", "days": [
+          {"label": "Monday", "start": 9, "end": 17},
+          {"label": "Tuesday", "start": 9, "end": 17},
+          {"label": "Wednesday", "start": 9, "end": 17},
+          {"label": "Thursday", "start": 9, "end": 17},
+          {"label": "Friday", "start": 9, "end": 12}
+        ]},
         {"type": "heading", "text": "A useful change you can make in ten minutes", "level": 3},
         {"type": "paragraph", "text": "Choose a reply window your team can reliably meet. Add it beside the form, along with what a visitor should expect outside office hours. Keep receipt acknowledgement separate from an attorney's response."},
         {"type": "image", "file": "contact-evidence.png", "alt": "Magnan Family Law contact page showing Friday noon closing and the instruction to select at least two contact methods. No enquiry was submitted.", "caption": "Public contact page, captured in Chrome on 21 October 2026. Source [2]."},
@@ -41,10 +53,10 @@
       "blocks": [
         {"type": "heading", "text": "03  How nearby firms present the next step"},
         {"type": "paragraph", "text": "A narrow comparison of public contact pages, not a ranking of service quality or response speed. These firms operate in the same regional market but are not identical practices."},
-        {"type": "table", "headers": ["Firm", "Published enquiry route", "Useful distinction"], "rows": [
-          ["Magnan Family Law [2]", "Phone and detailed consultation request form", "Contact preferences and opposing-party information are collected up front."],
-          ["Hoover Krepelka [3]", "Phone and consultation intake form", "Also requests the other party's name and contact preference. Detailed screening is not unique to your firm."],
-          ["McManis Faulkner [4]", "Phone and email-us form", "The published form lists subject, name, email, phone and message. Its public entry point is more general."]
+        {"type": "contactRouteChart", "firms": [
+          {"name": "Magnan Family Law", "sourceId": 2, "url": "https://magnanfamilylaw.com/contact-us/", "route": "Phone and detailed consultation request form", "context": "Contact preferences and opposing-party information are collected up front.", "opposingParty": "Requested", "replyWindow": "Not stated"},
+          {"name": "Hoover Krepelka", "sourceId": 3, "url": "https://hooverkrepelka.com/contact/", "route": "Phone and consultation intake form", "context": "Also requests the other party's name and contact preference. Detailed screening is not unique to your firm.", "opposingParty": "Requested", "replyWindow": "Not stated"},
+          {"name": "McManis Faulkner", "sourceId": 4, "url": "https://www.mcmanislaw.com/contact/", "route": "Phone and email-us form", "context": "The published form lists subject, name, email, phone and message. Its public entry point is more general.", "opposingParty": "Not listed", "replyWindow": "Not stated"}
         ]},
         {"type": "paragraph", "text": "Takeaway: Do not strip out necessary screening to make the form shorter. Make the first commitment easier to understand. No response-time promise was found in the reviewed contact-page text for any of these firms; actual performance is unknown."},
         {"type": "heading", "text": "04  A safer after-hours enquiry path"},
