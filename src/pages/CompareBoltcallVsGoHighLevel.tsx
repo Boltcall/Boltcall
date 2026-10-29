@@ -319,7 +319,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <span><strong className="text-gray-900">$549/mo Core:</strong> AI receptionist, website, speed-to-lead, follow-ups</span>
+                    <span><strong className="text-gray-900">$549/mo Starter:</strong> AI receptionist, website, speed-to-lead, follow-ups</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />

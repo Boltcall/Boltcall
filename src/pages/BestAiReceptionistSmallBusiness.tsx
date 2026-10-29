@@ -431,7 +431,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
 
                 <div className="grid md:grid-cols-3 gap-8 mb-8">
                   <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Core Plan</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Starter Plan</h3>
                     <div className="text-3xl font-bold text-blue-600 mb-4">$549<span className="text-sm text-gray-500">/mo</span></div>
                     <ul className="text-sm text-gray-600 space-y-2">
                       <li>Professional website</li>
@@ -448,7 +448,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">SEO Plan</h3>
                     <div className="text-3xl font-bold text-blue-600 mb-4">$489<span className="text-sm text-gray-500">/mo</span></div>
                     <ul className="text-sm text-gray-600 space-y-2">
-                      <li>Everything in Core</li>
+                      <li>Everything in Starter</li>
                       <li>Local SEO optimization</li>
                       <li>Google My Business</li>
                       <li>Review management</li>

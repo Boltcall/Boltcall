@@ -248,8 +248,8 @@ const CompareBoltcallVsCalomation: React.FC = () => {
             <div className="bg-white rounded-xl border-2 border-blue-200 p-6 shadow-sm">
               <h3 className="text-xl font-bold text-blue-600 mb-3">Boltcall Pricing</h3>
               <ul className="space-y-2 text-gray-700">
-                <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>Core Plan:</strong> $549/month — AI receptionist, chatbot, speed-to-lead, free website</span></li>
-                <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>SEO Plan:</strong> $489/month — everything in Core plus local SEO optimization</span></li>
+                <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>Starter Plan:</strong> $549/month — AI receptionist, chatbot, speed-to-lead, free website</span></li>
+                <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>SEO Plan:</strong> $489/month — everything in Starter plus local SEO optimization</span></li>
                 <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" /> <span><strong>Full AI Plan:</strong> $799/month — complete AI automation suite with all features</span></li>
               </ul>
               <p className="text-sm text-gray-500 mt-4">All pricing is listed publicly at boltcall.org/pricing. No sales call required.</p>

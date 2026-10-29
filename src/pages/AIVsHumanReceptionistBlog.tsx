@@ -199,7 +199,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                         <span>Total Annual Cost</span><span className="text-green-600">$4,668</span>
                       </li>
                     </ul>
-                    <p className="text-sm text-gray-600 mt-4">*Based on Boltcall's Core plan at $549/month</p>
+                    <p className="text-sm text-gray-600 mt-4">*Based on Boltcall's Starter plan at $549/month</p>
                   </div>
 
                   <div className="bg-green-100 border border-green-300 rounded-lg p-4">
