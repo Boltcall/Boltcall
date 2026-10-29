@@ -294,8 +294,8 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                 <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
                   <h3 className="font-bold text-blue-900 text-xl mb-3">Boltcall Pricing</h3>
                   <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$549/mo Core:</strong> AI receptionist, chatbot, speed-to-lead, free website</span></li>
-                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$489/mo SEO:</strong> Everything in Core + local SEO optimization</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$549/mo Starter:</strong> AI receptionist, chatbot, speed-to-lead, free website</span></li>
+                    <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$489/mo SEO:</strong> Everything in Starter + local SEO optimization</span></li>
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$799/mo Full AI:</strong> Complete AI automation suite with priority support</span></li>
                   </ul>
                   <p className="text-sm text-gray-600 mt-4">Guarantee: website delivered in 24 hours or get a free AI receptionist</p>
