@@ -23,7 +23,7 @@ jobs:
       artifact_digest: ${{ steps.payload.outputs.artifact-digest }}
       payload_sha256: ${{ steps.pack.outputs.payload_sha256 }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ inputs.source_sha }}
           fetch-depth: 0
@@ -79,7 +79,7 @@ jobs:
       actions: read
     steps:
       # Privileged publication runs trusted workflow-main code, never the payload.
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           persist-credentials: false
