@@ -22,10 +22,14 @@ import { authedFetch } from '../../lib/authedFetch';
 import { FUNCTIONS_BASE } from '../../lib/api';
 import SidebarV2 from './SidebarV2';
 import { primeV2SurfaceCache, resetV2SurfaceCache } from './v2Surface';
+import { useDashboardAppearance } from '../../contexts/DashboardAppearanceContext';
+import { appearanceStyle } from '../../lib/dashboardAppearance';
+import '../../styles/dashboard-appearance.css';
 
 const DashboardLayoutV2: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { appearance } = useDashboardAppearance();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [askExpanded, setAskExpanded] = useState(false);
   const [askValue, setAskValue] = useState('');
@@ -83,7 +87,7 @@ const DashboardLayoutV2: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex bg-gradient-to-br from-slate-50 via-white to-slate-50">
+    <div data-dashboard-appearance data-mode={appearance.previewMode} data-density={appearance.density} style={appearanceStyle(appearance)} className={`h-screen flex bg-gradient-to-br from-slate-50 via-white to-slate-50 ${appearance.previewMode === 'dark' ? 'dark' : ''}`}>
       <SidebarV2
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -179,7 +183,7 @@ const DashboardLayoutV2: React.FC = () => {
             Each V2 page is expected to lead with a narrative slot above any
             chart slot; this container only provides the breathing room. */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
+          <div data-dashboard-content className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-10">
             <Outlet />
           </div>
         </div>

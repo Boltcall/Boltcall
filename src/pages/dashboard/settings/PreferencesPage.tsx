@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Moon, Sun, Smartphone, Monitor, Check, Clock, Calendar, ChevronDown } from 'lucide-react';
+import { Globe, Smartphone, Check, Clock, Calendar, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Button from '../../../components/ui/Button';
 import LanguageSwitcher from '../../../components/dashboard/LanguageSwitcher';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { supabase } from '../../../lib/supabase';
+import AppearanceSettings from '../../../components/dashboard/AppearanceSettings';
 import { UnsavedChanges } from '../../../components/ui/unsaved-changes';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -14,33 +15,12 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const ACCENT_COLORS = [
-  { hex: '#3B82F6', label: 'Blue (default)' },
-  { hex: '#8B5CF6', label: 'Purple' },
-  { hex: '#10B981', label: 'Emerald' },
-  { hex: '#F59E0B', label: 'Amber' },
-  { hex: '#EF4444', label: 'Red' },
-  { hex: '#EC4899', label: 'Pink' },
-  { hex: '#14B8A6', label: 'Teal' },
-  { hex: '#F97316', label: 'Orange' },
-];
-
-function applyAccentColor(hex: string | null) {
-  if (hex) {
-    document.documentElement.style.setProperty('--accent', hex);
-  } else {
-    document.documentElement.style.removeProperty('--accent');
-  }
-}
-
 const defaultPreferences = {
-  theme: 'light',
   language: 'en',
   // Default to the visitor's actual zone instead of assuming US Eastern.
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
   dateFormat: 'MM/DD/YYYY',
   timeFormat: '12h',
-  accentColor: null as string | null,
 };
 
 const PreferencesPage: React.FC = () => {
@@ -125,16 +105,7 @@ const PreferencesPage: React.FC = () => {
               ...prev,
               ...prefs,
             }));
-            // Apply saved theme on load
-            if (prefs.theme === 'dark') {
-              document.documentElement.classList.add('dark');
-              localStorage.setItem('darkMode', 'true');
-            } else if (prefs.theme === 'light') {
-              document.documentElement.classList.remove('dark');
-              localStorage.setItem('darkMode', 'false');
-            }
-            // Apply saved accent color on load
-            if (prefs.accentColor) applyAccentColor(prefs.accentColor);
+
           }
         }
       } catch (err) {
@@ -163,23 +134,6 @@ const PreferencesPage: React.FC = () => {
         if (error) throw error;
         if (newProfile) setBusinessProfileId(newProfile.id);
       }
-      // Apply theme immediately
-      if (preferences.theme === 'dark') {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('darkMode', 'true');
-      } else if (preferences.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('darkMode', 'false');
-      } else {
-        // Auto: follow system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.classList.toggle('dark', prefersDark);
-        localStorage.setItem('darkMode', String(prefersDark));
-      }
-
-      // Apply accent color immediately on save
-      applyAccentColor(preferences.accentColor ?? null);
-
       showToast({ title: t('common:save'), message: t('settings:prefsSavedSuccess'), variant: 'success', duration: 3000 });
       setSaveMessage(t('settings:prefsSavedSuccess'));
       setTimeout(() => setSaveMessage(''), 3000);
@@ -229,77 +183,7 @@ const PreferencesPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Appearance */}
-      <div className="bg-white dark:bg-[#111114] rounded-2xl shadow-sm border border-gray-200 dark:border-[#2a2a30] p-6">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('settings:preferences.appearance')}</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 mb-5">Choose how Boltcall looks on your device.</p>
-
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('settings:preferences.theme')}</label>
-        <div className="relative flex bg-gray-100 dark:bg-[#1a1a1f] rounded-xl p-1">
-          {[
-            { value: 'light', label: t('settings:preferences.themeLight'), icon: Sun },
-            { value: 'dark', label: t('settings:preferences.themeDark'), icon: Moon },
-            { value: 'auto', label: t('settings:preferences.themeAuto'), icon: Monitor },
-          ].map((theme) => {
-            const Icon = theme.icon;
-            const isSelected = preferences.theme === theme.value;
-            return (
-              <button
-                key={theme.value}
-                onClick={() => { setPreferences(prev => ({ ...prev, theme: theme.value })); setIsDirty(true); }}
-                className={`relative flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-colors z-10 ${
-                  isSelected ? 'text-white' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                }`}
-              >
-                {isSelected && (
-                  <motion.div
-                    layoutId="theme-selector"
-                    className="absolute inset-0 bg-blue-600 rounded-lg"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <span className="relative flex items-center gap-2">
-                  <Icon className="w-4 h-4" />
-                  {theme.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Accent Color */}
-        <div className="mt-6 pt-5 border-t border-gray-100 dark:border-[#2a2a30]">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Accent Color</label>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Applied to primary buttons and interactive elements across the dashboard.</p>
-          <div className="flex flex-wrap items-center gap-3">
-            {ACCENT_COLORS.map(({ hex, label }) => (
-              <button
-                key={hex}
-                type="button"
-                title={label}
-                onClick={() => { setPreferences(prev => ({ ...prev, accentColor: preferences.accentColor === hex ? null : hex })); setIsDirty(true); }}
-                className={`w-8 h-8 rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 ${
-                  preferences.accentColor === hex ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''
-                }`}
-                style={{ backgroundColor: hex }}
-              >
-                {preferences.accentColor === hex && (
-                  <Check className="w-4 h-4 text-white mx-auto" />
-                )}
-              </button>
-            ))}
-            {preferences.accentColor && (
-              <button
-                type="button"
-                onClick={() => { setPreferences(prev => ({ ...prev, accentColor: null })); setIsDirty(true); }}
-                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors ml-1"
-              >
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      <AppearanceSettings />
 
       {/* Language & Region */}
       <div className="bg-white dark:bg-[#111114] rounded-2xl shadow-sm border border-gray-200 dark:border-[#2a2a30] p-6">
