@@ -226,6 +226,7 @@ import V2MessagesPage from '../V2MessagesPage';
 import V2QAPage from '../V2QAPage';
 import V2ReputationPage from '../V2ReputationPage';
 import V2SettingsPage from '../V2SettingsPage';
+vi.mock('../../../components/dashboard/AppearanceSettings', () => ({ default: () => <section aria-label="Dashboard appearance" /> }));
 import V2SetupPage from '../V2SetupPage';
 import V2OptInGate from '../../../components/v2/V2OptInGate';
 

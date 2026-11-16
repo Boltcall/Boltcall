@@ -1,3 +1,4 @@
+import AppearanceSettings from '../../../components/dashboard/AppearanceSettings';
 /**
  * ClientSettingsPage — Boltcall Client Portal · Phase E · /client/settings
  *
@@ -928,6 +929,8 @@ const ClientSettingsInner: React.FC = () => {
           {payload.client.business_name} · Your preferences for the Boltcall agency service.
         </p>
       </div>
+
+      <AppearanceSettings />
 
       {/* 1. Business Hours */}
       <BusinessHoursSection

@@ -20,6 +20,10 @@ import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
+vi.mock('../../../contexts/DashboardAppearanceContext', () => ({
+  useDashboardAppearance: () => ({ appearance: { accent: 'boltcall', density: 'cozy', radius: 12, previewMode: 'light' } }),
+}));
+
 // ── Global mocks (must run before V2 component imports) ───────────────────
 
 // react-router-dom: keep the real module but stub useNavigate so we can
