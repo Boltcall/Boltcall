@@ -143,10 +143,10 @@ export function AppearanceLab({ accents = ACCENTS, value, defaultValue, onChange
   }
   return (
     <MotionConfig reducedMotion="user"><LayoutGroup id={groupId}>
-    <section data-theme="st-appearance-lab" className={cn(scheme === "dark" && "dark", "grid min-h-[100dvh] w-full min-w-0 place-items-center bg-background p-6 text-foreground motion-safe:transition-colors motion-safe:duration-200", className)}>
+    <section data-theme="st-appearance-lab" className={cn(scheme === "dark" && "dark", "isolate grid min-h-[100dvh] w-full min-w-0 place-items-center bg-background p-6 text-foreground motion-safe:transition-colors motion-safe:duration-200", className)}>
       <div className="w-full max-w-[720px] min-w-0">
         <header className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold tracking-tight">{title}</h2>{!theme && <ThemeToggle scheme={scheme} onToggle={toggle} />}</header>
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+        <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))" }}>
           <div className="flex flex-col gap-5">
             <div role="radiogroup" aria-label="Theme" onKeyDown={radioKey}><span className={label}>Theme</span>
               <div className="relative grid grid-cols-2 rounded-xl bg-muted p-1">
