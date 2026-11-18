@@ -53,7 +53,7 @@ Compare vendors on the same written list of questions, and ask each one to answe
 - Is pricing flat, per minute or per case?
 - Is there a cancellation or refund policy?
 
-Boltcall charges a flat monthly subscription with free setup, a 30-day money-back guarantee, and no per-case fees or share of fees. See [pricing](/pricing/). For more on the law firm use case, read [AI Receptionist for Law Firm Speed to Lead](/blog/ai-receptionist-law-firm/) and [Best AI Phone Receptionist for Law Firms](/blog/best-ai-phone-receptionist/).
+Boltcall charges a flat monthly subscription with free setup, and no per-case fees or share of fees. See [pricing](/pricing/). For more on the law firm use case, read [AI Receptionist for Law Firm Speed to Lead](/blog/ai-receptionist-law-firm/) and [Best AI Phone Receptionist for Law Firms](/blog/best-ai-phone-receptionist/).
 
 ## FAQ
 

@@ -296,7 +296,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
                     <li className="flex justify-between"><span>Setup fee</span><span className="font-bold">$2,500 (waived on 12-mo)</span></li>
                     <li className="flex justify-between"><span>SaaS DIY tier</span><span className="font-bold">From $897/mo</span></li>
                     <li className="border-t border-blue-200 pt-3 text-sm text-slate-600">
-                      <CheckCircle className="h-4 w-4 text-emerald-500 inline mr-1" /> Month-to-month available. 30-day cost-recovery guarantee on agency.
+                      <CheckCircle className="h-4 w-4 text-emerald-500 inline mr-1" /> Month-to-month available.
                     </li>
                   </ul>
                 </div>
@@ -357,7 +357,6 @@ const CompareBoltcallVsPodium: React.FC = () => {
                 <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Lead-to-booking speed.</strong> 11-second standard, instrumented and reported. The whole stack is engineered around it.</span></li>
                 <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Done-for-you setup in 24 to 48 hours.</strong> We build the AI receptionist, lead routing, and booking flow. Podium typical onboarding is days to weeks.</span></li>
                 <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Flat, published pricing.</strong> $499/mo agency, no per-message bloat, no surprise per-location fee.</span></li>
-                <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>30-day cost-recovery guarantee.</strong> If Boltcall does not cover its cost in 30 days on the agency tier, we cover the gap.</span></li>
                 <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Specialist depth, not generalist breadth.</strong> Every feature serves the speed-to-lead path. No bloat from products you do not use.</span></li>
               </ul>
             </motion.section>

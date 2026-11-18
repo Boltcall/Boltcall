@@ -45,7 +45,7 @@ A phone answering service may answer calls but not handle web forms or texts. A 
 
 ## What does Boltcall cost, and what does it connect to?
 
-Boltcall has a flat monthly subscription, free setup, a 30-day money-back guarantee, and no per-case fees or share of fees; see [Boltcall pricing](/pricing/) for current pricing details. Boltcall books into Google Calendar and Cal.com, and connects with other tools through Zapier, Make, and webhooks.
+Boltcall has a flat monthly subscription, free setup, and no per-case fees or share of fees; see [Boltcall pricing](/pricing/) for current pricing details. Boltcall books into Google Calendar and Cal.com, and connects with other tools through Zapier, Make, and webhooks.
 
 Boltcall does not list a specific setup duration here, so ask about timing for your workflow before deciding. Boltcall is intake only; it does not give legal advice, assess cases, predict case value, or quote fees. For a pest control business, confirm how the intake questions and booking process will fit your service operations during a call.
 

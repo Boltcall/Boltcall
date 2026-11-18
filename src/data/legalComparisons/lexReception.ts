@@ -83,7 +83,7 @@ const lexReception: LegalComparisonData = {
     },
     {
       label: 'Contract and refunds',
-      boltcall: 'Cancel any time (auto-renews, cancellation at period end). 30-day money-back guarantee, see Terms section 7.',
+      boltcall: 'Cancel any time (auto-renews, cancellation at period end). See Terms for refund details.',
       competitor: c(
         'Month-to-month, either side can end it on written notice. Partial months are billed in full. No free trial or money-back guarantee published.',
         'tos',
@@ -155,7 +155,7 @@ const lexReception: LegalComparisonData = {
   boltcallWins: [
     'Speed-to-lead is the product. A new web-form lead with a phone number gets an immediate AI callback during 8am to 9pm in their local time, and missed calls get a text-back. Both are in the Starter plan with no extra line item.',
     c('A published price. Boltcall\'s plans and credit pools are on the pricing page, so you can estimate the cost before you talk to anyone. LEX quotes through a form.', 'register'),
-    'Self-serve start: free setup in about 5 minutes, no credit card to start, and a 30-day money-back guarantee (see Terms, section 7). LEX does not publish a trial or a guarantee.',
+    'Self-serve start: free setup in about 5 minutes, and no credit card to start. LEX does not publish a trial or a guarantee.',
   ],
   boltcallLimits: [
     'No staffed humans. Boltcall is AI only. It can transfer a call to your own number if you configure that. If your callers need a person, LEX is built for that.',

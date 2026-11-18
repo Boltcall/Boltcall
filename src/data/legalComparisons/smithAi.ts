@@ -90,7 +90,7 @@ const smithAi: LegalComparisonData = {
     },
     {
       label: 'Contract and refunds',
-      boltcall: 'Cancel any time (auto-renews, cancellation at period end). 30-day money-back guarantee, see Terms section 7.',
+      boltcall: 'Cancel any time (auto-renews, cancellation at period end). See Terms for refund details.',
       competitor: c(
         'Month-to-month. Live-receptionist plans: 30-day money-back guarantee, capped at $1,000, overage excluded (the same FAQ also mentions a two-week window). No guarantee published for AI plans, which have a free tier instead.',
         'hvPricing',
@@ -185,7 +185,7 @@ const smithAi: LegalComparisonData = {
     c('Conflict checks by live agents against your existing contacts and matters.', 'home'),
     c('Accepting payments (LawPay and others) and accepting collect calls, both as paid add-ons. Smith.ai notes attorneys who work with inmates often need collect calls.', 'hvPricing'),
     c('Staffed 24/7 website chat and an outbound Outreach Campaigns product.', 'chat', 'outreach'),
-    c('A money-back guarantee on live-receptionist plans (30 days, capped at $1,000; the same FAQ also mentions two weeks). Boltcall also offers a 30-day guarantee under its Terms, with its own conditions.', 'hvPricing'),
+    c('A money-back guarantee on live-receptionist plans (30 days, capped at $1,000; the same FAQ also mentions two weeks).', 'hvPricing'),
     c('A longer track record: founded in 2015, and says it is trusted by 5,000+ businesses.', 'home', 'hvPricing'),
   ],
   boltcallWins: [

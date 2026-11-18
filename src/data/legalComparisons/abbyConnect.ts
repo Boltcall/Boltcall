@@ -98,7 +98,7 @@ const abbyConnect: LegalComparisonData = {
     },
     {
       label: 'Contract and refunds',
-      boltcall: 'Cancel any time (auto-renews, cancellation at period end). 30-day money-back guarantee, see Terms section 7.',
+      boltcall: 'Cancel any time (auto-renews, cancellation at period end). See Terms for refund details.',
       competitor: c(
         'Month-to-month. After the first 30 days, cancelling takes 30 days\' advance notice. No refunds, except a 22-day money-back guarantee for new clients on their first purchase.',
         'pricing',
@@ -274,7 +274,7 @@ const abbyConnect: LegalComparisonData = {
     },
     {
       q: 'What should I check in Abby Connect\'s terms before signing?',
-      a: c('Per its Terms: billed time includes ring and transfer time and is rounded up to the nearest 30 seconds per call; the free trial converts to a paid plan automatically; after the first 30 days, cancelling takes 30 days\' notice; and refunds are limited to a 22-day money-back guarantee for new clients. Check Boltcall\'s Terms the same way, including section 7 on the money-back guarantee.', 'terms'),
+      a: c('Per its Terms: billed time includes ring and transfer time and is rounded up to the nearest 30 seconds per call; the free trial converts to a paid plan automatically; after the first 30 days, cancelling takes 30 days\' notice; and refunds are limited to a 22-day money-back guarantee for new clients. Check Boltcall\'s Terms the same way.', 'terms'),
     },
     {
       q: 'Who makes this page?',

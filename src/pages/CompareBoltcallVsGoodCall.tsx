@@ -121,7 +121,6 @@ const CompareBoltcallVsGoodCall: React.FC = () => {
     { feature: 'Automated appointment reminders', boltcall: 'Yes, cuts no-shows ~40%', goodcall: 'Not included' },
     { feature: 'Post-job Google review requests', boltcall: 'Yes, automated', goodcall: 'No' },
     { feature: 'Multilingual', boltcall: 'English + Spanish', goodcall: 'Multilingual' },
-    { feature: 'Free trial', boltcall: '30-day money-back', goodcall: '14-day free trial' },
     { feature: 'Contract', boltcall: 'Month-to-month', goodcall: 'Month-to-month' },
     { feature: 'Best fit', boltcall: 'Local service biz w/ 300+ callers/mo wanting predictable cost + full follow-up stack', goodcall: 'Low-volume SMB (under ~300 callers/mo) wanting cheapest AI phone agent' },
   ];

@@ -95,7 +95,7 @@ const answeringLegal: LegalComparisonData = {
     },
     {
       label: 'Trial and refunds',
-      boltcall: 'No credit card to start. Cancel any time (auto-renews, cancellation at period end). 30-day money-back guarantee, see Terms section 7.',
+      boltcall: 'No credit card to start. Cancel any time (auto-renews, cancellation at period end). See Terms for refund details.',
       competitor: c(
         'Free trial of 400 minutes or 14 days, whichever comes first, no card. Month to month. No money-back guarantee published.',
         'setup',
@@ -144,7 +144,7 @@ const answeringLegal: LegalComparisonData = {
       {
         title: 'What to check before you sign: Answering Legal Terms of Service',
         note: c(
-          'These items are in the Terms of Service (last modified April 10, 2026), not on the pricing page. They are not unusual for answering services, but they affect your real cost, so ask about them in writing. Boltcall\'s Terms have conditions too, including how the 30-day guarantee works (section 7) and auto-renewal (section 8). Read both.',
+          'These items are in the Terms of Service (last modified April 10, 2026), not on the pricing page. They are not unusual for answering services, but they affect your real cost, so ask about them in writing. Boltcall\'s Terms have conditions too, including auto-renewal (section 8). Read them.',
           'terms',
         ),
         columns: ['Item', 'What the Terms say'],
@@ -331,7 +331,7 @@ const answeringLegal: LegalComparisonData = {
     },
     {
       q: 'How do the free trials compare?',
-      a: c('Answering Legal offers 400 minutes or 14 days, whichever comes first, with no credit card. Its Terms let it end a trial after 100 minutes and limit trials around the December holidays. Boltcall needs no credit card to start, setup is free, and it has a 30-day money-back guarantee under Terms section 7.', 'setup', 'plans', 'terms'),
+      a: c('Answering Legal offers 400 minutes or 14 days, whichever comes first, with no credit card. Its Terms let it end a trial after 100 minutes and limit trials around the December holidays. Boltcall needs no credit card to start and setup is free.', 'setup', 'plans', 'terms'),
     },
     {
       q: 'Who makes this page?',

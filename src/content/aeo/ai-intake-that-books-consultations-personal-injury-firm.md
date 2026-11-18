@@ -40,7 +40,7 @@ When comparing tools, check that the assistant discloses it is AI, explains call
 
 ## Cost and fit for a small or mid-size firm
 
-Boltcall is designed for solo and small to mid-size law firms, including personal injury practices. It charges a flat monthly subscription, with free setup, a 30-day money-back guarantee, and no per-case fees or share of fees.
+Boltcall is designed for solo and small to mid-size law firms, including personal injury practices. It charges a flat monthly subscription, with free setup and no per-case fees or share of fees.
 
 The key fit is speed to lead: Boltcall answers new inquiries in seconds, around the clock, and books into supported calendars. Firms that need a native connection to Clio, MyCase, or Filevine should weigh that limitation before choosing it. See [how to stop missing calls at a small law firm](/blog/stop-missing-calls-at-small-law-firm/).
 

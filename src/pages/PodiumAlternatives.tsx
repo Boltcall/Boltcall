@@ -45,7 +45,6 @@ const alternatives: Alternative[] = [
       'AI receptionist 24/7 across phone, SMS, web chat, DMs',
       'Done-for-you setup in 24 to 48 hours',
       'Flat published pricing, no per-message fees',
-      '30-day cost-recovery guarantee on the agency tier',
     ],
     weaknesses: [
       'Review tooling is included but not as deep as Podium',

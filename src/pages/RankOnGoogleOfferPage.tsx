@@ -85,10 +85,6 @@ const RankOnGoogleOfferPage = () => {
                                         <div className="w-2 h-2 rounded-full bg-green-500"></div>
                                         <p>The website and system are live in 24 hours.</p>
                                     </div>
-                                    <div className="flex items-start gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0"></div>
-                                        <p>The lead reactivation will cover the costs of the first month. If it doesn't, we refund the difference.</p>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -125,10 +121,6 @@ const RankOnGoogleOfferPage = () => {
                             <p className="text-sm text-gray-600 leading-relaxed">{item.desc}</p>
                         </div>
                     ))}
-                </div>
-                <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 text-center">
-                    <p className="text-sm text-gray-700 font-medium mb-1">Risk-Free Guarantee</p>
-                    <p className="text-sm text-gray-600">The lead reactivation campaign is designed to cover the cost of your first month. If it doesn't generate enough revenue to offset our fee, we refund the difference. You only pay for results.</p>
                 </div>
             </section>
 
@@ -168,10 +160,6 @@ const RankOnGoogleOfferPage = () => {
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                     <span>Built for law firms</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                    <span>Results in 30 days or your money back</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

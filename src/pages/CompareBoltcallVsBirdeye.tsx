@@ -324,7 +324,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
                   <DollarSign className="w-4 h-4 text-blue-600" />
                   <span className="text-gray-700"><strong>AI Full:</strong> $799/mo (everything included)</span>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Free website included on all plans. 24-hour delivery guarantee.</p>
+                <p className="text-sm text-gray-500 mt-2">Free website included on all plans.</p>
               </div>
             </div>
 
