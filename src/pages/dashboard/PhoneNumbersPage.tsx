@@ -686,7 +686,7 @@ const PhoneNumbersPage: React.FC = () => {
                 <div className="text-sm text-gray-600">
                   <p className="font-medium text-gray-900 mb-1">Important:</p>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>Numbers are billed monthly to your Twilio account</li>
+                    <li>Your first number is included with your account. Extra numbers are $1.15/mo each</li>
                     <li>Setup typically takes 1-2 minutes</li>
                     <li>You can release numbers anytime from your dashboard</li>
                   </ul>
