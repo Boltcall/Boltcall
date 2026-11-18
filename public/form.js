@@ -53,6 +53,7 @@
     if (first) payload.first_name = first;
     if (last) payload.last_name = last;
     if (message) payload.message = message;
+    if (raw.bc_hp) payload.bc_hp = raw.bc_hp;
     return payload;
   }
 
@@ -150,6 +151,12 @@
   function attach(form) {
     if (form.__boltcallAttached) return;
     form.__boltcallAttached = true;
+    // Honeypot: bots fill every field, people never see this one.
+    var hp = document.createElement('input');
+    hp.type = 'text'; hp.name = 'bc_hp'; hp.tabIndex = -1; hp.autocomplete = 'off';
+    hp.setAttribute('aria-hidden', 'true');
+    hp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0';
+    form.appendChild(hp);
     form.addEventListener('submit', handleSubmit, false);
   }
 

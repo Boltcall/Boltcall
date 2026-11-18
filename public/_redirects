@@ -47,15 +47,8 @@ https://boltcall.netlify.app/* https://boltcall.org/:splat  301!
 /how-it-works   /                            301!
 /faq            /                            301!
 
-# Any /blog/<unknown-slug>/ has no prerendered file — Netlify's file-system
-# check runs BEFORE this rule, so real posts still serve normally; only
-# unknown slugs fall through to a 404-status SPA shell. Fixes mass
-# duplicate-content indexing of homepage under every dead blog URL.
-/blog/*         /spa-fallback.html           404
 
 
-# SPA catch-all -> noindex shell (see netlify.toml for rationale).
-/*            /spa-fallback.html   200
 
 # Phase 3 prune (2026-08-15): law-firm pivot — removed non-legal vertical pages.
 # Redirect old niche URLs to closest law-firm/generic survivor, preserve link equity.
@@ -182,3 +175,15 @@ https://boltcall.netlify.app/* https://boltcall.org/:splat  301!
 /blog/missed-call-pressure-washing  /blog  301!
 /blog/missed-call-real-estate  /blog  301!
 /blog/missed-call-window-and-door  /blog  301!
+
+# Must stay LAST among /blog/ rules: Netlify takes the first match, so this
+# 404 shadowed every /blog/ 301 below it (93 pruned URLs 404d instead of redirecting).
+# Any /blog/<unknown-slug>/ has no prerendered file — Netlify's file-system
+# check runs BEFORE this rule, so real posts still serve normally; only
+# unknown slugs fall through to a 404-status SPA shell. Fixes mass
+# duplicate-content indexing of homepage under every dead blog URL.
+/blog/*         /spa-fallback.html           404
+
+# Must be the LAST rule: anything above it is matched first.
+# SPA catch-all -> noindex shell (see netlify.toml for rationale).
+/*            /spa-fallback.html   200

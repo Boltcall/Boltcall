@@ -8,11 +8,12 @@
 import React from 'react';
 import { SubscriptionProvider } from '../contexts/SubscriptionContext';
 import { TokenProvider } from '../contexts/TokenContext';
+import { DashboardAppearanceProvider } from '../contexts/DashboardAppearanceContext';
 
 const DashboardProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <SubscriptionProvider>
     <TokenProvider>
-      {children}
+      <DashboardAppearanceProvider>{children}</DashboardAppearanceProvider>
     </TokenProvider>
   </SubscriptionProvider>
 );

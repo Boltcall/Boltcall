@@ -8,7 +8,7 @@ import { authenticateApiKey } from './_shared/validate-api-key';
 import { verifyFacebookSignature } from './_shared/verify-signatures';
 import { handleInboundLead } from './_shared/lead-response-service';
 import { withLegacyHandler } from './_shared/runtime-compat';
-import { isLocalDev } from './_shared/prod-detect';
+import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 
 /**
  * Lead Webhook — receives leads from external sources and inserts into Supabase `leads` table.
@@ -30,8 +30,19 @@ import { isLocalDev } from './_shared/prod-detect';
  *     authenticateApiKey helper validates the key and resolves the userId.
  *   - Unauthenticated requests that supply a raw user_id are validated by checking that the
  *     userId exists in business_profiles. This prevents unknown UUIDs from injecting fake leads.
- *   - Optionally, callers may also pass a `webhookSecret` field that must match WEBHOOK_SECRET.
+ *   - Server callers pass a `webhookSecret` field that must match WEBHOOK_SECRET.
+ *   - Without one (public embed), submissions are rate limited per IP and per business.
  */
+
+// ponytail: fixed caps; per-business settings if a real firm outgrows 60/hour.
+const EMBED_PER_IP = { maxAttempts: 5, windowSeconds: 600 };
+const EMBED_PER_BUSINESS = { maxAttempts: 60, windowSeconds: 3600 };
+
+async function publicEmbedLimit(supabase: any, userId: string, ip: string) {
+  const perIp = await consumePublicRateLimit(supabase, { bucket: 'lead_embed_ip', key: hashRateLimitKey([userId, ip]), ...EMBED_PER_IP });
+  if (!perIp.allowed) return perIp;
+  return consumePublicRateLimit(supabase, { bucket: 'lead_embed_business', key: hashRateLimitKey([userId]), ...EMBED_PER_BUSINESS });
+}
 
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -294,18 +305,25 @@ const handler: Handler = async (event) => {
     // Security: if a raw user_id was supplied without an API key, verify it belongs to a real
     // business_profiles row. This prevents anyone who guesses a UUID from injecting fake leads.
     if (!auth.hasKey && body.user_id) {
-      // Fail-closed: in production, WEBHOOK_SECRET MUST be set + match.
-      // Otherwise anyone who guesses a user_id can inject leads that trigger
-      // billable outbound Retell calls / SMS.
+      // Server-to-server callers send WEBHOOK_SECRET. A wrong secret is rejected.
+      // No secret = the public embed (form.js, /l/<user_id>): it cannot carry a
+      // secret, so it is capped per IP and per business instead, because each
+      // lead can trigger billable outbound Retell calls / SMS.
       const globalSecret = process.env.WEBHOOK_SECRET;
-      if (!globalSecret) {
-        if (!isLocalDev()) {
-          console.error('[lead-webhook] WEBHOOK_SECRET unset; refusing unauthenticated user_id path');
-          return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server misconfigured: webhook secret required' }) };
+      if (body.webhookSecret !== undefined) {
+        if (!globalSecret || body.webhookSecret !== globalSecret) {
+          return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized: invalid webhook secret' }) };
         }
-      } else if (body.webhookSecret !== globalSecret) {
-        return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized: invalid webhook secret' }) };
+      } else {
+        // Honeypot: form.js adds a hidden bc_hp field that people never fill.
+        if (body.bc_hp) return { statusCode: 201, headers, body: JSON.stringify({ success: true }) };
+        const limit = await publicEmbedLimit(supabase, body.user_id, getClientIp(event.headers as Record<string, string | undefined>));
+        if (!limit.allowed) {
+          return { statusCode: limit.statusCode, headers: { ...headers, ...(limit.retryAfterSeconds ? { 'Retry-After': String(limit.retryAfterSeconds) } : {}) }, body: JSON.stringify({ error: 'Too many submissions. Try again later.' }) };
+        }
       }
+      delete body.webhookSecret;
+      delete body.bc_hp;
 
       // Confirm the userId maps to a real user
       const { data: profile, error: profileErr } = await supabase

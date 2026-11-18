@@ -4,6 +4,7 @@ import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { getServiceSupabase } from './_shared/token-utils';
 import { withLegacyHandler } from './_shared/runtime-compat';
+import { consumeDemoSpendCap } from './_shared/demo-spend-cap';
 import { publicEnv } from './_shared/public-config';
 
 /**
@@ -128,6 +129,23 @@ const handler: Handler = async (event) => {
       body: JSON.stringify({
         error: 'That number already requested a test call recently. Try again later.',
         code: 'demo_phone_rate_limited',
+      }),
+    };
+  }
+
+  // Global daily cap shared by BOTH demo endpoints. Checked after the per-caller
+  // limits so a blocked caller cannot burn everyone's daily budget.
+  const spendCap = await consumeDemoSpendCap(supabase as any);
+  if (!spendCap.allowed) {
+    return {
+      statusCode: spendCap.statusCode === 503 ? 503 : 429,
+      headers: {
+        ...headers,
+        ...(spendCap.retryAfterSeconds ? { 'Retry-After': String(spendCap.retryAfterSeconds) } : {}),
+      },
+      body: JSON.stringify({
+        error: 'Demo calls are at capacity for today. Try again tomorrow or book a call.',
+        code: 'demo_daily_cap_reached',
       }),
     };
   }

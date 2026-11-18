@@ -43,7 +43,8 @@ function makeSupabase(responses: Record<string, { data?: unknown; error?: unknow
       remove: vi.fn(async () => ({})),
     })),
   };
-  return { sb: { from, storage }, log };
+  const auth = { admin: { deleteUser: vi.fn(async () => ({ error: null })) } };
+  return { sb: { from, storage, auth }, log };
 }
 
 function makeEvent() {
@@ -72,6 +73,7 @@ describe('delete-workspace F93 — retell_calls and leads erasure', () => {
     const res = await handler(makeEvent(), {} as any);
 
     expect(res.statusCode).toBe(200);
+    expect(sb.auth.admin.deleteUser).toHaveBeenCalledWith('user-1');
 
     const retellCallsCall = log.find((l) => l.table === 'retell_calls');
     expect(retellCallsCall).toBeDefined();

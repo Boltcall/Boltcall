@@ -1,0 +1,89 @@
+/* Personal appearance is scoped to authenticated dashboard shells. Status colors stay semantic. */
+[data-dashboard-appearance] {
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+  --dashboard-accent-text: color-mix(in srgb, var(--dashboard-accent) 60%, #000);
+}
+
+[data-dashboard-appearance][data-mode="dark"] {
+  --background: 240 10% 4%;
+  --foreground: 0 0% 93%;
+  --card: 240 6% 7%;
+  --card-foreground: 0 0% 93%;
+  --muted: 240 4% 12%;
+  --muted-foreground: 240 5% 65%;
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 217 91% 60%;
+  --dashboard-accent-text: color-mix(in srgb, var(--dashboard-accent) 60%, #fff);
+  background: #0a0a0c;
+  color: #ededed;
+}
+
+[data-dashboard-appearance] :is(.bg-primary, .bg-blue-500, .bg-blue-600, .bg-blue-700) {
+  background-color: var(--dashboard-accent) !important;
+  color: var(--dashboard-accent-foreground);
+}
+
+[data-dashboard-appearance] :is(.bg-blue-50, .bg-blue-100) {
+  background-color: var(--dashboard-accent-soft) !important;
+}
+
+[data-dashboard-appearance] :is(.text-blue-500, .text-blue-600, .text-blue-700) {
+  color: var(--dashboard-accent-text) !important;
+}
+
+[data-dashboard-appearance] :is(.border-blue-500, .border-blue-600) {
+  border-color: var(--dashboard-accent) !important;
+}
+
+[data-dashboard-appearance] :is(.rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl):not([data-theme="st-appearance-lab"] *) {
+  border-radius: var(--dashboard-radius) !important;
+}
+
+[data-dashboard-appearance] button:is(.bg-primary, .bg-blue-500, .bg-blue-600, .bg-blue-700):hover:not(:disabled) {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+
+[data-dashboard-content] {
+  padding: calc(var(--dashboard-space) * 2) !important;
+}
+
+[data-dashboard-content] :is(.space-y-5, .space-y-6):not([data-theme="st-appearance-lab"] *) > :not([hidden]) ~ :not([hidden]) {
+  margin-top: calc(var(--dashboard-space) * 2);
+}
+
+[data-dashboard-appearance] .dashboard-sidebar a {
+  padding-block: var(--dashboard-space);
+  min-height: 36px;
+}
+
+/* V2 predates dark utilities; apply neutral surface/text tokens to its existing classes. */
+[data-dashboard-appearance][data-mode="dark"] :is(.bg-white, .bg-white\/80, .bg-slate-50, .bg-slate-100, .bg-zinc-50, .bg-zinc-100) {
+  background-color: #111114 !important;
+}
+
+[data-dashboard-appearance][data-mode="dark"] :is(.text-slate-900, .text-slate-800, .text-slate-700, .text-zinc-900, .text-zinc-800, .text-gray-900, .text-gray-800, .text-gray-700) {
+  color: #ededed !important;
+}
+
+[data-dashboard-appearance][data-mode="dark"] :is(.text-slate-600, .text-slate-500, .text-zinc-600, .text-zinc-500, .text-gray-600, .text-gray-500) {
+  color: #a1a1aa !important;
+}
+
+[data-dashboard-appearance][data-mode="dark"] :is(.border-slate-200, .border-slate-200\/60, .border-slate-200\/80, .border-zinc-200, .border-gray-200, .border-gray-100) {
+  border-color: #2a2a30 !important;
+}
+
+@media (max-width: 639px) {
+  [data-dashboard-content] { padding: var(--dashboard-space) !important; }
+}
+
+@media (min-width: 768px) {
+  [data-dashboard-appearance] .dashboard-main-scroll { border-radius: var(--dashboard-radius) !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="st-appearance-lab"] * { transition: none !important; }
+}
