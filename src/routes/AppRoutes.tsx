@@ -304,6 +304,11 @@ const CompareBoltcallVsBirdeye = React.lazy(() => import('../pages/CompareBoltca
 const CompareBoltcallVsEmitrr = React.lazy(() => import('../pages/CompareBoltcallVsEmitrr'));
 const CompareBoltcallVsCalomation = React.lazy(() => import('../pages/CompareBoltcallVsCalomation'));
 const CompareBoltcallVsSmithAi = React.lazy(() => import('../pages/CompareBoltcallVsSmithAi'));
+const CompareBoltcallVsRuby = React.lazy(() => import('../pages/CompareBoltcallVsRuby'));
+const CompareBoltcallVsAnsweringLegal = React.lazy(() => import('../pages/CompareBoltcallVsAnsweringLegal'));
+const CompareBoltcallVsLexReception = React.lazy(() => import('../pages/CompareBoltcallVsLexReception'));
+const CompareBoltcallVsAbbyConnect = React.lazy(() => import('../pages/CompareBoltcallVsAbbyConnect'));
+const CompareBestLawFirmAnsweringServices = React.lazy(() => import('../pages/CompareBestLawFirmAnsweringServices'));
 const CompareBoltcallVsGoodCall = React.lazy(() => import('../pages/CompareBoltcallVsGoodCall'));
 const CompareBoltcallVsCallin = React.lazy(() => import('../pages/CompareBoltcallVsCallin'));
 const CompareBoltcallVsLindy = React.lazy(() => import('../pages/CompareBoltcallVsLindy'));
@@ -827,6 +832,11 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/compare/boltcall-vs-emitrr" element={<CompareBoltcallVsEmitrr />} />
         <Route path="/compare/boltcall-vs-calomation" element={<CompareBoltcallVsCalomation />} />
         <Route path="/compare/boltcall-vs-smith-ai" element={<CompareBoltcallVsSmithAi />} />
+        <Route path="/compare/boltcall-vs-ruby" element={<CompareBoltcallVsRuby />} />
+        <Route path="/compare/boltcall-vs-answering-legal" element={<CompareBoltcallVsAnsweringLegal />} />
+        <Route path="/compare/boltcall-vs-lex-reception" element={<CompareBoltcallVsLexReception />} />
+        <Route path="/compare/boltcall-vs-abby-connect" element={<CompareBoltcallVsAbbyConnect />} />
+        <Route path="/compare/best-law-firm-answering-services" element={<CompareBestLawFirmAnsweringServices />} />
         <Route path="/compare/boltcall-vs-goodcall" element={<CompareBoltcallVsGoodCall />} />
         <Route path="/compare/boltcall-vs-callin" element={<CompareBoltcallVsCallin />} />
         <Route path="/compare/boltcall-vs-lindy" element={<CompareBoltcallVsLindy />} />

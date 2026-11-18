@@ -54,7 +54,7 @@ Boltcall is built first for law firms and also works for other local service bus
 
 ### How does Boltcall pricing work?
 
-Boltcall is a flat monthly subscription with free setup and a 30-day money-back guarantee. There are no per-case fees and no share of fees. Current plans are on the [pricing page](/pricing/).
+Boltcall is a flat monthly subscription with free setup. There are no per-case fees and no share of fees. Current plans are on the [pricing page](/pricing/).
 
 ### Should I answer every call myself instead?
 

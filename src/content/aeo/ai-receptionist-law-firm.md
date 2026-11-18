@@ -34,7 +34,7 @@ The core evaluation is whether the intake information and booking path fit the f
 
 ## What does it cost, and how long does setup take?
 
-Boltcall uses a flat monthly subscription with free setup, no per-case fees, and no share of fees. See [Boltcall pricing](/pricing/) for current pricing details. Boltcall also offers a 30-day money-back guarantee.
+Boltcall uses a flat monthly subscription with free setup, no per-case fees, and no share of fees. See [Boltcall pricing](/pricing/) for current pricing details.
 
 Free setup is included, but no fixed setup duration is stated here. Ask about timing for your firm’s channels, calendar, and any connections through Zapier, Make, or webhooks when you [book a call](/book-a-call/). Avoid assuming a case-management integration is native.
 

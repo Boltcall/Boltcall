@@ -52,7 +52,7 @@ Boltcall has no native Clio, MyCase or Filevine integration. Its calendar bookin
 
 ### Does Boltcall charge per case?
 
-No. Boltcall uses a flat monthly subscription, with no per-case fees or share of fees. Setup is free, and the subscription includes a 30-day money-back guarantee. See [pricing](/pricing/) for details.
+No. Boltcall uses a flat monthly subscription, with no per-case fees or share of fees. Setup is free. See [pricing](/pricing/) for details.
 
 ### Does Boltcall integrate natively with Clio, MyCase or Filevine?
 

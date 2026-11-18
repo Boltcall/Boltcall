@@ -72,12 +72,52 @@ const Comparisons: React.FC = () => {
       readTime: '7 min read'
     },
     {
+      title: 'Best <span class="text-blue-600">Law Firm Answering Services</span> (2026)',
+      description: '11 compared with published prices and sources: Ruby, Smith.ai, Answering Legal, LEX, Abby, PATLive, Nexa, Back Office Betties, Posh, Moneypenny and Boltcall. "Best for" picks, not a #1 ranking.',
+      href: '/compare/best-law-firm-answering-services',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '12 min read'
+    },
+    {
       title: 'Boltcall vs <span class="text-blue-600">Smith.ai</span>',
       description: 'For law firms: published pricing side by side, intake, conflict checks, Clio and MyCase. Every Smith.ai figure links to its source.',
       href: '/compare/boltcall-vs-smith-ai',
       category: 'Law Firms',
       date: 'October 2, 2026',
       readTime: '8 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">Ruby</span>',
+      description: 'For law firms: live receptionists billed per minute vs a flat AI speed-to-lead plan. Pricing, HIPAA, Clio and refunds, every Ruby figure sourced.',
+      href: '/compare/boltcall-vs-ruby',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '8 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">LEX Reception</span>',
+      description: 'For law firms: human-only legal answering vs AI speed-to-lead. How LEX bills, intake, Spanish, Clio and MyCase. Every LEX fact links to its source.',
+      href: '/compare/boltcall-vs-lex-reception',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '8 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">Abby Connect</span>',
+      description: 'For law firms: per-minute human and AI answering vs a flat AI-only plan, with Clio and MyCase, intake and contract terms. Every Abby figure links to its source.',
+      href: '/compare/boltcall-vs-abby-connect',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '8 min read'
+    },
+    {
+      title: 'Boltcall vs <span class="text-blue-600">Answering Legal</span>',
+      description: 'For law firms: per-minute live answering vs an AI speed-to-lead plan, legal integrations, the free trial, and what to check in the Terms. Sources linked.',
+      href: '/compare/boltcall-vs-answering-legal',
+      category: 'Law Firms',
+      date: 'October 2, 2026',
+      readTime: '9 min read'
     },
     {
       title: '5 Best <span class="text-blue-600">Podium Alternatives</span> for Local Businesses (2026)',
@@ -233,6 +273,12 @@ const Comparisons: React.FC = () => {
                 Boltcall vs GoHighLevel
               </Link>
               <p className="text-gray-600 text-xs mt-1">Speed-to-lead instead of an all-in-one CRM stack.</p>
+            </div>
+            <div>
+              <Link to="/compare/best-law-firm-answering-services" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">
+                Best Law Firm Answering Services (2026)
+              </Link>
+              <p className="text-gray-600 text-xs mt-1">11 legal answering services compared on published price, Clio and Spanish. Sources linked.</p>
             </div>
             <div>
               <Link to="/compare/boltcall-vs-smith-ai" className="font-semibold text-blue-600 hover:text-blue-800 hover:underline">

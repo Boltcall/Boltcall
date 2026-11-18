@@ -40,7 +40,7 @@ Boltcall collects conflict-check names first and tells callers that the call doe
 
 A reliable call-handling setup needs a clear handoff, not just an answered call. Decide who reviews new inquiries, how urgent matters reach the right person and where consultation appointments should be booked. Test the process with a sample inquiry before routing all calls through it.
 
-Boltcall books into Google Calendar and Cal.com. Other tools can connect through Zapier, Make and webhooks. It has no native Clio, MyCase or Filevine integration. See [pricing](/pricing/) for its flat monthly subscription, free setup and 30-day money-back guarantee. There are no per-case fees or share of fees.
+Boltcall books into Google Calendar and Cal.com. Other tools can connect through Zapier, Make and webhooks. It has no native Clio, MyCase or Filevine integration. See [pricing](/pricing/) for its flat monthly subscription and free setup. There are no per-case fees or share of fees.
 
 ## FAQ
 

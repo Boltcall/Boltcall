@@ -129,7 +129,7 @@ const PricingPage: React.FC = () => {
           "name": "How much does Boltcall cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Boltcall starts at $549/month for the Starter plan, $897/month for Pro, and $4,997/month for Ultimate. All plans include free setup and a 30-day money-back guarantee. Each plan includes a monthly credit pool shared across calls, texts, and chat. Boltcall is a flat subscription with no per-case fees and no share of your fees."
+            "text": "Boltcall starts at $549/month for the Starter plan, $897/month for Pro, and $4,997/month for Ultimate. All plans include free setup. Each plan includes a monthly credit pool shared across calls, texts, and chat. Boltcall is a flat subscription with no per-case fees and no share of your fees."
           }
         },
         {
@@ -193,7 +193,7 @@ const PricingPage: React.FC = () => {
         <AnswerBlock
           query="How much does Boltcall cost"
           definition="Boltcall pricing has three tiers: Starter at $549/month (24/7 AI call answering, missed-call text-back, instant lead reply, consultation booking), Pro at $897/month (everything in Starter plus full lead follow-up sequences, SMS conversations, and a website widget), and Ultimate at $4,997/month (everything in Pro plus multi-location support and AI audits)."
-          stat="Every plan includes free setup, a monthly credit pool shared across calls, texts, and chat, no long-term contracts, and a 30-day money-back guarantee. Boltcall is a flat subscription with no per-case fees."
+          stat="Every plan includes free setup, a monthly credit pool shared across calls, texts, and chat, and no long-term contracts. Boltcall is a flat subscription with no per-case fees."
           outcome="A new inquiry can be worth $2,500 or more to a law firm, so one extra signed case every few months can cover a plan. Use your own average fee in the break-even calculator below."
           cta="Compare plans below or start free at boltcall.org/setup."
         />
@@ -282,10 +282,6 @@ const PricingPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>30-day money-back guarantee (see terms)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               <span>Your data is never sold or shared</span>
             </div>
           </div>
@@ -361,7 +357,7 @@ const PricingPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Can I try Boltcall before committing to a plan?</h3>
               <p className="text-gray-700 leading-relaxed">
-                Yes. Every plan is backed by a 30-day money-back guarantee (<Link to="/terms-of-service#guarantee" className="text-indigo-600 hover:text-indigo-700 underline">see guarantee terms</Link>), but most buyers like to validate fit first. Start with our <Link to="/seo-audit" className="text-indigo-600 hover:text-indigo-700 underline">free SEO audit</Link> or full <Link to="/seo-aeo-audit" className="text-indigo-600 hover:text-indigo-700 underline">SEO + AEO audit</Link> to see where your site is leaking leads, run a <Link to="/business-audit" className="text-indigo-600 hover:text-indigo-700 underline">business audit</Link> to benchmark your funnel, score your speed with the <Link to="/lead-response-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">lead response scorecard</Link>, or take the <Link to="/ai-readiness-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">AI readiness scorecard</Link>. If you want a deeper dollar-figure projection, the <Link to="/ai-revenue-audit" className="text-indigo-600 hover:text-indigo-700 underline">AI revenue audit</Link> shows exactly what Boltcall would recover for your business, and the <Link to="/lead-magnet/ai-receptionist-buyers-guide" className="text-indigo-600 hover:text-indigo-700 underline">AI Receptionist Buyer's Guide</Link> walks you through every question to ask before signing with any vendor.
+                Yes. Most buyers like to validate fit first. Start with our <Link to="/seo-audit" className="text-indigo-600 hover:text-indigo-700 underline">free SEO audit</Link> or full <Link to="/seo-aeo-audit" className="text-indigo-600 hover:text-indigo-700 underline">SEO + AEO audit</Link> to see where your site is leaking leads, run a <Link to="/business-audit" className="text-indigo-600 hover:text-indigo-700 underline">business audit</Link> to benchmark your funnel, score your speed with the <Link to="/lead-response-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">lead response scorecard</Link>, or take the <Link to="/ai-readiness-scorecard" className="text-indigo-600 hover:text-indigo-700 underline">AI readiness scorecard</Link>. If you want a deeper dollar-figure projection, the <Link to="/ai-revenue-audit" className="text-indigo-600 hover:text-indigo-700 underline">AI revenue audit</Link> shows exactly what Boltcall would recover for your business, and the <Link to="/lead-magnet/ai-receptionist-buyers-guide" className="text-indigo-600 hover:text-indigo-700 underline">AI Receptionist Buyer's Guide</Link> walks you through every question to ask before signing with any vendor.
               </p>
             </div>
 

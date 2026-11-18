@@ -313,10 +313,6 @@ const About: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Results in 30 days or your money back</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               <span>Your data is never sold or shared</span>
             </div>
           </div>

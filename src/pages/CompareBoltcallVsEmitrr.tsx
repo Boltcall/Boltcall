@@ -298,7 +298,6 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$489/mo SEO:</strong> Everything in Starter + local SEO optimization</span></li>
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$799/mo Full AI:</strong> Complete AI automation suite with priority support</span></li>
                   </ul>
-                  <p className="text-sm text-gray-600 mt-4">Guarantee: website delivered in 24 hours or get a free AI receptionist</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                   <h3 className="font-bold text-gray-900 text-xl mb-3">Emitrr Pricing</h3>
@@ -514,7 +513,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                   Ready to See What AI Can Do for Your Business?
                 </h2>
                 <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-                  Get a free AI receptionist, chatbot, and website — set up in 24 hours. No contracts, no risk.
+                  Get a free AI receptionist, chatbot, and website — set up in 24 hours. No contracts.
                 </p>
                 <Link
                   to="/setup"

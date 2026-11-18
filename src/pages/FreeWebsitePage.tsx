@@ -384,7 +384,6 @@ const FreeWebsitePage: React.FC = () => {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap justify-center gap-6">
             {[
-              'Money-back guarantee',
               'No setup fees',
               'SSL included',
             ].map((signal) => (

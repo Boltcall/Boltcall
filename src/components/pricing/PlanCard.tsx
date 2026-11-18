@@ -12,7 +12,6 @@ interface PlanCardProps {
   features: string[];
   limits?: string;
   support?: string;
-  guarantee?: string;
   ctaLabel: string;
   popular?: boolean;
   anchor?: boolean;
@@ -27,7 +26,6 @@ const PlanCard: React.FC<PlanCardProps> = ({
   features,
   limits,
   support,
-  guarantee,
   ctaLabel,
   popular = false,
   anchor = false,
@@ -126,14 +124,6 @@ const PlanCard: React.FC<PlanCardProps> = ({
         <div className="mb-4 p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-blue-800 font-medium mb-1">Support</p>
           <p className="text-sm text-blue-700">{support}</p>
-        </div>
-      )}
-
-      {/* Guarantee */}
-      {guarantee && (
-        <div className="mb-6 p-3 bg-green-50 rounded-lg">
-          <p className="text-xs text-green-800 font-medium mb-1">Guarantee</p>
-          <p className="text-sm text-green-700">{guarantee}</p>
         </div>
       )}
 

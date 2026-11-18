@@ -333,7 +333,6 @@ const Challenge: React.FC = () => {
             {[
               '100% Free — no credit card required',
               'Built for law firms',
-              'Results in 30 days or your money back',
               'Your data is never sold or shared',
             ].map((t) => (
               <div key={t} className="flex items-center gap-2">

@@ -48,7 +48,6 @@ const PricingSection: React.FC = () => {
       ],
       limits: '2 users · 2 calendars · 300 voice mins · 2,500 SMS/mo',
       support: 'Priority chat (24h) + onboarding call',
-      guarantee: '10 extra bookings in 30 days or your money back.',
       ctaLabel: 'Start 7-Day Free Trial',
       popular: true
     },
@@ -84,7 +83,6 @@ const PricingSection: React.FC = () => {
     { name: 'CRM integration + Zapier/Make', starter: false, pro: true, ultimate: true },
     { name: 'Call transcripts & recordings', starter: false, pro: true, ultimate: true },
     { name: 'Google review requests', starter: false, pro: true, ultimate: true },
-    { name: 'Money-back guarantee', starter: false, pro: true, ultimate: true },
     { name: 'We run your ads (Meta + Google)', starter: false, pro: false, ultimate: true },
     { name: 'Full funnel: Ads → AI → Bookings', starter: false, pro: false, ultimate: true },
     { name: 'WhatsApp + Facebook/Instagram DMs', starter: false, pro: true, ultimate: true },
