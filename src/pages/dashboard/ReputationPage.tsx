@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Star, Loader2, AlertCircle, MessageSquare, ArrowRight, X,
   Globe, Smartphone, MousePointerClick, Clock, Pencil,
-  Send, ExternalLink, ToggleLeft, ToggleRight
+  Send, ExternalLink, ToggleLeft, ToggleRight, Plus, Trash2
 } from 'lucide-react';
 import { PageSkeleton } from '../../components/ui/loading-skeleton';
 import { supabase } from '../../lib/supabase';
@@ -15,6 +15,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const inputClass =
   'w-full px-4 py-3 border border-gray-300 dark:border-[#2a2a32] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 dark:text-white bg-white dark:bg-[#0e0e11]';
+
+const MAX_EXTRA_LINKS = 3;
+const LABEL_SUGGESTIONS = ['Avvo', 'Yelp', 'Facebook', 'Trustpilot'];
+type ExtraLink = { label: string; url: string };
+const isHttps = (u: string) => /^https:\/\/\S+\.\S+/i.test(u.trim());
 
 const SETUP_STEPS = [
   {
@@ -65,7 +70,8 @@ const ReputationPage: React.FC = () => {
   const [smsTemplate, setSmsTemplate] = useState(
     'Hi {{client_name}}, thanks for visiting {{business_name}}! We\'d love your feedback: {{review_url}}'
   );
-  const [smsDelay, setSmsDelay] = useState('24');
+  const [smsDelay, setSmsDelay] = useState('2');
+  const [extraLinks, setExtraLinks] = useState<ExtraLink[]>([]);
 
   // Review request history
   const [reviewRequests, setReviewRequests] = useState<any[]>([]);
@@ -80,6 +86,7 @@ const ReputationPage: React.FC = () => {
   };
 
   const smsDelayLabels: Record<string, string> = {
+    '2': '2 hours',
     '1': '1 hour',
     '3': '3 hours',
     '24': 'Next day',
@@ -105,6 +112,7 @@ const ReputationPage: React.FC = () => {
         if (data?.reputation_manager_config) {
           const cfg = data.reputation_manager_config as Record<string, any>;
           if (cfg.google_review_url) setGoogleReviewUrl(cfg.google_review_url);
+          if (Array.isArray(cfg.extra_review_links)) setExtraLinks(cfg.extra_review_links.slice(0, MAX_EXTRA_LINKS));
           if (cfg.trigger) setTrigger(cfg.trigger);
           if (cfg.delay_seconds) setDelaySeconds(cfg.delay_seconds);
           if (cfg.popup_text) setPopupText(cfg.popup_text);
@@ -160,6 +168,12 @@ const ReputationPage: React.FC = () => {
       }
     }
 
+    const links = extraLinks.filter(l => l.label.trim() || l.url.trim());
+    if (links.some(l => !l.label.trim() || !isHttps(l.url))) {
+      setError('Fix the other review sites: each needs a name and an https:// link.');
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
@@ -169,6 +183,7 @@ const ReputationPage: React.FC = () => {
         .update({
           reputation_manager_config: {
             google_review_url: googleReviewUrl,
+            extra_review_links: links.map(l => ({ label: l.label.trim(), url: l.url.trim() })),
             trigger,
             delay_seconds: delaySeconds,
             popup_text: popupText,
@@ -533,6 +548,71 @@ const ReputationPage: React.FC = () => {
             className={inputClass}
           />
         </div>
+
+        <div className="border-t border-gray-100 dark:border-[#1e1e24] pt-4">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Other review sites</h4>
+          <p className="text-xs text-gray-400 mb-3">
+            Reviews spread across several sites build more trust with customers and AI search. Up to {MAX_EXTRA_LINKS}.
+          </p>
+          <datalist id="review-site-labels">
+            {LABEL_SUGGESTIONS.map(l => <option key={l} value={l} />)}
+          </datalist>
+          <div className="space-y-3">
+            {extraLinks.map((l, i) => {
+              const bad = l.url.trim() !== '' && !isHttps(l.url);
+              const update = (patch: Partial<ExtraLink>) => {
+                setExtraLinks(prev => prev.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+                dirty();
+              };
+              return (
+                <div key={i} className="flex items-start gap-2">
+                  <input
+                    type="text"
+                    list="review-site-labels"
+                    value={l.label}
+                    onChange={(e) => update({ label: e.target.value })}
+                    placeholder="Avvo"
+                    aria-label={`Review site ${i + 1} name`}
+                    className={`${inputClass} !w-32 sm:!w-40 shrink-0`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <input
+                      type="url"
+                      value={l.url}
+                      onChange={(e) => update({ url: e.target.value })}
+                      placeholder="https://..."
+                      aria-label={`Review site ${i + 1} link`}
+                      aria-invalid={bad}
+                      className={`${inputClass} ${bad ? '!border-red-500 focus:!ring-red-500' : ''}`}
+                    />
+                    {bad && <p className="text-xs text-red-500 mt-1">Link must start with https://</p>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setExtraLinks(prev => prev.filter((_, j) => j !== i)); dirty(); }}
+                    aria-label={`Remove review site ${i + 1}`}
+                    className="p-3 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          {extraLinks.length < MAX_EXTRA_LINKS && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = LABEL_SUGGESTIONS.find(s => !extraLinks.some(x => x.label === s)) ?? '';
+                setExtraLinks(prev => [...prev, { label: next, url: '' }]);
+                dirty();
+              }}
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+            >
+              <Plus className="w-4 h-4" /> Add review site
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Website Popup Settings */}
@@ -623,6 +703,7 @@ const ReputationPage: React.FC = () => {
                 className={inputClass}
               >
                 <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
                 <option value="3">3 hours</option>
                 <option value="24">Next day</option>
                 <option value="48">2 days</option>
@@ -638,7 +719,10 @@ const ReputationPage: React.FC = () => {
                 className={`${inputClass} resize-none`}
               />
               <p className="text-xs text-gray-400 mt-1">
-                Variables: <code className="text-gray-600 dark:text-gray-300">{'{{client_name}}'}</code>, <code className="text-gray-600 dark:text-gray-300">{'{{business_name}}'}</code>, <code className="text-gray-600 dark:text-gray-300">{'{{review_url}}'}</code>
+                Variables: <code className="text-gray-600 dark:text-gray-300">{'{{client_name}}'}</code>, <code className="text-gray-600 dark:text-gray-300">{'{{business_name}}'}</code>, <code className="text-gray-600 dark:text-gray-300">{'{{review_url}}'}</code>, <code className="text-gray-600 dark:text-gray-300">{'{{review_links}}'}</code>
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Your other review sites are added automatically if the template doesn't use {'{{review_links}}'}.
               </p>
             </div>
           </div>
