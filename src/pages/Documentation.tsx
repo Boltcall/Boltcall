@@ -750,16 +750,16 @@ const Documentation: React.FC = () => {
                     <tr className="bg-gray-50 border-b border-gray-200">
                       <th className="px-5 py-4 font-semibold text-gray-700">Plan</th>
                       <th className="px-5 py-4 font-semibold text-gray-700">API Access</th>
-                      <th className="px-5 py-4 font-semibold text-gray-700">Calls/Month</th>
+                      <th className="px-5 py-4 font-semibold text-gray-700">Credits/Month</th>
                       <th className="px-5 py-4 font-semibold text-gray-700">Webhooks</th>
                       <th className="px-5 py-4 font-semibold text-gray-700">Support</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {[
-                      { plan: 'Starter', api: 'Full REST API', calls: '500', webhooks: 'Yes', support: 'Email' },
-                      { plan: 'Pro', api: 'Full REST API + Retell', calls: '2,000', webhooks: 'Yes + real-time', support: 'Priority' },
-                      { plan: 'Elite', api: 'Full API + custom', calls: 'Unlimited', webhooks: 'Full', support: 'Dedicated' },
+                      { plan: 'Starter', api: 'Full REST API', calls: '1,000', webhooks: 'Yes', support: 'Email' },
+                      { plan: 'Pro', api: 'Full REST API + Retell', calls: '3,000', webhooks: 'Yes + real-time', support: 'Priority' },
+                      { plan: 'Ultimate', api: 'Full API + custom', calls: '10,000', webhooks: 'Full', support: 'Dedicated' },
                       { plan: 'Free trial', api: 'Read-only', calls: '50', webhooks: 'No', support: 'Community' },
                     ].map((row, i) => (
                       <tr key={i} className={i === 2 ? 'bg-blue-50' : ''}>

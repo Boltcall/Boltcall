@@ -60,7 +60,7 @@ const CompareBoltcallVsLindy: React.FC = () => {
           name: 'How does Lindy pricing compare to Boltcall?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Lindy core plans: Free (400 credits), Plus $49.99/mo (5,000 credits), Pro $99.99/mo (15,000 credits), Max $199.99/mo (30,000 credits), Business $299/mo (30,000 credits + team features). Voice is metered separately at $0.19/minute and each phone number is $10/month. At 300 minutes of voice/month: Lindy Plus = $49.99 + $57 voice + $10 number = ~$117/mo on voice alone, plus credit consumption on every workflow run. Boltcall Starter is $549/month flat with unlimited voice, no per-minute fees, and no per-phone-number charge.',
+            text: 'Lindy core plans: Free (400 credits), Plus $49.99/mo (5,000 credits), Pro $99.99/mo (15,000 credits), Max $199.99/mo (30,000 credits), Business $299/mo (30,000 credits + team features). Voice is metered separately at $0.19/minute and each phone number is $10/month. At 300 minutes of voice/month: Lindy Plus = $49.99 + $57 voice + $10 number = ~$117/mo on voice alone, plus credit consumption on every workflow run. Boltcall Starter is $549/month flat, with a monthly credit pool shared across voice, texts and chat (1 AI voice minute uses 10 credits, about 100 minutes on Starter) and no per-phone-number charge.',
           },
         },
         {
@@ -102,7 +102,7 @@ const CompareBoltcallVsLindy: React.FC = () => {
   const featureRows = [
     { feature: 'Product category', boltcall: 'Purpose-built AI receptionist for local service biz', lindy: 'General-purpose AI agent builder (4,000+ apps)' },
     { feature: 'Starting price', boltcall: '$549/mo flat', lindy: '$49.99/mo Plus (voice billed separately)' },
-    { feature: 'Voice/phone pricing', boltcall: 'Unlimited, no per-min fees', lindy: '$0.19/min + $10/mo per phone number' },
+    { feature: 'Voice/phone pricing', boltcall: 'Flat monthly credit pool (1 voice min = 10 credits)', lindy: '$0.19/min + $10/mo per phone number' },
     { feature: 'Setup model', boltcall: 'Managed, built in 24 hours', lindy: 'DIY no-code agent builder' },
     { feature: 'Vertical-specific scripts (HVAC, dental, law, etc.)', boltcall: 'Yes, pre-tuned', lindy: 'Build it yourself from templates' },
     { feature: 'Speed-to-lead web-form SMS', boltcall: 'Yes, native', lindy: 'DIY agent workflow' },
@@ -141,7 +141,7 @@ const CompareBoltcallVsLindy: React.FC = () => {
           <AnswerBlock
             query="Boltcall vs Lindy — which should I pick"
             definition="Lindy is a general-purpose AI agent builder that can do many things — inbox triage, meeting notes, calendar automation, voice calling — across 4,000+ integrations, with voice priced at $0.19/minute plus $10/month per phone number on top of the base plan. Boltcall is a purpose-built AI receptionist for local service businesses with the voice agent, intake script, calendar booking, and follow-up automation pre-configured by vertical."
-            stat="At 300 minutes of voice/month, Lindy Plus runs roughly $117/month on voice alone (base + per-minute + per-number) plus credit consumption on every workflow run. Boltcall Starter is $549/month flat with unlimited voice and no per-minute fees."
+            stat="At 300 minutes of voice/month, Lindy Plus runs roughly $117/month on voice alone (base + per-minute + per-number) plus credit consumption on every workflow run. Boltcall Starter is $549/month flat with a monthly credit pool of about 100 voice minutes and no separate per-minute bill."
             outcome="Pick Lindy if you want one platform orchestrating many AI agents and you are technical enough to build them. Pick Boltcall if you only need the receptionist + lead-response stack done well, managed, and tuned for your industry."
           />
 

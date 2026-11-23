@@ -83,7 +83,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
           "name": "How much does an AI receptionist cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "AI receptionists typically cost between $99 and $1,000 per month depending on features and call volume. Entry-level plans start around $99/month for basic call answering with limited minutes. Full-featured platforms like Boltcall start at $549/month and include unlimited AI call answering, appointment booking, lead capture, follow-up texts, and no per-call fees. Hybrid AI-plus-human services like Smith.ai charge per call ($2.10–$2.40/call) on top of a base monthly fee, making costs unpredictable at high volume."
+            "text": "AI receptionists typically cost between $99 and $1,000 per month depending on features and call volume. Entry-level plans start around $99/month for basic call answering with limited minutes. Full-featured platforms like Boltcall start at $549/month and include 24/7 AI call answering, appointment booking, lead capture, follow-up texts, and no per-call fees, with a monthly credit pool shared across calls, texts and chat. Hybrid AI-plus-human services like Smith.ai charge per call ($2.10–$2.40/call) on top of a base monthly fee, making costs unpredictable at high volume."
           }
         },
         {
@@ -463,7 +463,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
                   },
                   {
                     q: 'How much does an AI receptionist cost?',
-                    a: 'AI receptionists range from $549/month for basic plans to $1,000+/month for full-featured platforms. Boltcall starts at $549/month and includes unlimited AI call answering, appointment booking, lead capture, and follow-up texts with flat-rate pricing and no per-call fees.',
+                    a: 'AI receptionists range from $549/month for basic plans to $1,000+/month for full-featured platforms. Boltcall starts at $549/month and includes 24/7 AI call answering, appointment booking, lead capture, and follow-up texts with flat monthly pricing, a shared credit pool and no per-call fees.',
                   },
                   {
                     q: 'Can an AI receptionist book appointments?',

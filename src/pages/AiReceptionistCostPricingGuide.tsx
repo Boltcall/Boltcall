@@ -299,8 +299,8 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                         <tr className="bg-blue-50">
                           <td className="border border-gray-300 px-4 py-3 font-semibold text-blue-600">Boltcall</td>
                           <td className="border border-gray-300 px-4 py-3">$549/month</td>
-                          <td className="border border-gray-300 px-4 py-3">Unlimited</td>
-                          <td className="border border-gray-300 px-4 py-3">AI + Website + 24hr setup</td>
+                          <td className="border border-gray-300 px-4 py-3">1,000 credits/mo (about 100 voice minutes)</td>
+                          <td className="border border-gray-300 px-4 py-3">Calls, texts and chat, free setup</td>
                         </tr>
                         <tr>
                           <td className="border border-gray-300 px-4 py-3">Competitor A</td>
@@ -330,15 +330,15 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                       <ul className="space-y-2">
                         <li className="flex items-start">
                           <ArrowRight className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
-                          <span>Unlimited AI receptionist calls</span>
+                          <span>Monthly credit pool shared across calls, texts and chat</span>
                         </li>
                         <li className="flex items-start">
                           <ArrowRight className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
-                          <span>Professional website included</span>
+                          <span>Answers 24/7</span>
                         </li>
                         <li className="flex items-start">
                           <ArrowRight className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
-                          <span>24-hour complete setup</span>
+                          <span>Free setup</span>
                         </li>
                       </ul>
                       <ul className="space-y-2">
@@ -352,14 +352,14 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                         </li>
                         <li className="flex items-start">
                           <ArrowRight className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
-                          <span>No setup or hidden fees</span>
+                          <span>30-day money-back guarantee</span>
                         </li>
                       </ul>
                     </div>
                   </div>
 
                   <p className="text-gray-600">
-                    While Boltcall's starting price may seem higher, the value proposition becomes clear when you consider the included website (worth $2,000+), unlimited calls, and comprehensive setup that competitors charge extra for.
+                    While Boltcall's starting price may seem higher, the value proposition becomes clear when you consider free setup, a flat monthly price, and one credit pool that covers calls, texts and chat.
                   </p>
                 </motion.section>
 
@@ -374,16 +374,15 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                             <th className="py-3 px-4 text-left rounded-tl-xl">Feature</th>
                             <th className="py-3 px-4 text-center">Starter</th>
                             <th className="py-3 px-4 text-center">Pro</th>
-                            <th className="py-3 px-4 text-center rounded-tr-xl">Scale</th>
+                            <th className="py-3 px-4 text-center rounded-tr-xl">Ultimate</th>
                           </tr>
                         </thead>
                         <tbody>
                           {[
-                            ["AI Receptionist calls", "500/mo", "2,000/mo", "Unlimited"],
-                            ["Lead capture (SMS/email)", "✓", "✓", "✓"],
-                            ["CRM integrations", "—", "✓", "✓"],
-                            ["Custom AI voice & script", "✓", "✓", "✓"],
-                            ["Priority support", "—", "—", "✓"],
+                            ["Price per month", "$549", "$897", "$4,997"],
+                            ["Credits per month", "1,000", "3,000", "10,000"],
+                            ["AI voice minutes if used only on voice", "About 100", "About 300", "About 1,000"],
+                            ["Setup", "Free", "Free", "Free"],
                           ].map(([feat, ...vals], i) => (
                             <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                               <td className="py-3 px-4 font-medium text-gray-800">{feat}</td>
@@ -453,19 +452,19 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>Per-minute charges:</span>
-                          <span className="font-semibold text-green-600">$0 (unlimited)</span>
+                          <span className="font-semibold text-green-600">Included in credits</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Setup fees:</span>
                           <span className="font-semibold text-green-600">$0</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Website included:</span>
-                          <span className="font-semibold text-green-600">$0 (saves $2000+)</span>
+                          <span>Credits included:</span>
+                          <span className="font-semibold text-green-600">1,000 (about 100 voice min)</span>
                         </div>
                         <hr />
                         <div className="flex justify-between font-bold text-lg">
-                          <span>Monthly total (unlimited):</span>
+                          <span>Monthly total (Starter):</span>
                           <span className="text-green-600">$549</span>
                         </div>
                       </div>
@@ -478,7 +477,7 @@ const AiReceptionistCostPricingGuide: React.FC = () => {
                       Cost Savings Analysis
                     </h4>
                     <p className="text-green-700">
-                      Businesses switching from traditional answering services to Boltcall typically save $200-500 monthly while getting unlimited calls, a professional website, and 24/7 availability without human limitations.
+                      Boltcall Starter is a flat $549 a month with free setup and 24/7 answering. Voice minutes draw from a shared monthly credit pool (1 minute uses 10 credits), so compare the minutes you expect each month against the per-minute rates above.
                     </p>
                   </div>
                 </motion.section>

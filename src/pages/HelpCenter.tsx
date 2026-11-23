@@ -21,7 +21,7 @@ const QUICK_ANSWERS = [
   { q: 'What is Boltcall?', a: 'Boltcall is a speed-to-lead platform for local service businesses that answers every inbound call 24/7, books appointments, and texts back missed callers within seconds — the first business to respond usually wins the job.' },
   { q: 'How fast does setup take?', a: 'Most businesses go live within 30 minutes: connect a phone number, paste in your services and FAQs, choose a voice tone, and the AI starts answering calls.' },
   { q: 'Does Boltcall replace a human receptionist?', a: 'Boltcall replaces a human receptionist for phone-driven workflows (answering, booking, qualifying), but transfers complex or in-person situations to your team automatically.' },
-  { q: 'What does Boltcall cost?', a: 'Boltcall plans start at $497 per month for Starter and $649 per month for Pro. Both include unlimited AI call answering with no per-minute fees.' },
+  { q: 'What does Boltcall cost?', a: 'Boltcall plans are Starter at $549 per month, Pro at $897 per month and Ultimate at $4,997 per month, with free setup and a 30-day money-back guarantee. Each plan has a monthly credit pool shared across calls, texts and chat.' },
   { q: 'Where do I find detailed setup docs?', a: 'Full step-by-step documentation lives at boltcall.mintlify.app — includes integrations with Cal.com, Google Calendar, Twilio, and Retell.' },
 ];
 

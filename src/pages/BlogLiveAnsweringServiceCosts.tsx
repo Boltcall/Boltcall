@@ -676,7 +676,7 @@ const BlogLiveAnsweringServiceCosts: React.FC = () => {
             <p className="text-lg leading-relaxed text-blue-50 mb-4">
               <strong>Cost-Effective Solution:</strong> Unlike traditional answering services that charge per minute, per call, or 
               monthly flat rates that can range from $50-$300+ per month, Boltcall offers transparent, affordable pricing starting at 
-              just $549/month. This includes unlimited calls, 24/7 availability, and advanced features like appointment scheduling, 
+              just $549/month. This includes a monthly credit pool shared across calls, texts and chat, 24/7 availability, and advanced features like appointment scheduling, 
               lead qualification, and CRM integration—all without hidden fees or per-call charges.
             </p>
             <p className="text-lg leading-relaxed text-blue-50 mb-4">
@@ -696,9 +696,9 @@ const BlogLiveAnsweringServiceCosts: React.FC = () => {
               every time.
             </p>
             <p className="text-lg leading-relaxed text-blue-50 mb-4">
-              <strong>Scalable Without Additional Costs:</strong> As your business grows and call volume increases, traditional services 
-              often require upgrading to more expensive plans. With Boltcall, you get unlimited capacity without worrying about 
-              overage fees or plan limitations. The AI can handle as many calls as you receive, scaling automatically with your business.
+              <strong>Scales With Your Plan:</strong> As your business grows and call volume increases, traditional services 
+              often require upgrading to more expensive plans. With Boltcall, you can move to a larger plan with a bigger monthly credit pool (Starter 1,000 credits, Pro 3,000, Ultimate 10,000; 1 AI voice minute uses 10 credits).
+              The AI answers around the clock, so coverage does not depend on staffing.
             </p>
             <p className="text-lg leading-relaxed text-blue-50">
               For businesses looking to maximize value while minimizing costs, Boltcall offers a modern alternative that provides all 
