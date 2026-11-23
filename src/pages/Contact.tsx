@@ -333,11 +333,9 @@ const Contact: React.FC = () => {
           <h2 className="text-lg font-bold text-gray-900 mb-4">What You Get with Boltcall</h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-700">
             {[
-              ["AI Receptionist calls", "500–Unlimited/mo depending on plan"],
-              ["Lead capture (SMS/email)", "Included on all plans"],
-              ["CRM integrations", "Pro & Scale plans"],
-              ["Custom AI voice & script", "Included on all plans"],
-              ["Priority support", "Scale plan"],
+              ["Monthly credits", "1,000 on Starter, 3,000 on Pro, 10,000 on Ultimate, shared across calls, texts and chat"],
+              ["Setup", "Free on all plans"],
+              ["Guarantee", "30-day money-back"],
             ].map(([feat, detail], i) => (
               <li key={i} className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold mt-0.5">✓</span>

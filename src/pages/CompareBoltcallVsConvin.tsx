@@ -60,7 +60,7 @@ const CompareBoltcallVsConvin: React.FC = () => {
           name: 'How does pricing compare?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Convin pricing is custom — tailored to team size and call volume, sold via guided demo. Publicly listed entry point for AI Phone Calls is around ₹80/month in India market notation, but real US/enterprise pricing for the QA and conversation intelligence suite is significantly higher (typically $50-100/user/month range for the agent-coaching seats). Boltcall is flat $549/$897/$4,997 per month per business (not per user), with all features and unlimited voice included.',
+            text: 'Convin pricing is custom — tailored to team size and call volume, sold via guided demo. Publicly listed entry point for AI Phone Calls is around ₹80/month in India market notation, but real US/enterprise pricing for the QA and conversation intelligence suite is significantly higher (typically $50-100/user/month range for the agent-coaching seats). Boltcall is flat $549/$897/$4,997 per month per business (not per user), with a monthly credit pool shared across calls, texts and chat (1 AI voice minute uses 10 credits).',
           },
         },
         {
@@ -141,7 +141,7 @@ const CompareBoltcallVsConvin: React.FC = () => {
           <AnswerBlock
             query="Boltcall vs Convin.ai — which one do I actually need"
             definition="Convin.ai is a conversation intelligence platform that scores calls, coaches agents in real time, and runs automated QA across 100% of contact-center interactions — sold to enterprises with 5-500+ human agents in sales, support, or collections. Boltcall is an AI receptionist that replaces the front-desk phone for solo and small local service businesses (plumbers, HVAC, dentists, law firms)."
-            stat="Convin sits on top of your existing call center and improves what your humans do; Boltcall is the agent, eliminating the need to hire one. Convin pricing is custom per-seat enterprise; Boltcall is $549-$4,997/month flat per business with unlimited voice."
+            stat="Convin sits on top of your existing call center and improves what your humans do; Boltcall is the agent, eliminating the need to hire one. Convin pricing is custom per-seat enterprise; Boltcall is $549-$4,997/month flat per business with a shared monthly credit pool."
             outcome="Pick Convin if you already have human agents and your bottleneck is coaching/QA. Pick Boltcall if you don't have a call center and your bottleneck is just answering the phone."
           />
 

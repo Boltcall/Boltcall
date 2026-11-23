@@ -114,7 +114,7 @@ const CompareBoltcallVsGoodCall: React.FC = () => {
   const featureRows = [
     { feature: 'Starting price', boltcall: '$549/mo flat', goodcall: '$79/mo Starter ($66 annual)' },
     { feature: 'Pricing model', boltcall: 'Flat monthly, no per-call/min/caller fees', goodcall: 'Per-unique-caller; $0.50/caller above cap' },
-    { feature: 'Unique caller cap', boltcall: 'None — unlimited', goodcall: '200 (Starter) / 500 (Growth) / unlimited (Scale)' },
+    { feature: 'Unique caller cap', boltcall: 'No per-caller fee; usage draws from a monthly credit pool', goodcall: '200 (Starter) / 500 (Growth) / unlimited (Scale)' },
     { feature: '24/7 AI call answering', boltcall: 'Yes', goodcall: 'Yes' },
     { feature: 'Speed-to-lead web-form SMS reply', boltcall: 'Yes, under 60 seconds', goodcall: 'No' },
     { feature: 'Calendar booking (Cal/Google/Outlook)', boltcall: 'Yes, native', goodcall: 'Booking via SMS link only' },
@@ -161,7 +161,7 @@ const CompareBoltcallVsGoodCall: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <AnswerBlock
             query="Boltcall vs GoodCall — which AI receptionist should I pick"
-            definition="GoodCall is an AI phone-agent starting at $79/mo that meters by unique caller ($0.50 per caller above plan cap); Boltcall is a flat-rate speed-to-lead system starting at $549/mo with unlimited callers and an entire follow-up stack (instant SMS reply to web forms, calendar booking, appointment reminders, post-job review automation)."
+            definition="GoodCall is an AI phone-agent starting at $79/mo that meters by unique caller ($0.50 per caller above plan cap); Boltcall is a flat-rate speed-to-lead system starting at $549/mo with a shared monthly credit pool and an entire follow-up stack (instant SMS reply to web forms, calendar booking, appointment reminders, post-job review automation)."
             stat="The crossover point is around 500–600 unique callers per month; below it GoodCall is cheaper, above it Boltcall is both cheaper and predictable. GoodCall covers ~80% of pure call-answering needs; Boltcall covers the broader missed-lead recovery and conversion motion."
             outcome="Pick GoodCall if you only need a 24/7 AI phone agent and have steady low caller volume; pick Boltcall if you want one platform that handles every channel a lead can come in on, with no surprise overage fees during peak season."
           />
