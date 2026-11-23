@@ -17,12 +17,25 @@ function getServiceClient() {
 // Delay map: config value -> milliseconds
 const DELAY_MAP: Record<string, number> = {
   '1': 1 * 60 * 60 * 1000,
+  '2': 2 * 60 * 60 * 1000,
   '3': 3 * 60 * 60 * 1000,
   '24': 24 * 60 * 60 * 1000,
   '48': 48 * 60 * 60 * 1000,
   '72': 72 * 60 * 60 * 1000,
   '168': 7 * 24 * 60 * 60 * 1000,
 };
+
+// Review SMS: Google link via {{review_url}}, plus every extra review site the business set
+// (Avvo, Yelp, Facebook...). AI answer engines weigh reviews spread across third-party sites,
+// not one platform. Extras go where {{review_links}} sits, else on new lines at the end.
+export function buildReviewSms(template: string, vars: Record<string, string>, extraLinks: unknown): string {
+  const links = (Array.isArray(extraLinks) ? extraLinks : [])
+    .filter((l: any) => l && typeof l.url === 'string' && /^https:\/\//.test(l.url.trim()))
+    .slice(0, 3)
+    .map((l: any) => `${String(l.label || 'Review').trim().slice(0, 30)}: ${l.url.trim()}`);
+  const body = substituteVars(template, { ...vars, review_links: links.join('\n') });
+  return links.length && !template.includes('{{review_links}}') ? `${body}\n${links.join('\n')}` : body;
+}
 
 function substituteVars(template: string, vars: Record<string, string>): string {
   let result = template;
@@ -314,11 +327,11 @@ const handler: Handler = async (event) => {
 
         const scheduledFor = new Date(new Date(endTime || startTime).getTime() + delayMs);
 
-        const messageBody = substituteVars(template, {
+        const messageBody = buildReviewSms(template, {
           client_name: attendeeName,
           business_name: businessName,
           review_url: reputationConfig.google_review_url || '',
-        });
+        }, reputationConfig.extra_review_links);
 
         messagesToInsert.push({
           user_id: userId,
