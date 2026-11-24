@@ -77,7 +77,7 @@ const AUDITS = [
 ];
 
 const INDUSTRY_TOOLS = [
-  { title: 'SMS Intake Agent Demo',                href: '/lead-magnet/sms-intake-agent',                icon: MessageSquare },
+  { title: 'SMS Intake Business Details',                href: '/lead-magnet/sms-intake-agent',                icon: MessageSquare },
   { title: 'Lawyer Intake Calculator',             href: '/tools/lawyer-intake-calculator',           icon: Scale },
   { title: '5-Minute Response Playbook',           href: '/tools/5-minute-response-playbook',         icon: Zap },
 ];
@@ -316,7 +316,7 @@ const LeadMagnetHub: React.FC = () => {
           <div className="mb-10">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Industry-specific tools</h2>
             <p className="mt-2 max-w-3xl text-base text-gray-600">
-              Test your intake workflow, estimate the revenue impact of missed inquiries, or build a faster follow-up process.
+              Prepare your intake setup, estimate the cost of missed inquiries, or plan a faster follow-up process.
             </p>
           </div>
 
