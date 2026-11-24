@@ -677,7 +677,7 @@ const BlogLiveAnsweringServiceCosts: React.FC = () => {
               <strong>Cost-Effective Solution:</strong> Unlike traditional answering services that charge per minute, per call, or 
               monthly flat rates that can range from $50-$300+ per month, Boltcall offers transparent, affordable pricing starting at 
               just $549/month. This includes a monthly credit pool shared across calls, texts and chat, 24/7 availability, and advanced features like appointment scheduling, 
-              lead qualification, and CRM integration—all without hidden fees or per-call charges.
+              and lead qualification.
             </p>
             <p className="text-lg leading-relaxed text-blue-50 mb-4">
               <strong>24/7 Availability Without Premium Pricing:</strong> While traditional services often charge extra for after-hours 
@@ -685,14 +685,9 @@ const BlogLiveAnsweringServiceCosts: React.FC = () => {
               the same level of service whether it's 2 PM or 2 AM, without worrying about increased rates during off-hours.
             </p>
             <p className="text-lg leading-relaxed text-blue-50 mb-4">
-              <strong>No Per-Minute or Per-Call Charges:</strong> Traditional answering services can add up quickly with per-minute 
-              rates ($0.75-$1.50) or per-call fees ($1-$2.50). Boltcall eliminates these variable costs, providing predictable monthly 
-              pricing that makes budgeting simple and eliminates surprise charges.
-            </p>
-            <p className="text-lg leading-relaxed text-blue-50 mb-4">
               <strong>Advanced Features Included:</strong> Features that typically cost extra with traditional services—like bilingual 
-              support, custom scripting, CRM integration, and appointment scheduling—are all included with Boltcall. Plus, our AI 
-              receptionist can handle multiple calls simultaneously, never gets tired, and provides consistent, professional service 
+              support, custom scripting, and appointment scheduling—are all included with Boltcall. Plus, our AI 
+              receptionist never gets tired, and provides consistent, professional service 
               every time.
             </p>
             <p className="text-lg leading-relaxed text-blue-50 mb-4">

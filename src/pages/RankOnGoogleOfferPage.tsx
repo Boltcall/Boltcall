@@ -79,13 +79,6 @@ const RankOnGoogleOfferPage = () => {
                             </p>
                             <div className="flex flex-col space-y-4 pt-4">
                                 <ThreeDButton />
-
-                                <div className="space-y-2 mt-4 text-sm text-gray-600">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <p>The website and system are live in 24 hours.</p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 

@@ -23,11 +23,11 @@ const headings = [
 const faqs = [
   {
     question: 'How much does an AI receptionist cost for a law firm?',
-    answer: 'AI receptionists for law firms typically cost between $549 and $4997 per month depending on call volume and features. Compare that to a full-time legal receptionist at $35,000-$50,000 per year, or a legal answering service charging $1.50-$3.00 per call. Most firms recover the cost within the first week by capturing just one or two new client consultations that would have otherwise gone to voicemail. Boltcall offers flat-rate pricing with no per-minute or per-call surcharges.',
+    answer: 'AI receptionists for law firms typically cost between $549 and $4997 per month depending on call volume and features. Compare that to a full-time legal receptionist at $35,000-$50,000 per year, or a legal answering service charging $1.50-$3.00 per call. Boltcall plans are a flat monthly price with a shared credit pool for calls, texts and chat, free setup, and a 30-day money-back guarantee.',
   },
   {
     question: 'How long does it take to set up an AI receptionist for a law firm?',
-    answer: 'Basic setup takes under 10 minutes. You provide your firm name, practice areas, office hours, and phone number, and the AI begins answering calls immediately. Full customization including intake questions, conflict screening logic, practice-area routing, and CRM integration typically takes 1-2 hours. Most firms are fully operational within a single afternoon with no downtime or disruption to existing phone lines.',
+    answer: 'Setup is free. You provide your firm name, practice areas, office hours, and phone number, then customize intake questions and routing. Your existing phone lines keep working.',
   },
   {
     question: 'How does the AI handle client intake for law firms?',
@@ -58,8 +58,8 @@ const faqs = [
     answer: 'The AI uses a triage system to identify emergencies. Callers describing an arrest, a protective order hearing within 24 hours, an imminent filing deadline, or a child custody emergency are flagged as urgent. The AI immediately attempts to transfer the call to the designated on-call attorney. If the attorney is unavailable, the AI sends a priority SMS and email with the caller\'s information and situation summary, and tells the caller to expect a callback within a specific timeframe. Non-emergency matters are captured normally for next-business-day follow-up.',
   },
   {
-    question: 'Does the AI integrate with legal CRM and case management software?',
-    answer: 'Yes. AI receptionists integrate with popular legal software including Clio, MyCase, PracticePanther, Lawmatics, and Smokeball via API or webhook connections. New leads are automatically created as contacts with full intake details attached. Some integrations support direct matter creation, task assignment, and conflict check triggers. If your system is not directly supported, intake data can be delivered via email, SMS, or webhook to connect with any tool through automation platforms like Zapier or n8n.',
+    question: 'Does Boltcall integrate with legal CRM and case management software?',
+    answer: 'Not natively. Boltcall books into Google Calendar and Cal.com. To send intake data to Clio, MyCase, or another case management tool, you can connect through Zapier, Make, or webhooks.',
   },
   {
     question: 'Is call recording by the AI compliant with state laws?',
@@ -111,7 +111,7 @@ const FAQAIReceptionistLawyer: React.FC = () => {
     window.scrollTo(0, 0);
     document.title = 'AI Receptionist for Law Firms: 20 Questions Answered | Boltcall';
     updateMetaDescription(
-      'Everything law firms need to know about AI receptionists — client intake, confidentiality, after-hours calls, billing integration, and ROI.'
+      'Everything law firms need to know about AI receptionists — client intake, confidentiality, after-hours calls, integrations, and costs.'
     );
 
     const schemas = [
@@ -119,7 +119,7 @@ const FAQAIReceptionistLawyer: React.FC = () => {
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": "AI Receptionist for Law Firms: 20 Questions Answered",
-        "description": "Everything law firms need to know about AI receptionists — client intake, confidentiality, after-hours calls, billing integration, and ROI.",
+        "description": "Everything law firms need to know about AI receptionists — client intake, confidentiality, after-hours calls, integrations, and costs.",
         "author": { "@type": "Organization", "name": "Boltcall" },
         "datePublished": "2026-03-31",
         "dateModified": "2026-03-31",
@@ -238,7 +238,7 @@ const FAQAIReceptionistLawyer: React.FC = () => {
               variants={{ ...fadeIn, visible: { ...fadeIn.visible, transition: { duration: 0.5, delay: 0.1 } } }}
               className="text-lg md:text-xl text-gray-600 mb-6 leading-relaxed"
             >
-              Everything law firms need to know about AI receptionists: cost, client intake, confidentiality, after-hours coverage, CRM integration, and measurable ROI.
+              Everything law firms need to know about AI receptionists: cost, client intake, confidentiality, after-hours coverage, integrations, and ROI.
             </motion.p>
 
             {/* Author line */}
@@ -286,7 +286,7 @@ const FAQAIReceptionistLawyer: React.FC = () => {
                 Law firms lose more potential clients to missed calls and slow follow-up than to any competitor. Research shows that the first firm to respond to a legal inquiry wins the case 78% of the time, yet the average law firm takes over 8 hours to return a call. Every hour of delay reduces conversion probability by 10 times.
               </p>
               <p className="text-gray-700 text-base leading-relaxed">
-                An AI receptionist solves this by answering every call on the first ring, 24 hours a day, 7 days a week. It performs structured intake, qualifies the lead, books the consultation, and delivers a complete summary to the right attorney before the potential client has time to call another firm. Below are the 20 most common questions law firms ask before deploying an AI receptionist.
+                An AI receptionist solves this by answering calls 24 hours a day, 7 days a week. It performs structured intake, qualifies the lead, books the consultation, and delivers a complete summary to the right attorney before the potential client has time to call another firm. Below are the 20 most common questions law firms ask before deploying an AI receptionist.
               </p>
             </motion.div>
           </div>
@@ -471,7 +471,7 @@ const FAQAIReceptionistLawyer: React.FC = () => {
                   ['Monthly revenue from missed intakes recovered', '$0', '$15,000 – $75,000+'],
                   ['Consultation no-show rate', '20–28%', '10–14%'],
                   ['Google reviews per month', '0–1', '3–6'],
-                  ['Setup time for 24/7 intake coverage', '2–4 weeks (hire)', '30 minutes'],
+                  ['Setup for 24/7 intake coverage', '2–4 weeks (hire)', 'Free, self-serve'],
                   ['Monthly cost vs. intake coordinator', '$2,800 – $3,800/mo', '$549-897'],
                   ].map(([metric, before, after]) => (
                     <tr key={metric} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">

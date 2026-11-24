@@ -376,14 +376,6 @@ const blogPosts: BlogPost[] = [
     category: 'Industry Guide',
   },
   {
-    title: 'How Much Does an AI Receptionist Cost? 2024 Pricing Guide for Local Businesses',
-    slug: '/blog/ai-receptionist-cost-pricing',
-    excerpt: 'Discover current AI receptionist pricing options and find the perfect affordable solution for your local business in 2024.',
-    date: 'March 10, 2026',
-    readTime: '8 min read',
-    category: 'AI Receptionist',
-  },
-  {
     title: 'Speed to Lead for Local Businesses: Why Response Time Beats Every Marketing Tactic',
     slug: '/blog/speed-to-lead-local-business',
     excerpt: 'Fast response times are your secret weapon in local business. Speed to lead transforms curious prospects into paying customers before your competitors',
@@ -839,7 +831,7 @@ const BlogCenter: React.FC = () => {
                   '80–90% cheaper than a full-time receptionist',
                   'Qualifies leads, books appointments, and sends follow-ups automatically',
                   'No sick days, no training time, no turnover costs',
-                  'Scales with call volume — handles 1 call or 100 simultaneously',
+                  'Answers 24/7 without adding staff',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
                     <span className="text-green-500 font-bold mt-0.5">✓</span>

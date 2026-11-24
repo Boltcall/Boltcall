@@ -19,10 +19,10 @@ const defaultArticles: BlogRelatedArticle[] = [
     description: 'The complete guide to faster lead response.',
   },
   {
-    href: '/blog/ai-receptionist-cost-pricing',
+    href: '/pricing',
     label: 'Pricing',
-    title: 'AI Receptionist Cost and Pricing',
-    description: 'Understand the costs, trade-offs, and ROI.',
+    title: 'Boltcall pricing',
+    description: 'Plans, credits, and what each includes.',
   },
   {
     href: '/blog/best-after-hours-answering-service',

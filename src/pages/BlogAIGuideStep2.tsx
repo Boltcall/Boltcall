@@ -323,7 +323,7 @@ const BlogAIGuideStep2: React.FC = () => {
             <div className="bg-gray-50 rounded-xl p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-3">1. Ease of Setup</h3>
               <p className="text-gray-700 leading-relaxed">
-                Look for tools that can be set up in under 30 minutes without technical knowledge. The best AI tools 
+                Look for tools that can be set up without technical knowledge. The best AI tools 
                 for small businesses don't require IT support or coding skills. You should be able to get started 
                 the same day you sign up.
               </p>
@@ -467,7 +467,7 @@ const BlogAIGuideStep2: React.FC = () => {
                 <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-green-600 text-green-600 flex items-center justify-center text-xs font-bold group-open:rotate-45 transition-transform">+</span>
               </summary>
               <div className="px-6 pb-5 text-gray-700 text-sm leading-relaxed border-t border-gray-100 pt-4">
-                Most businesses recover their monthly fee within the first week by capturing just 1–2 additional jobs from calls that would have gone to voicemail.
+                Work out your break-even with your own numbers: what one extra job is worth to you versus the monthly fee.
               </div>
             </details>
           </div>

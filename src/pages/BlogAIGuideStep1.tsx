@@ -321,7 +321,7 @@ const BlogAIGuideStep1: React.FC = () => {
                 <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-blue-600 text-blue-600 flex items-center justify-center text-xs font-bold group-open:rotate-45 transition-transform">+</span>
               </summary>
               <div className="px-6 pb-5 text-gray-700 text-sm leading-relaxed border-t border-gray-100 pt-4">
-                No. Modern AI receptionist platforms like Boltcall are set up in under 24 hours with no coding required. You configure it through a simple dashboard.
+                No. Modern AI receptionist platforms like Boltcall are set up with no coding required. You configure it through a simple dashboard.
               </div>
             </details>
             <details className="group bg-white border border-gray-200 rounded-xl overflow-hidden">

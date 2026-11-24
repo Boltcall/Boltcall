@@ -53,7 +53,7 @@ Start with the highest-intent channels:
 
 If those channels are slow, improving blog traffic or ad volume will not fix the leak. The fastest win is to make every existing inquiry get an immediate response.
 
-For a commercial next step, review the [AI receptionist cost guide](/blog/ai-receptionist-cost-pricing/) or [book a Boltcall speed-to-lead audit](/book-a-call/).
+For a commercial next step, review the [AI receptionist cost guide](/pricing/) or [book a Boltcall speed-to-lead audit](/book-a-call/).
 
 ## FAQ
 

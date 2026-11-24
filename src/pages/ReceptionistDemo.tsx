@@ -231,7 +231,7 @@ const ReceptionistDemo: React.FC = () => {
               </p>
               {businessName && (
                 <p className="text-gray-500 mb-8">
-                  Want this live for <strong>{businessName}</strong>? Takes 24 hours to set up.
+                  Want this live for <strong>{businessName}</strong>? Setup is free.
                 </p>
               )}
               <a

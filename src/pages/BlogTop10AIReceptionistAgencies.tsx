@@ -102,11 +102,11 @@ const BlogTop10AIReceptionistAgencies: React.FC = () => {
       bestFor: 'Local service businesses that need instant speed-to-lead response',
       description: 'Boltcall is purpose-built for speed to lead — the single most important factor in lead conversion. When a plumber, dentist, or HVAC company gets an inbound call or form fill, Boltcall responds instantly, qualifies the lead, and books the appointment — all within seconds. Unlike generic AI receptionists, Boltcall is optimized for the moment that determines whether you win or lose a job.',
       pros: [
-        'Instant lead response — responds in under 5 seconds (391% conversion advantage)',
+        'Instant lead response — responds in seconds',
         'Purpose-built for local service businesses (plumbers, dentists, HVAC, med spas)',
         'Full automation: inbound call handling, SMS, website chat, and appointment booking',
         'Speed-to-lead AI that qualifies and books before competitors even see the lead',
-        'Simple setup — live in under 30 minutes',
+        'Free, self-serve setup',
         'Transparent flat-rate pricing starting at $549/mo'
       ],
       cons: [
@@ -464,8 +464,7 @@ const BlogTop10AIReceptionistAgencies: React.FC = () => {
             
             <p>
               AI receptionist agencies solve these problems by providing intelligent, automated 
-              customer communication that works around the clock. They can handle multiple calls 
-              simultaneously, never get tired, and provide consistent service quality. But not all 
+              customer communication that works around the clock. They never get tired, and provide consistent service quality. But not all 
               AI receptionist solutions are created equal. Some excel at voice interactions, others 
               specialize in text-based communication. Some are designed for small businesses, while 
               others target enterprise clients.
@@ -491,7 +490,7 @@ const BlogTop10AIReceptionistAgencies: React.FC = () => {
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-                  <span><strong>Scalability:</strong> Handle unlimited calls simultaneously without additional costs</span>
+                  <span><strong>Flat pricing:</strong> A monthly plan with a shared credit pool, no per-case fees</span>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />

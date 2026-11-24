@@ -118,7 +118,6 @@ const ROUTES = [
   { path: "/blog/create-gemini-gem-business-assistant",              priority: "0.8", changefreq: "weekly" },
   { path: "/blog/5-signs-you-need-ai-receptionist",                  priority: "0.8", changefreq: "weekly" },
   { path: "/blog/speed-to-lead-local-business",                      priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/ai-receptionist-cost-pricing",                      priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-vs-human-receptionist",                          priority: "0.8", changefreq: "weekly" },
   { path: "/blog/best-ai-receptionist-small-business",               priority: "0.8", changefreq: "weekly" },
   { path: "/blog/best-after-hours-answering-service",                priority: "0.8", changefreq: "weekly" },

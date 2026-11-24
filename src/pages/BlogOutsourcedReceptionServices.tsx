@@ -542,8 +542,7 @@ const BlogOutsourcedReceptionServices: React.FC = () => {
                 efficiency and consistency.
               </p>
               <p className="text-lg leading-relaxed text-blue-50 mb-4">
-                Boltcall's AI receptionist never gets tired, never makes mistakes due to fatigue, and can handle unlimited 
-                calls simultaneously. It integrates seamlessly with your existing business systems, automatically qualifies 
+                Boltcall's AI receptionist never gets tired, never makes mistakes due to fatigue, and answers 24/7. It automatically qualifies 
                 leads, schedules appointments, and follows up with customers—all while maintaining the professional, 
                 personalized touch that your clients expect. Plus, with instant response times and the ability to learn 
                 your business's specific needs, Boltcall ensures that every customer interaction reflects your brand's 

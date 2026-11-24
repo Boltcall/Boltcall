@@ -289,7 +289,7 @@ def score_all_pages() -> list:
         "/compare/boltcall-vs-birdeye", "/compare/boltcall-vs-emitrr",
         "/compare/boltcall-vs-calomation",
         "/blog/ai-vs-human-receptionist", "/blog/is-ai-receptionist-worth-it",
-        "/blog/how-ai-receptionist-works", "/blog/ai-receptionist-cost-pricing",
+        "/blog/how-ai-receptionist-works",
         "/blog/speed-to-lead-local-business", "/blog/best-ai-receptionist-tools",
         "/blog/complete-guide-to-seo", "/blog/complete-guide-to-ai-for-local-businesses",
         "/blog/ai-phone-answering-dentists", "/blog/ai-phone-answering-plumbers",

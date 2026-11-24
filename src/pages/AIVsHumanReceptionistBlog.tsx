@@ -135,7 +135,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
               {/* Direct Answer Block */}
               <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8">
                 <p className="text-lg font-medium text-gray-900">
-                  <strong>Quick Answer:</strong> AI receptionists cost 70-80% less than human staff, work 24/7, and handle unlimited calls simultaneously. They're ideal for appointment booking and basic inquiries, while human receptionists excel at complex problem-solving and nuanced customer relationships.
+                  <strong>Quick Answer:</strong> AI receptionists cost 70-80% less than human staff, and work 24/7. They're ideal for appointment booking and basic inquiries, while human receptionists excel at complex problem-solving and nuanced customer relationships.
                 </p>
               </div>
 
@@ -234,7 +234,6 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                         <li className="flex items-center"><CheckCircle className="h-5 w-5 text-green-500 mr-2" />Answer within 2 rings</li>
                         <li className="flex items-center"><CheckCircle className="h-5 w-5 text-green-500 mr-2" />Instant information retrieval</li>
                         <li className="flex items-center"><CheckCircle className="h-5 w-5 text-green-500 mr-2" />No hold times</li>
-                        <li className="flex items-center"><CheckCircle className="h-5 w-5 text-green-500 mr-2" />Simultaneous call handling</li>
                       </ul>
                     </div>
                     <div className="border rounded-lg p-6">
@@ -330,8 +329,8 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                       <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                         <Zap className="h-8 w-8 text-green-600" />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2">Instant Scaling</h3>
-                      <p className="text-gray-600">Handle unlimited simultaneous calls during busy periods</p>
+                      <h3 className="text-xl font-semibold mb-2">Answers Right Away</h3>
+                      <p className="text-gray-600">Picks up without waiting for a person to be free</p>
                     </div>
                     <div className="text-center">
                       <div className="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -343,13 +342,13 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                   </div>
 
                   <p className="text-lg text-gray-700 mb-6">
-                    Consider a plumbing business during a city-wide water main break. While a human receptionist might be overwhelmed with hundreds of calls, an <Link to="/blog/ai-receptionist-plumbers" className="text-blue-600 hover:underline">AI receptionist can handle every call</Link>, schedule emergency appointments, and provide consistent information about response times.
+                    Consider a plumbing business during a city-wide water main break. While a human receptionist might be overwhelmed with calls, an <Link to="/blog/ai-receptionist-plumbers" className="text-blue-600 hover:underline">AI receptionist answers around the clock</Link>, schedule emergency appointments, and provide consistent information about response times.
                   </p>
 
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-2 text-yellow-800">Real Business Impact</h3>
                     <p className="text-yellow-700">
-                      A dental practice in Texas reported capturing 40% more new patients after implementing AI receptionist services, primarily from after-hours calls that would have gone to voicemail.
+                      After-hours calls that would have gone to voicemail are the clearest place an AI receptionist can add bookings.
                     </p>
                   </div>
                 </motion.section>
@@ -522,7 +521,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
                         <h4 className="font-semibold mb-2">Dental Practice (AI Receptionist)</h4>
-                        <p className="text-gray-600">A dental practice switched to an AI receptionist and saw a 35% increase in appointment bookings while reducing costs by 60%. The AI handled 200+ calls daily with zero missed calls.</p>
+                        <p className="text-gray-600">After-hours calls that would have gone to voicemail are the clearest place an AI receptionist can add bookings.</p>
                       </div>
                       <div>
                         <h4 className="font-semibold mb-2">Law Firm (Human Receptionist)</h4>
@@ -554,9 +553,8 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                   <li>• Available 24/7 — no after-hours gaps or holiday coverage issues</li>
                   <li>• 70–90% lower total cost of ownership than a full-time hire</li>
                   <li>• Answers instantly with zero hold time, improving caller satisfaction</li>
-                  <li>• Handles hundreds of calls simultaneously without scaling costs</li>
-                  <li>• Consistent quality every call — no bad days or rushed responses</li>
-                  <li>• Automatically logs every call, books appointments, and updates CRM</li>
+                                    <li>• Consistent quality every call — no bad days or rushed responses</li>
+                  <li>• Automatically logs every call, books appointments, and sends you the details</li>
                 </ul>
               </div>
               <div className="bg-red-50 rounded-xl p-6">
@@ -656,7 +654,7 @@ const AIVsHumanReceptionistBlog: React.FC = () => {
                   ['Annual cost', '$948 – $2,148', '$38,400 – $54,000+'],
                   ['After-hours coverage', 'Yes — always on', 'No — overtime cost or voicemail'],
                   ['Sick days and vacation', 'Zero', '10–15 days per year'],
-                  ['Training time', '30 minutes setup', '2–4 weeks onboarding'],
+                  ['Training time', 'Free setup', '2–4 weeks onboarding'],
                   ['Turnover risk', 'None', 'High — avg. 2-year tenure'],
                   ['Performance consistency', '100% — scripted', 'Variable — depends on staff'],
                 ].map(([metric, ai, human]) => (

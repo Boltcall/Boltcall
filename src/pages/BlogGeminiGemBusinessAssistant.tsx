@@ -743,7 +743,7 @@ const BlogGeminiGemBusinessAssistant: React.FC = () => {
                   ['Draft emails and proposals', '✓ — strong capability', '✗ — not a writing tool'],
                   ['24/7 lead capture by phone', '✗ — not a phone AI', '✓ — core function'],
                   ['No-show reminder automation', '✗ — manual setup required', '✓ — built in'],
-                  ['Setup time', 'Immediate', '30 minutes'],
+                  ['Setup', 'Immediate', 'Free, self-serve'],
                 ].map(([need, gemini, boltcall]) => (
                   <tr key={need} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-700 font-medium">{need}</td>

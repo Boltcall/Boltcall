@@ -136,7 +136,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
     { feature: 'Appointment Booking', boltcall: 'Yes', birdeye: 'Yes', boltcallWin: null },
     { feature: 'Surveys & Feedback', boltcall: 'No', birdeye: 'Yes', boltcallWin: false },
     { feature: 'Website Builder', boltcall: 'Yes, free', birdeye: 'No', boltcallWin: true },
-    { feature: 'Setup Time', boltcall: '24 hours', birdeye: 'Days-weeks', boltcallWin: true },
+    { feature: 'Setup Time', boltcall: 'Free setup', birdeye: 'Days-weeks', boltcallWin: true },
     { feature: 'Best For', boltcall: 'AI phone + lead capture', birdeye: 'Reviews + reputation', boltcallWin: null },
   ];
 
@@ -428,7 +428,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
                   'Speed-to-lead under 60 seconds',
                   'AI chatbot with shared knowledge base',
                   'Instant SMS follow-up to every caller',
-                  'Setup in 24 hours, not weeks'
+                  'Free, self-serve setup'
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -471,7 +471,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
               </li>
               <li className="flex items-start gap-3">
                 <ArrowRight className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
-                <span><strong>Anyone who needs a website fast.</strong> Boltcall builds and hosts your business website as part of the package, delivered in 24 hours. Birdeye does not offer websites.</span>
+                <span><strong>Anyone who needs a website fast.</strong> Boltcall builds and hosts your business website as part of the package. Birdeye does not offer websites.</span>
               </li>
               <li className="flex items-start gap-3">
                 <ArrowRight className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
@@ -535,7 +535,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
               Boltcall and Birdeye are not direct competitors. They solve different problems in the local business growth stack.
             </p>
             <p>
-              <strong className="text-gray-900">Choose Boltcall if</strong> you're losing leads because nobody is answering the phone. If missed calls, slow follow-ups, and no website are costing you revenue, Boltcall closes those gaps in 24 hours with an AI receptionist, chatbot, website, and speed-to-lead automation. It's the platform that turns phone calls into booked appointments.
+              <strong className="text-gray-900">Choose Boltcall if</strong> you're losing leads because nobody is answering the phone. If missed calls, slow follow-ups, and no website are costing you revenue, Boltcall closes those gaps with an AI receptionist, chatbot, website, and speed-to-lead automation. It's the platform that turns phone calls into booked appointments.
             </p>
             <p>
               <strong className="text-gray-900">Choose Birdeye if</strong> you're already capturing leads well but need to build your online reputation. If you have 15 Google reviews and your competitor has 200, Birdeye's review generation machine and listings management will close that gap faster than anything else.
@@ -619,7 +619,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
                 </div>
               </div>
               <h2 className="text-gray-900 font-medium mt-4 text-4xl">Try Boltcall Free</h2>
-              <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Stop missing calls. Get an AI receptionist, chatbot, and website in 24 hours.</p>
+              <p className="text-base text-gray-600 mt-2 whitespace-pre-line">Stop missing calls. Get an AI receptionist, chatbot, and website.</p>
               <Link
                 to="/setup"
                 className="mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 shadow-sm active:shadow-none"
@@ -672,7 +672,7 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for law firms</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Free setup</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
         </div>
@@ -693,11 +693,11 @@ const CompareBoltcallVsBirdeye: React.FC = () => {
                 <li key={"Purpose-built AI call answering for local businesses"} className="flex items-start gap-2 text-sm text-gray-700">
                   <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Purpose-built AI call answering for local businesses
                 </li>
-                <li key={"Flat monthly pricing — no per-call fees"} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Flat monthly pricing — no per-call fees
+                <li key={"Flat monthly pricing with a shared credit pool"} className="flex items-start gap-2 text-sm text-gray-700">
+                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Flat monthly pricing with a shared credit pool
                 </li>
-                <li key={"Live in 30 minutes with no tech team needed"} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Live in 30 minutes with no tech team needed
+                <li key={"Free setup with no tech team needed"} className="flex items-start gap-2 text-sm text-gray-700">
+                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Free setup with no tech team needed
                 </li>
                 </ul>
               </div>

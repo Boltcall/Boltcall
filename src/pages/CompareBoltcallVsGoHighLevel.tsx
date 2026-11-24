@@ -79,7 +79,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
           "name": "Can I switch from GoHighLevel to Boltcall?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. Switching from GoHighLevel to Boltcall is straightforward. Boltcall's team handles the full setup within 24 hours, including transferring your business information, configuring your AI receptionist, and setting up automated follow-ups. You can export your contacts from GHL and have Boltcall running the same day."
+            "text": "Yes. Switching from GoHighLevel to Boltcall is straightforward. Setup is free, including transferring your business information, configuring your AI receptionist, and setting up automated follow-ups. You can export your contacts from GHL and have Boltcall running the same day."
           }
         }
       ]
@@ -143,7 +143,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
     { feature: 'Target User', boltcall: 'Local business owners', ghl: 'Marketing agencies', boltcallWin: true },
     { feature: 'AI Phone Receptionist', boltcall: 'Yes, 24/7', ghl: 'No native (needs Twilio)', boltcallWin: true },
     { feature: 'AI Chatbot', boltcall: 'Yes, included', ghl: 'Yes, basic', boltcallWin: true },
-    { feature: 'Setup Time', boltcall: '24 hours', ghl: 'Weeks–months', boltcallWin: true },
+    { feature: 'Setup Time', boltcall: 'Free setup', ghl: 'Weeks–months', boltcallWin: true },
     { feature: 'Learning Curve', boltcall: 'Minimal', ghl: 'Steep', boltcallWin: true },
     { feature: 'CRM Built-in', boltcall: 'Basic lead tracking', ghl: 'Full CRM + pipeline', boltcallWin: false },
     { feature: 'Email Marketing', boltcall: 'No', ghl: 'Yes, included', boltcallWin: false },
@@ -190,7 +190,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
           {/* AEO Direct Answer Block */}
           <div className="speakable-intro bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-lg">
             <p className="text-gray-800 leading-relaxed font-medium">
-              <strong>Boltcall</strong> is a focused AI receptionist platform that answers calls, captures leads, and automates follow-ups for local businesses starting at $549/month with 24-hour setup. <strong>GoHighLevel</strong> is a comprehensive CRM and marketing platform starting at $97/month but requires significant setup time, technical knowledge, and is designed primarily for agencies, not individual small businesses.
+              <strong>Boltcall</strong> is a focused AI receptionist platform that answers calls, captures leads, and automates follow-ups for local businesses starting at $549/month with free setup. <strong>GoHighLevel</strong> is a comprehensive CRM and marketing platform starting at $97/month but requires significant setup time, technical knowledge, and is designed primarily for agencies, not individual small businesses.
             </p>
           </div>
         </motion.header>
@@ -213,7 +213,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
             </p>
 
             <p>
-              Boltcall is built for one thing: helping local businesses never miss a lead. It answers your phone 24/7 with AI, captures every inquiry, and follows up automatically. Setup takes 24 hours.
+              Boltcall is built for one thing: helping local businesses never miss a lead. It answers your phone 24/7 with AI, captures every inquiry, and follows up automatically.
             </p>
 
             <p>
@@ -331,7 +331,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <span>No hidden fees. No per-minute charges. Everything included.</span>
+                    <span>No hidden fees. Calls, texts and chat draw from one shared credit pool.</span>
                   </li>
                 </ul>
               </div>
@@ -404,7 +404,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                 </h3>
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> Sign up and share business details</li>
-                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> Team configures AI in 24 hours</li>
+                  <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> Free setup</li>
                   <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> Forward your phone number</li>
                   <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" /> Live and answering calls</li>
                 </ul>
@@ -555,7 +555,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
             </div>
 
             <p>
-              If your primary problem is <strong className="text-gray-900">missing calls and losing leads</strong>, Boltcall solves that within 24 hours. No learning curve. No setup headaches.
+              If your primary problem is <strong className="text-gray-900">missing calls and losing leads</strong>, Boltcall is built for that. No learning curve. No setup headaches.
             </p>
           </div>
         </motion.section>
@@ -638,7 +638,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <span>You want AI working within 24 hours, not 24 days</span>
+                  <span>You want a simple setup, not a long project</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
@@ -716,7 +716,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
             <div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Can I switch from GoHighLevel to Boltcall?</h3>
               <p>
-                Yes, switching is straightforward. Export your contacts from GHL and sign up with Boltcall. The team handles complete setup within 24 hours — AI receptionist configuration, automated follow-ups, and website if needed. Most businesses switch because they want simplicity and faster results without managing complex software.
+                Yes, switching is straightforward. Export your contacts from GHL and sign up with Boltcall. Setup is free — AI receptionist configuration, automated follow-ups, and website if needed. Most businesses switch because they want simplicity and faster results without managing complex software.
               </p>
             </div>
           </div>
@@ -743,7 +743,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                 </div>
               </div>
               <h2 className="text-gray-900 font-medium mt-4 text-4xl">Try Boltcall Free</h2>
-              <p className="text-base text-gray-600 mt-2 whitespace-pre-line">See why local businesses choose simplicity over complexity. 24-hour setup. No credit card required.</p>
+              <p className="text-base text-gray-600 mt-2 whitespace-pre-line">See why local businesses choose simplicity over complexity. Free setup. No credit card required.</p>
               <Link
                 to="/setup"
                 className="mt-4 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:text-gray-900 h-10 px-4 py-2 shadow-sm active:shadow-none"
@@ -798,7 +798,7 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for law firms</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Free setup</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
         </div>
@@ -822,8 +822,8 @@ const CompareBoltcallVsGoHighLevel: React.FC = () => {
                 <li key={"Simple, flat pricing without upsell traps"} className="flex items-start gap-2 text-sm text-gray-700">
                   <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Simple, flat pricing without upsell traps
                 </li>
-                <li key={"Live in 30 minutes — no CRM migration required"} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Live in 30 minutes — no CRM migration required
+                <li key={"Free setup, no CRM migration required"} className="flex items-start gap-2 text-sm text-gray-700">
+                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Free setup, no CRM migration required
                 </li>
                 </ul>
               </div>

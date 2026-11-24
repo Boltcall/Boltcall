@@ -131,7 +131,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
               >
                 <h2 className="text-lg font-semibold text-blue-900 mb-3">Quick Answer</h2>
                 <p className="text-blue-800 leading-relaxed">
-                  The best AI receptionist for small business combines 24/7 availability, natural conversation, appointment scheduling, and seamless CRM integration. Boltcall leads with comprehensive features starting at $549/month, offering website integration and local business optimization.
+                  The best AI receptionist for small business combines 24/7 availability, natural conversation, and appointment scheduling. Boltcall leads with comprehensive features starting at $549/month, offering website integration and local business optimization.
                 </p>
               </motion.div>
 
@@ -325,12 +325,12 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                       </tr>
                       <tr className="bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Setup Time</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">24 hours automated</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">Free setup, self-serve</td>
                         <td className="px-6 py-4 text-sm text-gray-700">2-4 weeks training</td>
                       </tr>
                       <tr>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Scalability</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">Unlimited concurrent calls</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">Not limited by staff size</td>
                         <td className="px-6 py-4 text-sm text-gray-700">Limited by staff size</td>
                       </tr>
                     </tbody>
@@ -340,7 +340,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                 <div className="bg-green-50 border border-green-200 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-green-900 mb-3">Why Small Businesses Choose AI</h3>
                   <p className="text-green-800 leading-relaxed mb-4">
-                    Small business owners report 67% higher customer satisfaction with AI receptionists compared to traditional services, primarily due to consistent availability and faster response times.
+                    An AI receptionist is available around the clock and answers without a queue of callers ahead of it.
                   </p>
                   <p className="text-green-800 leading-relaxed">
                     Boltcall's integrated approach also includes website development and SEO optimization, making it a complete digital solution rather than just phone coverage.
@@ -491,7 +491,7 @@ const BestAiReceptionistSmallBusiness: React.FC = () => {
                 </div>
 
                 <p className="text-gray-700 leading-relaxed">
-                  Most small businesses see full ROI within the first month, with continued growth as SEO optimization improves search rankings and the AI becomes more effective at qualifying leads.
+                  Your return depends on how many calls you miss today and what a new customer is worth to you.
                 </p>
               </motion.section>
 

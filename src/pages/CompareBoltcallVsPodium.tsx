@@ -82,7 +82,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
           name: 'Can I switch from Podium to Boltcall?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Boltcall ships in 24 to 48 hours, with no annual contract required. Boltcall sets up the AI receptionist, lead routing, and booking automation. You can run Boltcall alongside Podium during the transition and cut Podium when your numbers move.',
+            text: 'Yes. Boltcall has no annual contract and setup is free. Boltcall sets up the AI receptionist, lead routing, and booking automation. You can run Boltcall alongside Podium during the transition and cut Podium when your numbers move.',
           },
         },
       ],
@@ -134,7 +134,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
     { feature: 'Review automation', boltcall: 'Included', podium: 'Best-in-class', boltcallYes: true, podiumYes: true },
     { feature: 'Payments', boltcall: 'External (Stripe / PayPal)', podium: 'Native Podium Payments', boltcallYes: false, podiumYes: true },
     { feature: 'Pricing model', boltcall: 'Flat $499/mo agency', podium: 'Quote-based, scales fast', boltcallYes: true, podiumYes: false },
-    { feature: 'Setup time', boltcall: '24–48 hours, done-for-you', podium: 'Days to weeks', boltcallYes: true, podiumYes: false },
+    { feature: 'Setup time', boltcall: 'Free setup', podium: 'Days to weeks', boltcallYes: true, podiumYes: false },
     { feature: 'Annual contract', boltcall: 'Optional (setup waived)', podium: 'Typical', boltcallYes: true, podiumYes: false },
     { feature: 'Best for', boltcall: 'Lead conversion focused', podium: 'Multi-location, review-led', boltcallYes: true, podiumYes: true },
   ];
@@ -355,7 +355,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
               </h2>
               <ul className="space-y-3 mb-4">
                 <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Lead-to-booking speed.</strong> 11-second standard, instrumented and reported. The whole stack is engineered around it.</span></li>
-                <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Done-for-you setup in 24 to 48 hours.</strong> We build the AI receptionist, lead routing, and booking flow. Podium typical onboarding is days to weeks.</span></li>
+                <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Free setup.</strong> We build the AI receptionist, lead routing, and booking flow.</span></li>
                 <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Flat, published pricing.</strong> $499/mo agency, no per-message bloat, no surprise per-location fee.</span></li>
                 <li className="flex items-start gap-3 text-slate-700"><CheckCircle className="w-5 h-5 text-emerald-500 mt-1 flex-shrink-0" /><span><strong>Specialist depth, not generalist breadth.</strong> Every feature serves the speed-to-lead path. No bloat from products you do not use.</span></li>
               </ul>
@@ -405,7 +405,7 @@ const CompareBoltcallVsPodium: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-[#0F172A] mb-2">What if I am already on a Podium contract?</h3>
-                  <p className="text-slate-700">Run Boltcall in parallel until the renewal date. We onboard in 24 to 48 hours, so you do not lose any speed during the transition. Many businesses keep Podium for reviews and switch the speed-to-lead layer to Boltcall.</p>
+                  <p className="text-slate-700">Run Boltcall in parallel until the renewal date. Setup is free, so you do not lose any speed during the transition. Many businesses keep Podium for reviews and switch the speed-to-lead layer to Boltcall.</p>
                 </div>
               </div>
             </motion.section>

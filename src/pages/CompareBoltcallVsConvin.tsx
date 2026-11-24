@@ -104,13 +104,13 @@ const CompareBoltcallVsConvin: React.FC = () => {
     { feature: 'Buyer profile', boltcall: 'Solo / small local service business', convin: 'Enterprise contact center w/ 5-500+ agents' },
     { feature: 'What it does', boltcall: 'Answers calls + books appointments instead of a human', convin: 'Scores + coaches human agents during/after their calls' },
     { feature: 'Pricing', boltcall: '$549-$4,997/mo flat per business', convin: 'Custom, per-seat, sold via demo' },
-    { feature: 'Setup time', boltcall: '24 hours, managed', convin: 'Weeks to months — enterprise rollout' },
+    { feature: 'Setup time', boltcall: 'Free setup, self-serve', convin: 'Weeks to months — enterprise rollout' },
     { feature: 'Languages', boltcall: 'English + Spanish', convin: '70+ languages' },
     { feature: 'Real-time agent coaching', boltcall: 'N/A — there is no human agent', convin: 'Yes — live whisper guidance' },
     { feature: 'Automated QA across 100% of calls', boltcall: 'N/A', convin: 'Yes — full call scoring' },
-    { feature: 'Calendar booking', boltcall: 'Native (Cal/Google/Outlook)', convin: 'Via CRM integration' },
-    { feature: 'Speed-to-lead web-form SMS', boltcall: 'Yes, under 60 seconds', convin: 'Not core product' },
-    { feature: 'CRM integration', boltcall: 'Clio, ServiceTitan, Jobber, etc.', convin: 'Salesforce, HubSpot, Zendesk, etc.' },
+    { feature: 'Calendar booking', boltcall: 'Google Calendar and Cal.com', convin: 'Via CRM integration' },
+    { feature: 'Speed-to-lead web-form SMS', boltcall: 'Yes', convin: 'Not core product' },
+    { feature: 'CRM integration', boltcall: 'No native CRM; Zapier, Make, webhooks', convin: 'Salesforce, HubSpot, Zendesk, etc.' },
     { feature: 'Best fit', boltcall: 'Local service biz needing phone coverage without hiring', convin: 'Contact center wanting to improve existing agent performance' },
   ];
 

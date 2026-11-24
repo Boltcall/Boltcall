@@ -43,7 +43,6 @@ const browser = await puppeteer.launch({
 });
 
 const routes = [
-  '/blog/ai-receptionist-cost-pricing',
   '/blog/how-to-set-up-ai-phone-answering-vet-clinic',
 ];
 

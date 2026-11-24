@@ -655,9 +655,9 @@ const ConversionRateOptimizer: React.FC = () => {
 
               { title: 'Captures leads while you optimise', desc: 'Every visitor who calls after reading your CRO report gets answered instantly — no voicemail, no lost lead' },
 
-              { title: 'Responds in under 1 second', desc: 'Never miss a lead — 24/7 coverage including weekends and after-hours, when most conversions are lost' },
+              { title: 'Responds in seconds', desc: 'Never miss a lead — 24/7 coverage including weekends and after-hours, when most conversions are lost' },
 
-              { title: 'Setup in 30 minutes', desc: 'No developers, no tech team — just answer a few questions and your AI receptionist is live' },
+              { title: 'Free setup', desc: 'No developers or tech team needed. Answer a few questions about your business and your AI receptionist is configured to your services, hours, and voice.' },
 
               { title: 'Trained on your business', desc: 'Knows your services, pricing, and FAQs — sounds like you, not a generic bot' },
 

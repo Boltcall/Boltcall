@@ -59,7 +59,7 @@ const CompareBoltcallVsGoodCall: React.FC = () => {
           name: 'Is GoodCall cheaper than Boltcall?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'GoodCall is cheaper at low caller volume: $79/month Starter vs Boltcall $549/month Starter. GoodCall meters by unique caller per month — $0.50 per caller above the plan cap (Starter caps at 200 unique callers, Growth at 500, Scale at unlimited). Boltcall is flat monthly with no per-caller, per-minute, or per-call fees. The crossover is around 500–600 unique callers per month: above that volume Boltcall is cheaper and predictable; below it GoodCall is the lower sticker price.',
+            text: 'GoodCall is cheaper at low caller volume: $79/month Starter vs Boltcall $549/month Starter. GoodCall meters by unique caller per month — $0.50 per caller above the plan cap (Starter caps at 200 unique callers, Growth at 500, Scale at unlimited). Boltcall is a flat monthly plan with no per-caller fee; calls, texts and chat draw from a shared monthly credit pool (1 voice minute = 10 credits). The crossover is around 500–600 unique callers per month: above that volume Boltcall is cheaper and predictable; below it GoodCall is the lower sticker price.',
           },
         },
         {
@@ -83,7 +83,7 @@ const CompareBoltcallVsGoodCall: React.FC = () => {
           name: 'Can I switch from GoodCall to Boltcall?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes. Both are month-to-month with no contracts. Boltcall offers a 24-hour setup with the team building your AI voice, intake script, calendar booking, and CRM integration during onboarding. Most switchers move because (a) they hit the GoodCall caller cap and want flat pricing, or (b) they want the broader follow-up and review-request automation Boltcall bundles in.',
+            text: 'Yes. Both are month-to-month with no contracts. Boltcall setup is free and covers your AI voice, intake script, and calendar booking (Google Calendar or Cal.com). Most switchers move because (a) they hit the GoodCall caller cap and want flat pricing, or (b) they want the broader follow-up and review-request automation Boltcall bundles in.',
           },
         },
       ],
@@ -113,8 +113,8 @@ const CompareBoltcallVsGoodCall: React.FC = () => {
 
   const featureRows = [
     { feature: 'Starting price', boltcall: '$549/mo flat', goodcall: '$79/mo Starter ($66 annual)' },
-    { feature: 'Pricing model', boltcall: 'Flat monthly, no per-call/min/caller fees', goodcall: 'Per-unique-caller; $0.50/caller above cap' },
-    { feature: 'Unique caller cap', boltcall: 'No per-caller fee; usage draws from a monthly credit pool', goodcall: '200 (Starter) / 500 (Growth) / unlimited (Scale)' },
+    { feature: 'Pricing model', boltcall: 'Flat monthly plan; usage draws from a shared credit pool (1 voice minute = 10 credits)', goodcall: 'Per-unique-caller; $0.50/caller above cap' },
+    { feature: 'Unique caller cap', boltcall: 'No per-caller fee; usage draws from a shared monthly credit pool', goodcall: '200 (Starter) / 500 (Growth) / unlimited (Scale)' },
     { feature: '24/7 AI call answering', boltcall: 'Yes', goodcall: 'Yes' },
     { feature: 'Speed-to-lead web-form SMS reply', boltcall: 'Yes, under 60 seconds', goodcall: 'No' },
     { feature: 'Calendar booking (Cal/Google/Outlook)', boltcall: 'Yes, native', goodcall: 'Booking via SMS link only' },

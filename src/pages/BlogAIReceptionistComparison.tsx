@@ -239,9 +239,9 @@ const BlogAIReceptionistComparison: React.FC = () => {
         <KeyTakeaways items={[
           'The best AI receptionist for small business answers calls 24/7, qualifies leads, and books appointments in a single conversation.',
           'Cost varies from $50–$500/month — far cheaper than the $1,500–$3,000/month cost of a part-time human receptionist.',
-          'Top tools (Boltcall, Smith.ai, Numa) differ mainly in voice quality, booking depth, and CRM integrations.',
+          'Top tools (Boltcall, Smith.ai, Numa) differ mainly in voice quality, booking depth, and integrations.',
           'For home service businesses, prioritize tools that handle after-hours calls and can schedule service windows automatically.',
-          'Setup time ranges from 20 minutes (Boltcall) to 1–2 weeks for enterprise platforms — match the tool to your timeline.',
+          'Setup time ranges from quick self-serve tools to 1–2 weeks for enterprise platforms — match the tool to your timeline.',
         ]} />
 
         {/* Comparison Table Overview */}
@@ -396,7 +396,7 @@ const BlogAIReceptionistComparison: React.FC = () => {
                 </div>
                 <div className="bg-white rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 mb-2">Fast Setup</h4>
-                  <p className="text-sm">Get up and running in 30 minutes with industry-specific templates. No technical 
+                  <p className="text-sm">Get started with industry-specific templates. No technical 
                   expertise required.</p>
                 </div>
                 <div className="bg-white rounded-lg p-4">
@@ -492,7 +492,7 @@ const BlogAIReceptionistComparison: React.FC = () => {
             
             <p>
               <strong className="text-gray-900">Boltcall stands out</strong> because it's built specifically for local 
-              businesses, offers everything you need in one platform, and gets you up and running in 30 minutes—without 
+              businesses, offers everything you need in one platform, and gets you started quickly—without 
               breaking the bank.
             </p>
             
@@ -518,10 +518,10 @@ const BlogAIReceptionistComparison: React.FC = () => {
               <ul className="space-y-2 text-gray-700 text-sm">
                 <li>Dramatically lower cost than human receptionists — $549-4997/month vs. $3,200–$5,300/month for a hire</li>
                 <li>24/7 availability captures leads outside business hours, which account for 30%+ of all inbound calls</li>
-                <li>Responds to callers in under 2 seconds, increasing conversion rates by up to 391%</li>
+                <li>Responds to callers in seconds, 24/7</li>
                 <li>Scales to any call volume without additional staffing costs or training</li>
                 <li>Consistent, professional service on every call regardless of time of day or call volume</li>
-                <li>Most platforms offer industry-specific templates that cut setup time to under 30 minutes</li>
+                <li>Most platforms offer industry-specific templates that cut setup time</li>
                 <li>Integrates with CRMs, calendars, and scheduling tools to automate the full lead capture workflow</li>
               </ul>
             </div>
@@ -558,8 +558,8 @@ const BlogAIReceptionistComparison: React.FC = () => {
                   ["Starting price", "$549/mo", "$200+/mo", "Contact", "$15/user/mo"],
                   ["Voice call handling", "✓", "✓", "—", "✓"],
                   ["SMS / text automation", "✓", "Limited", "✓", "Limited"],
-                  ["Setup time", "30 min", "2–5 days", "1–2 days", "~1 day"],
-                  ["CRM integrations", "✓", "✓", "—", "Limited"],
+                  ["Setup", "Free, self-serve", "2–5 days", "1–2 days", "~1 day"],
+                  ["Integrations", "Calendar, Zapier, Make", "✓", "—", "Limited"],
                   ["24/7 availability", "✓", "✓", "✓", "✓"],
                   ["Local business templates", "✓", "—", "—", "—"],
                   ["No long-term contract", "✓", "—", "—", "✓"],
@@ -593,8 +593,8 @@ const BlogAIReceptionistComparison: React.FC = () => {
                 ["Starting price", "9/mo", "35/mo", "00+/mo", "79/mo"],
                 ["AI-native", "Yes", "No", "Hybrid", "No"],
                 ["24/7 coverage", "Yes", "Yes", "Yes", "Yes"],
-                ["Setup time", "30 min", "1–2 days", "2–5 days", "1–3 days"],
-                ["CRM integrations", "Yes", "Limited", "Yes", "Limited"],
+                ["Setup", "Free, self-serve", "1–2 days", "2–5 days", "1–3 days"],
+                ["Integrations", "Calendar, Zapier, Make", "Limited", "Yes", "Limited"],
               ].map(([criteria, ...vals], i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                   <td className="py-3 px-4 font-medium text-gray-800">{criteria}</td>

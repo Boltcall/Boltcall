@@ -388,7 +388,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
                       { factor: 'Complex calls', ai: 'Good for structured tasks', human: 'Better for nuanced situations' },
                       { factor: 'Appointment booking', ai: 'Real-time, zero error', human: 'Manual, error-prone' },
                       { factor: 'After-hours', ai: 'Full capability', human: 'Not available' },
-                      { factor: 'Setup time', ai: '24 hours', human: '2–4 weeks to hire/train' },
+                      { factor: 'Setup time', ai: 'Free, self-serve', human: '2–4 weeks to hire/train' },
                     ].map((row, i) => (
                       <tr key={row.factor} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                         <td className="px-5 py-3 font-medium text-gray-900 text-sm border-b border-gray-100">{row.factor}</td>
@@ -417,7 +417,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
                 How Do You Set Up an AI Receptionist?
               </h2>
               <p className="text-lg text-gray-700 mb-4">
-                Most AI receptionist platforms can be set up in under 24 hours. Here is the typical process:
+                Here is the typical setup process:
               </p>
               <ol className="space-y-4 mb-6">
                 {[
@@ -463,7 +463,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
                   },
                   {
                     q: 'How much does an AI receptionist cost?',
-                    a: 'AI receptionists range from $549/month for basic plans to $1,000+/month for full-featured platforms. Boltcall starts at $549/month and includes 24/7 AI call answering, appointment booking, lead capture, and follow-up texts with flat monthly pricing, a shared credit pool and no per-call fees.',
+                    a: 'AI receptionists range from $549/month for basic plans to $1,000+/month for full-featured platforms. Boltcall starts at $549/month and includes 24/7 AI call answering, appointment booking, lead capture, and follow-up texts with flat monthly pricing, and a shared credit pool for calls, texts and chat.',
                   },
                   {
                     q: 'Can an AI receptionist book appointments?',
@@ -494,7 +494,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
               <div className="grid md:grid-cols-3 gap-5">
                 {[
                   { to: '/compare/boltcall-vs-smith-ai', label: 'Comparison', title: 'Boltcall vs Smith.ai: Which AI Receptionist Is Right for You?', desc: 'Head-to-head comparison of pricing, features, and who each service fits.' },
-                  { to: '/blog/ai-receptionist-cost-pricing', label: 'Pricing Guide', title: 'AI Receptionist Cost & Pricing: Complete 2026 Guide', desc: 'Everything you need to know about AI receptionist pricing models.' },
+                  { to: '/pricing', label: 'Pricing', title: 'Boltcall pricing', desc: 'Plans, credits, and what each includes.' },
                   { to: '/blog/ai-vs-human-receptionist', label: 'Deep Dive', title: 'AI vs Human Receptionist: Which Is Right for You?', desc: 'Side-by-side analysis on cost, speed, availability, and use cases.' },
                 ].map((item) => (
                   <Link
@@ -523,7 +523,7 @@ const WhatIsAIReceptionistGuide: React.FC = () => {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-10 text-center text-white">
               <h2 className="text-3xl font-bold mb-3">See an AI Receptionist in Action</h2>
               <p className="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
-                Boltcall answers every call 24/7, books appointments, and captures leads automatically. Pure AI — no human receptionists, no per-call fees. Setup in 24 hours.
+                Boltcall answers every call 24/7, books appointments, and captures leads automatically. Pure AI, no human receptionists. Setup is free.
               </p>
               <Link
                 to="/setup"

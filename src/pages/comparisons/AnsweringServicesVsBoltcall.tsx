@@ -173,7 +173,7 @@ const AnsweringServicesVsBoltcall: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900 mb-2">Lower Cost, More Features</h3>
               <p className="text-gray-700 leading-relaxed">
                 Answering services charge $300-800/month plus per-minute fees that can add hundreds more. Boltcall costs 
-                $549-897/month with no per-minute charges. Plus, Boltcall includes SMS, form handling, automated follow-ups, 
+                $549-897/month, with voice minutes drawn from a shared credit pool. Plus, Boltcall includes SMS, form handling, automated follow-ups, 
                 and website chat—features that answering services don't offer.
               </p>
             </div>

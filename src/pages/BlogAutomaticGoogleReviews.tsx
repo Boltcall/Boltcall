@@ -331,7 +331,7 @@ const BlogAutomaticGoogleReviews: React.FC = () => {
               <div className="bg-white rounded-lg p-6 border-2 border-blue-200 shadow-sm">
                 <div className="flex items-start gap-3 mb-3">
                   <Zap className="w-6 h-6 text-blue-600" />
-                  <h3 className="text-xl font-semibold text-gray-900">3-5x More Reviews</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">More Reviews</h3>
                 </div>
                 <p className="text-gray-700">
                   Businesses using automatic review requests get significantly more reviews than those asking manually. The system never forgets to ask.
@@ -536,7 +536,7 @@ const BlogAutomaticGoogleReviews: React.FC = () => {
               <ul className="space-y-2 text-gray-700">
                 <li className="flex items-start">
                   <Star className="w-5 h-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span><strong>3-5x increase</strong> in review volume within the first month</span>
+                  <span><strong>More reviews</strong> from happy customers, automatically</span>
                 </li>
                 <li className="flex items-start">
                   <Star className="w-5 h-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -652,7 +652,7 @@ const BlogAutomaticGoogleReviews: React.FC = () => {
             <ul className="space-y-2 text-gray-700">
               <li className="flex items-start">
                 <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-                <span>Get 3-5x more reviews without any manual effort</span>
+                <span>Get more reviews without any manual effort</span>
               </li>
               <li className="flex items-start">
                 <CheckCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />

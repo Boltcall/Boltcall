@@ -885,7 +885,7 @@ const AiReceptionistRoi: React.FC = () => {
       <section className="bg-white py-12 border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">AI Receptionist ROI Calculator: Worked Examples</h2>
-          <p className="text-gray-500 text-sm text-center mb-6">Real numbers showing how quickly Boltcall pays for itself across different business types</p>
+          <p className="text-gray-500 text-sm text-center mb-6">Worked examples with illustrative numbers. Replace them with your own.</p>
           <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full text-sm">
               <thead>

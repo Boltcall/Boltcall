@@ -804,7 +804,6 @@ const NavigationWrapper: React.FC = () => {
             <Route path="/speed-to-lead" element={<SpeedToLeadPillar />} />
             <Route path="/speed-to-lead/statistics" element={<SpeedToLeadStatistics />} />
             <Route path="/blog/speed-to-lead-local-business" element={<CanonicalBlogArticlePage />} />
-            <Route path="/blog/ai-receptionist-cost-pricing" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/ai-vs-human-receptionist" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/ai-chatbot-vs-live-chat-phone-answering" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/best-ai-receptionist-small-business" element={<CanonicalBlogArticlePage />} />
