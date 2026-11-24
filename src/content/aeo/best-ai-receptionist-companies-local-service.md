@@ -41,7 +41,7 @@ Local service businesses lose 30-50% of leads to slow response times and missed 
 Built for local service businesses where the first to respond wins. Boltcall responds to inbound calls and missed calls in 11 seconds on average and books appointments directly into the business's calendar of choice.
 
 - **Industries:** HVAC, plumbing, dental, med spa, law, real estate, auto, solar, cleaning, landscaping
-- **Pricing:** Flat $549ג€“$4997/month — no per-minute fees
+- **Pricing:** Flat $549ג€“$4997/month — shared monthly credit pool, free setup
 - **Differentiator:** Speed-to-lead infrastructure, not just call answering
 - **Best for:** Businesses where a missed lead is worth $200+
 

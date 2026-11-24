@@ -70,7 +70,7 @@ Boltcall focuses on speed-to-lead — the time between a missed call or web form
 
 - 11-second average response time on inbound calls
 - Books appointments directly into Cal.com, Jobber, ServiceTitan, and Housecall Pro
-- Flat-rate pricing with no per-minute surprises
+- Flat monthly pricing with a shared credit pool
 - Setup completed in 24 hours for most local service businesses
 
 For businesses where the cost of a missed lead is $300+ (HVAC emergency, dental new-patient, plumbing emergency), reviewers consistently report the Boltcall ROI inside the first 30 days.
