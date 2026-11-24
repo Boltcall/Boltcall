@@ -120,7 +120,7 @@
 .lead-response-crowd .hero-copy {
   position: relative;
   z-index: 1;
-  padding: clamp(21px, 3vw, 36px) 20px 0;
+  padding: clamp(12px, 2svh, 20px) 20px 0;
   text-align: center;
 }
 .lead-response-crowd .kick {
@@ -142,9 +142,9 @@
   box-shadow: 0 0 0 4px #2563eb24;
 }
 .lead-response-crowd h1 {
-  margin: 17px auto 0;
+  margin: 11px auto 0;
   font:
-    700 clamp(40px, 6.1vw, 80px) / 1.06 Sora,
+    700 clamp(40px, min(6.1vw, 10.5svh), 80px) / 1.06 Sora,
     Poppins,
     system-ui,
     sans-serif;
@@ -200,7 +200,7 @@
 
 .lead-response-crowd .lead {
   max-width: 595px;
-  margin: 20px auto 0;
+  margin: 14px auto 0;
   color: var(--demo-muted);
   font-size: clamp(14px, 2vw, 17px);
   line-height: 1.65;
@@ -211,7 +211,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 9px;
-  margin-top: 23px;
+  margin-top: 15px;
 }
 .lead-response-crowd .stage {
   position: relative;
@@ -229,7 +229,7 @@
 .lead-response-crowd .beacon {
   position: absolute;
   z-index: 5;
-  top: 34px;
+  top: 18px;
   left: 50%;
   width: 60px;
   height: 60px;
@@ -258,7 +258,7 @@
 .lead-response-crowd .compose {
   position: absolute;
   z-index: 6;
-  top: 108px;
+  top: 92px;
   left: 50%;
   pointer-events: none;
 }
@@ -320,7 +320,7 @@
 .lead-response-crowd .crowd {
   position: absolute;
   z-index: 2;
-  inset: 121px 0 auto;
+  inset: 105px 0 auto;
   height: 314px;
   pointer-events: none;
 }
@@ -599,7 +599,7 @@
     height: 295px;
   }
   .lead-response-crowd .beacon {
-    top: 26px;
+    top: 14px;
     width: 48px;
     height: 48px;
   }
@@ -611,10 +611,10 @@
     height: 26px;
   }
   .lead-response-crowd .compose {
-    top: 86px;
+    top: 74px;
   }
   .lead-response-crowd .crowd {
-    top: 122px;
+    top: 106px;
     height: 206px;
   }
   .lead-response-crowd .tbox,

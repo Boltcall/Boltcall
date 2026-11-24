@@ -2,7 +2,6 @@ import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { ArrowRight, Globe2, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LeadResponseCrowd from '@/components/ui/lead-response-crowd';
-import Header from '@/components/Header';
 import { updateMetaDescription } from '@/lib/utils';
 
 const offer = [
@@ -163,8 +162,7 @@ export default function BlackFridayPage() {
 
   return (
     <div className="black-friday-page" dir="ltr" lang="en">
-      <Header showPromotion={false} />
-      <main className="pt-14">
+      <main>
         <LeadResponseCrowd />
         <section
           id="black-friday-offer"
