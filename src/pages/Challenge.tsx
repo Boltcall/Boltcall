@@ -229,7 +229,7 @@ const Challenge: React.FC = () => {
                 {
                   icon: Zap,
                   title: 'Answer Every Call, Win Every Opportunity',
-                  desc: 'Every call answered in under 1 second — weekends, holidays, overnight. No lead slips through.',
+                  desc: 'Every call answered right away — weekends, holidays, overnight. No lead slips through.',
                 },
               ].map((item, i) => (
                 <motion.div

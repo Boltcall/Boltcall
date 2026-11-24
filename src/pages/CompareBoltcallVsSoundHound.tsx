@@ -76,7 +76,7 @@ const CompareBoltcallVsSoundHound: React.FC = () => {
           name: 'Is Boltcall a SoundHound alternative?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Boltcall is the SMB-priced alternative to enterprise conversational AI platforms like SoundHound, Google Dialogflow CX, and Microsoft Copilot Studio. The trade-off: Boltcall does not give you the deeply-customized voice commerce, drive-thru, or in-vehicle embedded experiences SoundHound builds; it gives you a turnkey speed-to-lead receptionist for a local service business at a fraction of the cost and a fraction of the setup time (24 hours vs months).',
+            text: 'Boltcall is the SMB-priced alternative to enterprise conversational AI platforms like SoundHound, Google Dialogflow CX, and Microsoft Copilot Studio. The trade-off: Boltcall does not give you the deeply-customized voice commerce, drive-thru, or in-vehicle embedded experiences SoundHound builds; it gives you a turnkey speed-to-lead receptionist for a local service business at a fraction of the cost, with free setup.',
           },
         },
       ],
@@ -103,13 +103,13 @@ const CompareBoltcallVsSoundHound: React.FC = () => {
     { feature: 'Product category', boltcall: 'SMB AI receptionist for local service biz', soundhound: 'Enterprise conversational AI (Amelia, drive-thru, automotive, retail)' },
     { feature: 'Buyer profile', boltcall: 'Solo / small local biz ($250k-$3M revenue)', soundhound: 'Enterprise (restaurant chains, OEMs, large retail)' },
     { feature: 'Public pricing', boltcall: '$549/$897/$4,997 flat per month', soundhound: 'Custom enterprise contracts — no public SMB pricing' },
-    { feature: 'Setup time', boltcall: '24 hours, managed', soundhound: 'Months — enterprise integration project' },
+    { feature: 'Setup time', boltcall: 'Free setup, self-serve', soundhound: 'Months — enterprise integration project' },
     { feature: 'Primary use case', boltcall: 'Answer + book inbound calls/web leads', soundhound: 'Embedded voice in cars, TVs, drive-thrus, contact centers' },
-    { feature: 'Calendar booking', boltcall: 'Native Cal/Google/Outlook', soundhound: 'Via custom integration build' },
+    { feature: 'Calendar booking', boltcall: 'Google Calendar and Cal.com', soundhound: 'Via custom integration build' },
     { feature: 'Vertical-specific scripts (plumbing, dental, law, etc.)', boltcall: 'Yes, pre-tuned', soundhound: 'Built per enterprise engagement' },
     { feature: 'Speed-to-lead web-form SMS', boltcall: 'Yes, native', soundhound: 'N/A for this use case' },
     { feature: 'Voice commerce / drive-thru / in-vehicle', boltcall: 'N/A', soundhound: 'Core product strength' },
-    { feature: 'CRM integration', boltcall: 'Clio, ServiceTitan, Jobber, HouseCallPro', soundhound: 'Salesforce + enterprise contact-center systems' },
+    { feature: 'CRM integration', boltcall: 'No native CRM; Zapier, Make, webhooks', soundhound: 'Salesforce + enterprise contact-center systems' },
     { feature: 'Contracts', boltcall: 'Month-to-month, no contract', soundhound: 'Multi-year enterprise contracts typical' },
     { feature: 'Best fit', boltcall: 'Local service biz, 1-50 locations', soundhound: '100+ location enterprise w/ in-house AI team' },
   ];
@@ -141,7 +141,7 @@ const CompareBoltcallVsSoundHound: React.FC = () => {
           <AnswerBlock
             query="Boltcall vs SoundHound AI — which one fits a small business"
             definition="SoundHound AI is an enterprise conversational AI platform that powers Amelia (agent platform), drive-thru ordering at QSR chains, in-vehicle voice assistants in cars, voice commerce on TVs, and a 2026-launched retail Sales Assist agent — sold via custom enterprise contracts to restaurant chains, automotive OEMs, and large contact centers. Boltcall is the SMB-priced AI receptionist for local service businesses (plumbers, HVAC, dentists, law firms) at flat $549-$4,997/month."
-            stat="SoundHound has no public small-business pricing because it is not built for the SMB market — its deployments are measured in millions of conversations across hundreds of locations. Boltcall ships in 24 hours per business with month-to-month pricing and no contract."
+            stat="SoundHound has no public small-business pricing because it is not built for the SMB market — its deployments are measured in millions of conversations across hundreds of locations. Boltcall has free setup, month-to-month pricing, and no contract."
             outcome="Almost no local service business should be evaluating SoundHound — it is the wrong category. Boltcall is purpose-built for SMB speed-to-lead at SMB price points."
           />
 
@@ -179,7 +179,7 @@ const CompareBoltcallVsSoundHound: React.FC = () => {
                 If you are a 200+ location restaurant chain, an automotive OEM, or an enterprise contact center, <strong>SoundHound is a serious candidate</strong> — that is the buyer it is built for, and the product strength in drive-thru / in-vehicle / Amelia agents is real.
               </p>
               <p className="text-lg text-gray-700">
-                If you are a plumber, dentist, lawyer, HVAC contractor, roofer, solar installer, med spa, or any other local service business with 1-50 locations, <strong>Boltcall is the right pick</strong>. SoundHound is not priced for you, not configured for you, and not selling to you. Boltcall is purpose-built for your scale, ships in 24 hours, and costs less than a part-time receptionist.
+                If you are a plumber, dentist, lawyer, HVAC contractor, roofer, solar installer, med spa, or any other local service business with 1-50 locations, <strong>Boltcall is the right pick</strong>. SoundHound is not priced for you, not configured for you, and not selling to you. Boltcall is purpose-built for your scale, has free setup, and costs less than a part-time receptionist.
               </p>
             </motion.section>
 

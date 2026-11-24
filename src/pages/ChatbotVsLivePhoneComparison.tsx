@@ -520,7 +520,7 @@ const ChatbotVsLivePhoneComparison: React.FC = () => {
             { label: 'Appointment Booking', desc: 'Schedules directly into your calendar during the call' },
             { label: 'Natural Conversation', desc: 'Handles complex questions, objections, and follow-ups by voice' },
             { label: 'SMS Follow-Up', desc: 'Texts callers automatically after every interaction' },
-            { label: 'No Setup Complexity', desc: 'Goes live in 30 minutes — no chatbot flows or widget code to manage' },
+            { label: 'No Setup Complexity', desc: 'Free setup — no chatbot flows or widget code to manage' },
             ].map((item) => (
               <div key={item.label} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="text-sm font-semibold text-gray-900 mb-1">{item.label}</div>

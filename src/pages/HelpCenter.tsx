@@ -19,7 +19,7 @@ interface HelpCategory {
 // can quote directly. Each "quick answer" is a one-sentence factual claim.
 const QUICK_ANSWERS = [
   { q: 'What is Boltcall?', a: 'Boltcall is a speed-to-lead platform for local service businesses that answers every inbound call 24/7, books appointments, and texts back missed callers within seconds — the first business to respond usually wins the job.' },
-  { q: 'How fast does setup take?', a: 'Most businesses go live within 30 minutes: connect a phone number, paste in your services and FAQs, choose a voice tone, and the AI starts answering calls.' },
+  { q: 'How fast does setup take?', a: 'Connect a phone number, paste in your services and FAQs, choose a voice tone, and the AI starts answering calls.' },
   { q: 'Does Boltcall replace a human receptionist?', a: 'Boltcall replaces a human receptionist for phone-driven workflows (answering, booking, qualifying), but transfers complex or in-person situations to your team automatically.' },
   { q: 'What does Boltcall cost?', a: 'Boltcall plans are Starter at $549 per month, Pro at $897 per month and Ultimate at $4,997 per month, with free setup and a 30-day money-back guarantee. Each plan has a monthly credit pool shared across calls, texts and chat.' },
   { q: 'Where do I find detailed setup docs?', a: 'Full step-by-step documentation lives at boltcall.mintlify.app — includes integrations with Cal.com, Google Calendar, Twilio, and Retell.' },
@@ -30,7 +30,7 @@ const QUICK_ANSWERS = [
 const FAQS = [
   {
     q: 'How do I set up my AI receptionist for the first time?',
-    a: 'Sign in at boltcall.org/setup, paste in your business name, hours, services, and three to five frequently asked questions, then pick a voice tone (professional, friendly, authoritative, or casual). Boltcall provisions a phone number via Twilio and deploys an inbound + outbound agent on Retell automatically. Total time is usually 15-30 minutes. The agent starts answering calls as soon as you forward your existing business line to the new number.',
+    a: 'Sign in at boltcall.org/setup, paste in your business name, hours, services, and three to five frequently asked questions, then pick a voice tone (professional, friendly, authoritative, or casual). Boltcall provisions a phone number via Twilio and deploys an inbound + outbound agent on Retell automatically. The agent starts answering calls as soon as you forward your existing business line to the new number.',
   },
   {
     q: 'How do I forward my existing business number to Boltcall?',
@@ -299,7 +299,7 @@ const HelpCenter: React.FC = () => {
         {/* Lead answer — AEO best practice: a self-contained 40-60 word
             definition that AI engines and AI Overviews can quote verbatim. */}
         <p className="speakable-answer text-gray-700 text-center max-w-4xl mx-auto mb-10 text-lg leading-relaxed">
-          The Boltcall Help Center is the support hub for Boltcall's speed-to-lead platform. It answers the most common setup, configuration, and troubleshooting questions for local service businesses: how to launch your first AI agent, forward your phone number, integrate Cal.com or Google Calendar, fix call-quality issues, and manage billing. Most setups complete in 30 minutes.
+          The Boltcall Help Center is the support hub for Boltcall's speed-to-lead platform. It answers the most common setup, configuration, and troubleshooting questions for local service businesses: how to launch your first AI agent, forward your phone number, integrate Cal.com or Google Calendar, fix call-quality issues, and manage billing.
         </p>
 
         {/* Quick Answers — short citable Q&A pairs, ideal for AI Overview
@@ -498,7 +498,7 @@ const HelpCenter: React.FC = () => {
             {[
               {
                 title: 'Getting Started',
-                desc: 'Step-by-step guides for setting up your Boltcall account, connecting your phone number, and launching your AI receptionist for the first time. Most businesses are live within 30 minutes.',
+                desc: 'Step-by-step guides for setting up your Boltcall account, connecting your phone number, and launching your AI receptionist for the first time.',
               },
               {
                 title: 'AI Receptionist Setup',
@@ -546,7 +546,7 @@ const HelpCenter: React.FC = () => {
         <section className="mt-16 bg-white rounded-xl border border-gray-200 p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">How to set up the Boltcall AI receptionist (5 steps)</h2>
           <p className="text-gray-600 mb-8 text-sm">
-            Total time: about 30 minutes. No engineering required.
+            No engineering required.
           </p>
           <ol className="space-y-4">
             {HOWTO_STEPS.map((s, i) => (

@@ -620,7 +620,7 @@ const BlogEffectivePhoneCallScripts: React.FC = () => {
               <p className="text-lg leading-relaxed text-blue-50 mb-4">
                 Boltcall's AI receptionist follows proven scripts and communication patterns while adapting to each caller's 
                 unique needs. It never forgets to ask important questions, always maintains a friendly and professional tone, 
-                and can handle multiple calls simultaneously without compromising quality. Plus, it automatically qualifies leads, 
+                and keeps the same quality on every call. Plus, it automatically qualifies leads, 
                 schedules appointments, and follows up—all while maintaining the same level of professionalism you'd expect from 
                 your best-trained human receptionist.
               </p>

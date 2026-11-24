@@ -326,7 +326,7 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
               When you first set up an AI receptionist, you provide your business information: services, pricing, hours, location, FAQs, and conversation scripts. This creates your knowledge base that the AI references during calls.
             </p>
             <p>
-              You also configure business rules—when to transfer calls, what questions to ask for lead qualification, and how to handle different scenarios. This initial setup typically takes 30 minutes or less.
+              You also configure business rules—when to transfer calls, what questions to ask for lead qualification, and how to handle different scenarios.
             </p>
 
             <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-2">Continuous Learning</h3>
@@ -410,8 +410,7 @@ const BlogAIReceptionistHowItWorks: React.FC = () => {
                   <li>• Processes speech and generates responses in under 500 ms</li>
                   <li>• Learns your business vocabulary and improves with every call</li>
                   <li>• Executes bookings, CRM updates, and notifications automatically</li>
-                  <li>• Scales to hundreds of simultaneous calls without added cost</li>
-                  <li>• Setup typically takes 30 minutes or less</li>
+                                    <li>• Setup is free</li>
                 </ul>
               </div>
               <div className="bg-red-50 rounded-xl p-6">

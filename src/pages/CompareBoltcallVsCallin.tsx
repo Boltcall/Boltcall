@@ -52,7 +52,7 @@ const CompareBoltcallVsCallin: React.FC = () => {
           name: 'How does Callin.io pricing compare to Boltcall?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Callin.io entry plans start around $30/month for ~150-215 included minutes, with overage at $0.08-$0.14/minute. Boltcall is flat $549/month Starter with no minute caps and no per-call/per-message fees. Crossover math: at ~80 inbound calls/month averaging 3 minutes each (240 minutes), Callin.io runs roughly $30 + (~30 over-cap minutes × $0.10) = ~$33-50/month. At 400+ monthly minutes Callin.io can push past $80-100/month. Boltcall is more expensive at every volume on minutes alone — the price reflects the broader speed-to-lead stack (web-form SMS, calendar booking, reminders, review automation) that Callin.io does not include.',
+            text: 'Callin.io entry plans start around $30/month for ~150-215 included minutes, with overage at $0.08-$0.14/minute. Boltcall is flat $549/month Starter, with a shared monthly credit pool across voice, texts and chat (1 voice minute = 10 credits). Crossover math: at ~80 inbound calls/month averaging 3 minutes each (240 minutes), Callin.io runs roughly $30 + (~30 over-cap minutes × $0.10) = ~$33-50/month. At 400+ monthly minutes Callin.io can push past $80-100/month. Boltcall is more expensive at every volume on minutes alone — the price reflects the broader speed-to-lead stack (web-form SMS, calendar booking, reminders, review automation) that Callin.io does not include.',
           },
         },
         {
@@ -60,7 +60,7 @@ const CompareBoltcallVsCallin: React.FC = () => {
           name: 'Is Callin.io a true AI receptionist for local service businesses?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Callin.io is a configurable AI voice platform — closer to a DIY AI calling toolkit than a turnkey receptionist. You design the script, the integrations, and the workflows yourself. Sub-176ms response latency, multilingual support, Google Calendar integration, and CRM hooks are available. Boltcall is a managed receptionist solution: the team builds the AI voice, the intake script, the booking integration, and the SMS follow-up sequences during a 24-hour setup. Pick Callin.io if you want maximum configurability and minimum cost; pick Boltcall if you want it managed and tuned for your specific vertical (plumbing, HVAC, dental, law, etc.).',
+            text: 'Callin.io is a configurable AI voice platform — closer to a DIY AI calling toolkit than a turnkey receptionist. You design the script, the integrations, and the workflows yourself. Sub-176ms response latency, multilingual support, Google Calendar integration, and CRM hooks are available. Boltcall is a managed receptionist solution: the team builds the AI voice, the intake script, the booking integration, and the SMS follow-up sequences during setup, which is free. Pick Callin.io if you want maximum configurability and minimum cost; pick Boltcall if you want it managed and tuned for your specific vertical (plumbing, HVAC, dental, law, etc.).',
           },
         },
         {
@@ -102,8 +102,8 @@ const CompareBoltcallVsCallin: React.FC = () => {
 
   const featureRows = [
     { feature: 'Starting price', boltcall: '$549/mo flat', callin: '$30/mo with ~150-215 minutes' },
-    { feature: 'Pricing model', boltcall: 'Flat monthly, no per-call/min fees', callin: 'Minutes-metered: $0.08-$0.14/min over-cap' },
-    { feature: 'Setup model', boltcall: 'Managed — built for you in 24 hours', callin: 'DIY no-code workflow builder' },
+    { feature: 'Pricing model', boltcall: 'Flat monthly; usage draws from a shared credit pool (1 voice minute = 10 credits)', callin: 'Minutes-metered: $0.08-$0.14/min over-cap' },
+    { feature: 'Setup model', boltcall: 'Managed — free setup', callin: 'DIY no-code workflow builder' },
     { feature: '24/7 AI call answering', boltcall: 'Yes', callin: 'Yes' },
     { feature: 'Response latency', boltcall: 'Sub-2 second pickup', callin: 'Sub-176ms voice response' },
     { feature: 'Web-form-to-SMS speed-to-lead', boltcall: 'Yes, under 60 seconds, managed', callin: 'Possible via DIY workflow setup' },
@@ -141,7 +141,7 @@ const CompareBoltcallVsCallin: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <AnswerBlock
             query="Boltcall vs Callin.io — which AI calling platform should I pick"
-            definition="Callin.io is a configurable DIY AI voice platform starting at $30/month for ~150-215 minutes with $0.08-$0.14/minute over-cap fees; Boltcall is a managed speed-to-lead receptionist starting at $549/month flat (no minute, call, or caller caps) with a 24-hour built-for-you setup."
+            definition="Callin.io is a configurable DIY AI voice platform starting at $30/month for ~150-215 minutes with $0.08-$0.14/minute over-cap fees; Boltcall is a managed speed-to-lead receptionist starting at $549/month flat with a shared monthly credit pool and free setup."
             stat="Callin.io is roughly 10-20x cheaper per month on calls alone at low volume, but you build your own intake script, calendar integration, and follow-up workflows. Boltcall ships those as managed defaults plus web-form SMS reply, automated reminders, and review-request sequences."
             outcome="Pick Callin.io if you are technical, low-volume, and want the cheapest AI voice toolkit; pick Boltcall if you want a turnkey vertical-specific receptionist that you don't have to maintain."
           />
@@ -189,7 +189,7 @@ const CompareBoltcallVsCallin: React.FC = () => {
                 <div className="bg-white border border-gray-200 rounded-xl p-6">
                   <h3 className="text-xl font-bold text-blue-700 mb-3 flex items-center"><CheckCircle className="w-5 h-5 mr-2" />Boltcall wins when…</h3>
                   <ul className="space-y-2 text-gray-700 text-sm">
-                    <li>• You want a vertical-specific receptionist (plumbing, HVAC, dental, law, etc.) built for you in 24 hours</li>
+                    <li>• You want a vertical-specific receptionist (plumbing, HVAC, dental, law, etc.) built for you</li>
                     <li>• You also need to recover missed web-form leads via instant SMS, not just calls</li>
                     <li>• You want appointment reminders + review request automation included, not built yourself</li>
                     <li>• You prefer a single flat invoice with no minute or overage math</li>

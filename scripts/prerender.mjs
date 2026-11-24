@@ -147,7 +147,6 @@ const ROUTES = [
   '/blog/create-gemini-gem-business-assistant',
   '/blog/5-signs-you-need-ai-receptionist',
   '/blog/speed-to-lead-local-business',
-  '/blog/ai-receptionist-cost-pricing',
   '/blog/ai-vs-human-receptionist',
   '/blog/best-ai-receptionist-small-business',
   '/blog/ai-receptionist-for-law-firms',

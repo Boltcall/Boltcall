@@ -186,4 +186,5 @@ https://boltcall.netlify.app/* https://boltcall.org/:splat  301!
 
 # Must be the LAST rule: anything above it is matched first.
 # SPA catch-all -> noindex shell (see netlify.toml for rationale).
+/blog/ai-receptionist-cost-pricing  /pricing  301!
 /*            /spa-fallback.html   200

@@ -460,7 +460,6 @@ const SpeedToLeadPillar: React.FC = () => {
               { href: '/blog/how-ai-receptionist-works', title: 'How an AI receptionist works' },
               { href: '/blog/ai-vs-human-receptionist', title: 'AI vs human receptionist' },
               { href: '/blog/is-ai-receptionist-worth-it', title: 'Is an AI receptionist worth it?' },
-              { href: '/blog/ai-receptionist-cost-pricing', title: 'AI receptionist cost and pricing' },
               { href: '/blog/best-ai-receptionist-tools', title: 'Best AI receptionist tools' },
               { href: '/blog/5-signs-you-need-ai-receptionist', title: '5 signs you need an AI receptionist' },
               { href: '/blog/ai-chatbot-vs-live-chat-phone-comparison', title: 'AI chatbot vs live chat: which wins on the phone?' },

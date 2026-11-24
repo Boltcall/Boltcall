@@ -124,7 +124,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
           name: 'How long does it take to set up Boltcall compared to a call center?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Boltcall can be configured and live within 30 minutes. Setting up a traditional call center contract, training agents, and integrating with your systems typically takes 2–4 weeks.',
+            text: 'Boltcall setup is free and self-serve. Setting up a traditional call center contract, training agents, and integrating with your systems typically takes 2–4 weeks.',
           },
         },
       ],
@@ -224,7 +224,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-              <span><strong>Setup:</strong> Boltcall goes live in 30 minutes vs. 2–4 weeks for a call center contract.</span>
+              <span><strong>Setup:</strong> Boltcall setup is free and self-serve vs. 2–4 weeks for a call center contract.</span>
             </li>
           </ul>
         </motion.section>
@@ -332,7 +332,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
                   </tr>
                   <tr className="bg-gray-50">
                     <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Setup time</td>
-                    <td className="border border-gray-200 px-4 py-3 text-gray-700">30 minutes</td>
+                    <td className="border border-gray-200 px-4 py-3 text-gray-700">Free, self-serve</td>
                     <td className="border border-gray-200 px-4 py-3 text-gray-700">2–4 weeks</td>
                   </tr>
                   <tr className="bg-white">
@@ -386,11 +386,11 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
               <ul className="space-y-2 text-gray-700 ml-4">
                 <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Instant response (0–5 seconds)</span></li>
                 <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>24/7 availability, never closes</span></li>
-                <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Affordable ($549-897/month flat rate, no per-minute charges)</span></li>
+                <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Affordable ($549-897/month flat rate, shared credit pool)</span></li>
                 <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Handles multiple channels (calls, SMS, forms)</span></li>
                 <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Consistent quality, never tired or stressed</span></li>
                 <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Automated follow-ups and reminders</span></li>
-                <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Quick setup (30 minutes)</span></li>
+                <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Free, self-serve setup</span></li>
                 <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Books directly into your calendar — no manual handoff</span></li>
                 <li className="flex items-start"><span className="text-blue-600 mr-2">•</span><span>Zero agent turnover or training costs</span></li>
               </ul>
@@ -607,7 +607,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
               },
               {
                 q: 'How long does it take to set up Boltcall compared to a call center?',
-                a: 'Boltcall can be configured and live within 30 minutes using the self-serve onboarding wizard. No vendor negotiations, no agent training, and no integration sprints. Setting up a traditional call center requires vendor selection, contract negotiation, agent training on your business, and system integration — typically 2–4 weeks before your first handled call.',
+                a: 'Boltcall setup is free and uses a self-serve onboarding wizard. No vendor negotiations, no agent training, and no integration sprints. Setting up a traditional call center requires vendor selection, contract negotiation, agent training on your business, and system integration — typically 2–4 weeks before your first handled call.',
               },
               {
                 q: "What happens if Boltcall cannot answer a caller's question?",
@@ -652,7 +652,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for law firms</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Free setup</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
         </div>
@@ -665,7 +665,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
           <div className="space-y-3 text-sm text-blue-900 leading-relaxed">
             <div>
               <strong>Worried about setup complexity?</strong>{' '}
-              Most businesses go live in under 30 minutes using the self-serve wizard — no technical knowledge, no developer, no vendor negotiations required.
+              Setup uses a self-serve wizard — no technical knowledge, no developer, no vendor negotiations required.
             </div>
             <div>
               <strong>Not sure if AI can handle your callers?</strong>{' '}
@@ -677,7 +677,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
             </div>
             <div>
               <strong>Wondering if it actually saves money vs. your current call center?</strong>{' '}
-              The average SMB pays $2,000–$5,000/month for call center coverage. Boltcall starts at $549/month with no per-minute fees — the savings typically pay for a full year of Boltcall in the first month alone.
+              The average SMB pays $2,000–$5,000/month for call center coverage. Boltcall starts at $549/month, with voice minutes drawn from a shared credit pool.
             </div>
           </div>
         </div>

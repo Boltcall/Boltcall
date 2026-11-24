@@ -773,7 +773,7 @@ const AiReadinessScorecard: React.FC = () => {
                 </h3>
                 <p className="text-blue-100 mb-8 text-lg">
                   Get an AI receptionist, speed-to-lead automation, and review collection —
-                  all set up in under 24 hours.
+                  all with free setup.
                 </p>
                 <a
                   href="/setup"

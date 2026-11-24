@@ -371,7 +371,7 @@ const Blog5SignsAIReceptionist: React.FC = () => {
                     <h3 className="font-semibold text-green-800 mb-3">✓ Pros</h3>
                     <ul className="space-y-2 text-gray-700 text-sm">
                       <li>• Eliminates missed calls — every lead is captured, 24/7</li>
-                      <li>• Responds in under 1 second, boosting conversions by up to 391%</li>
+                      <li>• Responds in seconds, 24/7</li>
                       <li>• Costs a fraction of a full-time receptionist salary</li>
                       <li>• No sick days, vacations, or overtime — always available</li>
                       <li>• Books appointments and qualifies leads automatically</li>

@@ -48,7 +48,6 @@ const KEEP_URLS = [
   '/blog/speed-to-lead-local-business',
   '/blog/best-ai-receptionist-tools',
   '/blog/ai-vs-human-receptionist',
-  '/blog/ai-receptionist-cost-pricing',
   '/blog/best-ai-receptionist-home-services',
   '/blog/how-ai-receptionist-works',
   '/blog/never-miss-a-call-after-business-hours',

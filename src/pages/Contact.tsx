@@ -301,7 +301,7 @@ const Contact: React.FC = () => {
               The kinds of questions we handle most often include: getting your AI receptionist set up and configured for your specific business hours and call flows, understanding billing and plan options, connecting Boltcall to third-party tools like your CRM or scheduling software, and troubleshooting any issues with call routing or AI response quality. You can reach us with anything from a quick question to a complex integration request.
             </p>
             <p className="text-white/90 leading-relaxed">
-              Common questions from businesses reaching out for the first time: How long does onboarding take? (Most businesses are live within 24 hours.) Can I customize what the AI says on calls? (Yes — we configure the script to match your tone and services.) Does Boltcall work with my existing phone number? (In most cases, yes — we can forward calls or port your number depending on your setup.) Send us a message and we'll walk you through exactly how it works for your situation.
+              Common questions from businesses reaching out for the first time: How long does onboarding take? (Setup is free.) Can I customize what the AI says on calls? (Yes — we configure the script to match your tone and services.) Does Boltcall work with my existing phone number? (In most cases, yes — we can forward calls or port your number depending on your setup.) Send us a message and we'll walk you through exactly how it works for your situation.
             </p>
           </div>
         </div>
@@ -313,9 +313,9 @@ const Contact: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Businesses Choose Boltcall</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { title: 'Questions answered in under 1 second', desc: 'Your prospects get instant answers 24/7 — no hold music, no missed calls, no lost opportunities' },
-              { title: 'Setup in 30 minutes', desc: 'No developers or tech team needed — most businesses are live within one business day' },
-              { title: 'Pays for itself with one extra lead', desc: 'One captured call per month covers the entire monthly cost — everything after that is pure upside' },
+              { title: 'Questions answered right away', desc: 'Your prospects get answers 24/7, with no hold music' },
+              { title: 'Free setup', desc: 'No developers or tech team needed. Answer a few questions about your business and your AI receptionist is configured to your services, hours, and voice.' },
+              { title: '30-day money-back guarantee', desc: 'Try it for 30 days. If it is not right for you, get your money back.' },
               { title: 'Trained on your business', desc: 'Handles your specific services, pricing, and FAQs — sounds like your best team member, not a bot' },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-xl p-4 shadow-sm">

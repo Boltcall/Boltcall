@@ -125,7 +125,7 @@ const BlogAIGuide: React.FC = () => {
       '@type': 'FAQPage',
       mainEntity: [
         { '@type': 'Question', name: 'How can AI improve customer service for my business?', acceptedAnswer: { '@type': 'Answer', text: 'AI receptionists answer every call 24/7, book appointments automatically, and follow up with leads via SMS — so you never lose a customer to a missed call or slow response.' } },
-        { '@type': 'Question', name: 'What does it cost to implement AI tools for a local business?', acceptedAnswer: { '@type': 'Answer', text: 'Boltcall starts at a flat monthly rate with no per-call fees. Most local businesses see ROI within the first month through recovered leads that would have otherwise gone to voicemail.' } },
+        { '@type': 'Question', name: 'What does it cost to implement AI tools for a local business?', acceptedAnswer: { '@type': 'Answer', text: 'Boltcall plans start at $549 per month with free setup and a 30-day money-back guarantee. Calls, texts and chat draw from a shared monthly credit pool.' } },
         { '@type': 'Question', name: 'How long does it take to set up an AI receptionist?', acceptedAnswer: { '@type': 'Answer', text: 'Most businesses are fully live within 24–48 hours. You provide your business info, services, and FAQs — Boltcall handles the rest with no technical setup required.' } },
         { '@type': 'Question', name: 'Will AI replace my staff?', acceptedAnswer: { '@type': 'Answer', text: 'No. AI handles repetitive tasks like answering routine calls, booking appointments, and sending follow-up texts — freeing your team to focus on higher-value work and in-person customer service.' } },
         { '@type': 'Question', name: 'Is AI right for a small local business?', acceptedAnswer: { '@type': 'Answer', text: 'Absolutely. Small businesses benefit most because they typically can\'t afford full-time receptionists. An AI receptionist gives you enterprise-level coverage at a fraction of the cost.' } },
@@ -228,7 +228,7 @@ const BlogAIGuide: React.FC = () => {
 
       title: 'Getting Started with AI',
 
-      description: 'Step-by-step guide to implementing AI in your business, from setup to going live in under 30 minutes.',
+      description: 'Step-by-step guide to implementing AI in your business, from setup to going live.',
 
       href: '/ai-guide-for-businesses/level-3-getting-started',
 
@@ -259,7 +259,7 @@ const BlogAIGuide: React.FC = () => {
     },
     {
       q: 'What does it cost to implement AI tools for a local business?',
-      a: 'Boltcall starts at a flat monthly rate with no per-call fees. Most local businesses see ROI within the first month through recovered leads that would have otherwise gone to voicemail.'
+      a: 'Boltcall plans start at $549 per month with free setup and a 30-day money-back guarantee. Calls, texts and chat draw from a shared monthly credit pool.'
     },
     {
       q: 'How long does it take to set up an AI receptionist?',
@@ -333,7 +333,7 @@ const BlogAIGuide: React.FC = () => {
 
               This guide helps local business owners understand how AI can automate their operations,
 
-              choose the right tools, and get started in under 30 minutes. Whether you run a dental
+              choose the right tools, and get started. Whether you run a dental
 
               practice, HVAC company, or auto shop, follow the three levels below to go from curious
 
@@ -351,9 +351,7 @@ const BlogAIGuide: React.FC = () => {
 
                 appointments, and follow up with leads automatically — 24/7. This three-part guide
 
-                walks you through understanding AI, picking the right tools, and going live in under
-
-                30 minutes.
+                walks you through understanding AI, picking the right tools, and going live.
 
               </p>
 
@@ -463,13 +461,12 @@ const BlogAIGuide: React.FC = () => {
 
               <li>• 24/7 availability — no missed calls during evenings, weekends, or peak hours</li>
 
-              <li>• Handles unlimited simultaneous calls with zero hold times</li>
-
+              
               <li>• Costs 90%+ less than hiring a full-time receptionist ($549-4997/mo vs. $2,800+/mo)</li>
 
               <li>• Books appointments and follows up with leads automatically</li>
 
-              <li>• Setup takes under 30 minutes with no technical knowledge required</li>
+              <li>• Self-serve setup with no technical knowledge required</li>
 
               <li>• Multilingual support — serves customers regardless of language</li>
 
@@ -633,9 +630,9 @@ const BlogAIGuide: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Why Businesses Choose Boltcall to Put AI to Work</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
-              { title: "Responds in under 1 second", desc: "Never miss a lead — 24/7, including weekends and holidays" },
-              { title: "Setup in 30 minutes", desc: "No developers, no tech team — just answer a few questions" },
-              { title: "Pays for itself", desc: "One extra captured lead per month covers the entire monthly cost" },
+              { title: "Responds in seconds", desc: "Answers 24/7, including weekends and holidays" },
+              { title: "Free setup", desc: "No developers or tech team needed. Answer a few questions about your business and your AI receptionist is configured to your services, hours, and voice." },
+              { title: "30-day money-back guarantee", desc: "Try it for 30 days. If it is not right for you, get your money back." },
               { title: "Trained on your business", desc: "Knows your services, pricing, and FAQs — sounds like you" },
             ].map((item) => (
               <div key={item.title} className="bg-white rounded-xl p-4 shadow-sm">

@@ -144,7 +144,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
                   className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8"
                 >
                   <p className="text-lg text-gray-800 font-medium m-0">
-                    AI receptionists typically provide positive ROI for businesses missing 20+ calls monthly, with break-even occurring within 3-6 months through recovered revenue from captured leads.
+                    Whether an AI receptionist pays off depends on how many calls you miss and what a new customer is worth to you. Run the math with your own numbers.
                   </p>
                 </motion.div>
 
@@ -211,7 +211,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
                         <ul className="text-sm mt-2">
                           <li>• Complete phone + web system</li>
                           <li>• Custom training</li>
-                          <li>• CRM integration</li>
+                          <li>• Google Calendar and Cal.com booking</li>
                           <li>• 24/7 availability</li>
                         </ul>
                       </div>
@@ -268,12 +268,11 @@ const AIReceptionistWorthItROI: React.FC = () => {
                   </ul>
                   
                   <h3>Customer Satisfaction Impact</h3>
-                  <p>Studies show that <strong>75% of customers hang up</strong> if their call isn't answered within 4 rings. AI receptionists answer every call immediately, leading to:</p>
+                  <p>Studies show that <strong>75% of customers hang up</strong> if their call isn't answered within 4 rings. AI receptionists answer without waiting for a person to be free. Possible benefits:</p>
                   
                   <ul>
-                    <li>23% increase in appointment booking rates</li>
-                    <li>18% improvement in customer satisfaction scores</li>
-                    <li>35% reduction in customer churn from phone frustration</li>
+                    <li>More appointments booked from calls that would have been missed</li>
+                    <li>Fewer callers lost to voicemail</li>
                   </ul>
                   
                   <p>For businesses prioritizing customer experience, these improvements often justify the investment alone.</p>
@@ -602,7 +601,7 @@ const AIReceptionistWorthItROI: React.FC = () => {
                   ['Hours covered per week', '40 hrs (business hours only)', '168 hrs (24/7)'],
                   ['After-hours call handling', 'Voicemail or missed', 'Answered instantly'],
                   ['Weekend and holiday coverage', 'No (or overtime cost)', 'Yes — included'],
-                  ['Setup time', '2–4 weeks', '30 minutes'],
+                  ['Setup', '2–4 weeks', 'Free setup, self-serve'],
                   ['Sick days / turnover risk', 'Yes', 'No'],
                   ['Appointment booking', 'Manual', 'Automated, real-time'],
                   ['SMS follow-up automation', 'No', 'Yes — included'],

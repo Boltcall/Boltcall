@@ -414,7 +414,7 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
                 If you answered "yes" to 2+ questions, an AI receptionist is likely worth it for your business.
               </p>
               <p className="text-gray-600">
-                The cost savings alone (compared to a human receptionist) combined with 24/7 coverage and instant response times typically provide a strong ROI within the first month.
+                The cost savings alone (compared to a human receptionist) combined with 24/7 coverage and fast response times can make the math work. Run it with your own call volume.
               </p>
             </div>
           </div>
@@ -455,7 +455,7 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
             </ul>
 
             <p className="text-lg text-gray-700 leading-relaxed">
-              ...makes an AI receptionist one of the highest-ROI investments a service business can make. Most businesses see a positive return within the first month, with many achieving 10:1 or better ROI ratios. Our <Link to="/blog/missed-calls-statistics-local-business-2026" className="text-blue-600 hover:text-blue-700 underline">2026 missed call statistics</Link> show the average local business loses $238 per unanswered call.
+              ...makes an AI receptionist one of the highest-ROI investments a service business can make. Our <Link to="/blog/missed-calls-statistics-local-business-2026" className="text-blue-600 hover:text-blue-700 underline">2026 missed call statistics</Link> show the average local business loses $238 per unanswered call.
             </p>
           </div>
         </motion.div>
@@ -535,13 +535,11 @@ const BlogIsAIReceptionistWorthIt: React.FC = () => {
               <div className="bg-green-50 rounded-xl p-6">
                 <h3 className="font-semibold text-green-800 mb-3">✓ Pros</h3>
                 <ul className="space-y-2 text-gray-700 text-sm">
-                  <li>90–97% cheaper than a human receptionist while providing 24/7 coverage</li>
-                  <li>Responds in under 2 seconds — 391% higher conversion rate vs. a 5-minute response</li>
+                  <li>Costs a fraction of a full-time human receptionist while providing 24/7 coverage</li>
+                  <li>Responds in seconds, 24/7</li>
                   <li>Never calls in sick, goes on vacation, or has a bad day</li>
-                  <li>Handles unlimited simultaneous calls with no hold times during peak periods</li>
-                  <li>Scales from 10 to 1,000+ calls per month with no additional cost</li>
                   <li>Captures after-hours leads that previously went straight to voicemail</li>
-                  <li>Pays for itself with just 1–3 captured bookings per month in most service businesses</li>
+                  <li>Backed by a 30-day money-back guarantee</li>
                 </ul>
               </div>
               <div className="bg-red-50 rounded-xl p-6">

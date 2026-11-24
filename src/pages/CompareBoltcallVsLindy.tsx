@@ -103,7 +103,7 @@ const CompareBoltcallVsLindy: React.FC = () => {
     { feature: 'Product category', boltcall: 'Purpose-built AI receptionist for local service biz', lindy: 'General-purpose AI agent builder (4,000+ apps)' },
     { feature: 'Starting price', boltcall: '$549/mo flat', lindy: '$49.99/mo Plus (voice billed separately)' },
     { feature: 'Voice/phone pricing', boltcall: 'Flat monthly credit pool (1 voice min = 10 credits)', lindy: '$0.19/min + $10/mo per phone number' },
-    { feature: 'Setup model', boltcall: 'Managed, built in 24 hours', lindy: 'DIY no-code agent builder' },
+    { feature: 'Setup model', boltcall: 'Managed, free setup', lindy: 'DIY no-code agent builder' },
     { feature: 'Vertical-specific scripts (HVAC, dental, law, etc.)', boltcall: 'Yes, pre-tuned', lindy: 'Build it yourself from templates' },
     { feature: 'Speed-to-lead web-form SMS', boltcall: 'Yes, native', lindy: 'DIY agent workflow' },
     { feature: 'Calendar booking', boltcall: 'Native Cal/Google/Outlook', lindy: 'Yes (Google Calendar integration)' },
@@ -190,7 +190,7 @@ const CompareBoltcallVsLindy: React.FC = () => {
                   <ul className="space-y-2 text-gray-700 text-sm">
                     <li>• You're a local service business and your #1 problem is phone leads slipping through</li>
                     <li>• You want a vertical-specific intake script (HVAC, dental, law, plumbing) ready out of the box</li>
-                    <li>• Voice is a primary channel and per-minute fees scare you</li>
+                    <li>• Voice is a primary channel and you want one shared credit pool</li>
                     <li>• You want appointment reminders + review automation included, not built</li>
                     <li>• You want to pay once a month and be done thinking about it</li>
                   </ul>

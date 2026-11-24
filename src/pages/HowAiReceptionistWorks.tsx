@@ -189,7 +189,7 @@ const HowAiReceptionistWorks: React.FC = () => {
                 </div>
 
                 <p className="mb-6">
-                  Modern AI receptionists can handle multiple calls simultaneously, ensuring no customer ever receives a busy signal. Research from Salesforce shows that <strong>78% of customers expect immediate responses</strong> when contacting businesses, making this capability crucial for maintaining customer satisfaction.
+                  AI receptionists answer without waiting for a person to be free. Research from Salesforce shows that <strong>78% of customers expect immediate responses</strong> when contacting businesses, making a fast answer crucial for maintaining customer satisfaction.
                 </p>
 
                 <p>

@@ -84,7 +84,7 @@ const LeadMagnetThankYouPage: React.FC = () => {
             <FeatureCard
               icon={Zap}
               title="Speed-to-Lead"
-              description="Responds to new form submissions in under 5 seconds. Before they call your competitor."
+              description="Responds to new form submissions in seconds. Before they call your competitor."
             />
             <FeatureCard
               icon={MessageSquare}
