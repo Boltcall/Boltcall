@@ -8,38 +8,6 @@
   font-family: Poppins, system-ui, sans-serif;
 }
 
-.black-friday-page .demo-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: min(100% - 64px, 1200px);
-  height: 72px;
-  margin-inline: auto;
-}
-
-.black-friday-page .demo-brand {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-}
-
-.black-friday-page .demo-brand img {
-  display: block;
-  width: 138px;
-  height: 68px;
-}
-.black-friday-page .demo-nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-.black-friday-page .demo-nav-actions > a:not(.demo-button) {
-  color: var(--demo-muted);
-  font-size: 14px;
-  font-weight: 500;
-}
-
 .black-friday-page .demo-button {
   display: inline-flex;
   align-items: center;
@@ -78,10 +46,6 @@
 .black-friday-page button:focus-visible {
   outline: 2px solid var(--demo-blue);
   outline-offset: 4px;
-}
-.black-friday-page .demo-nav .demo-button {
-  min-height: 38px;
-  padding-inline: 14px;
 }
 
 .lead-response-crowd {
@@ -545,6 +509,7 @@
 }
 
 .black-friday-page .giveaway-application {
+  scroll-margin-top: 5rem;
   padding: clamp(22px, 3vw, 36px);
   border: 1px solid #d6e2f1;
   border-radius: 18px;
@@ -560,24 +525,61 @@
   color: var(--demo-muted);
 }
 
+.black-friday-page .application-form {
+  display: grid;
+  gap: 14px;
+}
+.black-friday-page .application-form label {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 5px;
+  row-gap: 5px;
+  align-items: baseline;
+  font-size: 14px;
+  font-weight: 600;
+}
+.black-friday-page .application-form label span {
+  color: var(--demo-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.black-friday-page .application-form input {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 46px;
+  padding: 9px 12px;
+  border: 1px solid #b9cbe4;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--demo-ink);
+  font-size: 16px;
+  font-weight: 400;
+}
+.black-friday-page .application-form input:focus-visible {
+  outline: 2px solid var(--demo-blue);
+  outline-offset: 2px;
+}
+.black-friday-page .application-form .demo-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+.black-friday-page .application-form .application-error {
+  margin: 0;
+  color: #a8202c;
+}
+.black-friday-page .application-privacy {
+  justify-self: center;
+  color: var(--demo-muted);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.black-friday-page .giveaway-application .application-success {
+  color: #166534;
+  font-weight: 600;
+}
+
 @media (max-width: 639px) {
-  .black-friday-page .demo-nav {
-    width: calc(100% - 32px);
-    height: 61px;
-  }
-  .black-friday-page .demo-brand img {
-    width: 114px;
-    height: 56px;
-  }
-  .black-friday-page .demo-nav-actions {
-    gap: 12px;
-  }
-  .black-friday-page .demo-nav-actions > a:not(.demo-button) {
-    display: none;
-  }
-  .black-friday-page .demo-nav .demo-button {
-    min-height: 36px;
-  }
   .lead-response-crowd h1 {
     font-size: clamp(30px, 7.8vw, 46px) !important;
   }

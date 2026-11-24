@@ -84,7 +84,7 @@ type ReplyAnimation = {
   width: number;
 };
 
-export default function LeadResponseCrowd({ applicationUrl }: { applicationUrl: string }) {
+export default function LeadResponseCrowd() {
   const ref = useRef<HTMLElement>(null);
   const [reducedMotion, setReducedMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -700,7 +700,7 @@ export default function LeadResponseCrowd({ applicationUrl }: { applicationUrl: 
           new leads, at no setup cost.
         </p>
         <div className="ctas">
-          <a className="demo-button demo-button-primary" href={applicationUrl}>
+          <a className="demo-button demo-button-primary" href="#black-friday-application">
             Apply for the giveaway <ArrowRight size={16} aria-hidden="true" />
           </a>
           <a className="demo-button demo-button-secondary" href="#black-friday-offer">
