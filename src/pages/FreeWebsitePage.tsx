@@ -83,6 +83,13 @@ const FreeWebsitePage: React.FC = () => {
             </Link>
           </motion.div>
         </div>
+        <p className="mt-2 px-4 text-center text-sm text-slate-600">
+          Looking for our seasonal offer?{' '}
+          <Link to="/black-friday" className="font-medium text-brand-blue underline underline-offset-4">
+            See the Black Friday giveaway
+          </Link>
+          .
+        </p>
       </header>
 
         <motion.div className="max-w-4xl mx-auto px-4 pb-16" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.2, ease: 'easeOut', delay: 0.15 }}>
