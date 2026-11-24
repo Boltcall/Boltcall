@@ -84,7 +84,7 @@ type ReplyAnimation = {
   width: number;
 };
 
-const BLACK_FRIDAY_END = Date.parse('2026-11-28T00:00:00-05:00');
+const BLACK_FRIDAY_END = Date.parse('2026-11-27T23:59:00-05:00');
 
 function remainingBlackFridaySeconds() {
   return Math.max(0, Math.ceil((BLACK_FRIDAY_END - Date.now()) / 1_000));
