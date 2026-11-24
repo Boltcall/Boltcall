@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { ArrowRight, Globe2, Zap } from 'lucide-react';
+import { ArrowRight, ClipboardList, Globe2, MessageSquareText, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LeadResponseCrowd from '@/components/ui/lead-response-crowd';
 import { updateMetaDescription } from '@/lib/utils';
@@ -7,13 +7,24 @@ import { updateMetaDescription } from '@/lib/utils';
 const offer = [
   {
     title: 'A website built for your business',
-    description: 'Give customers a clear place to see what you do and request a quote or appointment.',
+    description: 'Give prospective clients a clear place to learn what you do and how you can help.',
     icon: Globe2,
   },
   {
     title: 'Free speed-to-lead setup',
-    description: 'Get Boltcall set up to follow up with new web leads and text back missed callers.',
+    description: 'Set up Boltcall to follow up automatically when a new inquiry comes in.',
     icon: Zap,
+  },
+  {
+    title: 'Consultation request form',
+    description:
+      'Let visitors leave their contact details and ask to speak with your team from your new website.',
+    icon: ClipboardList,
+  },
+  {
+    title: 'Missed-call text-back',
+    description: 'Automatically text people back when your team cannot pick up the phone.',
+    icon: MessageSquareText,
   },
 ];
 
