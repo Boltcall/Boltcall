@@ -14,11 +14,12 @@ import {
   FileText,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { CAL_BOOKING_URL } from '@/lib/booking';
 import { updateMetaDescription } from '../lib/utils';
 
 // ponytail: single source of truth for the live Cal.com booking link — every
 // "Book a Call" CTA site-wide imports this instead of hardcoding the URL.
-export const CAL_BOOKING_URL = 'https://cal.com/noam-jacoby/free-consultation';
+export { CAL_BOOKING_URL } from '@/lib/booking';
 
 const FAQS = [
   {

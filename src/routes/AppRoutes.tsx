@@ -347,6 +347,7 @@ const RockerSwitchDemoPage = React.lazy(() => import('../pages/RockerSwitchDemoP
 const ReceptionistDemo = React.lazy(() => import('../pages/ReceptionistDemo'));
 // Keep Three.js off the homepage's critical path.
 const SpeedToLeadDemoPage = React.lazy(() => import('../pages/SpeedToLeadDemoPage'));
+const BlackFridayPage = React.lazy(() => import('../pages/BlackFridayPage'));
 
 // ── Lazy loads — V2 SaaS dashboard surface (page wave 1) ─────────────────
 // V2OptInGate is already imported above with the V2 shell.
@@ -712,6 +713,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/book-a-call" element={<BookCall />} />
+        <Route path="/black-friday" element={<BlackFridayPage />} />
         <Route path="/about" element={<About />} />
         <Route path="/credits" element={<CreditsPage />} />
         <Route path="/partners" element={<Partners />} />

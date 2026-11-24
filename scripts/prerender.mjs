@@ -34,6 +34,7 @@ const ROUTES = [
   '/contact',
   '/credits',
   '/book-a-call',
+  '/black-friday',
   '/partners',
   '/help-center',
   '/documentation',
