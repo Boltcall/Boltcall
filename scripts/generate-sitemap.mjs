@@ -59,6 +59,7 @@ const ROUTES = [
 
   // Lead Magnets & Audits
   { path: "/lead-magnet",                                        priority: "0.8", changefreq: "weekly"  },
+  { path: "/lead-magnet/sms-intake-agent",                        priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/claude-code-overnight-kit",              priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/ai-receptionist-buyers-guide",           priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/vanishing-client-report",                    priority: "0.7", changefreq: "monthly" },
