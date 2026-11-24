@@ -84,6 +84,50 @@ type ReplyAnimation = {
   width: number;
 };
 
+const BLACK_FRIDAY_END = Date.parse('2026-11-28T00:00:00-05:00');
+
+function remainingBlackFridaySeconds() {
+  return Math.max(0, Math.ceil((BLACK_FRIDAY_END - Date.now()) / 1_000));
+}
+
+function BlackFridayCountdown() {
+  const [remaining, setRemaining] = useState(remainingBlackFridaySeconds);
+
+  useEffect(() => {
+    if (remainingBlackFridaySeconds() === 0) return;
+
+    const timer = window.setInterval(() => {
+      const seconds = remainingBlackFridaySeconds();
+      setRemaining(seconds);
+      if (seconds === 0) window.clearInterval(timer);
+    }, 1_000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  if (remaining === 0) return null;
+
+  const days = Math.floor(remaining / 86_400);
+  const hours = Math.floor(remaining / 3_600) % 24;
+  const minutes = Math.floor(remaining / 60) % 60;
+  const seconds = remaining % 60;
+
+  return (
+    <span className="hero-countdown">
+      <span>Black Friday ends in</span>
+      <span className="countdown-value" role="timer">
+        <span className="sr-only">
+          {days} days, {hours} hours, {minutes} minutes, {seconds} seconds
+        </span>
+        <span aria-hidden="true">
+          {days}d {String(hours).padStart(2, '0')}h {String(minutes).padStart(2, '0')}m{' '}
+          {String(seconds).padStart(2, '0')}s
+        </span>
+      </span>
+    </span>
+  );
+}
+
 export default function LeadResponseCrowd() {
   const ref = useRef<HTMLElement>(null);
   const [reducedMotion, setReducedMotion] = useState(
@@ -682,9 +726,12 @@ export default function LeadResponseCrowd() {
         </svg>
       </div>
       <div className="hero-copy">
-        <p className="kick">
-          <i aria-hidden="true" /> Black Friday giveaway
-        </p>
+        <div className="hero-meta">
+          <p className="kick">
+            <i aria-hidden="true" /> Black Friday giveaway
+          </p>
+          <BlackFridayCountdown />
+        </div>
         <h1 id="lead-response-title">
           <span className="ph p1">
             <span className="w">5</span> <span className="w">free</span>{' '}
@@ -729,9 +776,12 @@ export default function LeadResponseCrowd() {
       <div className="playback">
         <span>Simulated lead activity</span>
         {!reducedMotion && (
-          <button type="button" onClick={() => setPaused(!paused)}>
-            {paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
-            {paused ? 'Play animation' : 'Pause animation'}
+          <button
+            type="button"
+            aria-label={paused ? 'Play animation' : 'Pause animation'}
+            onClick={() => setPaused(!paused)}
+          >
+            {paused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}
           </button>
         )}
       </div>
