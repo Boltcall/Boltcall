@@ -120,7 +120,7 @@
 .lead-response-crowd .hero-copy {
   position: relative;
   z-index: 1;
-  padding: clamp(42px, 5vw, 70px) 20px 0;
+  padding: clamp(21px, 3vw, 36px) 20px 0;
   text-align: center;
 }
 .lead-response-crowd .kick {
