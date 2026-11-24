@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { animate, stagger } from 'motion/react';
+import { animate } from 'motion/react';
 import { ArrowRight, Pause, Play } from 'lucide-react';
 import './lead-response-crowd.css';
 
@@ -315,13 +315,6 @@ export default function LeadResponseCrowd() {
     const bump = (k: number) => {
       if (A) A(btile, { scale: [1, k, 1] }, { duration: 0.45, ease: [0.3, 0, 0.2, 1] });
     };
-    const hit = (c: string) => {
-      if (frozen) return;
-      const e = $('.' + c);
-      e.classList.remove('hit');
-      void e.offsetWidth;
-      e.classList.add('hit');
-    };
 
     let side = 1,
       scenarioIndex = 0,
@@ -579,7 +572,6 @@ export default function LeadResponseCrowd() {
             comp = null;
           }
           bump(1.16);
-          hit('p1');
         }
         if (s.st < 4 && a >= 3.75) {
           s.st = 4;
@@ -591,7 +583,6 @@ export default function LeadResponseCrowd() {
         if (s.st < 5 && a >= 4.45) {
           s.st = 5;
           flip(s);
-          hit('p2');
         }
         if (s.st < 6 && a >= 6) {
           s.st = 6;
@@ -679,11 +670,6 @@ export default function LeadResponseCrowd() {
       }
       tick(now, 0, true);
     } else {
-      animate(
-        root.querySelectorAll('h1 .w'),
-        { opacity: [0, 1], y: [24, 0] },
-        { duration: 0.7, ease: [0.2, 0.7, 0.2, 1], delay: stagger(0.06) },
-      );
       animate(btile, { scale: [0.8, 1] }, { type: 'spring', stiffness: 300, damping: 20 });
       playbackObserver.observe(root, { attributes: true, attributeFilter: ['data-paused'] });
       document.addEventListener('visibilitychange', syncPlayback);
@@ -697,7 +683,6 @@ export default function LeadResponseCrowd() {
       playbackObserver.disconnect();
       stage.removeEventListener('pointermove', onMove);
       document.removeEventListener('visibilitychange', syncPlayback);
-      root.querySelectorAll('.ph').forEach((phrase) => phrase.classList.remove('hit'));
       btile.removeAttribute('style');
       cbox.removeAttribute('style');
       conversations.forEach((s) => s.tip.remove());
@@ -728,7 +713,7 @@ export default function LeadResponseCrowd() {
       <div className="hero-copy">
         <p className="kick">Black Friday giveaway</p>
         <h1 id="lead-response-title">
-          <span className="ph p1">
+          <span className="ph">
             <span className="w">A</span> <span className="w">free</span>{' '}
             <span className="w">website.</span>
           </span>{' '}
