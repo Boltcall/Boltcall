@@ -59,6 +59,7 @@ const ROUTES = [
   '/drhazak',
   // Lead magnets
   '/lead-magnet',
+  '/lead-magnet/sms-intake-agent',
   '/lead-magnet/claude-code-overnight-kit',
   '/lead-magnet/ai-receptionist-buyers-guide',
   '/lead-magnet/speed-to-lead-stack',
