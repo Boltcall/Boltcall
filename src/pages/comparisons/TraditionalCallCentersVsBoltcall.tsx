@@ -591,7 +591,7 @@ const TraditionalCallCentersVsBoltcall: React.FC = () => {
             {[
               {
                 q: 'How much does a traditional call center cost per month?',
-                a: 'Traditional call centers typically cost $2,000–$5,000 per month for small businesses, with additional per-minute charges ($0.25–$1.50/min) on top. Enterprise contracts can exceed $10,000/month. Setup and onboarding fees of $500–$2,000 are common on top of monthly costs. Boltcall starts at $549/month with no per-minute fees and no setup cost.',
+                a: 'Traditional call centers typically cost $2,000–$5,000 per month for small businesses, with additional per-minute charges ($0.25–$1.50/min) on top. Enterprise contracts can exceed $10,000/month. Setup and onboarding fees of $500–$2,000 are common on top of monthly costs. Boltcall starts at $549/month with free setup; voice minutes draw from a shared monthly credit pool.',
               },
               {
                 q: 'Can Boltcall replace a call center entirely?',
