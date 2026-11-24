@@ -730,12 +730,18 @@ export default function LeadResponseCrowd() {
           <p className="kick">
             <i aria-hidden="true" /> Black Friday giveaway
           </p>
-          <BlackFridayCountdown />
+          <div className="hero-offer-details">
+            <div className="hero-website-count">
+              <span>Free websites</span>
+              <strong>5</strong>
+            </div>
+            <BlackFridayCountdown />
+          </div>
         </div>
         <h1 id="lead-response-title">
           <span className="ph p1">
-            <span className="w">5</span> <span className="w">free</span>{' '}
-            <span className="w">websites.</span>
+            <span className="w">A</span> <span className="w">free</span>{' '}
+            <span className="w">website.</span>
           </span>{' '}
           <span className="ph p2">
             <span className="w">Free</span> <span className="w">speed-to-lead</span>{' '}
