@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { animate, stagger } from 'motion/react';
-import { ArrowDown, ArrowRight, Pause, Play } from 'lucide-react';
+import { ArrowRight, Pause, Play } from 'lucide-react';
 import './lead-response-crowd.css';
 
 // Crowd illustrations from Open Peeps by Pablo Stanley (CC0).
@@ -726,18 +726,7 @@ export default function LeadResponseCrowd() {
         </svg>
       </div>
       <div className="hero-copy">
-        <div className="hero-meta">
-          <p className="kick">
-            <i aria-hidden="true" /> Black Friday giveaway
-          </p>
-          <div className="hero-offer-details">
-            <div className="hero-website-count">
-              <span>Free websites</span>
-              <strong>5</strong>
-            </div>
-            <BlackFridayCountdown />
-          </div>
-        </div>
+        <p className="kick">Black Friday giveaway</p>
         <h1 id="lead-response-title">
           <span className="ph p1">
             <span className="w">A</span> <span className="w">free</span>{' '}
@@ -748,16 +737,17 @@ export default function LeadResponseCrowd() {
             <span className="w">setup.</span>
           </span>
         </h1>
-        <p className="lead">
-          We’ll build a website for five local service businesses and set up Boltcall to follow up with
-          new leads, at no setup cost.
-        </p>
+        <p className="lead">Built for personal injury law firms.</p>
+        <div className="hero-offer-details">
+          <div className="hero-website-count">
+            <span>Free websites</span>
+            <strong>5</strong>
+          </div>
+          <BlackFridayCountdown />
+        </div>
         <div className="ctas">
           <a className="demo-button demo-button-primary" href="#black-friday-application">
             Apply for the giveaway <ArrowRight size={16} aria-hidden="true" />
-          </a>
-          <a className="demo-button demo-button-secondary" href="#black-friday-offer">
-            What’s included <ArrowDown size={16} aria-hidden="true" />
           </a>
         </div>
       </div>
