@@ -28,10 +28,34 @@ const offer = [
 
 export default function BlackFridayPage() {
   useEffect(() => {
-    document.title = 'Black Friday Giveaway: 5 Free Websites | Boltcall';
+    const title = '5 Free Websites for Black Friday | Boltcall';
+    const previousTitle = document.title;
+    document.title = title;
     updateMetaDescription(
       'Apply for one of five free websites from Boltcall this Black Friday. Each includes free setup for Boltcall’s speed-to-lead system.',
     );
+
+    const shareMeta = [
+      ['meta[property="og:title"]', title],
+      ['meta[property="og:url"]', 'https://boltcall.org/black-friday'],
+      ['meta[name="twitter:title"]', title],
+    ];
+    const restoreMeta = shareMeta.flatMap(([selector, value]) => {
+      const tag = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!tag) return [];
+
+      const previous = tag.content;
+      tag.content = value;
+      return [
+        () => {
+          tag.content = previous;
+        },
+      ];
+    });
+    return () => {
+      document.title = previousTitle;
+      restoreMeta.forEach((restore) => restore());
+    };
   }, []);
 
   return (
