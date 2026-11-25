@@ -18,6 +18,7 @@ on:
 permissions:
   contents: read
   actions: read
+  statuses: read
 concurrency:
   group: netlify-production-deploy
   cancel-in-progress: false

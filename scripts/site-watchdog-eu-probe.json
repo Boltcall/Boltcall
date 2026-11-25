@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "boltcall-uptime-eu",
+      "location": "[parameters('location')]",
+      "properties": {
+        "state": "Enabled",
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "triggers": {
+            "probe": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "method": "GET"
+              }
+            }
+          },
+          "actions": {
+            "Fetch_Boltcall": {
+              "type": "Http",
+              "inputs": {
+                "method": "GET",
+                "uri": "https://boltcall.org/?uptime-eu=@{ticks(utcNow())}",
+                "headers": {
+                  "Cache-Control": "no-cache"
+                },
+                "retryPolicy": {
+                  "type": "none"
+                }
+              },
+              "limit": {
+                "timeout": "PT10S"
+              },
+              "runAfter": {}
+            },
+            "Return_probe": {
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "statusCode": 200,
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": {
+                  "healthy": "@and(equals(outputs('Fetch_Boltcall')?['statusCode'], 200), contains(string(outputs('Fetch_Boltcall')?['body']), '<title>'), contains(first(split(last(split(string(outputs('Fetch_Boltcall')?['body']), '<title>')), '</title>')), 'Boltcall'))",
+                  "region": "[parameters('location')]",
+                  "status": "@coalesce(outputs('Fetch_Boltcall')?['statusCode'], 0)"
+                }
+              },
+              "runAfter": {
+                "Fetch_Boltcall": [
+                  "Succeeded",
+                  "Failed",
+                  "TimedOut"
+                ]
+              }
+            }
+          },
+          "outputs": {}
+        }
+      }
+    }
+  ],
+  "parameters": {
+    "location": {
+      "defaultValue": "northeurope",
+      "type": "string",
+      "allowedValues": [
+        "northeurope",
+        "uksouth",
+        "francecentral",
+        "westeurope"
+      ]
+    }
+  }
+}

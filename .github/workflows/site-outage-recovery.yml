@@ -1,0 +1,43 @@
+name: Recover Boltcall website outage
+
+on:
+  workflow_dispatch:
+    inputs:
+      incident_id:
+        description: 'External monitor incident ID'
+        type: string
+        required: true
+      observe_only:
+        description: 'Evaluate the incident without restoring a deploy'
+        type: boolean
+        default: true
+
+run-name: Boltcall outage ${{ inputs.incident_id }}
+
+permissions:
+  actions: read
+  contents: read
+  statuses: write
+
+concurrency:
+  group: netlify-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    if: github.repository == 'Boltcall/Boltcall' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Diagnose and verify recovery
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          BOLTCALL_WATCHDOG_AUTO_RESTORE: ${{ !inputs.observe_only && vars.BOLTCALL_WATCHDOG_AUTO_RESTORE == 'true' }}
+        run: node scripts/site-watchdog.mjs restore

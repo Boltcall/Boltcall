@@ -31,6 +31,7 @@ on:
 
 permissions:
   contents: read
+  statuses: read
 
 concurrency:
   group: netlify-production-deploy
@@ -55,6 +56,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
+      - name: Honor the outage hold for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/site-watchdog.mjs check-hold
       - name: Skip live duplicates and refuse rollbacks
         id: live
         env:
@@ -77,16 +82,27 @@ jobs:
           printf '{"schema_version":1,"project_id":"boltcall","sha":"%s","source":"auto-deploy-main","run_id":%s,"run_attempt":%s}\n' \
             "$GITHUB_SHA" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" > dist/release.json
           printf '\n/release.json\n  Cache-Control: no-store, max-age=0\n  Content-Type: application/json\n' >> dist/_headers
+      - name: Record the verified production predecessor
+        id: previous
+        if: steps.live.outputs.deploy == 'true'
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: node scripts/site-watchdog.mjs capture
       - name: Publish site and functions to production
         if: steps.live.outputs.deploy == 'true'
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          PREVIOUS_ID: ${{ steps.previous.outputs.previous_id }}
+          PREVIOUS_SHA: ${{ steps.previous.outputs.previous_sha }}
         run: |
           set -euo pipefail
           test -n "$NETLIFY_AUTH_TOKEN" || { echo '::error::NETLIFY_AUTH_TOKEN secret is missing'; exit 1; }
           npm install --global netlify-cli@26.2.0
-          netlify deploy --prod --dir=dist --no-build \
-            --site "$NETLIFY_SITE_ID" --message "Auto-deploy main $GITHUB_SHA run $GITHUB_RUN_ID"
+          message="Auto-deploy main $GITHUB_SHA run $GITHUB_RUN_ID"
+          if [[ $PREVIOUS_ID =~ ^[a-f0-9]{24}$ && $PREVIOUS_SHA =~ ^[a-f0-9]{40}$ ]]; then
+            message="$message attempt $GITHUB_RUN_ATTEMPT prior $PREVIOUS_ID $PREVIOUS_SHA"
+          fi
+          netlify deploy --prod --dir=dist --no-build --site "$NETLIFY_SITE_ID" --message "$message"
       - name: Verify production serves this commit
         if: steps.live.outputs.deploy == 'true'
         run: |
