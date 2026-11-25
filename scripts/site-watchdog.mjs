@@ -80,17 +80,26 @@ export async function assertNoOutageHold(sha, github = paginatedGithub) {
   if (await readOutageHold(github, sha)) throw Error('Production outage hold on this SHA');
 }
 
-export async function capturePreviousDeploy({ netlify = netlifyRequest, marker = readMarker, probe = probeHomepage } = {}) {
-  const site = await sitePointer(netlify);
-  const id = site.published_deploy?.id;
-  const deploy = await publishedDeploy(netlify, id);
-  if (!deploy) return null;
-  const [publicSha, immutableSha, publicOk, immutableOk] = await Promise.all([
-    marker(PRODUCTION_URL), marker(immutable(id)), probe(PRODUCTION_URL), probe(immutable(id)),
-  ]);
-  if (!SHA.test(publicSha || '') || publicSha !== immutableSha || !publicOk || !immutableOk) return null;
-  assertProductionPointer(await sitePointer(netlify), id);
-  return { id, sha: publicSha };
+export async function capturePreviousDeploy({
+  netlify = netlifyRequest, marker = readMarker, probe = probeHomepage,
+  sleep = pause, report = () => {},
+} = {}) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const site = await sitePointer(netlify);
+    const id = site.published_deploy?.id;
+    if (!await publishedDeploy(netlify, id)) return null;
+    const [publicSha, immutableSha, publicOk, immutableOk] = await Promise.all([
+      marker(PRODUCTION_URL), marker(immutable(id)), probe(PRODUCTION_URL), probe(immutable(id)),
+    ]);
+    const markerMatches = SHA.test(publicSha || '') && publicSha === immutableSha;
+    if (markerMatches && publicOk && immutableOk) {
+      assertProductionPointer(await sitePointer(netlify), id);
+      return { id, sha: publicSha };
+    }
+    report({ attempt, publicMarker: !!publicSha, immutableMarker: !!immutableSha, markerMatches, publicOk, immutableOk });
+    if (attempt < 3) await sleep(attempt * 2000);
+  }
+  return null;
 }
 
 export async function restoreFromWatchdog({
@@ -147,7 +156,9 @@ async function run() {
   const command = process.argv[2];
   if (command === 'capture') {
     let previous;
-    try { previous = await capturePreviousDeploy(); }
+    try { previous = await capturePreviousDeploy({
+      report: checks => console.warn('Predecessor verification was incomplete: ' + JSON.stringify(checks)),
+    }); }
     catch (error) { console.warn('Previous deploy could not be verified: ' + error.message); }
     if (previous) appendFileSync(process.env.GITHUB_OUTPUT, 'previous_id=' + previous.id + '\nprevious_sha=' + previous.sha + '\n');
   } else if (command === 'check-hold') {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
-import { restoreFromWatchdog } from '../site-watchdog.mjs';
+import { capturePreviousDeploy, restoreFromWatchdog } from '../site-watchdog.mjs';
 import { evaluateRound, readProbeResults, recordDeliveries } from '../site-watchdog-n8n.mjs';
 import { PRODUCTION_URL, SITE_ID } from '../release-control.mjs';
 
@@ -85,4 +85,22 @@ test('n8n text output and the Azure JSON result confirm homepage health', () => 
   const eu = { statusCode: 200, body: { healthy: true } };
   assert.deepEqual(readProbeResults({ statusCode: 200, data: '<title>Welcome to Boltcall</title>' }, eu), { us: true, eu: true });
   assert.deepEqual(readProbeResults({ statusCode: 502, data: '<title>Boltcall</title>' }, { error: 'timed out' }), { us: false, eu: null });
+});
+
+test('a transient immutable probe failure is retried before recording the predecessor', async () => {
+  let attempts = 0;
+  const reported = [];
+  const result = await capturePreviousDeploy({
+    netlify: async path => path === 'sites/' + SITE_ID
+      ? { id: SITE_ID, ssl_url: PRODUCTION_URL, build_settings: { stop_builds: true }, published_deploy: { id: previous } }
+      : { id: previous, site_id: SITE_ID, context: 'production', state: 'ready', deploy_ssl_url: immutable(previous),
+          published_at: '2026-11-25T09:00:00Z' },
+    marker: async () => previousSha,
+    probe: async url => url === PRODUCTION_URL || ++attempts === 2,
+    sleep: async () => {},
+    report: evidence => reported.push(evidence),
+  });
+  assert.equal(reported.length, 1);
+  assert.equal(reported[0].immutableOk, false);
+  assert.deepEqual(result, { id: previous, sha: previousSha });
 });
