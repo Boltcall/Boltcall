@@ -406,32 +406,6 @@
   color: #49566c;
 }
 
-.lead-response-crowd .playback {
-  position: relative;
-  z-index: 7;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  padding: 5px max(20px, calc((100% - 1200px) / 2));
-  min-height: 56px;
-  background: #f6faffd9;
-  border-top: 1px solid #dae7f6;
-  color: var(--demo-muted);
-  font-size: 12px;
-  backdrop-filter: blur(12px);
-}
-.lead-response-crowd .playback button {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 7px;
-  color: var(--demo-ink);
-}
-.lead-response-crowd .playback button:hover {
-  background: #e5efff;
-}
 .lead-response-crowd[data-paused='true'] :is(.b1, .b2, .b3, .caret) {
   animation-play-state: paused;
 }

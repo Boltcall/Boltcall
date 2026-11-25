@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { animate } from 'motion/react';
-import { ArrowRight, Pause, Play } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { BLACK_FRIDAY_DEADLINE } from '@/lib/blackFridayCampaign';
 import './lead-response-crowd.css';
 
@@ -757,18 +757,15 @@ export default function LeadResponseCrowd({ applicationsClosed }: { applications
           </div>
         </div>
       </div>
-      <div className="playback">
-        <span>Simulated lead activity</span>
-        {!reducedMotion && (
-          <button
-            type="button"
-            aria-label={paused ? 'Play animation' : 'Pause animation'}
-            onClick={() => setPaused(!paused)}
-          >
-            {paused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}
-          </button>
-        )}
-      </div>
+      {!reducedMotion && (
+        <button
+          type="button"
+          className="sr-only bottom-4 right-4 z-10 rounded-lg bg-white text-sm font-medium shadow focus:not-sr-only focus:absolute focus:min-h-11 focus:px-4"
+          onClick={() => setPaused(wasPaused => !wasPaused)}
+        >
+          {paused ? 'Play animation' : 'Pause animation'}
+        </button>
+      )}
     </section>
   );
 }
