@@ -109,7 +109,7 @@ const SMSBookingAssistantPage: React.FC = () => {
                 from anywhere, at any time, using the communication method they're most comfortable with.
               </p>
               <p>
-                Setting up SMS intake for a law firm? <Link to="/lead-magnet/sms-intake-agent" className="font-semibold text-blue-700 underline underline-offset-4">Add your firm’s business details</Link>.
+                Setting up SMS intake for a law firm? <Link to="/lead-magnet/sms-intake-agent" className="font-semibold text-blue-700 underline underline-offset-4">try the SMS intake preview</Link>.
               </p>
             </div>
           </motion.div>

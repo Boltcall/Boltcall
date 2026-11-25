@@ -77,7 +77,7 @@ const AUDITS = [
 ];
 
 const INDUSTRY_TOOLS = [
-  { title: 'SMS Intake Business Details',                href: '/lead-magnet/sms-intake-agent',                icon: MessageSquare },
+  { title: 'SMS Intake Agent Preview',                href: '/lead-magnet/sms-intake-agent',                icon: MessageSquare },
   { title: 'Lawyer Intake Calculator',             href: '/tools/lawyer-intake-calculator',           icon: Scale },
   { title: '5-Minute Response Playbook',           href: '/tools/5-minute-response-playbook',         icon: Zap },
 ];
