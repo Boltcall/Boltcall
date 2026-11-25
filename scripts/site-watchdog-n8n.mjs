@@ -6,6 +6,13 @@ import { pathToFileURL } from 'node:url';
 const workflowName = 'Boltcall website outage watchdog';
 const atlasOrigin = 'https://boltcall-aios-vm.eastus2.cloudapp.azure.com';
 
+export function readProbeResults(local, remote) {
+  return {
+    us: local.statusCode === 200 && /<title>[^<]*Boltcall[^<]*<\/title>/i.test(String(local.data ?? local.body ?? '')),
+    eu: remote.statusCode === 200 && typeof remote.body?.healthy === 'boolean' ? remote.body.healthy : null,
+  };
+}
+
 export function evaluateRound(store, { us, eu, now, dispatch = true }) {
   if (!store.incident) {
     if (us !== false || eu !== false) {
@@ -87,12 +94,7 @@ function buildWorkflow({ eu, atlas, telegram, github, chatId, drill = false, obs
   }
   const probes = drill
     ? 'store.drillRounds = (store.drillRounds || 0) + 1; const us = store.drillRounds > 2; const eu = us;'
-    : [
-        'const local = $("Probe US").first().json;',
-        'const remote = $("Probe EU").first().json;',
-        'const us = local.statusCode === 200 && /<title>[^<]*Boltcall[^<]*<\\/title>/i.test(String(local.body || ""));',
-        'const eu = remote.statusCode === 200 && typeof remote.body?.healthy === "boolean" ? remote.body.healthy : null;',
-      ].join('\n');
+    : 'const {us, eu} = (' + readProbeResults.toString() + ')($("Probe US").first().json,$("Probe EU").first().json);';
   code('Classify outage', [
     'const store = $getWorkflowStaticData("global");', probes,
     'store.lastRound = { us, eu, at: new Date().toISOString() };',

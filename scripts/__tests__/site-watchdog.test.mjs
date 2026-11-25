@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 import { restoreFromWatchdog } from '../site-watchdog.mjs';
-import { evaluateRound, recordDeliveries } from '../site-watchdog-n8n.mjs';
+import { evaluateRound, readProbeResults, recordDeliveries } from '../site-watchdog-n8n.mjs';
 import { PRODUCTION_URL, SITE_ID } from '../release-control.mjs';
 
 const current = 'a'.repeat(24);
@@ -79,4 +79,10 @@ test('two fresh two-region failures page once even when Atlas is unavailable', (
   assert.equal(up.telegramState, 'recovered');
   assert.equal(up.atlasState, 'open');
   assert.ok(up.telegram && up.atlas && !up.rollback);
+});
+
+test('n8n text output and the Azure JSON result confirm homepage health', () => {
+  const eu = { statusCode: 200, body: { healthy: true } };
+  assert.deepEqual(readProbeResults({ statusCode: 200, data: '<title>Welcome to Boltcall</title>' }, eu), { us: true, eu: true });
+  assert.deepEqual(readProbeResults({ statusCode: 502, data: '<title>Boltcall</title>' }, { error: 'timed out' }), { us: false, eu: null });
 });
