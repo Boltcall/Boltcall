@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import '../i18n';
 import Header from '../components/Header';
+import { BLACK_FRIDAY_DEADLINE } from '../lib/blackFridayCampaign';
 import MagnanFamilyLawReportPage from './MagnanFamilyLawReportPage';
 
 vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ isAuthenticated: false }) }));
@@ -74,7 +75,7 @@ describe('Magnan personalised web report', () => {
     render(<MemoryRouter><MagnanFamilyLawReportPage /></MemoryRouter>);
     screen.getAllByRole('link', { name: 'For Law Firms' }).forEach(link => expect(link).toHaveAttribute('href', '/industries/lawyer-answering-service'));
     screen.getAllByRole('link', { name: 'Pricing' }).forEach(link => expect(link).toHaveAttribute('href', '/pricing'));
-    expect(document.querySelector('a[href="/giveaway"]')).toBeNull();
+    expect(document.querySelector('a[href="/giveaway"], a[href="/black-friday"]')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Toggle menu' }));
     const closeMenu = screen.getByRole('button', { name: 'Close menu' });
     expect(closeMenu.parentElement).toHaveClass('opacity-100');
@@ -82,9 +83,13 @@ describe('Magnan personalised web report', () => {
     expect(closeMenu.parentElement).toHaveClass('opacity-0', 'pointer-events-none');
   });
 
-  it('preserves the shared header promotion on other pages', () => {
+  it.each([
+    { offset: -1000, title: /Black Friday Giveaway/, destination: '/black-friday' },
+    { offset: 0, title: /Boltcall Giveaway/, destination: '/giveaway' },
+  ])('links the shared header promotion to $destination', ({ offset, title, destination }) => {
+    vi.spyOn(Date, 'now').mockReturnValue(BLACK_FRIDAY_DEADLINE + offset);
     render(<MemoryRouter><Header /></MemoryRouter>);
-    expect(document.querySelector('a[href="/giveaway"]')).not.toBeNull();
+    expect(screen.getByRole('link', { name: title })).toHaveAttribute('href', destination);
   });
 
   it('keeps the full report visible without IntersectionObserver', () => {
