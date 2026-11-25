@@ -7,6 +7,7 @@ import { checkLiveCommit } from './check-live-commit.mjs';
 import { materializeFunctionCache, withFreshFunctionCache } from './release-functions.mjs';
 import { redactReleaseOutput } from './release-diagnostics.mjs';
 import { DEPLOY_ID, fingerprint, assertProductionPointer, readDeploymentReceipt, saveDeploymentReceipt } from './release-upload.mjs';
+import { assertNoOutageHold } from './site-watchdog.mjs';
 import { REPOSITORY, SITE_ID, PRODUCTION_URL, SHA, HASH, sha256, assertOwnerGate,
   readApprovedManifest, verifyPreparation, inspectPullRequest, listAll, releaseMarker,
   assertNetlifySite, verifyLiveDeployment, selectApprovalReceipts } from './release-control.mjs';
@@ -353,6 +354,7 @@ export async function deployPrepared({ env = process.env, api = githubApi(), run
   if (env.GITHUB_JOB !== 'deploy') throw Error('Deployment must run in the protected workflow deploy phase');
   const manifest = await inspectPrepared({ env, api, run });
   await assertNoPriorDeployment(api, env);
+  await assertNoOutageHold(manifest.source_sha, (endpoint, _body, page) => api(`${endpoint}?per_page=100&page=${page}`));
   const previousSite = await netlify(`sites/${SITE_ID}`);
   assertNetlifySite(previousSite);
   // Main auto-deploys on every merge, so production may already be ahead of this
