@@ -79,7 +79,7 @@ export default function LeadMagnetSmsIntakeAgentPage() {
         )}
 
         {preview ? (
-          <div className="grid items-center gap-6 lg:grid-cols-[1fr_minmax(0,25rem)] lg:gap-12">
+          <div className="grid items-center gap-6 lg:grid-cols-[1fr_minmax(0,29rem)] lg:gap-10">
             <div className="mx-auto w-full max-w-[25rem] lg:mx-0">
               <h1 ref={heading} tabIndex={-1} className="scroll-mt-24 text-3xl font-semibold tracking-tight focus:outline-none sm:text-4xl lg:text-5xl">
                 SMS preview
