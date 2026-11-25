@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { animate } from 'motion/react';
 import { ArrowRight, Pause, Play } from 'lucide-react';
+import { BLACK_FRIDAY_DEADLINE } from '@/lib/blackFridayCampaign';
 import './lead-response-crowd.css';
 
 // Crowd illustrations from Open Peeps by Pablo Stanley (CC0).
@@ -84,10 +85,8 @@ type ReplyAnimation = {
   width: number;
 };
 
-const BLACK_FRIDAY_END = Date.parse('2026-11-27T23:59:00-05:00');
-
 function remainingBlackFridaySeconds() {
-  return Math.max(0, Math.ceil((BLACK_FRIDAY_END - Date.now()) / 1_000));
+  return Math.max(0, Math.ceil((BLACK_FRIDAY_DEADLINE - Date.now()) / 1_000));
 }
 
 function BlackFridayCountdown() {
@@ -114,7 +113,7 @@ function BlackFridayCountdown() {
 
   return (
     <span className="hero-countdown">
-      <span>Black Friday ends in</span>
+      <span>Applications close in</span>
       <span className="countdown-value" role="timer">
         <span className="sr-only">
           {days} days, {hours} hours, {minutes} minutes, {seconds} seconds
@@ -128,7 +127,7 @@ function BlackFridayCountdown() {
   );
 }
 
-export default function LeadResponseCrowd() {
+export default function LeadResponseCrowd({ applicationsClosed }: { applicationsClosed: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const [reducedMotion, setReducedMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -728,12 +727,16 @@ export default function LeadResponseCrowd() {
             <span>Free websites</span>
             <strong>5</strong>
           </div>
-          <BlackFridayCountdown />
+          {!applicationsClosed && <BlackFridayCountdown />}
         </div>
         <div className="ctas">
-          <a className="demo-button demo-button-primary" href="#black-friday-application">
-            Apply for the giveaway <ArrowRight size={16} aria-hidden="true" />
-          </a>
+          {applicationsClosed ? (
+            <p className="text-sm font-medium text-slate-600">Applications closed</p>
+          ) : (
+            <a className="demo-button demo-button-primary" href="#black-friday-application">
+              Apply for the giveaway <ArrowRight size={16} aria-hidden="true" />
+            </a>
+          )}
         </div>
       </div>
       <div className="stage" aria-hidden="true">

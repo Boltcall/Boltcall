@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { ArrowRight, ClipboardList, Globe2, MessageSquareText, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LeadResponseCrowd from '@/components/ui/lead-response-crowd';
+import { BLACK_FRIDAY_CLOSED_MESSAGE, BLACK_FRIDAY_DEADLINE } from '@/lib/blackFridayCampaign';
 import { updateMetaDescription } from '@/lib/utils';
 
 const offer = [
@@ -28,14 +29,18 @@ const offer = [
   },
 ];
 
-function BlackFridayApplicationForm() {
+function BlackFridayApplicationForm({ closed, onClose }: { closed: boolean; onClose: () => void }) {
   const submissionId = useRef<string | null>(null);
   const [status, setStatus] = useState<'ready' | 'saving' | 'saved'>('ready');
   const [error, setError] = useState('');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (status !== 'ready') return;
+    if (status !== 'ready' || closed) return;
+    if (Date.now() >= BLACK_FRIDAY_DEADLINE) {
+      onClose();
+      return;
+    }
 
     setStatus('saving');
     setError('');
@@ -49,6 +54,12 @@ function BlackFridayApplicationForm() {
         body: JSON.stringify({ ...fields, submissionId: submissionId.current }),
         signal: AbortSignal.timeout(12_000),
       });
+      if (response.status === 410) {
+        setStatus('ready');
+        onClose();
+        return;
+      }
+
       const result = await response.json().catch(() => null);
       if (!response.ok || result?.ok !== true) {
         const message =
@@ -71,15 +82,17 @@ function BlackFridayApplicationForm() {
 
   return (
     <div id="black-friday-application" className="giveaway-application" tabIndex={-1}>
-      <h2>Apply for the giveaway</h2>
+      <h2>{closed ? 'Black Friday giveaway' : 'Apply for the giveaway'}</h2>
       <div role="status">
-        {status === 'saved' && (
+        {status === 'saved' ? (
           <p className="application-success">
             Application received. We’ll email you if your business is selected.
           </p>
-        )}
+        ) : closed ? (
+          <p>{status === 'saving' ? 'Submitting…' : BLACK_FRIDAY_CLOSED_MESSAGE}</p>
+        ) : null}
       </div>
-      {status !== 'saved' && (
+      {!closed && status !== 'saved' && (
         <>
           <p>Tell us about your business. We’ll contact selected applicants by email.</p>
           <form className="application-form" onSubmit={submit} aria-busy={status === 'saving'}>
@@ -140,6 +153,34 @@ function BlackFridayApplicationForm() {
 }
 
 export default function BlackFridayPage() {
+  const [applicationsClosed, setApplicationsClosed] = useState(
+    () => Date.now() >= BLACK_FRIDAY_DEADLINE,
+  );
+
+  useEffect(() => {
+    if (applicationsClosed) return;
+
+    let deadlineTimer: number | undefined;
+    const syncDeadline = () => {
+      window.clearTimeout(deadlineTimer);
+      const remaining = BLACK_FRIDAY_DEADLINE - Date.now();
+
+      if (remaining <= 0) {
+        setApplicationsClosed(true);
+        return;
+      }
+
+      deadlineTimer = window.setTimeout(syncDeadline, Math.min(remaining, 2_147_483_647));
+    };
+
+    syncDeadline();
+    document.addEventListener('visibilitychange', syncDeadline);
+    return () => {
+      window.clearTimeout(deadlineTimer);
+      document.removeEventListener('visibilitychange', syncDeadline);
+    };
+  }, [applicationsClosed]);
+
   useEffect(() => {
     const title = '5 Free Websites for Black Friday | Boltcall';
     const previousTitle = document.title;
@@ -174,7 +215,7 @@ export default function BlackFridayPage() {
   return (
     <div className="black-friday-page" dir="ltr" lang="en">
       <main>
-        <LeadResponseCrowd />
+        <LeadResponseCrowd applicationsClosed={applicationsClosed} />
         <section
           id="black-friday-offer"
           className="demo-flow"
@@ -193,7 +234,10 @@ export default function BlackFridayPage() {
               ))}
             </ul>
           </div>
-          <BlackFridayApplicationForm />
+          <BlackFridayApplicationForm
+            closed={applicationsClosed}
+            onClose={() => setApplicationsClosed(true)}
+          />
         </section>
       </main>
     </div>

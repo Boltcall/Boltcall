@@ -1,5 +1,6 @@
 import type { Handler } from '@netlify/functions';
 import { z } from 'zod';
+import { BLACK_FRIDAY_CLOSED_MESSAGE, BLACK_FRIDAY_DEADLINE } from '../../src/lib/blackFridayCampaign';
 import { getRequestOrigin, getV2CorsHeaders } from './_shared/cors-v2';
 import { consumePublicRateLimit, getClientIp, hashRateLimitKey } from './_shared/public-rate-limit';
 import { withLegacyHandler } from './_shared/runtime-compat';
@@ -28,6 +29,7 @@ export const testHandler: Handler = async (event) => {
   if (origin && !cors.allowed) return json(403, { error: 'Origin not allowed.' });
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed.' });
+  if (Date.now() >= BLACK_FRIDAY_DEADLINE) return json(410, { error: BLACK_FRIDAY_CLOSED_MESSAGE });
 
   const raw = event.body ?? '';
   if (Buffer.byteLength(raw) > 4_096) return json(413, { error: 'Application is too large.' });
