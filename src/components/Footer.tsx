@@ -109,7 +109,7 @@ const Footer: React.FC<FooterProps> = ({ theme = 'light', showLogo = true }) => 
       { label: 'AI Guide Level 2: Choosing AI Tools', labelHe: 'מדריך AI רמה 2: בחירת כלי AI', href: '/ai-guide-for-businesses/level-2-choosing-ai-tools' },
       { label: 'AI Guide Level 3: Getting Started', labelHe: 'מדריך AI רמה 3: להתחיל לעבוד', href: '/ai-guide-for-businesses/level-3-getting-started' },
       { label: 'All Lead Magnets', labelHe: 'כל מגנטי הלידים', href: '/lead-magnet' },
-      { label: 'SMS Intake Business Details', labelHe: 'פרטי העסק לקליטה ב-SMS', href: '/lead-magnet/sms-intake-agent' },
+      { label: 'SMS Intake Agent Preview', labelHe: 'תצוגה מקדימה של סוכן קליטה ב-SMS', href: '/lead-magnet/sms-intake-agent' },
       { label: "AI Receptionist Buyer's Guide", labelHe: 'מדריך רכישה לקבלת פנים AI', href: '/lead-magnet/ai-receptionist-buyers-guide' },
       { label: 'Claude Code Overnight Kit', labelHe: 'ערכת Claude Code ללילה', href: '/lead-magnet/claude-code-overnight-kit' },
       { label: 'The Vanishing Client Report', labelHe: 'דוח הלקוח הנעלם', href: '/lead-magnet/vanishing-client-report' },
