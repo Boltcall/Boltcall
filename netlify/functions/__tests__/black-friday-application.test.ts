@@ -1,5 +1,5 @@
 import type { Context, HandlerEvent, HandlerResponse } from '@netlify/functions';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   upsert: vi.fn(),
@@ -32,11 +32,27 @@ function post(body: unknown) {
   return handler(event, {} as Context, () => {}) as Promise<HandlerResponse>;
 }
 
+const deadline = Date.parse('2026-11-28T04:59:00Z');
+
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(deadline - 1);
   vi.resetAllMocks();
   mocks.upsert.mockResolvedValue({ error: null });
   mocks.getServiceSupabase.mockReturnValue({ from: () => ({ upsert: mocks.upsert }) });
   mocks.consumePublicRateLimit.mockResolvedValue({ allowed: true });
+});
+
+afterEach(() => vi.useRealTimers());
+
+it.each([0, 1_000])('rejects applications at and after the cutoff (%d ms)', async (offset) => {
+  vi.setSystemTime(deadline + offset);
+  const result = await post(application);
+
+  expect(result.statusCode).toBe(410);
+  expect(JSON.parse(result.body ?? '')).toEqual({ error: 'Applications for this giveaway are closed.' });
+  expect(mocks.getServiceSupabase).not.toHaveBeenCalled();
+  expect(mocks.upsert).not.toHaveBeenCalled();
 });
 
 it('accepts an applicant without a website and saves their contact details under the Black Friday campaign', async () => {
@@ -84,7 +100,11 @@ it.each([
 });
 
 it('returns a retry interval to rate-limited applicants', async () => {
-  mocks.consumePublicRateLimit.mockResolvedValue({ allowed: false, statusCode: 429, retryAfterSeconds: 60 });
+  mocks.consumePublicRateLimit.mockResolvedValue({
+    allowed: false,
+    statusCode: 429,
+    retryAfterSeconds: 60,
+  });
 
   const result = await post(application);
 
