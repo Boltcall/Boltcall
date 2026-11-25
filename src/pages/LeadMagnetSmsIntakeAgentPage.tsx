@@ -66,10 +66,10 @@ export default function LeadMagnetSmsIntakeAgentPage() {
   return (
     <div className="min-h-screen bg-white font-sans text-slate-950">
       <Header />
-      <main id="main-content" className={'mx-auto px-5 pb-12 pt-[6.75rem] sm:px-8 sm:pt-28 lg:pb-16 lg:pt-32 ' + (preview ? 'max-w-5xl' : 'max-w-xl')}>
+      <main id="main-content" className={'mx-auto px-5 pb-12 sm:px-8 sm:pt-28 lg:pb-16 lg:pt-32 ' + (preview ? 'max-w-5xl pt-[5.75rem]' : 'max-w-xl pt-[6.75rem]')}>
         {preview ? (
           <button type="button" onClick={() => { focusOnChange.current = true; setPreview(false); }}
-            className="mb-5 inline-flex min-h-9 items-center gap-1.5 rounded text-sm font-medium text-slate-600 underline-offset-4 hover:underline focus-visible:outline-blue-600">
+            className="mb-1 inline-flex sm:mb-5 min-h-9 items-center gap-1.5 rounded text-sm font-medium text-slate-600 underline-offset-4 hover:underline focus-visible:outline-blue-600">
             <ArrowLeft className="size-4" aria-hidden="true" /> Business details
           </button>
         ) : (
@@ -79,13 +79,13 @@ export default function LeadMagnetSmsIntakeAgentPage() {
         )}
 
         {preview ? (
-          <div className="grid items-center gap-6 lg:grid-cols-[1fr_minmax(0,29rem)] lg:gap-10">
+          <div className="grid items-center gap-2.5 sm:gap-6 lg:grid-cols-[1fr_minmax(0,29rem)] lg:gap-10">
             <div className="mx-auto w-full max-w-[25rem] lg:mx-0">
-              <h1 ref={heading} tabIndex={-1} className="scroll-mt-24 text-3xl font-semibold tracking-tight focus:outline-none sm:text-4xl lg:text-5xl">
+              <h1 ref={heading} tabIndex={-1} className="scroll-mt-24 text-2xl font-semibold tracking-tight focus:outline-none sm:text-4xl lg:text-5xl">
                 SMS preview
               </h1>
-              <p className="mt-3 max-w-sm text-sm leading-relaxed text-slate-600 sm:text-base">
-                Try a fictional inquiry and see how the AI intake assistant replies. Keep real case details out of the chat.
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-600 sm:mt-3 sm:text-base">
+                Text the AI intake assistant with a fictional inquiry.
               </p>
             </div>
             <SmsIntakePhonePreview firmName={details.name} />
