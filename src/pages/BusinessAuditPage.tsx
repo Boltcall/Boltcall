@@ -8,6 +8,7 @@ import GiveawayBar from '../components/GiveawayBar';
 import FAQ from '../components/FAQ';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
+import { submitFreeToolLead } from '../lib/submitFreeToolLead';
 
 const BusinessAuditPage: React.FC = () => {
     useSchemaInjector([
@@ -114,43 +115,17 @@ const BusinessAuditPage: React.FC = () => {
         setIsAnalyzing(true);
 
         try {
-            // Using the same webhook as SEO Audit for now, similar functionality
-            const response = await fetch('https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/a2ecf792-bbad-4667-9223-fef18bfda0df', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    url: formattedUrl,
-                    email: email.trim(),
-                    type: 'business-audit' // Added type just in case the backend can distinguish
-                }),
+            await submitFreeToolLead('business_audit', {
+                url: formattedUrl,
+                email: email.trim(),
+                type: 'business-audit',
             });
-
-            if (response.ok) {
-                // Show success popup
-                setShowSuccessPopup(true);
-                setUrl('');
-                setEmail('');
-                // Hide popup after 8 seconds
-                setTimeout(() => setShowSuccessPopup(false), 8000);
-            } else {
-                let errorText = 'Unknown error';
-                try {
-                    errorText = await response.text();
-                } catch {
-                    // Ignore if we can't read error text
-                }
-                console.error('Webhook error response:', response.status, errorText);
-                setError(`Failed to analyze business (Status: ${response.status}). Please try again.`);
-            }
-        } catch (err: any) {
-            console.error('Error calling webhook:', err);
-            if (err.message) {
-                setError(`Network error: ${err.message}. Please check your connection and try again.`);
-            } else {
-                setError('An error occurred while analyzing your business. Please try again.');
-            }
+            setShowSuccessPopup(true);
+            setUrl('');
+            setEmail('');
+            setTimeout(() => setShowSuccessPopup(false), 8000);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
         } finally {
             setIsAnalyzing(false);
         }
@@ -297,7 +272,7 @@ const BusinessAuditPage: React.FC = () => {
                                 Audit Ready!
                             </h3>
                             <p className="text-gray-600 mb-6">
-                                Your Business audit has been completed and sent to your email address. Please check your inbox for the detailed report.
+                                Your business audit request is in. We will email the detailed report to your inbox shortly.
                             </p>
                             <button
                                 onClick={() => setShowSuccessPopup(false)}
