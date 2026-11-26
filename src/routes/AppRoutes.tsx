@@ -6,6 +6,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import { BoltcallLoader } from '../components/ui/boltcall-loader';
 import AuthRedirectRecovery from '../components/auth/AuthRedirectRecovery';
 import { readPendingAuthRedirect } from '../lib/authRedirect';
+import { recoverSmsPreviewImport } from '../lib/recoverSmsPreviewImport';
 import { useAuth } from '../contexts/AuthContext';
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
 // critical-path modulepreload list on marketing pages.
@@ -237,7 +238,9 @@ const FreeWebsitePage = React.lazy(() => import('../pages/FreeWebsitePage'));
 // LeadMagnetPage is the reusable template used by the named children (e.g.
 // LeadMagnetClaudeCodeOvernightKitPage), not mounted directly as a route.
 const LeadMagnetHub = React.lazy(() => import('../pages/LeadMagnetHub'));
-const LeadMagnetSmsIntakeAgentPage = React.lazy(() => import('../pages/LeadMagnetSmsIntakeAgentPage'));
+const LeadMagnetSmsIntakeAgentPage = React.lazy(() =>
+  import('../pages/LeadMagnetSmsIntakeAgentPage').catch(recoverSmsPreviewImport)
+);
 const MagnanFamilyLawReportPage = React.lazy(() => import('../pages/MagnanFamilyLawReportPage'));
 const LeadMagnetThankYouPage = React.lazy(() => import('../pages/LeadMagnetThankYouPage'));
 const LeadMagnetClaudeCodeOvernightKitPage = React.lazy(() => import('../pages/LeadMagnetClaudeCodeOvernightKitPage'));

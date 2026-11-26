@@ -174,6 +174,8 @@ export default defineConfig({
           /^\/after-hours-lead-rescue\/?$/,
           /^\/automatic-reviews-agent\/?$/,
           /^\/reminders-agent\/?$/,
+          // Reload the live document if a prior release's SMS preview chunk is gone.
+          /^\/lead-magnet\/sms-intake-agent\/?(?:\?|$)/,
         ],
       },
       devOptions: {
