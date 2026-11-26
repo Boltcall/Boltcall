@@ -25,6 +25,7 @@ import FAQ from '../components/FAQ';
 import Breadcrumbs from '../components/Breadcrumbs';
 
 import { useNavigate } from 'react-router-dom';
+import { submitFreeToolLead } from '../lib/submitFreeToolLead';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import { getStoredAttributionUid } from '../hooks/useAttributionCapture';
 
@@ -121,10 +122,6 @@ const aeoWorkSplit = [
     ],
   },
 ];
-
-
-
-const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/seo-aeo-audit';
 
 
 
@@ -381,27 +378,15 @@ const SEOAuditPDF: React.FC = () => {
 
     try {
 
-      const response = await fetch(WEBHOOK_URL, {
+      await submitFreeToolLead('seo_aeo_audit', {
 
-        method: 'POST',
+        url: formattedUrl,
 
-        headers: { 'Content-Type': 'application/json' },
+        email: email.trim(),
 
-        body: JSON.stringify({
-
-          url: formattedUrl,
-
-          email: email.trim(),
-
-          ref: getStoredAttributionUid(),
-
-        }),
+        ref: getStoredAttributionUid(),
 
       });
-
-
-
-      if (!response.ok) throw new Error('Submission failed');
 
 
 
@@ -411,9 +396,9 @@ const SEOAuditPDF: React.FC = () => {
 
       navigate('/seo-aeo-audit/thank-you');
 
-    } catch {
+    } catch (err) {
 
-      setError('Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
 
       setIsAnalyzing(false);
 

@@ -7,6 +7,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import GiveawayBar from '../components/GiveawayBar';
 import { supabase } from '../lib/supabase';
+import { submitFreeToolLead } from '../lib/submitFreeToolLead';
 
 interface NicheConfig {
   niche: string;
@@ -30,8 +31,6 @@ interface NicheConfig {
   } | null;
   webhook_url: string | null;
 }
-
-const DEFAULT_WEBHOOK = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/niche-lead-magnet';
 
 const NicheToolPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -124,30 +123,20 @@ const NicheToolPage: React.FC = () => {
     setIsAnalyzing(true);
 
     try {
-      const webhookUrl = config?.webhook_url || DEFAULT_WEBHOOK;
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: formattedUrl,
-          email: email.trim(),
-          niche: config?.niche,
-          source: 'skool-community',
-          tool_type: config?.tool_type,
-          slug: config?.slug,
-        }),
+      await submitFreeToolLead('niche_tool', {
+        url: formattedUrl,
+        email: email.trim(),
+        niche: config?.niche,
+        source: 'skool-community',
+        tool_type: config?.tool_type,
+        slug: config?.slug,
       });
-
-      if (response.status === 200) {
-        setShowSuccessPopup(true);
-        setUrl('');
-        setEmail('');
-        setTimeout(() => setShowSuccessPopup(false), 8000);
-      } else {
-        setError('Failed to analyze website. Please try again.');
-      }
-    } catch {
-      setError('An error occurred. Please check your connection and try again.');
+      setShowSuccessPopup(true);
+      setUrl('');
+      setEmail('');
+      setTimeout(() => setShowSuccessPopup(false), 8000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setIsAnalyzing(false);
     }
