@@ -1,0 +1,5 @@
+[
+  { "type": "string", "name": "service_requested", "description": "The service or job the caller wants, in a few words, for example \"full roof replacement\" or \"car accident injury case\". Empty if none." },
+  { "type": "number", "name": "estimated_job_value", "description": "Best estimate of what this job is worth to the business in US dollars, using any price, budget, scope or damages the caller mentioned and the business prices from the call. 0 if there is no basis to estimate." },
+  { "type": "boolean", "name": "out_of_scope", "description": "true only if the caller clearly needs a service this business does not offer" }
+]

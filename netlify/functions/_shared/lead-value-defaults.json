@@ -1,0 +1,14 @@
+{
+  "legal": 1000000,
+  "lawyer": 1000000,
+  "personal_injury": 1000000,
+  "solar": 1500000,
+  "roofing": 800000,
+  "hvac": 500000,
+  "plumbing": 200000,
+  "electrician": 200000,
+  "dentist": 300000,
+  "dental": 300000,
+  "med_spa": 200000,
+  "pest_control": 100000
+}

@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Plus, Trash2, DollarSign } from 'lucide-react';
+import { Briefcase, Plus, Trash2, DollarSign, BellRing } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { PopButton } from '../../../components/ui/pop-button';
 import { isLawFirm } from '../../../lib/industryWording';
+import {
+  centsToDollars,
+  defaultThresholdCents,
+  dollarsToCents,
+  formatDollars,
+  mergeThresholdIntoPrefs,
+  readThresholdCents,
+} from '../../../lib/leadValue';
 
 interface ServiceRow {
   id?: string;
@@ -45,6 +53,11 @@ const ServicesPage: React.FC = () => {
   const [profileId, setProfileId] = useState<string | null>(null);
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [industry, setIndustry] = useState<string | null>(null);
+  const [bigJob, setBigJob] = useState('');
+  const [bigJobSaved, setBigJobSaved] = useState('');
+  const bigJobCents = dollarsToCents(bigJob);
+  const bigJobInvalid = bigJobCents === undefined;
+  const industryDefault = defaultThresholdCents(industry);
   const law = isLawFirm(industry);
 
   useEffect(() => {
@@ -59,7 +72,7 @@ const ServicesPage: React.FC = () => {
             .order('created_at', { ascending: true }),
           supabase
             .from('business_profiles')
-            .select('id, workspace_id, avg_deal_value_cents, main_category')
+            .select('id, workspace_id, avg_deal_value_cents, main_category, user_preferences')
             .eq('user_id', user.id)
             .order('created_at', { ascending: true })
             .limit(1)
@@ -79,6 +92,9 @@ const ServicesPage: React.FC = () => {
           setWorkspaceId(profile.workspace_id);
           setAvgDealValue(centsToDollarStr(profile.avg_deal_value_cents));
           setIndustry(profile.main_category || null);
+          const own = centsToDollars(readThresholdCents(profile.user_preferences));
+          setBigJob(own);
+          setBigJobSaved(own);
         }
       } catch (err) {
         console.error('Error loading services:', err);
@@ -109,6 +125,10 @@ const ServicesPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!user?.id) return;
+    if (bigJobInvalid) {
+      showToast({ title: 'Check the big job amount', message: 'Use a whole dollar amount above 0, or leave it empty.', variant: 'error', duration: 4000 });
+      return;
+    }
     setSaving(true);
     try {
       const named = rows.filter((r) => r.name.trim());
@@ -139,6 +159,22 @@ const ServicesPage: React.FC = () => {
           .update({ avg_deal_value_cents: dollarStrToCents(avgDealValue) })
           .eq('id', profileId);
         if (error) throw error;
+      }
+
+      // user_preferences is shared with Preferences and Appearance: re-read the latest row, merge, write.
+      if (profileId && bigJob !== bigJobSaved) {
+        const { data: latest, error: readErr } = await supabase
+          .from('business_profiles')
+          .select('user_preferences')
+          .eq('id', profileId)
+          .single();
+        if (readErr) throw readErr;
+        const { error } = await supabase
+          .from('business_profiles')
+          .update({ user_preferences: mergeThresholdIntoPrefs(latest?.user_preferences, bigJobCents ?? null) })
+          .eq('id', profileId);
+        if (error) throw error;
+        setBigJobSaved(bigJob);
       }
 
       setRows([...rows]);
@@ -254,6 +290,48 @@ const ServicesPage: React.FC = () => {
             className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
         </div>
+      </div>
+
+      {/* Big job alert amount */}
+      <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] shadow-sm p-6">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="p-2 bg-amber-100 dark:bg-amber-500/15 rounded-lg">
+            <BellRing className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Big job alert</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              When a caller wants a job worth this much or more, we email and text you right away.
+            </p>
+          </div>
+        </div>
+        <label htmlFor="big-job-amount" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mt-4 mb-1.5">
+          Alert me for jobs worth at least
+        </label>
+        <div className="relative w-48">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm">$</span>
+          <input
+            id="big-job-amount"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            value={bigJob}
+            onChange={(e) => setBigJob(e.target.value)}
+            placeholder={industryDefault ? String(industryDefault / 100) : 'Amount'}
+            aria-invalid={bigJobInvalid}
+            aria-describedby="big-job-help"
+            className={`w-full pl-7 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 text-sm dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 ${
+              bigJobInvalid ? 'border-red-400 focus:ring-red-500' : 'border-gray-300 dark:border-[#2a2a30] focus:ring-blue-500'
+            }`}
+          />
+        </div>
+        <p id="big-job-help" className={`mt-2 text-xs ${bigJobInvalid ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+          {bigJobInvalid
+            ? 'Use a whole dollar amount above 0, like 8000.'
+            : industryDefault
+              ? `Leave empty to use the default for your industry: ${formatDollars(industryDefault)}.`
+              : 'Leave empty and we use 3 times your average job value. With neither set, no big job alerts are sent.'}
+        </p>
       </div>
 
       <PopButton color="blue" onClick={handleSave} disabled={saving}>

@@ -46,6 +46,11 @@ describe('estimateBookingValueCents', () => {
     expect(await estimateBookingValueCents(fakeSupabase(catalog, 50000), 'u1', 'Roof repair')).toBe(50000);
   });
 
+  it('catalog-only mode skips the avg deal fallback but still matches the catalog', async () => {
+    expect(await estimateBookingValueCents(fakeSupabase(catalog, 50000), 'u1', 'Roof repair', { useAverage: false })).toBe(null);
+    expect(await estimateBookingValueCents(fakeSupabase(catalog, 50000), 'u1', 'heater', { useAverage: false })).toBe(180000);
+  });
+
   it('returns null when nothing configured', async () => {
     expect(await estimateBookingValueCents(fakeSupabase([], null), 'u1', 'Anything')).toBe(null);
   });

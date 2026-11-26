@@ -5,6 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { supabase } from '../../../lib/supabase';
 import { UnsavedChanges } from '../../../components/ui/unsaved-changes';
+import { isValidAlertPhone } from '../../../lib/leadValue';
 
 // The dispatcher (src/lib/notificationService.ts -> should_send_notification RPC)
 // enforces one flag per notification TYPE and one enable per delivery CHANNEL, then
@@ -61,6 +62,8 @@ const NotificationPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [alertPhone, setAlertPhone] = useState('');
+  const phoneInvalid = !isValidAlertPhone(alertPhone);
   const [isDirty, setIsDirty] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -76,6 +79,7 @@ const NotificationPage: React.FC = () => {
           .eq('user_id', user.id)
           .maybeSingle();
         if (data) {
+          setAlertPhone(data.notification_phone || '');
           setSettings({
             types: {
               newLead: data.new_lead ?? true,
@@ -107,6 +111,12 @@ const NotificationPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!user?.id) return;
+    if (phoneInvalid) {
+      showToast({ title: 'Check the phone number', message: 'Enter at least 10 digits, or leave it empty.', variant: 'error', duration: 4000 });
+      setSaveError(true);
+      setTimeout(() => setSaveError(false), 3000);
+      return;
+    }
     setIsSaving(true);
     try {
       const payload = {
@@ -125,6 +135,7 @@ const NotificationPage: React.FC = () => {
         quiet_hours_start: settings.quietHours.start,
         quiet_hours_end: settings.quietHours.end,
         quiet_hours_timezone: settings.timezone,
+        notification_phone: alertPhone.trim() || null,
       };
       const { error } = await supabase
         .from('notification_preferences')
@@ -208,6 +219,38 @@ const NotificationPage: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* Alert phone: where big-job and urgent texts go */}
+      <div className="bg-white dark:bg-[#111114] rounded-xl border border-gray-200 dark:border-[#1e1e24] overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-[#17171b]">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Text alerts</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">We text you when a big job or an urgent call comes in.</p>
+        </div>
+        <div className="px-6 py-4">
+          <label htmlFor="alert-phone" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Text big-job and urgent alerts to
+          </label>
+          <input
+            id="alert-phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            value={alertPhone}
+            onChange={(e) => { setAlertPhone(e.target.value); setIsDirty(true); }}
+            placeholder="(555) 123-4567"
+            aria-invalid={phoneInvalid}
+            aria-describedby="alert-phone-help"
+            className={`w-full max-w-xs px-3 py-2 border dark:bg-[#17171b] dark:text-white dark:placeholder-gray-500 rounded-lg text-sm focus:ring-2 focus:outline-none ${
+              phoneInvalid ? 'border-red-400 focus:ring-red-500' : 'border-gray-300 dark:border-[#2a2a30] focus:ring-blue-500'
+            }`}
+          />
+          <p id="alert-phone-help" className={`mt-2 text-xs ${phoneInvalid ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'}`}>
+            {phoneInvalid
+              ? 'Enter at least 10 digits.'
+              : 'Texts come from your Boltcall number. Leave empty to turn text alerts off. The SMS channel above must be on.'}
+          </p>
         </div>
       </div>
 

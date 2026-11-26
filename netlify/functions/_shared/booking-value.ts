@@ -2,13 +2,15 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Value a booking in cents: match the user's services catalog by name
- * (exact first, then fuzzy), fall back to business_profiles.avg_deal_value_cents.
+ * (exact first, then fuzzy), fall back to business_profiles.avg_deal_value_cents
+ * unless opts.useAverage is false (catalog match only).
  * Never throws — pricing must never block a booking insert.
  */
 export async function estimateBookingValueCents(
   supabase: SupabaseClient,
   userId: string,
-  serviceName: string | null | undefined
+  serviceName: string | null | undefined,
+  opts: { useAverage?: boolean } = {}
 ): Promise<number | null> {
   try {
     if (serviceName?.trim()) {
@@ -34,6 +36,7 @@ export async function estimateBookingValueCents(
       if (fuzzy?.price_cents != null) return fuzzy.price_cents;
     }
 
+    if (opts.useAverage === false) return null;
     const { data: profile } = await supabase
       .from('business_profiles')
       .select('avg_deal_value_cents')

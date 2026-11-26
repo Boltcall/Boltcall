@@ -7,6 +7,7 @@ import { fireWebhooks } from './_shared/fire-webhooks';
 import { verifyRetellSignature } from './_shared/verify-signatures';
 import { withLegacyHandler } from './_shared/runtime-compat';
 import { buildAgentOwnerOrFilter, sanitizeRetellAgentId } from './_shared/lookup-agent-owner';
+import { assessLeadValue, formatUsd, smsOwner } from './_shared/lead-value';
 
 /**
  * Retell Post-Call Webhook
@@ -124,7 +125,7 @@ async function dispatchInternal(url: string, body: unknown, label: string, callI
 // ─── Post-call intake + urgent alert ─────────────────────────────────────────
 // custom_analysis_data comes from the agent's post_call_analysis_data
 // (retell-agents getDefaultAgentConfig). Stored on this call's lead; an urgent
-// matter emails the owner once per call.
+// matter or a big job (lead-value.ts) alerts the owner once per call.
 
 async function applyCallAnalysis(supabase: any, leadId: string, userId: string, call: any, phone: string): Promise<void> {
   const data = call.call_analysis?.custom_analysis_data;
@@ -140,33 +141,89 @@ async function applyCallAnalysis(supabase: any, leadId: string, userId: string, 
   }
   if (email.includes('@')) fields.email = email;
 
-  if (data.urgent !== true) {
+  // Value routing rides in raw_data (no schema change): tier + estimate for the
+  // dashboard, and a big job pings the owner by email + SMS.
+  const value = await assessLeadValue(supabase, userId, data);
+  fields.raw_data = { ...call, value_routing: value };
+  const valueLine = value.estimated_value_cents != null
+    ? `Estimated job value: ${formatUsd(value.estimated_value_cents)}${value.value_source === 'ai_estimate' ? ' (AI estimate)' : ''}`
+    : null;
+  const who = name || phone;
+
+  if (data.urgent === true) {
+    // Claim before sending: the marker lives in raw_data and the conditional
+    // update is atomic, so a retried or duplicate call_analyzed matches no row.
+    const { data: claimed, error } = await supabase
+      .from('leads')
+      .update({ ...fields, raw_data: { ...fields.raw_data as object, urgent_alerted_at: new Date().toISOString() } })
+      .eq('id', leadId)
+      .is('raw_data->>urgent_alerted_at', null)
+      .select('id');
+    // A failed claim still alerts: a duplicate email beats a missed arrest call.
+    if (!error && !claimed?.length) return;
+
+    const sent = await alertOwner(supabase, userId, `URGENT call: ${who} needs a call back now`, [
+      'Your AI receptionist flagged this call as urgent. The caller was told you are being alerted.',
+      `Caller: ${name || 'Name not given'}`,
+      `Phone: ${phone}`,
+      ...(email ? [`Email: ${email}`] : []),
+      `Reason: ${text(data.urgency_reason) || 'not captured'}`,
+      `Practice area: ${text(data.practice_area) || 'not captured'}`,
+      ...(valueLine ? [valueLine] : []),
+      'Please call them back right away.',
+      'Open it in Boltcall: https://boltcall.org/dashboard/leads',
+    ], { urgent: true });
+    await smsOwner(supabase, userId, `Boltcall URGENT: ${who} (${phone}) needs a call back now. ${text(data.urgency_reason)}`.trim());
+    if (!sent) await notifyError('retell-webhook: urgent owner alert not sent', 'alertOwner returned false', { callId: call.call_id, userId });
+    return;
+  }
+
+  if (value.tier !== 'high' && value.tier !== 'out_of_scope') {
     await supabase.from('leads').update(fields).eq('id', leadId);
     return;
   }
 
-  // Claim before sending: the marker lives in raw_data and the conditional
-  // update is atomic, so a retried or duplicate call_analyzed matches no row.
+  // Same once-per-call claim as the urgent path, on its own marker.
   const { data: claimed, error } = await supabase
     .from('leads')
-    .update({ ...fields, raw_data: { ...call, urgent_alerted_at: new Date().toISOString() } })
+    .update({ ...fields, raw_data: { ...fields.raw_data as object, value_alerted_at: new Date().toISOString() } })
     .eq('id', leadId)
-    .is('raw_data->>urgent_alerted_at', null)
+    .is('raw_data->>value_alerted_at', null)
     .select('id');
-  // A failed claim still alerts: a duplicate email beats a missed arrest call.
-  if (!error && !claimed?.length) return;
+  if (error) {
+    // Lead details must still land; skip the alert rather than risk repeats.
+    await notifyError('retell-webhook: value-routing claim failed', error, { callId: call.call_id, userId });
+    return;
+  }
+  if (!claimed?.length) return;
 
-  const sent = await alertOwner(supabase, userId, `URGENT call: ${name || phone} needs a call back now`, [
-    'Your AI receptionist flagged this call as urgent. The caller was told you are being alerted.',
+  const service = value.service_requested || 'not captured';
+  if (value.tier === 'high') {
+    // 'high' always carries an estimate (classifyLeadValue), so the amount is set.
+    const amount = formatUsd(value.estimated_value_cents!);
+    await alertOwner(supabase, userId, `Big job (~${amount}): ${who}, call them back first`, [
+      'Your AI receptionist just spoke with a caller whose job is above your big-job alert amount.',
+      `Caller: ${name || 'Name not given'}`,
+      `Phone: ${phone}`,
+      ...(email ? [`Email: ${email}`] : []),
+      `Service: ${service}`,
+      ...(valueLine ? [valueLine] : []),
+      `Your alert amount: ${value.threshold_cents != null ? formatUsd(value.threshold_cents) : 'not set'}`,
+      'Call them back yourself before a competitor does.',
+      'Open it in Boltcall: https://boltcall.org/dashboard/leads',
+    ], { urgent: true });
+    await smsOwner(supabase, userId, `Boltcall big job: ${who} (${phone}), ${service}, ~${amount}. Call them back first.`);
+    return;
+  }
+
+  await alertOwner(supabase, userId, `Out of scope call: ${who} asked for ${service}`, [
+    'Your AI receptionist spoke with a caller who needs something you do not offer.',
     `Caller: ${name || 'Name not given'}`,
     `Phone: ${phone}`,
-    ...(email ? [`Email: ${email}`] : []),
-    `Reason: ${text(data.urgency_reason) || 'not captured'}`,
-    `Practice area: ${text(data.practice_area) || 'not captured'}`,
-    'Please call them back right away.',
+    `Asked for: ${service}`,
+    'No action needed. If you know someone who does this work, you could pass it on.',
     'Open it in Boltcall: https://boltcall.org/dashboard/leads',
-  ], { urgent: true });
-  if (!sent) await notifyError('retell-webhook: urgent owner alert not sent', 'alertOwner returned false', { callId: call.call_id, userId });
+  ]);
 }
 
 // ─── Response-time proof widget (Task 9) ────────────────────────────────────
