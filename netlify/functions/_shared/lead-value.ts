@@ -10,6 +10,7 @@
  */
 import { estimateBookingValueCents } from './booking-value';
 import { resolveTwilioFromNumber, toE164 } from './twilio-from-number';
+import DEFAULTS from './lead-value-defaults.json';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- same duck type as twilio-from-number.ts
 type SupabaseLike = { from(table: string): any };
@@ -25,20 +26,8 @@ export interface LeadValueAssessment {
 }
 
 // Typical "drop everything" job size per vertical, in cents. Owner setting wins.
-export const DEFAULT_THRESHOLD_CENTS: Record<string, number> = {
-  legal: 1_000_000,
-  lawyer: 1_000_000,
-  personal_injury: 1_000_000,
-  solar: 1_500_000,
-  roofing: 800_000,
-  hvac: 500_000,
-  plumbing: 200_000,
-  electrician: 200_000,
-  dentist: 300_000,
-  dental: 300_000,
-  med_spa: 200_000,
-  pest_control: 100_000,
-};
+// JSON so the settings page can show the default as a placeholder.
+export const DEFAULT_THRESHOLD_CENTS: Record<string, number> = DEFAULTS;
 
 const positiveInt = (v: unknown): number | null => {
   const n = typeof v === 'string' ? Number(v.replace(/[$,\s]/g, '')) : Number(v);
