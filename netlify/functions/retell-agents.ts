@@ -7,6 +7,7 @@ import { listRetellVoiceAgents } from './_shared/retell-call-list';
 import { hasSharedSecret } from './_shared/user-auth';
 import { findWorkspaceForUser } from './_shared/setup-workspace';
 import { toE164 } from './_shared/twilio-from-number';
+import VALUE_ANALYSIS_FIELDS from './_shared/value-analysis-fields.json';
 
 function getSupabaseAdmin(): SupabaseClient {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -118,6 +119,9 @@ function getDefaultAgentConfig(language?: string) {
       { type: 'string', name: 'caller_email', description: "The caller's email address, if given" },
       { type: 'string', name: 'practice_area', description: 'The legal practice area of the matter, for example criminal defense, family law, immigration, personal injury' },
       { type: 'string', name: 'adverse_parties', description: 'names of opposing parties mentioned, for a conflict check' },
+      // Value routing (retell-webhook → _shared/lead-value.ts): big jobs page the owner.
+      // Shared JSON so scripts/sync-retell-value-fields.mjs backfills live agents.
+      ...VALUE_ANALYSIS_FIELDS,
     ],
     // Recording/log URLs expire (24h). Classic call history re-fetches calls
     // live from Retell on every load, so it always gets a fresh signed URL.
