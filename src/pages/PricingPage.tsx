@@ -208,7 +208,7 @@ const PricingPage: React.FC = () => {
               Want the pricing logic first? Read the <Link to="/credits" className="text-blue-600 hover:text-blue-700 underline">shared credits explainer</Link> to see how one monthly pool gets used across phone, SMS, and website chat.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-gray-700">
-              Need a website too? The <Link to="/black-friday" className="text-blue-600 hover:text-blue-700 underline">Black Friday giveaway</Link> includes a free website and speed-to-lead setup.
+              Need a website too? The <Link to="/black-friday" className="text-blue-600 hover:text-blue-700 underline">Black Friday giveaway</Link> includes a free custom website with a built-in AI voice receptionist and consultation request form.
             </p>
           </div>
         </section>

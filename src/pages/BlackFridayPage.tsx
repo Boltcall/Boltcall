@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { ArrowRight, ClipboardList, Globe2, MessageSquareText, Zap } from 'lucide-react';
+import { ArrowRight, ClipboardList, Globe2, Mic } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LeadResponseCrowd from '@/components/ui/lead-response-crowd';
 import { BLACK_FRIDAY_CLOSED_MESSAGE, BLACK_FRIDAY_DEADLINE } from '@/lib/blackFridayCampaign';
@@ -7,25 +7,19 @@ import { updateMetaDescription } from '@/lib/utils';
 
 const offer = [
   {
-    title: 'A website built for your business',
-    description: 'Give prospective clients a clear place to learn what you do and how you can help.',
+    title: 'Custom-built law firm website',
+    description: 'We design and build a website tailored to your firm and the cases you handle.',
     icon: Globe2,
   },
   {
-    title: 'Free speed-to-lead setup',
-    description: 'Set up Boltcall to follow up automatically when a new inquiry comes in.',
-    icon: Zap,
+    title: 'AI voice receptionist',
+    description: 'Visitors can talk to your AI receptionist directly on your website.',
+    icon: Mic,
   },
   {
     title: 'Consultation request form',
-    description:
-      'Let visitors leave their contact details and ask to speak with your team from your new website.',
+    description: 'Send consultation requests from your website straight to your intake inbox.',
     icon: ClipboardList,
-  },
-  {
-    title: 'Missed-call text-back',
-    description: 'Automatically text people back when your team cannot pick up the phone.',
-    icon: MessageSquareText,
   },
 ];
 
@@ -186,7 +180,7 @@ export default function BlackFridayPage() {
     const previousTitle = document.title;
     document.title = title;
     updateMetaDescription(
-      'Apply for one of five free websites from Boltcall this Black Friday. Each includes free setup for Boltcall’s speed-to-lead system.',
+      'Five personal injury firms get a free custom website with a built-in AI voice receptionist and a consultation form that sends inquiries to their intake inbox.',
     );
 
     const shareMeta = [

@@ -20,34 +20,34 @@ type Scenario = {
 };
 const SCENARIOS: Scenario[] = [
   {
-    tag: 'Missed call',
-    tc: 'caution',
-    signal: 'Caller was in a car crash',
-    lab: 'Text back',
-    line: 'Sorry we missed your call. Were you injured?',
-    rtag: 'Replied',
+    tag: 'Website voice widget',
+    tc: 'plain',
+    signal: 'Visitor starts a conversation',
+    lab: 'AI receptionist',
+    line: 'Hi, how can I help you today?',
+    rtag: 'Speaking',
     rc: 'route',
-    reply: 'I was rear-ended yesterday.',
+    reply: 'Does your firm handle car accidents?',
   },
   {
     tag: 'Web form',
     tc: 'route',
     signal: 'New slip-and-fall inquiry',
-    lab: 'Follow-up',
-    line: 'Can we schedule a consultation?',
-    rtag: 'Booked',
+    lab: 'Consultation request',
+    line: 'I’d like to speak with your intake team.',
+    rtag: 'Request sent',
     rc: 'route',
-    reply: 'Thursday morning works.',
+    reply: 'Delivered to the firm’s intake inbox.',
   },
   {
-    tag: 'New call',
-    tc: 'plain',
-    signal: 'Caller hurt in a truck crash',
+    tag: 'Website voice widget',
+    tc: 'caution',
+    signal: 'Visitor asks to speak with the firm',
     lab: 'AI receptionist',
-    line: 'I can book you for tomorrow morning.',
-    rtag: 'Booked',
+    line: 'May I take your name and callback number?',
+    rtag: 'Callback requested',
     rc: 'route',
-    reply: 'Tomorrow at 9 works.',
+    reply: 'Yes, I’d like someone to call me back.',
   },
 ];
 
@@ -714,11 +714,13 @@ export default function LeadResponseCrowd({ applicationsClosed }: { applications
         <h1 id="lead-response-title">
           <span className="ph">
             <span className="w">A</span> <span className="w">free</span>{' '}
+            <span className="w">custom</span>{' '}
             <span className="w">website.</span>
           </span>{' '}
           <span className="ph p2">
-            <span className="w">Free</span> <span className="w">speed-to-lead</span>{' '}
-            <span className="w">setup.</span>
+            <span className="w">With</span> <span className="w">an</span>{' '}
+            <span className="w">AI</span> <span className="w">voice</span>{' '}
+            <span className="w">receptionist.</span>
           </span>
         </h1>
         <p className="lead">Built for personal injury law firms.</p>
