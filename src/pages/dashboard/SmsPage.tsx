@@ -62,7 +62,7 @@ interface SmsSettings {
 
 const DEFAULT_SETTINGS: SmsSettings = {
   is_enabled: true,
-  auto_reply_enabled: false,
+  auto_reply_enabled: true,
   response_tone: 'professional',
   qualification_enabled: true,
   booking_enabled: true,
