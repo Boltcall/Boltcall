@@ -1,6 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { getServiceSupabase, deductTokens, TOKEN_COSTS } from './_shared/token-utils';
-import { notifyError, notifyInfo } from './_shared/notify';
+import { alertOwner, notifyError, notifyInfo } from './_shared/notify';
+import { isWithinBusinessHours } from './_shared/business-hours';
 import { chatCompletion } from './_shared/azure-ai';
 import { buildAgentContext } from './_shared/agent-context';
 import { sendAcsSms } from './_shared/acs-sdk';
@@ -81,8 +82,9 @@ const handler: Handler = async (event) => {
       .eq('thread_id', threadId).eq('user_id', userId).order('created_at', { ascending: true }).limit(20);
 
     const { data: settings } = await supabase.from('sms_settings').select('*').eq('user_id', userId).maybeSingle();
+    // Speed-to-lead: with no saved settings the agent answers instantly (not draft mode).
     const smsSettings = settings || {
-      auto_reply_enabled: false, response_tone: 'professional', qualification_enabled: true,
+      auto_reply_enabled: true, response_tone: 'professional', qualification_enabled: true,
       booking_enabled: true, business_hours_only: false, max_ai_messages_per_conversation: 10,
     };
 
@@ -137,6 +139,10 @@ const handler: Handler = async (event) => {
       ? `${agentCtx.systemPrompt}\n\n--- CHANNEL: SMS ---\nThis conversation is happening over SMS, not voice. Apply your usual identity and knowledge but follow the SMS response rules below.`
       : `You are an AI SMS assistant for a local business. You handle inbound text messages: answering questions, qualifying leads, and booking appointments.`;
 
+    const openNow = isWithinBusinessHours(smsSettings);
+    const isFirstReply = !(history || []).some(h => h.direction === 'outbound');
+    const greeting = isFirstReply ? (smsSettings.greeting_template || '').trim() : '';
+
     const systemPrompt = `${basePrompt}
 
 ${bizContext}
@@ -151,7 +157,10 @@ RESPONSE RULES:
 - Be warm, helpful, and direct. Sign as the business.
 - Never deny being an AI. If asked whether they are talking to a person or a bot, say you are the business's AI assistant and a team member can follow up.
 - No markdown. Plain SMS text only.
-${smsSettings.booking_enabled ? '- If the customer wants to book, suggest available times from the slots provided.' : '- Do NOT offer to book appointments.'}
+${greeting ? `- This is your first reply in this conversation. Open it with this greeting, adapted naturally: "${greeting}"
+` : ''}${openNow ? '' : `- The office is closed right now (hours ${smsSettings.business_hours_start || '09:00'}-${smsSettings.business_hours_end || '18:00'} ${smsSettings.business_timezone || 'UTC'}). Say so, take their name and what they need, and say the team follows up when it opens.
+`}${smsSettings.booking_enabled ? '- If the customer wants to book, suggest available times from the slots provided.' : '- Do NOT offer to book appointments.'}
+- Mark "urgent": true only when it cannot wait for a normal callback: an emergency, an arrest or someone in custody, a court date or deadline within 48 hours, or a safety risk. Otherwise false.
 
 RESPOND IN THIS EXACT JSON FORMAT:
 {
@@ -160,7 +169,9 @@ RESPOND IN THIS EXACT JSON FORMAT:
     "intent": "booking|inquiry|complaint|followup|spam|other",
     "score": 0-100,
     "reason": "Brief reason for score",
-    "suggested_action": "book|respond|escalate|ignore"
+    "suggested_action": "book|respond|escalate|ignore",
+    "urgent": true/false,
+    "urgent_reason": "one line why, or null"
   }${smsSettings.booking_enabled ? `,
   "booking": {
     "wants_to_book": true/false,
@@ -190,7 +201,8 @@ RESPOND IN THIS EXACT JSON FORMAT:
       };
     }
 
-    const replyText = parsed.reply || '';
+    // Owner's fixed closed-hours text wins over the AI's wording; qualification still runs.
+    const replyText = (!openNow && smsSettings.out_of_hours_message?.trim()) || parsed.reply || '';
     const qualification = parsed.qualification || { intent: 'other', score: 50, reason: 'Unknown', suggested_action: 'respond' };
     const booking = parsed.booking || null;
 
@@ -216,6 +228,18 @@ RESPOND IN THIS EXACT JSON FORMAT:
       }
     } else if (qualification.intent === 'booking' && existingLead.status !== 'hot') {
       await supabase.from('leads').update({ status: 'hot' }).eq('id', existingLead.id);
+    }
+
+    // Urgent text -> email the firm owner now. Once per message: regenerate never re-alerts.
+    if (qualification.urgent === true && action !== 'regenerate') {
+      const sent = await alertOwner(supabase, userId, `URGENT text: ${message.from_number} needs a reply now`, [
+        'Your AI text agent flagged this message as urgent.',
+        `From: ${message.from_number}`,
+        `Message: ${message.body}`,
+        `Why: ${qualification.urgent_reason || qualification.reason || 'not given'}`,
+        smsSettings.auto_reply_enabled ? `Agent replied: ${replyText}` : `Draft reply waiting for your approval: ${replyText}`,
+      ], { urgent: true });
+      if (!sent) await notifyError('sms-ai-responder: urgent owner alert not sent', 'alertOwner returned false', { messageId, userId });
     }
 
     if (smsSettings.auto_reply_enabled && replyText) {
