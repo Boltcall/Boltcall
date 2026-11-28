@@ -147,7 +147,7 @@ describe('release workflow boundaries', () => {
     expect(deploy.jobs['final-verification'].needs).toContain('owner-verification');
     expect(JSON.stringify(prepare.jobs.validate)).not.toContain('secrets.');
     expect(prepare.jobs.publish.permissions.contents).toBe('write');
-    expect(deploy.permissions).toEqual({ contents: 'read', actions: 'read' });
+    expect(deploy.permissions).toEqual({ contents: 'read', actions: 'read', statuses: 'read' });
     expect(Object.values(deploy.jobs).some(job => job.permissions?.contents === 'write')).toBe(false);
     expect(prepare.jobs.publish.steps[0].with.ref).toBeUndefined();
     expect(JSON.stringify(prepare.jobs.validate)).toContain('release-functions.mjs bundle');
@@ -264,6 +264,7 @@ describe('preparation provenance at the workflow command boundary', () => {
   it.each([1, 2])('permits Netlify preflight for attempt %i when no prior deploy started', async attempt => {
     const baseApi = evidenceApi();
     const api = async (endpoint, options) => {
+      if (endpoint.startsWith(`commits/${sha}/statuses?`)) return [];
       if (endpoint.startsWith('actions/workflows/netlify-production-deploy.yml/runs?')) return { total_count: 0, workflow_runs: [] };
       if (endpoint.startsWith('actions/runs/789/artifacts?')) return { total_count: 0, artifacts: [] };
       if (endpoint.startsWith('actions/runs/789/attempts/1/jobs?')) return { total_count: 1, jobs: [{ name: 'deploy', run_id: 789,

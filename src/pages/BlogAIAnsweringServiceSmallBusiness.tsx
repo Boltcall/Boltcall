@@ -79,7 +79,7 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
           name: 'How long does it take to set up an AI answering service?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Most AI answering services take 5–30 minutes to set up. You provide your business info, services, hours, and FAQs. The AI is trained on this and ready to take calls the same day.',
+            text: 'Setup is quick: you provide your business info, services, hours, and FAQs, and the AI is trained on them before it takes calls.',
           },
         },
         {
@@ -210,7 +210,7 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
             <KeyTakeaways items={[
               'AI answering services handle calls, texts, and web leads 24/7 for a fraction of the cost of a human receptionist.',
               'The average small business misses 62% of after-hours calls — AI closes that gap permanently.',
-              'Most platforms take under 30 minutes to set up and go live the same day.',
+              'Setup is quick: you provide your business info, services, hours, and FAQs.',
               'AI answering costs $49–$299/month vs. $1,500–$3,000/month for part-time human staff.',
               'Responding to a lead within 60 seconds increases conversion rates by 391% — AI makes that automatic.',
             ]} />
@@ -278,7 +278,7 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
                   The numbers above aren't abstract. If your average job value is $500 and you miss four calls a week, you're walking away from $8,000 a month. Most small business owners think their main growth problem is getting more leads. It isn't. It's converting the leads they already have — and that starts with answering the phone.
                 </p>
                 <p>
-                  Add in the cost of a full-time receptionist — $35,000–$50,000 salary plus benefits — and the ROI of an AI answering service at $49–$149/month becomes immediate. You recoup the entire year's cost with one job that would otherwise have gone to voicemail.
+                  Add in the cost of a full-time receptionist — $35,000–$50,000 salary plus benefits — and an AI answering service costs a fraction of that.
                 </p>
 
               </div>
@@ -367,13 +367,13 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
                   <tbody className="divide-y divide-gray-100">
                     {[
                       ['Monthly Cost', '$250–$1,200+', '$49–$149'],
-                      ['Response Time', '30–90 seconds average', 'Under 2 rings, always'],
+                      ['Response Time', '30–90 seconds average', 'Answers right away'],
                       ['Hours Available', 'Business hours or extra charge', '24/7/365, included'],
                       ['Appointment Booking', 'Manual, callback required', 'Live calendar integration'],
                       ['Lead Capture Accuracy', 'Varies by agent quality', 'Structured, every time'],
-                      ['Scalability', 'Add staff = add cost', 'Unlimited concurrent calls'],
-                      ['Setup Time', '1–2 weeks', '5–30 minutes'],
-                      ['CRM Integration', 'Rare / manual', 'Native, automatic'],
+                      ['Scalability', 'Add staff = add cost', 'Not limited by staff size'],
+                      ['Setup Time', '1–2 weeks', 'Free, self-serve setup'],
+                      ['Integrations', 'Rare / manual', 'Google Calendar, Cal.com, Zapier, Make, webhooks'],
                     ].map(([factor, traditional, ai], i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                         <td className="px-4 py-3 font-medium text-gray-700">{factor}</td>
@@ -445,7 +445,7 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
                   {
                     num: '01',
                     title: 'Choose Your Platform',
-                    text: 'Pick an AI answering service built for local service businesses. Look for: native calendar integration, call + SMS + web lead handling in one place, and a setup time under 30 minutes. Avoid platforms that require a developer to configure. Your criteria should also include transparent per-minute pricing with no hidden overage fees.',
+                    text: 'Pick an AI answering service built for local service businesses. Look for: native calendar integration, call + SMS + web lead handling in one place, and self-serve setup. Avoid platforms that require a developer to configure. Your criteria should also include transparent pricing with no hidden overage fees.',
                   },
                   {
                     num: '02',
@@ -671,7 +671,7 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
                   },
                   {
                     q: 'How long does it take to set up an AI answering service?',
-                    a: 'Most AI answering services take 5–30 minutes to set up. You provide your business info, services, hours, and FAQs. The AI is trained on this and ready to take calls the same day.',
+                    a: 'Setup is quick: you provide your business info, services, hours, and FAQs, and the AI is trained on them before it takes calls.',
                   },
                   {
                     q: 'Will callers know they are talking to an AI?',
@@ -730,11 +730,10 @@ const BlogAIAnsweringServiceSmallBusiness: React.FC = () => {
                     <ul className="space-y-2 text-gray-700 text-sm">
                       <li>Answers every call in under 2 rings — eliminates the 62% of leads lost to voicemail after hours</li>
                       <li>Costs $49–$149/month versus $35,000–$50,000/year for a full-time receptionist</li>
-                      <li>Books appointments and captures lead data automatically, connected to your CRM or calendar</li>
-                      <li>Handles unlimited simultaneous inbound calls during peak hours without hold times</li>
-                      <li>Responds to web form submissions and SMS leads as well as phone calls</li>
+                      <li>Books appointments and captures lead data automatically, connected to your calendar</li>
+                                            <li>Responds to web form submissions and SMS leads as well as phone calls</li>
                       <li>Provides consistent, professional answers on every interaction regardless of time of day</li>
-                      <li>Setup takes under 30 minutes with industry-specific templates for most local service businesses</li>
+                      <li>Self-serve setup with industry-specific templates</li>
                     </ul>
                   </div>
                   <div className="bg-red-50 rounded-xl p-6">

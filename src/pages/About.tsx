@@ -236,16 +236,15 @@ const About: React.FC = () => {
                     <th className="py-3 px-4 text-left rounded-tl-xl">Feature</th>
                     <th className="py-3 px-4 text-center">Starter</th>
                     <th className="py-3 px-4 text-center">Pro</th>
-                    <th className="py-3 px-4 text-center rounded-tr-xl">Scale</th>
+                    <th className="py-3 px-4 text-center rounded-tr-xl">Ultimate</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    ["AI Receptionist calls", "500/mo", "2,000/mo", "Unlimited"],
-                    ["Lead capture (SMS/email)", "✓", "✓", "✓"],
-                    ["CRM integrations", "—", "✓", "✓"],
-                    ["Custom AI voice & script", "✓", "✓", "✓"],
-                    ["Priority support", "—", "—", "✓"],
+                    ["Price per month", "$549", "$897", "$4,997"],
+                    ["Credits per month", "1,000", "3,000", "10,000"],
+                    ["AI voice minutes if used only on voice", "About 100", "About 300", "About 1,000"],
+                    ["Setup", "Free", "Free", "Free"],
                   ].map(([feat, ...vals], i) => (
                     <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                       <td className="py-3 px-4 font-medium text-gray-800">{feat}</td>
@@ -310,10 +309,6 @@ const About: React.FC = () => {
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               <span>Built for law firms</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Results in 30 days or your money back</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

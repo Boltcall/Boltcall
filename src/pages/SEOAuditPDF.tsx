@@ -25,6 +25,7 @@ import FAQ from '../components/FAQ';
 import Breadcrumbs from '../components/Breadcrumbs';
 
 import { useNavigate } from 'react-router-dom';
+import { submitFreeToolLead } from '../lib/submitFreeToolLead';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import { getStoredAttributionUid } from '../hooks/useAttributionCapture';
 
@@ -121,10 +122,6 @@ const aeoWorkSplit = [
     ],
   },
 ];
-
-
-
-const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/seo-aeo-audit';
 
 
 
@@ -381,27 +378,15 @@ const SEOAuditPDF: React.FC = () => {
 
     try {
 
-      const response = await fetch(WEBHOOK_URL, {
+      await submitFreeToolLead('seo_aeo_audit', {
 
-        method: 'POST',
+        url: formattedUrl,
 
-        headers: { 'Content-Type': 'application/json' },
+        email: email.trim(),
 
-        body: JSON.stringify({
-
-          url: formattedUrl,
-
-          email: email.trim(),
-
-          ref: getStoredAttributionUid(),
-
-        }),
+        ref: getStoredAttributionUid(),
 
       });
-
-
-
-      if (!response.ok) throw new Error('Submission failed');
 
 
 
@@ -411,9 +396,9 @@ const SEOAuditPDF: React.FC = () => {
 
       navigate('/seo-aeo-audit/thank-you');
 
-    } catch {
+    } catch (err) {
 
-      setError('Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
 
       setIsAnalyzing(false);
 
@@ -1194,16 +1179,15 @@ const SEOAuditPDF: React.FC = () => {
                 <th className="py-3 px-4 text-left rounded-tl-xl">Feature</th>
                 <th className="py-3 px-4 text-center">Starter</th>
                 <th className="py-3 px-4 text-center">Pro</th>
-                <th className="py-3 px-4 text-center rounded-tr-xl">Scale</th>
+                <th className="py-3 px-4 text-center rounded-tr-xl">Ultimate</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["AI Receptionist calls", "500/mo", "2,000/mo", "Unlimited"],
-                ["Lead capture (SMS/email)", "\u2713", "\u2713", "\u2713"],
-                ["CRM integrations", "\u2014", "\u2713", "\u2713"],
-                ["Custom AI voice & script", "\u2713", "\u2713", "\u2713"],
-                ["Priority support", "\u2014", "\u2014", "\u2713"],
+                ["Price per month", "$549", "$897", "$4,997"],
+                ["Credits per month", "1,000", "3,000", "10,000"],
+                ["AI voice minutes if used only on voice", "About 100", "About 300", "About 1,000"],
+                ["Setup", "Free", "Free", "Free"],
               ].map(([feat, ...vals], i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                   <td className="py-3 px-4 font-medium text-gray-800">{feat}</td>

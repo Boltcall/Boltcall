@@ -1293,7 +1293,7 @@ const LawyerIntakeCalculator: React.FC = () => {
             </motion.div>
 
             <motion.p custom={4} variants={fadeUp} className="text-slate-500 text-sm mt-5">
-              Starting at $549/month &bull; No contracts &bull; Set up in 24 hours
+              Starting at $549/month &bull; No contracts &bull; Free setup
             </motion.p>
             <motion.p custom={5} variants={fadeUp} className="text-slate-500 text-sm mt-2">
               <a href="/law-firm-security" className="underline hover:text-slate-300 transition-colors">
@@ -1317,10 +1317,6 @@ const LawyerIntakeCalculator: React.FC = () => {
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               <span>Built for law firms</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Results in 30 days or your money back</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

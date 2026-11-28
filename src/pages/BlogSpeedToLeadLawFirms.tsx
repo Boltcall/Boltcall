@@ -90,7 +90,7 @@ const BlogSpeedToLeadLawFirms: React.FC = () => {
       "step": [
         { "@type": "HowToStep", "name": "Audit your current average response time", "text": "Track how long it takes your firm to respond to web inquiries, missed calls, and after-hours contacts over a 30-day period. Most firms discover their actual response time is 3 to 5 hours for web leads." },
         { "@type": "HowToStep", "name": "Identify your highest-volume intake channels", "text": "Determine which channels generate the most inbound inquiries: direct phone calls, web contact forms, and Google Local Services Ads. Each channel needs its own response system." },
-        { "@type": "HowToStep", "name": "Connect your phone to an AI answering agent", "text": "An AI voice agent answers every call that your staff cannot. Configure it with your firm's name, intake questions, and practice area routing. Setup takes 24 to 48 hours." },
+        { "@type": "HowToStep", "name": "Connect your phone to an AI answering agent", "text": "An AI voice agent answers every call that your staff cannot. Configure it with your firm's name, intake questions, and practice area routing." },
         { "@type": "HowToStep", "name": "Wire web forms to SMS follow-up", "text": "Connect your website contact forms and lead ad forms to an automated SMS system that sends a response within 30 seconds of submission." },
         { "@type": "HowToStep", "name": "Connect your calendar and enable booking", "text": "Connect your scheduling system so the AI agent can offer and book consultation slots in real time. Every conversation should end with a confirmed appointment." },
         { "@type": "HowToStep", "name": "Set escalation rules for high-urgency matters", "text": "Define which inquiry types route immediately to an on-call attorney: criminal defense clients with imminent court dates, personal injury clients within 24 hours of an accident, clients facing emergency motions." }
@@ -453,7 +453,7 @@ const BlogSpeedToLeadLawFirms: React.FC = () => {
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3">Step 3: Connect your phone to an AI answering agent</h3>
                     <p>
-                      An AI voice agent answers every call that staff cannot — overflow during business hours, after-hours calls, weekend inquiries, and any call that goes to voicemail under the current system. Configure the agent with your firm's name, your intake questions organized by practice area, and your escalation rules. Most law firms are fully live within 24 to 48 hours of beginning configuration. No technical background is required.
+                      An AI voice agent answers every call that staff cannot — overflow during business hours, after-hours calls, weekend inquiries, and any call that goes to voicemail under the current system. Configure the agent with your firm's name, your intake questions organized by practice area, and your escalation rules. Setup is free. No technical background is required.
                     </p>
                     <p>
                       Use Boltcall to connect an AI agent to your existing phone number with no call forwarding friction. The agent answers in your firm's name, conducts intake in your voice, and hands off to human staff only when the matter requires it.

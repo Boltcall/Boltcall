@@ -108,6 +108,9 @@ const SMSBookingAssistantPage: React.FC = () => {
                 don't need to download apps, navigate websites, or wait on hold. They can book appointments 
                 from anywhere, at any time, using the communication method they're most comfortable with.
               </p>
+              <p>
+                Setting up SMS intake for a law firm? <Link to="/lead-magnet/sms-intake-agent" className="font-semibold text-blue-700 underline underline-offset-4">try the SMS intake preview</Link>.
+              </p>
             </div>
           </motion.div>
         </div>
@@ -541,10 +544,6 @@ const SMSBookingAssistantPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Results in 30 days or your money back</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               <span>Your data is never sold or shared</span>
             </div>
           </div>
@@ -558,7 +557,7 @@ const SMSBookingAssistantPage: React.FC = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Law Firms Choose Boltcall</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
-              { title: 'Setup in 30 minutes', desc: 'No developers, no tech team. Answer 5 questions about your business and your AI receptionist is live — configured to your services, hours, and voice.' },
+              { title: 'Free setup', desc: 'No developers or tech team needed. Answer a few questions about your business and your AI receptionist is configured to your services, hours, and voice.' },
               { title: 'Flat monthly pricing', desc: 'Boltcall is a flat monthly subscription with no per-case fees and no share of your fees. Each plan includes a monthly credit pool shared across calls, texts, and chat.' },
               { title: 'Trained on your business', desc: 'Not a generic bot. Boltcall learns your specific services, pricing, FAQs, and booking rules — so every interaction sounds like your best team member.' },
               { title: 'One signed case can cover it', desc: 'One extra signed matter can cover the subscription. Use the break-even calculator on the pricing page with your own average fee.' },

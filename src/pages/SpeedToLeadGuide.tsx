@@ -455,7 +455,7 @@ const SpeedToLeadGuide: React.FC = () => {
               <h2 className="text-3xl font-bold text-gray-900 mb-8">Why AI Receptionists Win the Speed Game</h2>
 
               <p className="text-lg text-gray-700 mb-8">
-                Human receptionists can't work 24/7, can't answer multiple calls simultaneously, and can't respond to web forms while on another call. AI receptionists eliminate these limitations while maintaining the personal touch customers expect.
+                Human receptionists can't work 24/7, and can't respond to web forms while on another call. AI receptionists eliminate these limitations while maintaining the personal touch customers expect.
               </p>
 
               <div className="grid md:grid-cols-2 gap-8 mb-8">
@@ -495,10 +495,6 @@ const SpeedToLeadGuide: React.FC = () => {
                     <li className="flex items-start">
                       <span className="text-green-500 mr-3">✓</span>
                       24/7/365 availability
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-green-500 mr-3">✓</span>
-                      Unlimited simultaneous conversations
                     </li>
                     <li className="flex items-start">
                       <span className="text-green-500 mr-3">✓</span>

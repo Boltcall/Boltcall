@@ -655,9 +655,9 @@ const ConversionRateOptimizer: React.FC = () => {
 
               { title: 'Captures leads while you optimise', desc: 'Every visitor who calls after reading your CRO report gets answered instantly — no voicemail, no lost lead' },
 
-              { title: 'Responds in under 1 second', desc: 'Never miss a lead — 24/7 coverage including weekends and after-hours, when most conversions are lost' },
+              { title: 'Responds in seconds', desc: 'Never miss a lead — 24/7 coverage including weekends and after-hours, when most conversions are lost' },
 
-              { title: 'Setup in 30 minutes', desc: 'No developers, no tech team — just answer a few questions and your AI receptionist is live' },
+              { title: 'Free setup', desc: 'No developers or tech team needed. Answer a few questions about your business and your AI receptionist is configured to your services, hours, and voice.' },
 
               { title: 'Trained on your business', desc: 'Knows your services, pricing, and FAQs — sounds like you, not a generic bot' },
 
@@ -692,16 +692,15 @@ const ConversionRateOptimizer: React.FC = () => {
                 <th className="py-3 px-4 text-left rounded-tl-xl">Feature</th>
                 <th className="py-3 px-4 text-center">Starter</th>
                 <th className="py-3 px-4 text-center">Pro</th>
-                <th className="py-3 px-4 text-center rounded-tr-xl">Scale</th>
+                <th className="py-3 px-4 text-center rounded-tr-xl">Ultimate</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ["AI Receptionist calls", "500/mo", "2,000/mo", "Unlimited"],
-                ["Lead capture (SMS/email)", "\u2713", "\u2713", "\u2713"],
-                ["CRM integrations", "\u2014", "\u2713", "\u2713"],
-                ["Custom AI voice & script", "\u2713", "\u2713", "\u2713"],
-                ["Priority support", "\u2014", "\u2014", "\u2713"],
+                ["Price per month", "$549", "$897", "$4,997"],
+                ["Credits per month", "1,000", "3,000", "10,000"],
+                ["AI voice minutes if used only on voice", "About 100", "About 300", "About 1,000"],
+                ["Setup", "Free", "Free", "Free"],
               ].map(([feat, ...vals], i) => (
                 <tr key={i} className={i % 2 === 0 ? "bg-gray-50" : "bg-white"}>
                   <td className="py-3 px-4 font-medium text-gray-800">{feat}</td>
@@ -738,14 +737,6 @@ const ConversionRateOptimizer: React.FC = () => {
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
 
               <span>Built for law firms</span>
-
-            </div>
-
-            <div className="flex items-center gap-2">
-
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-
-              <span>Results in 30 days or your money back</span>
 
             </div>
 

@@ -539,12 +539,11 @@ const BlogAnsweringServiceAppointmentScheduling: React.FC = () => {
               <p className="text-lg leading-relaxed text-blue-50 mb-4">
                 <strong>Cost-Effective 24/7 Service:</strong> Unlike traditional answering services that charge extra for after-hours 
                 or 24/7 coverage, Boltcall provides round-the-clock appointment scheduling at no additional cost. Starting at just 
-                $549/month, you get unlimited appointment scheduling without per-call or per-minute charges.
+                $549/month, you get appointment scheduling with a flat monthly price and a shared credit pool for calls, texts and chat.
               </p>
               <p className="text-lg leading-relaxed text-blue-50 mb-4">
-                <strong>Handles High Call Volumes:</strong> Whether you receive 10 calls or 1000 calls per day, Boltcall's AI can 
-                handle them all simultaneously without any wait times or dropped calls. This ensures that every customer can schedule 
-                their appointment immediately, enhancing customer satisfaction.
+                <strong>Answers Around the Clock:</strong> Boltcall's AI answers at any hour, so callers can schedule an 
+                appointment right away instead of waiting for a callback.
               </p>
               <p className="text-lg leading-relaxed text-blue-50">
                 For businesses looking to streamline appointment scheduling while reducing costs and improving customer experience, 
@@ -657,7 +656,7 @@ const BlogAnsweringServiceAppointmentScheduling: React.FC = () => {
                   ['SMS follow-up to missed callers', 'Not included', 'Automated within seconds'],
                   ['Lead qualification', 'Basic message only', 'Full qualification before booking'],
                   ['Google review requests', 'Not included', 'Automated post-visit'],
-                  ['Setup time', '2–5 days', '30 minutes'],
+                  ['Setup', '2–5 days', 'Free, self-serve'],
                 ].map(([cap, trad, ai]) => (
                   <tr key={cap} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-700 font-medium">{cap}</td>

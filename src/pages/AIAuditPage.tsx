@@ -10,6 +10,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import Button from '../components/ui/Button';
 import DropdownComponent from '../components/ui/dropdown-01';
 import { useNavigate } from 'react-router-dom';
+import { submitFreeToolLead } from '../lib/submitFreeToolLead';
 import { useSchemaInjector } from '../hooks/useSchemaInjector';
 import { MONTHLY_LEADS_OPTIONS, JOB_VALUE_OPTIONS } from '../lib/leadQualifiers';
 
@@ -56,9 +57,6 @@ const painPointOptions = [
   'Not enough reviews',
   'Losing to competitors',
 ];
-
-// ── Webhook URL (replace with your n8n webhook after creating it) ──
-const WEBHOOK_URL = 'https://boltcall-n8n.mangocoast-7cf06d98.eastus.azurecontainerapps.io/webhook/ai-audit'; // n8n orchestration webhook
 
 // ── Loading step messages ──
 const loadingSteps = [
@@ -242,19 +240,13 @@ const AIAuditPage: React.FC = () => {
     };
 
     try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error('Submission failed');
+      await submitFreeToolLead('ai_audit', payload);
 
       // Wait a moment for the loading animation to feel complete
       await new Promise((r) => setTimeout(r, 2000));
       navigate('/ai-audit/thank-you');
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
   };

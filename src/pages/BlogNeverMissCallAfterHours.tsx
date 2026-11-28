@@ -221,7 +221,7 @@ const BlogNeverMissCallAfterHours: React.FC = () => {
                 <p className="text-gray-700 leading-relaxed mb-6">Traditional answering services assign a human agent to pick up your after-hours calls. That agent follows a script, takes a message, and emails it to you. It works — but it costs $200–$500/month just for basic coverage, the agent doesn't know your business, and there's no intelligence behind the interaction.</p>
                 <p className="text-gray-700 leading-relaxed mb-6">AI receptionists — like <Link to="/ai-receptionist" className="text-blue-600 hover:underline">Boltcall's AI phone receptionist</Link> — work differently. Instead of reading from a script, the AI is trained specifically on your business: your services, your pricing, your booking process, your FAQs. When someone calls at 10pm, it doesn't just take a message — it can:</p>
                 <ul className="space-y-3 mb-8">
-                  <li className="flex items-start gap-3"><Zap className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" /><span className="text-gray-700">Answer the call naturally in under 2 seconds, with no hold music</span></li>
+                  <li className="flex items-start gap-3"><Zap className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" /><span className="text-gray-700">Answer the call naturally, with no hold music</span></li>
                   <li className="flex items-start gap-3"><Zap className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" /><span className="text-gray-700">Understand the urgency of the situation and ask relevant follow-up questions</span></li>
                   <li className="flex items-start gap-3"><Zap className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" /><span className="text-gray-700">Collect name, address, and nature of the problem — fully qualifying the lead</span></li>
                   <li className="flex items-start gap-3"><Zap className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" /><span className="text-gray-700">Book directly into your calendar for non-emergency appointments</span></li>
@@ -276,7 +276,7 @@ const BlogNeverMissCallAfterHours: React.FC = () => {
                 </div>
                 <div className="border border-gray-200 rounded-xl p-6">
                   <h3 className="font-bold text-gray-900 mb-3">How quickly can I set up after-hours AI call handling?</h3>
-                  <p className="text-gray-700 leading-relaxed">With Boltcall, setup takes less than 24 hours. You provide your business details, services, and routing rules, and the AI is trained and live on your phone number the same day. There's no hardware to install and no staff to train — it runs entirely in the cloud on your existing business number.</p>
+                  <p className="text-gray-700 leading-relaxed">With Boltcall, setup is free. You provide your business details, services, and routing rules, and the AI is trained on them. There's no hardware to install and no staff to train — it runs entirely in the cloud on your existing business number.</p>
                 </div>
               </div>
             </motion.section>

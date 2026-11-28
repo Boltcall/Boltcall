@@ -140,9 +140,10 @@ describe('retell-agents engine + tenancy', () => {
     expect(body.llm_config.begin_message).toMatch(/may be recorded.*AI assistant.*Harper Law/);
     expect(body.llm_config.general_tools.map((t: any) => t.name)).toContain('transfer_call');
     expect(body.agent_update).toMatchObject({ ambient_sound: null, max_call_duration_ms: 1_200_000, opt_in_signed_url: true });
-    // Same post-call fields create_full gets; retell-webhook alerts on `urgent`.
+    // Same post-call fields create_full gets; retell-webhook alerts on `urgent` and big jobs (lead-value.ts).
     expect(body.agent_update.post_call_analysis_data.map((f: any) => `${f.name}:${f.type}`)).toEqual([
       'urgent:boolean', 'urgency_reason:string', 'caller_name:string', 'caller_email:string', 'practice_area:string', 'adverse_parties:string',
+      'service_requested:string', 'estimated_job_value:number', 'out_of_scope:boolean',
     ]);
     expect(m.agentRetrieve).not.toHaveBeenCalled();
     expect(m.llmCreate).not.toHaveBeenCalled();

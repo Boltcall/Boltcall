@@ -180,7 +180,7 @@ const AIAgentComparison: React.FC = () => {
                 </tr>
                 <tr className="bg-gray-50">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Setup time</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">30 minutes</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">Free setup, self-serve</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">2-4 weeks</td>
                 </tr>
                 <tr className="bg-white">
@@ -249,7 +249,7 @@ const AIAgentComparison: React.FC = () => {
                   </li>
                   <li className="flex items-start">
                     <span className="text-green-600 mr-2 mt-1">•</span>
-                    <span>Quick setup (30 minutes)</span>
+                    <span>Free, self-serve setup</span>
                   </li>
                 </ul>
               </div>
@@ -537,7 +537,7 @@ const AIAgentComparison: React.FC = () => {
             { label: 'Phone Call Handling', desc: 'Answers inbound voice calls — not just text chat or web forms' },
             { label: 'Live Calendar Integration', desc: 'Books appointments directly vs. only collecting lead info' },
             { label: 'SMS Automation', desc: 'Sends follow-up texts and reminders without any configuration' },
-            { label: 'Setup in 30 Minutes', desc: 'Goes live the same day vs. weeks of custom AI agent development' },
+            { label: 'Free Setup', desc: 'Self-serve setup vs. weeks of custom AI agent development' },
             { label: 'Flat Monthly Pricing', desc: 'Predictable cost with no per-interaction fees or usage overage charges' },
             ].map((item) => (
               <div key={item.label} className="bg-gray-50 rounded-xl p-4 border border-gray-100">

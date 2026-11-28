@@ -6,6 +6,7 @@ import {
   FileText,
   Calculator,
   Scale,
+  MessageSquare,
   Sparkles,
   Search,
   Gauge,
@@ -76,6 +77,7 @@ const AUDITS = [
 ];
 
 const INDUSTRY_TOOLS = [
+  { title: 'SMS Intake Agent Preview',                href: '/lead-magnet/sms-intake-agent',                icon: MessageSquare },
   { title: 'Lawyer Intake Calculator',             href: '/tools/lawyer-intake-calculator',           icon: Scale },
   { title: '5-Minute Response Playbook',           href: '/tools/5-minute-response-playbook',         icon: Zap },
 ];
@@ -308,13 +310,13 @@ const LeadMagnetHub: React.FC = () => {
         </div>
       </section>
 
-      {/* INDUSTRY CALCULATORS */}
+      {/* INDUSTRY TOOLS */}
       <section className="py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Industry-specific calculators</h2>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Industry-specific tools</h2>
             <p className="mt-2 max-w-3xl text-base text-gray-600">
-              Tools tailored to the way revenue actually flows in your industry. Each calculator uses defaults from real-world benchmarks for that vertical and surfaces the dollar value of the gap.
+              Prepare your intake setup, estimate the cost of missed inquiries, or plan a faster follow-up process.
             </p>
           </div>
 

@@ -362,8 +362,8 @@ const Blog: React.FC = () => {
                   <p className="text-blue-100">Respond in seconds, not hours</p>
                 </div>
                 <div>
-                  <div className="text-3xl font-bold mb-2">Scalable</div>
-                  <p className="text-blue-100">Handle unlimited calls simultaneously</p>
+                  <div className="text-3xl font-bold mb-2">24/7</div>
+                  <p className="text-blue-100">Answers day and night</p>
                 </div>
               </div>
             </div>
@@ -376,11 +376,9 @@ const Blog: React.FC = () => {
             </p>
             
             <p>
-              Consider a dental practice that receives 200 calls per month. Before implementing 
-              an AI receptionist, they missed 30% of calls during peak hours and 100% of calls 
-              after hours. That's 60 missed calls monthly—potentially 60 lost patients. After 
-              implementing AI, they now answer 100% of calls, 24/7. The result? A 25% increase 
-              in new patient bookings and $15,000 saved annually on receptionist costs.
+              Consider a dental practice that receives 200 calls per month. If it misses 30% of calls 
+              during peak hours and every call after hours, that is a lot of potential patients 
+              going to voicemail. An AI receptionist answers 24/7, so those calls get picked up.
             </p>
             
             <p>
@@ -441,10 +439,10 @@ const Blog: React.FC = () => {
               mistakes that humans inevitably do.
             </p>
             
-            <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-2">4. Scale Without Limits</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-2">4. It Scales With You</h3>
             <p>
-              One AI can handle 100 calls at once. It doesn't get overwhelmed. It doesn't 
-              need help. As your business grows, your AI scales with you automatically.
+              An AI receptionist doesn't need breaks or sick days, and it doesn't need more 
+              desks as your call volume grows.
             </p>
             
             <p>
@@ -531,7 +529,7 @@ const Blog: React.FC = () => {
               But here's the good news: getting started with AI services is easier than you 
               think. Modern AI solutions are designed for businesses like yours. They don't 
               require technical expertise. They don't require massive investments. They don't 
-              require months of setup. You can be up and running in days, sometimes hours.
+              require months of setup. Setup is free and self-serve.
             </p>
             
             <p>
@@ -697,7 +695,7 @@ const Blog: React.FC = () => {
                   ['After-hours inquiries', 'Lost — no coverage', 'Captured and scheduled automatically'],
                   ['No-show rate', '18–25% of appointments', '8–12% with automated reminders'],
                   ['Google review growth', '0–2 reviews per month', '8–15 per month via automated requests'],
-                  ['Staff time on calls', '2–4 hours per day', 'Under 30 minutes — only complex calls'],
+                  ['Staff time on calls', '2–4 hours per day', 'Only the calls that need you'],
                   ['Response to web leads', '47 minutes average', 'Under 60 seconds'],
                   ['Monthly missed revenue', '$4,000 – $25,000+', 'Near zero'],
                 ].map(([challenge, before, after]) => (

@@ -242,7 +242,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
                 </tr>
                 <tr className="bg-gray-50">
                   <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">Scalability</td>
-                  <td className="border border-gray-200 px-4 py-3 text-gray-700">Handles unlimited calls simultaneously</td>
+                  <td className="border border-gray-200 px-4 py-3 text-gray-700">Answers 24/7, no extra staff needed</td>
                   <td className="border border-gray-200 px-4 py-3 text-gray-700">One call at a time, needs more staff to scale</td>
                 </tr>
               </tbody>
@@ -344,8 +344,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900 mt-8 mb-2">Never Misses a Call</h3>
               <p>
                 Even the best receptionist misses calls—when they're on another call, at lunch, in the bathroom, or 
-                overwhelmed. Boltcall handles unlimited simultaneous calls. While a receptionist can only answer one 
-                call at a time, Boltcall answers them all instantly.
+                overwhelmed. Boltcall answers 24/7, including when your receptionist is out of the office.
               </p>
             </div>
 
@@ -495,7 +494,7 @@ const ReceptionistVsBoltcall: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for law firms</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Free setup</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
         </div>

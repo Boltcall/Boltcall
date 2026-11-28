@@ -79,4 +79,4 @@ Use missed-call text-back within seconds, then route the conversation into quali
 
 ### Which Boltcall route explains the system?
 
-Start with the [AI receptionist feature page](/features/ai-receptionist/), then read the [speed-to-lead guide](/speed-to-lead/) and compare pricing on the [AI receptionist cost guide](/blog/ai-receptionist-cost-pricing/).
+Start with the [AI receptionist feature page](/features/ai-receptionist/), then read the [speed-to-lead guide](/speed-to-lead/) and compare pricing on the [AI receptionist cost guide](/pricing/).

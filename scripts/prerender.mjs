@@ -34,6 +34,7 @@ const ROUTES = [
   '/contact',
   '/credits',
   '/book-a-call',
+  '/black-friday',
   '/partners',
   '/help-center',
   '/documentation',
@@ -58,6 +59,7 @@ const ROUTES = [
   '/drhazak',
   // Lead magnets
   '/lead-magnet',
+  '/lead-magnet/sms-intake-agent',
   '/lead-magnet/claude-code-overnight-kit',
   '/lead-magnet/ai-receptionist-buyers-guide',
   '/lead-magnet/speed-to-lead-stack',
@@ -147,7 +149,6 @@ const ROUTES = [
   '/blog/create-gemini-gem-business-assistant',
   '/blog/5-signs-you-need-ai-receptionist',
   '/blog/speed-to-lead-local-business',
-  '/blog/ai-receptionist-cost-pricing',
   '/blog/ai-vs-human-receptionist',
   '/blog/best-ai-receptionist-small-business',
   '/blog/ai-receptionist-for-law-firms',

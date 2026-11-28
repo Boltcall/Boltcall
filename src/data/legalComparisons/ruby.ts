@@ -94,7 +94,7 @@ const ruby: LegalComparisonData = {
     },
     {
       label: 'Contract and refunds',
-      boltcall: 'Cancel any time (auto-renews, cancellation at period end). 30-day money-back guarantee, see Terms section 7.',
+      boltcall: 'Cancel any time (auto-renews, cancellation at period end). See Terms for refund details.',
       competitor: c(
         'No long-term contract. Renews every 30 days, cancellation at the end of the billing period. Money back if you ask within 21 days or before 500 receptionist minutes, whichever comes first. Its Terms say guarantees may vary and may not be available to all customers.',
         'faqs',
@@ -299,7 +299,7 @@ const ruby: LegalComparisonData = {
     },
     {
       q: 'Does Ruby offer a money-back guarantee?',
-      a: c('Ruby\'s FAQ describes a refund if you ask within 21 days or before you use 500 receptionist minutes (or 50 chats), whichever comes first. Its Terms say guarantees may vary and may not be available to all customers, with the duration stated at signup. Boltcall offers a 30-day money-back guarantee with conditions in its Terms, section 7.', 'faqs', 'terms'),
+      a: c('Ruby\'s FAQ describes a refund if you ask within 21 days or before you use 500 receptionist minutes (or 50 chats), whichever comes first. Its Terms say guarantees may vary and may not be available to all customers, with the duration stated at signup.', 'faqs', 'terms'),
     },
     {
       q: 'Is either one HIPAA compliant?',

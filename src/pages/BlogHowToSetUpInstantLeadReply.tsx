@@ -514,14 +514,14 @@ const BlogHowToSetUpInstantLeadReply: React.FC = () => {
           </p>
 
           <p className="text-lg text-gray-700 leading-relaxed">
-            If you run into any issues during setup, Boltcall's support team is available to help. Most businesses see a significant increase in lead conversion within the first week of implementing instant lead reply.
+            If you run into any issues during setup, Boltcall's support team is available to help.
           </p>
         </motion.div>
 
         {/* Editor's Note */}
         <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-12">
           <p className="text-sm font-bold text-blue-800 mb-1">Editor's Note — April 2026</p>
-          <p className="text-blue-900 text-sm leading-relaxed">Setup complexity for instant lead reply tools has dropped dramatically in 2026. Modern platforms now offer native no-code integrations with the most popular form builders, ad platforms, and CRMs — meaning the webhook steps described here are often replaced by a single toggle. If you're setting this up today, expect the process to take under 30 minutes.</p>
+          <p className="text-blue-900 text-sm leading-relaxed">Setup complexity for instant lead reply tools has dropped dramatically in 2026. Modern platforms now offer native no-code integrations with the most popular form builders, ad platforms, and CRMs — meaning the webhook steps described here are often replaced by a single toggle.</p>
         </div>
 
         {/* CTA */}
@@ -566,7 +566,7 @@ const BlogHowToSetUpInstantLeadReply: React.FC = () => {
       <section className="bg-white py-12 border-t border-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">Setting Up Instant Lead Reply: Steps and Timeline</h2>
-          <p className="text-gray-500 text-sm text-center mb-6">From zero to live instant response in under 30 minutes with Boltcall</p>
+          <p className="text-gray-500 text-sm text-center mb-6">From zero to live instant response with Boltcall</p>
           <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full text-sm">
               <thead>

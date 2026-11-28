@@ -22,6 +22,7 @@ const ROUTES = [
   { path: "/credits",                                             priority: "0.7", changefreq: "monthly" },
   { path: "/help-center",                                         priority: "0.7", changefreq: "monthly" },
   { path: "/partners",                                            priority: "0.7", changefreq: "monthly" },
+  { path: "/black-friday",                                        priority: "0.7", changefreq: "weekly"  },
   { path: "/book-a-call",                                         priority: "0.7", changefreq: "monthly" },
   { path: "/documentation",                                       priority: "0.8", changefreq: "monthly" },
   { path: "/api-documentation",                                   priority: "0.8", changefreq: "monthly" },
@@ -58,6 +59,7 @@ const ROUTES = [
 
   // Lead Magnets & Audits
   { path: "/lead-magnet",                                        priority: "0.8", changefreq: "weekly"  },
+  { path: "/lead-magnet/sms-intake-agent",                        priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/claude-code-overnight-kit",              priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/ai-receptionist-buyers-guide",           priority: "0.7", changefreq: "monthly" },
   { path: "/lead-magnet/vanishing-client-report",                    priority: "0.7", changefreq: "monthly" },
@@ -118,7 +120,6 @@ const ROUTES = [
   { path: "/blog/create-gemini-gem-business-assistant",              priority: "0.8", changefreq: "weekly" },
   { path: "/blog/5-signs-you-need-ai-receptionist",                  priority: "0.8", changefreq: "weekly" },
   { path: "/blog/speed-to-lead-local-business",                      priority: "0.8", changefreq: "weekly" },
-  { path: "/blog/ai-receptionist-cost-pricing",                      priority: "0.8", changefreq: "weekly" },
   { path: "/blog/ai-vs-human-receptionist",                          priority: "0.8", changefreq: "weekly" },
   { path: "/blog/best-ai-receptionist-small-business",               priority: "0.8", changefreq: "weekly" },
   { path: "/blog/best-after-hours-answering-service",                priority: "0.8", changefreq: "weekly" },

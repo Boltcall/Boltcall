@@ -2,7 +2,7 @@
 import { updateMetaDescription } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, ArrowRight, DollarSign, Phone, Clock, Shield } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, DollarSign, Phone, Clock } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FinalCTA, { COMPARISON_CTA } from '../components/FinalCTA';
@@ -16,12 +16,11 @@ const comparisonData = [
   { feature: 'AI Chatbot', boltcall: 'Yes, included', calomation: 'Yes', boltcallHas: true, calomationHas: true },
   { feature: 'Speed-to-Lead', boltcall: 'Yes, automated <60s', calomation: 'Unknown', boltcallHas: true, calomationHas: false },
   { feature: 'Website Builder', boltcall: 'Yes, free included', calomation: 'No', boltcallHas: true, calomationHas: false },
-  { feature: 'Setup Time', boltcall: '24 hours guaranteed', calomation: 'Varies', boltcallHas: true, calomationHas: false },
+  { feature: 'Setup Time', boltcall: 'Free setup', calomation: 'Varies', boltcallHas: true, calomationHas: false },
   { feature: 'Appointment Booking', boltcall: 'Yes, Cal.com', calomation: 'Yes', boltcallHas: true, calomationHas: true },
   { feature: 'Google Review Automation', boltcall: 'Yes', calomation: 'Unknown', boltcallHas: true, calomationHas: false },
   { feature: 'Free Trial', boltcall: 'Yes', calomation: 'Unknown', boltcallHas: true, calomationHas: false },
   { feature: 'Pricing Transparency', boltcall: 'Full pricing on website', calomation: 'Must request quote', boltcallHas: true, calomationHas: false },
-  { feature: '24-Hour Delivery Guarantee', boltcall: 'Yes (or free AI receptionist)', calomation: 'No', boltcallHas: true, calomationHas: false },
   { feature: 'Best For', boltcall: 'SMBs wanting transparent, fast setup', calomation: 'Businesses OK with custom quotes', boltcallHas: true, calomationHas: true },
 ];
 
@@ -32,7 +31,7 @@ const faqs = [
   },
   {
     question: 'Is Boltcall better than Calomation?',
-    answer: 'It depends on what matters most to you. Boltcall is the stronger choice if you want transparent pricing, a free website, and a guaranteed 24-hour setup. Boltcall also bundles more features — speed-to-lead automation, Google review requests, and an AI chatbot — into every plan. Calomation may suit businesses that prefer a custom-quoted, white-glove onboarding process. For most local businesses looking for fast, affordable AI automation, Boltcall delivers more value at a known price.',
+    answer: 'It depends on what matters most to you. Boltcall is the stronger choice if you want transparent pricing, a free website, and free setup. Boltcall also bundles more features — speed-to-lead automation, Google review requests, and an AI chatbot — into every plan. Calomation may suit businesses that prefer a custom-quoted, white-glove onboarding process. For most local businesses looking for fast, affordable AI automation, Boltcall delivers more value at a known price.',
   },
   {
     question: 'Do both platforms offer AI phone answering?',
@@ -40,7 +39,7 @@ const faqs = [
   },
   {
     question: 'Which has faster setup?',
-    answer: 'Boltcall guarantees your AI receptionist is live within 24 hours — and if they miss that window, you get a free AI receptionist as compensation. Calomation does not publish a setup timeline or offer a similar guarantee. If speed matters, Boltcall is the clear winner.',
+    answer: 'Boltcall setup is free. Calomation does not publish a setup timeline.',
   },
 ];
 
@@ -190,7 +189,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
           className="bg-blue-50 border-l-4 border-blue-600 rounded-r-xl p-6 mb-12 mt-4"
         >
           <p className="text-gray-800 text-lg leading-relaxed font-medium">
-            <strong>Quick answer:</strong> Boltcall and Calomation are both AI phone-answering platforms for local businesses. Boltcall offers transparent pricing starting at $549/month with a free website, 24-hour setup guarantee, and full speed-to-lead automation suite. Calomation uses quote-based pricing with no public rates. Both offer AI phone answering, but Boltcall includes more features at a known price point.
+            <strong>Quick answer:</strong> Boltcall and Calomation are both AI phone-answering platforms for local businesses. Boltcall offers transparent pricing starting at $549/month with a free website, free setup, and full speed-to-lead automation suite. Calomation uses quote-based pricing with no public rates. Both offer AI phone answering, but Boltcall includes more features at a known price point.
           </p>
         </motion.div>
 
@@ -203,7 +202,6 @@ const CompareBoltcallVsCalomation: React.FC = () => {
               { href: '#pricing', label: 'Pricing Transparency' },
               { href: '#comparison-table', label: 'Feature Comparison' },
               { href: '#setup', label: 'Setup Experience' },
-              { href: '#guarantee', label: '24-Hour Guarantee' },
               { href: '#who-boltcall', label: 'Who Chooses Boltcall' },
               { href: '#who-calomation', label: 'Who Chooses Calomation' },
               { href: '#verdict', label: 'Verdict' },
@@ -325,32 +323,11 @@ const CompareBoltcallVsCalomation: React.FC = () => {
             When you are losing leads every day to missed calls, how fast you can get an AI receptionist live matters. Weeks of onboarding means weeks of lost revenue.
           </p>
           <p className="text-gray-700 text-lg leading-relaxed mb-4">
-            <strong>Boltcall</strong> guarantees a 24-hour setup. You sign up, provide your business details, and within one business day your AI receptionist is answering calls. Boltcall handles everything: building your free website, configuring the AI phone agent with your business information, setting up the chatbot, and connecting your appointment calendar. If they miss the 24-hour window, you get a free AI receptionist as compensation. That is how confident they are in their process.
+            <strong>Boltcall</strong> setup is free. You sign up, provide your business details, and your AI receptionist is configured to your business. Boltcall handles everything: building your free website, configuring the AI phone agent with your business information, setting up the chatbot, and connecting your appointment calendar.
           </p>
           <p className="text-gray-700 text-lg leading-relaxed">
-            <strong>Calomation</strong> does not publish a setup timeline. Based on their website, the process involves booking a demo, receiving a custom quote, and then going through an onboarding flow. This could be fast or it could take weeks — there is no public guarantee. For business owners who want predictability, this ambiguity can be frustrating.
+            <strong>Calomation</strong> does not publish a setup timeline. Based on their website, the process involves booking a demo, receiving a custom quote, and then going through an onboarding flow. This could be fast or it could take weeks — there is no public timeline. For business owners who want predictability, this ambiguity can be frustrating.
           </p>
-        </section>
-
-        {/* The Boltcall Guarantee */}
-        <section id="guarantee" className="mb-12">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 text-white">
-            <div className="flex items-start gap-4">
-              <Shield className="w-10 h-10 flex-shrink-0 mt-1" />
-              <div>
-                <h2 className="text-2xl font-bold mb-3">The Boltcall 24-Hour Delivery Guarantee</h2>
-                <p className="text-blue-100 text-lg leading-relaxed mb-4">
-                  Boltcall is the only AI receptionist platform that puts a hard deadline on delivery. When you sign up, your AI receptionist goes live within 24 hours — including your free business website, call routing, chatbot configuration, and appointment booking integration.
-                </p>
-                <p className="text-blue-100 text-lg leading-relaxed mb-4">
-                  If the 24-hour window is missed, you receive a free AI receptionist as compensation. No fine print, no exceptions. This guarantee exists because Boltcall's onboarding system is built for speed — most setups complete in under 12 hours.
-                </p>
-                <p className="text-blue-100 text-lg leading-relaxed">
-                  Calomation does not offer a delivery guarantee. There is no published timeline for when your AI receptionist will be operational after signing up.
-                </p>
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* Who Chooses Boltcall */}
@@ -365,7 +342,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
           <ul className="space-y-3 mb-6">
             {[
               'You want to see pricing before talking to sales',
-              'You need your AI receptionist live within 24 hours, not weeks',
+              'You want free setup and a quick start, not weeks of onboarding',
               'You want a free professional website included with your plan',
               'Speed-to-lead matters — you want leads contacted in under 60 seconds automatically',
               'You want Google review automation built in, not as a separate add-on',
@@ -404,7 +381,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
             ))}
           </ul>
           <p className="text-gray-700 text-lg leading-relaxed">
-            Calomation's quote-based approach can work well for businesses with non-standard needs. However, for the majority of local businesses looking for a straightforward AI receptionist solution, the lack of public pricing and setup guarantees can be a barrier.
+            Calomation's quote-based approach can work well for businesses with non-standard needs. However, for the majority of local businesses looking for a straightforward AI receptionist solution, the lack of public pricing and setup timelines can be a barrier.
           </p>
         </section>
 
@@ -418,7 +395,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
             <strong>Boltcall wins on transparency.</strong> Every price is published. Every feature is documented. You know exactly what you get before you spend a dollar. There is no sales call required and no waiting for a custom quote.
           </p>
           <p className="text-gray-700 text-lg leading-relaxed mb-4">
-            <strong>Boltcall wins on speed.</strong> The 24-hour delivery guarantee is unmatched. Most competitors — Calomation included — do not commit to a setup timeline. Boltcall does, and backs it with a penalty if they miss.
+            <strong>Boltcall setup is free.</strong> Most competitors, Calomation included, do not publish a setup timeline.
           </p>
           <p className="text-gray-700 text-lg leading-relaxed mb-4">
             <strong>Boltcall wins on value.</strong> A free website, speed-to-lead automation, Google review requests, AI chatbot, and AI phone receptionist — all included starting at $549/month. With Calomation, you do not know what the bundle costs until you ask.
@@ -433,7 +410,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-8 sm:p-10 text-center">
             <h2 className="text-3xl font-bold text-white mb-4">Ready to See the Difference?</h2>
             <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
-              Try Boltcall free and see why local businesses choose transparent pricing, 24-hour setup, and a complete AI automation suite over quote-based alternatives.
+              Try Boltcall free and see why local businesses choose transparent pricing, free setup, and a complete AI automation suite over quote-based alternatives.
             </p>
             <Link
               to="/setup"
@@ -526,7 +503,7 @@ const CompareBoltcallVsCalomation: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for law firms</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Free setup</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
         </div>

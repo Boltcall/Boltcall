@@ -43,9 +43,8 @@ const alternatives: Alternative[] = [
     strengths: [
       '11 Second Response standard, instrumented end-to-end',
       'AI receptionist 24/7 across phone, SMS, web chat, DMs',
-      'Done-for-you setup in 24 to 48 hours',
+      'Free setup',
       'Flat published pricing, no per-message fees',
-      '30-day cost-recovery guarantee on the agency tier',
     ],
     weaknesses: [
       'Review tooling is included but not as deep as Podium',
@@ -457,7 +456,7 @@ const PodiumAlternatives: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-[#0F172A] mb-2">How do I switch?</h3>
-                <p className="text-slate-700">Boltcall onboards in 24 to 48 hours done-for-you. Run it in parallel until your Podium renewal, measure the booking lift, then cut whichever you want. There are no migration fees on our side.</p>
+                <p className="text-slate-700">Boltcall setup is free. Run it in parallel until your Podium renewal, measure the booking lift, then cut whichever you want. There are no migration fees on our side.</p>
               </div>
             </div>
           </motion.section>

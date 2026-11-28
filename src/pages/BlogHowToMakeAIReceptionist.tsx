@@ -756,7 +756,7 @@ const BlogHowToMakeAIReceptionist: React.FC = () => {
               </thead>
               <tbody>
                 {[
-                  ['Setup time', '3–6 months of development', '30 minutes'],
+                  ['Setup', '3–6 months of development', 'Free, self-serve'],
                   ['Upfront cost', '$15,000 – $100,000+', '$0'],
                   ['Monthly cost', '$2,000 – $10,000 (infrastructure + maintenance)', '$549-897'],
                   ['Voice quality', 'Depends on provider and tuning', 'Production-ready, trained on local businesses'],

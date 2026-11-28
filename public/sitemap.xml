@@ -43,6 +43,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://boltcall.org/black-friday/</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://boltcall.org/book-a-call/</loc>
     <lastmod>2026-09-24</lastmod>
     <changefreq>monthly</changefreq>
@@ -462,11 +468,6 @@
   <url>
     <loc>https://boltcall.org/blog/speed-to-lead-local-business/</loc>
     <lastmod>2026-07-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://boltcall.org/blog/ai-receptionist-cost-pricing/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

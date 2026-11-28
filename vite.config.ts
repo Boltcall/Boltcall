@@ -74,8 +74,25 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
-        globIgnores: ['**/*.lottie', '**/Loading_animation_blue.json', '**/retell-voices.json'],
+        // App shell only. The previous '**/*.{js,css,html,svg,png,ico,woff2}'
+        // precached 836 files / 43 MB on the first visit to ANY route —
+        // including every prerendered blog and feature page's HTML, every
+        // lazy-route chunk, and every image — before the visitor had seen a
+        // pixel. Everything else is served by the runtimeCaching rules below
+        // on demand.
+        globPatterns: [
+          'index.html',
+          'assets/index-*.js',
+          'assets/index-*.css',
+          'assets/react-*.js',
+          'assets/react-dom-*.js',
+        ],
+        globIgnores: [
+          '**/*.{png,jpg,jpeg,gif,webp,avif,svg,ico,mp4,webm,lottie}',
+          '**/avatars/**',
+          '**/blog/**',
+          '**/*.json',
+        ],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         skipWaiting: true,
         runtimeCaching: [
@@ -157,6 +174,8 @@ export default defineConfig({
           /^\/after-hours-lead-rescue\/?$/,
           /^\/automatic-reviews-agent\/?$/,
           /^\/reminders-agent\/?$/,
+          // Reload the live document if a prior release's SMS preview chunk is gone.
+          /^\/lead-magnet\/sms-intake-agent\/?(?:\?|$)/,
         ],
       },
       devOptions: {

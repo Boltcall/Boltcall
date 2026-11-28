@@ -54,6 +54,9 @@ import { useAgentMilestoneAlerts } from '../../hooks/useAgentMilestoneAlerts';
 import { useSetupProgress } from '../../hooks/useSetupProgress';
 import { useSubscription } from '../../contexts/SubscriptionContext';
 import { useIndustry } from '../../hooks/useIndustry';
+import { useDashboardAppearance } from '../../contexts/DashboardAppearanceContext';
+import { appearanceStyle } from '../../lib/dashboardAppearance';
+import '../../styles/dashboard-appearance.css';
 
 const DashboardLayout: React.FC = () => {
   const { t, i18n } = useTranslation('common');
@@ -68,7 +71,8 @@ const DashboardLayout: React.FC = () => {
   const [showHelpSidebar, setShowHelpSidebar] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   // Language switcher removed
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { appearance } = useDashboardAppearance();
+  const isDarkMode = appearance.previewMode === 'dark';
   const [scrollbarVisible, setScrollbarVisible] = useState(false);
   const [showLanguageExpanded, setShowLanguageExpanded] = useState(false);
 
@@ -356,26 +360,6 @@ const DashboardLayout: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showUserMenu]);
 
-  // Load dark mode preference on mount
-  useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode === 'true') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  // Apply dark mode class when isDarkMode changes
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
-
   // Focus main content area to ensure mouse wheel events work
   useEffect(() => {
     if (mainContentRef.current) {
@@ -503,7 +487,7 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <>
-      <div className="h-screen flex transition-colors duration-300 gap-0 md:gap-4 bg-gray-100 dark:bg-[#0a0a0c]">
+      <div data-dashboard-appearance data-mode={appearance.previewMode} data-density={appearance.density} style={appearanceStyle(appearance)} className={`h-screen flex transition-colors duration-300 gap-0 md:gap-4 bg-gray-100 dark:bg-[#0a0a0c] ${isDarkMode ? 'dark' : ''}`}>
       <div className="flex flex-1 overflow-hidden gap-0 md:gap-4">
          {/* Left Panel - Navigation with Logo at Top */}
          <aside
@@ -848,38 +832,14 @@ const DashboardLayout: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Theme Switcher */}
-                        <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-                          <div className="text-xs font-medium text-gray-900 mb-2">{t('topbar.theme')}</div>
-                          <div className="inline-flex items-center bg-gray-100 rounded-lg p-0.5">
-                            <button
-                              onClick={() => { setIsDarkMode(false); localStorage.setItem('darkMode', 'false'); }}
-                              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                                !isDarkMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                              }`}
-                            >
-                              {t('topbar.themeLight')}
-                            </button>
-                            <button
-                              onClick={() => { setIsDarkMode(true); localStorage.setItem('darkMode', 'true'); }}
-                              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                                isDarkMode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                              }`}
-                            >
-                              {t('topbar.themeDark')}
-                            </button>
-                            <button
-                              onClick={() => {
-                                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                                setIsDarkMode(prefersDark);
-                                localStorage.removeItem('darkMode');
-                              }}
-                              className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-500 hover:text-gray-700 transition-colors"
-                            >
-                              {t('topbar.themeSystem')}
-                            </button>
-                          </div>
-                        </div>
+                        <Link
+                          to={location.pathname.startsWith('/dashboard/client') ? '/dashboard/client/settings' : '/dashboard/settings/preferences'}
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex min-h-11 items-center gap-3 border-t border-gray-100 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                        >
+                          <Settings className="h-4 w-4" aria-hidden />
+                          Customize appearance
+                        </Link>
 
                         {/* Bottom Section */}
                         <div className="py-2 border-t border-gray-100">
@@ -910,7 +870,7 @@ const DashboardLayout: React.FC = () => {
             </div>
 
            {/* Page Content */}
-           <div className="p-3 md:p-6">
+           <div data-dashboard-content className="p-3 md:p-6">
              <UsageBanner className="mb-4" />
              <CalendarConnectBanner className="mb-4" />
              <motion.div

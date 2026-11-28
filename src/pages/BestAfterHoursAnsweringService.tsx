@@ -129,7 +129,7 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                   <div className="bg-blue-50 border-l-4 border-blue-600 p-6 mb-12 rounded-r-lg">
                     <h3 className="text-lg font-semibold text-blue-900 mb-3">Quick Answer</h3>
                     <p className="text-blue-800 leading-relaxed">
-                      The best after hours answering service for local businesses is an AI-powered solution like Boltcall, offering 24/7 availability, instant response times, and costs 60-80% less than traditional human answering services while handling unlimited concurrent calls.
+                      The best after hours answering service for local businesses is an AI-powered solution like Boltcall, offering 24/7 availability, instant response times, and costs 60-80% less than traditional human answering services and answers 24/7.
                     </p>
                   </div>
 
@@ -210,17 +210,12 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                           <tr className="bg-gray-50">
                             <td className="border border-gray-300 px-4 py-3 font-medium text-gray-900">Setup Time</td>
                             <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">2-4 weeks</td>
-                            <td className="border border-gray-300 px-4 py-3 text-center text-green-600">24 hours</td>
+                            <td className="border border-gray-300 px-4 py-3 text-center text-green-600">Free setup</td>
                           </tr>
                           <tr>
                             <td className="border border-gray-300 px-4 py-3 font-medium text-gray-900">Availability</td>
                             <td className="border border-gray-300 px-4 py-3 text-center text-gray-700">24/7 (limited operators)</td>
-                            <td className="border border-gray-300 px-4 py-3 text-center text-green-600">24/7 (unlimited capacity)</td>
-                          </tr>
-                          <tr className="bg-gray-50">
-                            <td className="border border-gray-300 px-4 py-3 font-medium text-gray-900">Call Handling Capacity</td>
-                            <td className="border border-gray-300 px-4 py-3 text-center text-red-600">1-3 concurrent calls</td>
-                            <td className="border border-gray-300 px-4 py-3 text-center text-green-600">Unlimited concurrent calls</td>
+                            <td className="border border-gray-300 px-4 py-3 text-center text-green-600">24/7</td>
                           </tr>
                           <tr>
                             <td className="border border-gray-300 px-4 py-3 font-medium text-gray-900">Response Time</td>
@@ -245,7 +240,6 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                         <li>• <strong>$500-1,500/month</strong> in service fees</li>
                         <li>• <strong>$2,000-5,000</strong> in setup and training costs</li>
                         <li>• <strong>15-25 hours/month</strong> in administrative overhead</li>
-                        <li>• <strong>30-40% increase</strong> in after-hours lead capture</li>
                       </ul>
                     </div>
 
@@ -454,7 +448,7 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                         </ul>
                         <div className="bg-blue-50 rounded p-3">
                           <p className="text-blue-800 text-sm font-medium">
-                            <strong>ROI Impact:</strong> 40% reduction in emergency room visits, 25% increase in patient satisfaction.
+                            <strong>Why it matters:</strong> urgent callers get routed to the right place instead of waiting on hold.
                           </p>
                         </div>
                       </div>
@@ -531,11 +525,11 @@ const BestAfterHoursAnsweringService: React.FC = () => {
                         <h3 className="font-semibold text-green-800 mb-3">✓ Pros</h3>
                         <ul className="space-y-2 text-gray-700 text-sm">
                           <li>• Captures the 78% of emergency service calls that occur outside business hours</li>
-                          <li>• AI-powered services answer in 1–2 rings with unlimited concurrent call capacity</li>
+                          <li>• AI-powered services answer 24/7</li>
                           <li>• Costs 60–80% less than traditional human answering services ($549-4997/mo vs. $800–2,500/mo)</li>
                           <li>• Immediate emergency escalation routes urgent calls to on-call staff within seconds</li>
                           <li>• 24/7 appointment booking captures leads from evening browsers who won't call back tomorrow</li>
-                          <li>• Setup in under 24 hours vs. 2–4 weeks for traditional answering service onboarding</li>
+                          <li>• Free setup vs. 2–4 weeks for traditional answering service onboarding</li>
                         </ul>
                       </div>
                       <div className="bg-red-50 rounded-xl p-6">

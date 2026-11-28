@@ -82,46 +82,108 @@ const handler: Handler = async (event) => {
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Subscription lookup failed' }) };
   }
 
-  // 2) Cascade delete. Order: children first, then parents.
-  //    Tables that CASCADE FK to workspaces/business_profiles/user are handled
-  //    by Postgres; we only delete rows Postgres won't (or where we want to be
-  //    explicit for auditability).
-  const cascadeTables = [
+  // 2) Cascade delete every tenant-owned row.
+  //    The DPA promises erasure within 7 business days, so this list has to be
+  //    exhaustive rather than "whatever the two old client-side delete buttons
+  //    happened to remove". Children first, then parents, then the auth user.
+  //    Per-table errors are collected, never fatal: a table that does not exist
+  //    in this environment must not strand the rest of the cascade.
+  const cascadeErrors: Array<{ table: string; error: string }> = [];
+
+  const deleteWhere = async (table: string, column: string, values: string | string[]) => {
+    if (Array.isArray(values)) {
+      if (values.length === 0) return;
+      const { error } = await sb.from(table).delete().in(column, values);
+      if (error) cascadeErrors.push({ table, error: error.message });
+      return;
+    }
+    const { error } = await sb.from(table).delete().eq(column, values);
+    if (error) cascadeErrors.push({ table, error: error.message });
+  };
+
+  // Resolve the non-user_id scopes before their parents are gone.
+  const { data: workspaceRows } = await sb.from('workspaces').select('id').eq('user_id', userId);
+  const workspaceIds = (workspaceRows || []).map((w: { id: string }) => w.id);
+  const { data: profileRows } = await sb.from('business_profiles').select('id').eq('user_id', userId);
+  const businessProfileIds = (profileRows || []).map((p: { id: string }) => p.id);
+
+  // Ordered children -> parents. Every table here is scoped by user_id.
+  const userScopedTables = [
+    // messaging + conversation children
+    'email_messages',
+    'email_threads',
+    'email_outbox',
+    'email_accounts',
+    'scheduled_messages',
+    'sms_conversations',
+    'sms_settings',
+    'whatsapp_conversations',
+    'whatsapp_settings',
+    'messages',
+    'notification_logs',
+    // lead + call surface
+    'callbacks',
+    'appointments',
+    'conversation_wins',
+    'qa_reviews',
+    'calls',
+    'chats',
+    'leads',
+    'followup_enrollments',
+    'followup_sequences',
+    // agent surface
+    'transfer_rules',
+    'agent_test_runs',
+    'agent_self_heal_log',
+    'cloned_voices',
+    'agents',
+    'retell_agents',
+    'retell_llms',
+    // knowledge base
+    'knowledge_base',
+    'kb_folders',
+    // telephony
+    'phone_numbers',
+    'twilio_numbers',
+    'acs_numbers',
+    'provisioning_locks',
+    // billing + usage
+    'token_transactions',
+    'token_rewards_claimed',
+    'token_balances',
+    'usage_daily_summary',
+    'usage_summary',
     'invoices', // before subscriptions: invoices.subscription_id FK has no ON DELETE
     'subscriptions',
-    'agents',
-    'workspace_members',
-    'business_features',
     'paypal_payments',
-    'notification_preferences',
-    'api_keys',
+    // integrations + settings
+    'user_oauth_tokens',
+    'calcom_integrations',
+    'facebook_page_connections',
+    'integration_sync_history',
+    'customer_runbooks',
+    'services',
     'user_integrations',
     'user_webhooks',
+    'api_keys',
+    'notification_preferences',
+    'business_features',
+    // tenancy roots
+    'workspace_members',
     'business_profiles',
     'workspaces',
   ];
 
-  const cascadeErrors: Array<{ table: string; error: string }> = [];
+  // Scoped by something other than user_id — delete before their parents above.
+  await deleteWhere('locations', 'business_profile_id', businessProfileIds);
+  await deleteWhere('retell_calls', 'workspace_id', workspaceIds);
+  // retell_calls.workspace_id is ON DELETE SET NULL and leads has no FK: delete explicitly.
+  await deleteWhere('leads', 'workspace_id', workspaceIds);
+  await deleteWhere('retell_call_scores', 'workspace_id', workspaceIds);
+  await deleteWhere('activity_logs', 'workspace_id', workspaceIds);
 
-  // F93: retell_calls (transcripts + recording_url) has no user_id column and its
-  // workspace_id FK is ON DELETE SET NULL (not CASCADE) — the loop below would
-  // orphan every call row instead of erasing it, and `leads` has no FK at all.
-  // Both must be deleted explicitly to honor the Privacy Policy's erasure promise.
-  // (Changing the FK to CASCADE is a DB-migration follow-up, tracked separately.)
-  const { data: ownedWorkspaces } = await sb.from('workspaces').select('id').eq('user_id', userId);
-  const workspaceIds = (ownedWorkspaces || []).map((w) => w.id);
-  if (workspaceIds.length) {
-    const { error: callsErr } = await sb.from('retell_calls').delete().in('workspace_id', workspaceIds);
-    if (callsErr) cascadeErrors.push({ table: 'retell_calls', error: callsErr.message });
-    const { error: leadsWsErr } = await sb.from('leads').delete().in('workspace_id', workspaceIds);
-    if (leadsWsErr) cascadeErrors.push({ table: 'leads (workspace_id)', error: leadsWsErr.message });
-  }
-  const { error: leadsUserErr } = await sb.from('leads').delete().eq('user_id', userId);
-  if (leadsUserErr) cascadeErrors.push({ table: 'leads (user_id)', error: leadsUserErr.message });
-
-  for (const table of cascadeTables) {
-    const { error } = await sb.from(table).delete().eq('user_id', userId);
-    if (error) cascadeErrors.push({ table, error: error.message });
+  for (const table of userScopedTables) {
+    await deleteWhere(table, 'user_id', userId);
   }
 
   // 3) Delete knowledge-base storage files
@@ -139,6 +201,22 @@ const handler: Handler = async (event) => {
     // We continue rather than fail — the PayPal sub is already cancelled and
     // workspace root is gone. Leftover rows are cleanup, not a blocking bug.
     console.error('[delete-workspace] cascade errors:', cascadeErrors);
+  }
+
+  // 4) Delete the auth user LAST. Until this runs the account still exists and
+  //    can sign back in, so "workspace deleted" was never actually erasure.
+  const { error: authDeleteError } = await sb.auth.admin.deleteUser(userId);
+  if (authDeleteError) {
+    console.error('[delete-workspace] auth user delete failed:', authDeleteError.message);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        error: 'Workspace data was deleted but the account could not be removed. Contact support.',
+        code: 'auth_delete_failed',
+        warnings: cascadeErrors.length ? cascadeErrors : undefined,
+      }),
+    };
   }
 
   return {

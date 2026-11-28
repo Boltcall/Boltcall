@@ -628,13 +628,6 @@ export default function LawyerAnsweringServicePage() {
                 See plans and the break-even math
                 <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
               </Link>
-              <p className="text-center text-xs text-blue-100 sm:text-left lg:text-center">
-                30-day money-back guarantee.{' '}
-                <Link to="/terms-of-service#guarantee" className="underline hover:text-white">
-                  See terms
-                </Link>
-                .
-              </p>
             </div>
           </div>
         </section>

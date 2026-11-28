@@ -773,7 +773,7 @@ const AiReadinessScorecard: React.FC = () => {
                 </h3>
                 <p className="text-blue-100 mb-8 text-lg">
                   Get an AI receptionist, speed-to-lead automation, and review collection —
-                  all set up in under 24 hours.
+                  all with free setup.
                 </p>
                 <a
                   href="/setup"
@@ -861,10 +861,6 @@ const AiReadinessScorecard: React.FC = () => {
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               <span>Built for law firms</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Results in 30 days or your money back</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

@@ -6,6 +6,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import { BoltcallLoader } from '../components/ui/boltcall-loader';
 import AuthRedirectRecovery from '../components/auth/AuthRedirectRecovery';
 import { readPendingAuthRedirect } from '../lib/authRedirect';
+import { recoverSmsPreviewImport } from '../lib/recoverSmsPreviewImport';
 import { useAuth } from '../contexts/AuthContext';
 // AuthProvider is lazy — this keeps @supabase/supabase-js (127 KB) out of the
 // critical-path modulepreload list on marketing pages.
@@ -239,6 +240,9 @@ const FreeWebsitePage = React.lazy(() => import('../pages/FreeWebsitePage'));
 // LeadMagnetPage is the reusable template used by the named children (e.g.
 // LeadMagnetClaudeCodeOvernightKitPage), not mounted directly as a route.
 const LeadMagnetHub = React.lazy(() => import('../pages/LeadMagnetHub'));
+const LeadMagnetSmsIntakeAgentPage = React.lazy(() =>
+  import('../pages/LeadMagnetSmsIntakeAgentPage').catch(recoverSmsPreviewImport)
+);
 const MagnanFamilyLawReportPage = React.lazy(() => import('../pages/MagnanFamilyLawReportPage'));
 const LeadMagnetThankYouPage = React.lazy(() => import('../pages/LeadMagnetThankYouPage'));
 const LeadMagnetClaudeCodeOvernightKitPage = React.lazy(() => import('../pages/LeadMagnetClaudeCodeOvernightKitPage'));
@@ -349,6 +353,7 @@ const RockerSwitchDemoPage = React.lazy(() => import('../pages/RockerSwitchDemoP
 const ReceptionistDemo = React.lazy(() => import('../pages/ReceptionistDemo'));
 // Keep Three.js off the homepage's critical path.
 const SpeedToLeadDemoPage = React.lazy(() => import('../pages/SpeedToLeadDemoPage'));
+const BlackFridayPage = React.lazy(() => import('../pages/BlackFridayPage'));
 
 // ── Lazy loads — V2 SaaS dashboard surface (page wave 1) ─────────────────
 // V2OptInGate is already imported above with the V2 shell.
@@ -716,6 +721,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/book-a-call" element={<BookCall />} />
+        <Route path="/black-friday" element={<BlackFridayPage />} />
         <Route path="/about" element={<About />} />
         <Route path="/credits" element={<CreditsPage />} />
         <Route path="/partners" element={<Partners />} />
@@ -733,6 +739,7 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/payment/elite-starter" element={<Navigate to="/dashboard/settings/plan-billing" replace />} />
         <Route path="/giveaway" element={<Giveaway />} />
         <Route path="/lead-magnet" element={<LeadMagnetHub />} />
+        <Route path="/lead-magnet/sms-intake-agent" element={<LeadMagnetSmsIntakeAgentPage />} />
         <Route path="/reports/magnan-family-law" element={<MagnanFamilyLawReportPage />} />
         <Route path="/lead-magnet/thank-you" element={<LeadMagnetThankYouPage />} />
         <Route path="/lead-magnet/claude-code-overnight-kit" element={<LeadMagnetClaudeCodeOvernightKitPage />} />
@@ -808,7 +815,6 @@ const NavigationWrapper: React.FC = () => {
             <Route path="/speed-to-lead" element={<SpeedToLeadPillar />} />
             <Route path="/speed-to-lead/statistics" element={<SpeedToLeadStatistics />} />
             <Route path="/blog/speed-to-lead-local-business" element={<CanonicalBlogArticlePage />} />
-            <Route path="/blog/ai-receptionist-cost-pricing" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/ai-vs-human-receptionist" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/ai-chatbot-vs-live-chat-phone-answering" element={<CanonicalBlogArticlePage />} />
             <Route path="/blog/best-ai-receptionist-small-business" element={<CanonicalBlogArticlePage />} />

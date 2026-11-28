@@ -564,7 +564,7 @@ export const SERVICES: RoundupService[] = [
       'Flags urgent matters (custody or arrest, domestic violence, a court date within 48 hours, deportation, an imminent deadline) and alerts your team by email. Optional live transfer to your own number.',
       'Every call opens with an AI disclosure and "this call may be recorded". No legal advice and no case assessment, and the caller is told the call does not make them a client.',
       'Books into Google Calendar or Cal.com. Recording and transcript for every call. Website chat on Pro and up.',
-      'No per-call fee, no per-case fee and no share of fees. Free setup, no long-term contract, and a 30-day money-back guarantee (see Terms, section 7).',
+      'No per-call fee, no per-case fee and no share of fees. Free setup and no long-term contract.',
     ],
     watchOuts: [
       'No staffed human receptionists. If you want a person on every call, pick one of the services above.',

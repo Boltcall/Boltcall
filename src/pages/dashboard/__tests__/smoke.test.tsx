@@ -185,6 +185,7 @@ import RolesPage from '../settings/RolesPage';
 import ActivityLogPage from '../settings/ActivityLogPage';
 import ApiKeysPage from '../settings/ApiKeysPage';
 import WorkspacePage from '../settings/WorkspacePage';
+vi.mock('../../../components/dashboard/AppearanceSettings', () => ({ default: () => <section aria-label="Dashboard appearance" /> }));
 
 const renderInRouter = (Page: React.ComponentType) => {
   return render(

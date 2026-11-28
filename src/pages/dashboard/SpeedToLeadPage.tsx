@@ -11,6 +11,7 @@ import { useErrorHandler } from '../../hooks/useErrorHandler';
 import LeadStatusFlowCard from '../../components/v2/LeadStatusFlowCard';
 import OverviewMetricCard from '../../components/dashboard/OverviewMetricCard';
 import Card from '../../components/ui/Card';
+import { getValueRouting, valueBadge, valueDetail, type ValueRouting } from '../../lib/leadValue';
 
 export interface Lead {
   id: string;
@@ -21,6 +22,7 @@ export interface Lead {
   status: string;
   createdAt: string;
   assignedAgentId?: string;
+  valueRouting?: ValueRouting | null;
 }
 
 const sourceColors: Record<string, string> = {
@@ -166,6 +168,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [bigJobsOnly, setBigJobsOnly] = useState(false);
   const [chartMode, setChartMode] = useState<'count' | 'rate'>('count');
   const [chartRange, setChartRange] = useState<'7' | '30'>('7');
   const [hoveredPoint, setHoveredPoint] = useState<{ x: number; y: number; date: string; value: string } | null>(null);
@@ -228,7 +231,8 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
           source: (lead.source || lead.acquisition_source || lead.source_type || 'Unknown') as string,
           status: (lead.status || 'pending') as string,
           createdAt: (lead.created_at || lead.createdAt || new Date().toISOString()) as string,
-          assignedAgentId: (lead.assigned_agent_id || lead.assignedAgentId || undefined) as string | undefined
+          assignedAgentId: (lead.assigned_agent_id || lead.assignedAgentId || undefined) as string | undefined,
+          valueRouting: getValueRouting(lead.raw_data),
         }));
         setLeads(mappedLeads);
       } else {
@@ -442,8 +446,11 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
   }, [leads]);
 
   // --- Filtered leads for table ---
+  const valueById = useMemo(() => new Map(leads.map(l => [l.id, l.valueRouting ?? null])), [leads]);
+  const bigJobCount = useMemo(() => leads.filter(l => l.valueRouting?.tier === 'high').length, [leads]);
   const filteredLeads = useMemo(() => {
     return backendLeads.filter(l => {
+      if (bigJobsOnly && valueById.get(l.id)?.tier !== 'high') return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
@@ -455,7 +462,7 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
       }
       return true;
     });
-  }, [backendLeads, searchQuery]);
+  }, [backendLeads, searchQuery, bigJobsOnly, valueById]);
 
   const uniqueStatuses = useMemo(() => [...new Set(leads.map(l => l.status))], [leads]);
   const uniqueSources = useMemo(() => [...new Set(leads.map(l => l.source))], [leads]);
@@ -703,6 +710,19 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
         <div className="p-4 sm:p-5 border-b border-gray-200 dark:border-[#1e1e24] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{lawFirm ? 'Potential Client List' : 'Lead List'}</h2>
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Big jobs quick filter */}
+            <button
+              type="button"
+              aria-pressed={bigJobsOnly}
+              onClick={() => setBigJobsOnly(v => !v)}
+              className={`text-xs rounded-lg border px-3 py-1.5 font-medium transition-colors duration-200 ease-out focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                bigJobsOnly
+                  ? 'bg-amber-50 border-amber-300 text-amber-800 dark:bg-amber-500/15 dark:border-amber-500/40 dark:text-amber-300'
+                  : 'border-gray-200 dark:border-[#1e1e24] text-gray-600 dark:text-gray-300 bg-white dark:bg-[#0e0e11] hover:bg-gray-50 dark:hover:bg-[#17171b]'
+              }`}
+            >
+              Big jobs{bigJobCount > 0 ? ` (${bigJobCount})` : ''}
+            </button>
             {/* Status filter */}
             <select
               value={statusFilter}
@@ -771,10 +791,24 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                   const statusClass = statusStyles[lead.status] || statusStyles.new;
                   const srcColor = sourceColors[lead.source] || '#9CA3AF';
                   const srcData = sourceCounts[lead.source];
+                  const vr = valueById.get(lead.id) ?? null;
+                  const badge = valueBadge(vr);
+                  const detail = valueDetail(vr);
                   return (
                     <tr key={lead.id} className="border-b border-gray-50 dark:border-[#17171b] hover:bg-gray-50/50 dark:hover:bg-[#17171b]/50 transition-colors duration-200 ease-out">
                       <td className="px-5 py-3">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">{lead.name}</div>
+                        {badge && (
+                          <span
+                            className={`mt-1 inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                              badge.kind === 'big'
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/15 dark:text-amber-300'
+                                : 'bg-gray-100 text-gray-600 dark:bg-[#17171b] dark:text-gray-400'
+                            }`}
+                          >
+                            {badge.label}
+                          </span>
+                        )}
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
@@ -793,7 +827,9 @@ const SpeedToLeadPage: React.FC<SpeedToLeadPageProps> = ({
                         </div>
                       </td>
                       <td className="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">{formatShortDate(lead.captured_at)}</td>
-                      <td className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">{localize(lead.ai_summary, lawFirm)}</td>
+                      <td className="px-5 py-3 text-sm text-gray-700 dark:text-gray-300">{localize(lead.ai_summary, lawFirm)}
+                        {detail && <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{detail}</div>}
+                      </td>
                       <td className="px-5 py-3">
                         <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${statusClass}`}>
                           {lead.status}

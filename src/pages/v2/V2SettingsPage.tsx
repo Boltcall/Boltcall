@@ -16,6 +16,7 @@ import {
   Mic,
 } from 'lucide-react';
 import { authedFetch } from '../../lib/authedFetch';
+import AppearanceSettings from '../../components/dashboard/AppearanceSettings';
 
 /**
  * V2 Settings — Wave 3 Page 5.
@@ -555,13 +556,15 @@ const V2SettingsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Workspace Settings</h1>
           <p className="text-sm text-slate-600 mt-1">
-            Tuned for your vertical. Changes save automatically.
+            Tuned for your vertical. Business settings save automatically.
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
           {currentRole}
         </span>
       </header>
+
+      <AppearanceSettings />
 
       {/* AI suggestion banner */}
       <SuggestionBanner

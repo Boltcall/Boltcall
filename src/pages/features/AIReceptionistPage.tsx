@@ -498,9 +498,8 @@ const AIReceptionistPage: React.FC = () => {
                 Additionally, you save $35,000 annually on receptionist costs. Total benefit: $89,000 per year.
               </p>
               <p className="text-lg text-gray-700 leading-relaxed">
-                The AI receptionist pays for itself many times over, while providing better service coverage 
-                than a human receptionist could ever provide. The investment is minimal compared to the returns, 
-                making it one of the smartest investments you can make for your business.
+                Whether it pays off depends on how many calls you miss and what a new customer is worth to you. 
+                Plans are backed by a 30-day money-back guarantee.
               </p>
             </div>
           </motion.div>
@@ -602,13 +601,13 @@ const AIReceptionistPage: React.FC = () => {
                 <p className="text-sm text-gray-600">The honest cost vs. value breakdown.</p>
               </Link>
               <Link
-                to="/blog/ai-receptionist-cost-pricing"
+                to="/pricing"
                 className="block bg-white rounded-lg p-5 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition"
               >
                 <h3 className="text-base font-semibold text-gray-900 mb-1">
-                  AI receptionist cost and pricing
+                  Boltcall pricing
                 </h3>
-                <p className="text-sm text-gray-600">What you'll actually pay each month.</p>
+                <p className="text-sm text-gray-600">Plans, credits, and what each includes.</p>
               </Link>
               <Link
                 to="/blog/5-signs-you-need-ai-receptionist"
@@ -753,10 +752,6 @@ const AIReceptionistPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-              <span>Results in 30 days or your money back</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
               <span>Your data is never sold or shared</span>
             </div>
           </div>
@@ -770,7 +765,7 @@ const AIReceptionistPage: React.FC = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Why Law Firms Choose Boltcall</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {[
-              { title: 'Setup in 30 minutes', desc: 'No developers, no tech team. Answer 5 questions about your business and your AI receptionist is live — configured to your services, hours, and voice.' },
+              { title: 'Free setup', desc: 'No developers or tech team needed. Answer a few questions about your business and your AI receptionist is configured to your services, hours, and voice.' },
               { title: 'Flat monthly pricing', desc: 'Boltcall is a flat monthly subscription with no per-case fees and no share of your fees. Each plan includes a monthly credit pool shared across calls, texts, and chat.' },
               { title: 'Trained on your business', desc: 'Not a generic bot. Boltcall learns your specific services, pricing, FAQs, and booking rules — so every interaction sounds like your best team member.' },
               { title: 'One signed case can cover it', desc: 'One extra signed matter can cover the subscription. Use the break-even calculator on the pricing page with your own average fee.' },

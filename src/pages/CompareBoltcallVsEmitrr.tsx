@@ -124,7 +124,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
     { feature: 'Appointment Reminders', boltcall: 'Yes, AI-powered', emitrr: 'Yes, SMS-based', boltcallWin: true },
     { feature: 'Website Builder', boltcall: 'Yes, free', emitrr: 'No', boltcallWin: true },
     { feature: 'Group Texting', boltcall: 'No', emitrr: 'Yes', boltcallWin: false },
-    { feature: 'Setup Time', boltcall: '24 hours', emitrr: 'Hours-days', boltcallWin: true },
+    { feature: 'Setup Time', boltcall: 'Free setup', emitrr: 'Hours-days', boltcallWin: true },
     { feature: 'Best For', boltcall: 'Full AI automation', emitrr: 'Budget SMS communication', boltcallWin: null },
   ];
 
@@ -298,7 +298,6 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$489/mo SEO:</strong> Everything in Starter + local SEO optimization</span></li>
                     <li className="flex items-start"><CheckCircle className="h-5 w-5 text-blue-500 mr-2 mt-0.5 flex-shrink-0" /> <span><strong>$799/mo Full AI:</strong> Complete AI automation suite with priority support</span></li>
                   </ul>
-                  <p className="text-sm text-gray-600 mt-4">Guarantee: website delivered in 24 hours or get a free AI receptionist</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                   <h3 className="font-bold text-gray-900 text-xl mb-3">Emitrr Pricing</h3>
@@ -354,7 +353,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
 
               <h3 className="text-2xl font-semibold text-gray-900 mb-4 mt-8">Website and Online Presence</h3>
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
-                Boltcall includes a free professionally built website with every plan. For local businesses that don't have a website — or have an outdated one — this is significant. Your website comes with the AI chatbot embedded, optimized for conversions, and delivered within 24 hours.
+                Boltcall includes a free professionally built website with every plan. For local businesses that don't have a website — or have an outdated one — this is significant. Your website comes with the AI chatbot embedded, optimized for conversions.
               </p>
               <p className="text-gray-700 text-lg leading-relaxed">
                 Emitrr does not include a website builder. It's a communication platform, not a web presence solution. If you need a website, you'll need to source that separately.
@@ -514,7 +513,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                   Ready to See What AI Can Do for Your Business?
                 </h2>
                 <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-                  Get a free AI receptionist, chatbot, and website — set up in 24 hours. No contracts, no risk.
+                  Get a free AI receptionist, chatbot, and website — with free setup. No contracts.
                 </p>
                 <Link
                   to="/setup"
@@ -565,7 +564,7 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>100% Free — no credit card required</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Built for law firms</span></div>
-            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Setup completed in 24 hours</span></div>
+            <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Free setup</span></div>
             <div className="flex items-center gap-2"><CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Your data is never sold or shared</span></div>
           </div>
         </div>
@@ -586,8 +585,8 @@ const CompareBoltcallVsEmitrr: React.FC = () => {
                 <li key={"Full AI voice + SMS in one platform"} className="flex items-start gap-2 text-sm text-gray-700">
                   <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Full AI voice + SMS in one platform
                 </li>
-                <li key={"No-code setup — live in under 30 minutes"} className="flex items-start gap-2 text-sm text-gray-700">
-                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>No-code setup — live in under 30 minutes
+                <li key={"No-code, free setup"} className="flex items-start gap-2 text-sm text-gray-700">
+                  <span className="text-blue-600 mt-0.5 shrink-0">✓</span>No-code, free setup
                 </li>
                 <li key={"Purpose-built for lead capture and call answering"} className="flex items-start gap-2 text-sm text-gray-700">
                   <span className="text-blue-600 mt-0.5 shrink-0">✓</span>Purpose-built for lead capture and call answering

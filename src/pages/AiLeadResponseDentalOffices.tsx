@@ -425,7 +425,7 @@ const AiLeadResponseDentalOffices: React.FC = () => {
 
                   <div className="bg-green-50 border border-green-200 rounded-lg p-5">
                     <p className="text-green-800 font-semibold">Total Setup Time: 3-5 hours</p>
-                    <p className="text-green-700 mt-1">Most dental offices are fully live within one business day. With Boltcall's guided setup, the process is typically complete in an afternoon.</p>
+                    <p className="text-green-700 mt-1">Setup with Boltcall is free and guided.</p>
                   </div>
                 </motion.section>
 
@@ -450,7 +450,7 @@ const AiLeadResponseDentalOffices: React.FC = () => {
                     <div className="border rounded-lg p-6">
                       <div className="text-3xl font-bold text-blue-600 mb-2">30-50%</div>
                       <h3 className="font-semibold text-gray-900 mb-2">More New Patient Bookings</h3>
-                      <p className="text-gray-600">Practices recovering previously lost after-hours and slow-response leads see 30-50% increases in new patient bookings within the first 60 days.</p>
+                      <p className="text-gray-600">Practices that recover after-hours and slow-response leads book more new patients, but the size of the gain depends on your call volume and how many leads you lose today.</p>
                     </div>
 
                     <div className="border rounded-lg p-6">
@@ -525,7 +525,7 @@ const AiLeadResponseDentalOffices: React.FC = () => {
 
                     <div className="border rounded-lg p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-3">How much does it cost to set up AI lead response for a dental office?</h3>
-                      <p className="text-gray-600">Solutions like <Link to="/pricing" className="text-blue-600 hover:underline">Boltcall</Link> start from $897/month with no setup fee on annual plans. Compared to the average value of a new dental patient ($1,200-$2,500 lifetime), capturing even one additional patient per month covers the cost many times over. Most practices see positive ROI within the first week.</p>
+                      <p className="text-gray-600">Solutions like <Link to="/pricing" className="text-blue-600 hover:underline">Boltcall</Link> start at $549/month with free setup and a 30-day money-back guarantee. Work out the break-even with your own numbers: what a new patient is worth to you, and how many you lose to missed calls today.</p>
                     </div>
                   </div>
                 </motion.section>

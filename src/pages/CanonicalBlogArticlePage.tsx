@@ -96,7 +96,6 @@ const titleOverrides: Record<string, string> = {
   '/blog/create-gemini-gem-business-assistant': 'Create a Gemini Gem Business Assistant',
   '/blog/5-signs-you-need-ai-receptionist': '5 Signs You Need an AI Receptionist',
   '/blog/speed-to-lead-local-business': 'Speed to Lead for Local Businesses',
-  '/blog/ai-receptionist-cost-pricing': 'AI Receptionist Cost and Pricing',
   '/blog/ai-vs-human-receptionist': 'AI vs Human Receptionist',
   '/blog/ai-chatbot-vs-live-chat-phone-answering': 'AI Chatbot vs Live Chat vs Phone Answering',
   '/blog/best-ai-receptionist-small-business': 'Best AI Receptionist for Small Business',

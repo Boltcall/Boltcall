@@ -15,14 +15,14 @@ const BlogAIGuideStep3: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = 'Level 3: Getting Started with AI Tools | Boltcall';
-    updateMetaDescription('Level 3: Get started with AI in 30 minutes. Step-by-step guide to implementing AI in your business from setup to going live.');
+    updateMetaDescription('Level 3: Get started with AI. Step-by-step guide to implementing AI in your business from setup to going live.');
     
     // Add Article schema markup
     const articleSchema = {
       "@context": "https://schema.org",
       "@type": "Article",
       "headline": "Level 3: Getting Started with AI",
-      "description": "Step-by-step guide to implementing AI in your business, from setup to going live in under 30 minutes.",
+      "description": "Step-by-step guide to implementing AI in your business, from setup to going live.",
       "author": {
         "@type": "Organization",
         "name": "Boltcall"
@@ -145,7 +145,7 @@ const BlogAIGuideStep3: React.FC = () => {
         {/* TL;DR */}
         <div className="bg-blue-50 border-l-4 border-blue-600 rounded-r-xl p-5 mb-8">
           <p className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">TL;DR</p>
-          <p className="text-gray-700 text-sm leading-relaxed">Getting started takes less than 24 hours. Connect your phone number, configure your AI agent's voice and FAQ responses, integrate your calendar, and go live. Most businesses see ROI within the first week.</p>
+          <p className="text-gray-700 text-sm leading-relaxed">Setup is free. Connect your phone number, configure your AI agent's voice and FAQ responses, integrate your calendar, and go live.</p>
         </div>
         {/* Introduction */}
         <motion.section
@@ -156,7 +156,7 @@ const BlogAIGuideStep3: React.FC = () => {
         >
           <p className="text-lg text-gray-700 leading-relaxed mb-6">
             You've learned what AI can do and which tools to choose. Now it's time to implement. This step-by-step 
-            guide will walk you through setting up AI in your business in under 30 minutes.
+            guide will walk you through setting up AI in your business.
           </p>
         </motion.section>
 
@@ -396,7 +396,7 @@ const BlogAIGuideStep3: React.FC = () => {
                 <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-purple-600 text-purple-600 flex items-center justify-center text-xs font-bold group-open:rotate-45 transition-transform">+</span>
               </summary>
               <div className="px-6 pb-5 text-gray-700 text-sm leading-relaxed border-t border-gray-100 pt-4">
-                Most businesses are live within 24 hours. You'll need: a phone number (or forward your existing one), your business hours, FAQ answers, and calendar access.
+                Setup is free. You'll need: a phone number (or forward your existing one), your business hours, FAQ answers, and calendar access.
               </div>
             </details>
             <details className="group bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -423,7 +423,7 @@ const BlogAIGuideStep3: React.FC = () => {
                 <span className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-purple-600 text-purple-600 flex items-center justify-center text-xs font-bold group-open:rotate-45 transition-transform">+</span>
               </summary>
               <div className="px-6 pb-5 text-gray-700 text-sm leading-relaxed border-t border-gray-100 pt-4">
-                Track: calls answered vs. missed, bookings per week (before and after), and revenue from AI-captured leads. Most clients see 30–50% more booked appointments in month one.
+                Track: calls answered vs. missed, bookings per week (before and after), and revenue from AI-captured leads.
               </div>
             </details>
           </div>
@@ -447,7 +447,7 @@ const BlogAIGuideStep3: React.FC = () => {
               <ul className="space-y-3">
                 {[
                   'Early mover advantage over local competitors',
-                  'Immediate ROI possible within the first month',
+                  'A 30-day money-back guarantee lets you test it',
                   'AI improves over time as it learns your business',
                   'Competitors are still falling behind — act now',
                   'Setup is faster than most business owners expect',
@@ -606,7 +606,7 @@ const BlogAIGuideStep3: React.FC = () => {
               </thead>
               <tbody>
                 {[
-                  ['Week 1', 'Set up AI phone receptionist (Boltcall)', '30 minutes', 'Zero missed calls from day 1'],
+                  ['Week 1', 'Set up AI phone receptionist (Boltcall)', 'One sitting', 'Zero missed calls from day 1'],
                   ['Week 1', 'Connect your calendar for live booking', '15 minutes', 'Automated appointment booking'],
                   ['Week 2', 'Configure SMS follow-up sequence', '20 minutes', 'Automated lead nurturing starts'],
                   ['Week 2', 'Enable appointment reminder automation', '15 minutes', 'No-show rate begins to drop'],
