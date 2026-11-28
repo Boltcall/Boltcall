@@ -36,6 +36,8 @@ const AeoMarkdownArticlePage = React.lazy(() => import('../pages/AeoMarkdownArti
 // ── Auth pages — lazy-loaded (not on typical landing path) ──────────────
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
+const GoLivePage = React.lazy(() => import('../pages/GoLivePage'));
+const GoLiveCheckout = React.lazy(() => import('../pages/GoLiveCheckout'));
 const AuthCallback = React.lazy(() => import('../pages/AuthCallback'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 
@@ -424,6 +426,8 @@ const NavigationWrapper: React.FC = () => {
         <Route path="/loading-demo" element={<LoadingDemo />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/go-live/:slug" element={<GoLivePage />} />
+        <Route path="/go-live-checkout" element={<GoLiveCheckout />} />
         <Route path="/tools/pi-sms-intake-agent" element={<PiIntakeLanding />} />
         <Route path="/pi-intake" element={<PiIntakeDashboard />} />
         <Route

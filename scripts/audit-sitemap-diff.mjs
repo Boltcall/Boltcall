@@ -28,6 +28,8 @@ const EXCLUDE_PREFIXES = [
   '/pi-intake', // Authenticated free-product workspace; the offer lives under /tools/.
   '/dashboard', '/admin', '/auth', '/setup',
   '/payment', '/checkout', '/reset-password', '/login', '/signup',
+  '/go-live-checkout', // Per-lead close page bridge to billing; /go-live/:slug is dynamic and noindex.
+  '/demo/speed-to-lead', // Simulated demo, noindex (see generate-sitemap.mjs:14); was failing the drift guard on main.
   // Demo / component playgrounds — not indexable.
   '/glass-demo', '/button-demo', '/logo-demo', '/metric-cards-demo',
   '/rocker-switch-demo', '/origin-button-demo', '/glow-horizon-demo',
