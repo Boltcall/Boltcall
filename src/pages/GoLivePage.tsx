@@ -79,7 +79,7 @@ const FAQS = [
   },
   {
     q: 'How long does setup take?',
-    a: 'Setup is free. You tell it about your firm and connect a calendar, about 5 minutes of your time, and we take it from there. You are live in 48 hours.',
+    a: 'Setup is free. You tell it about your firm and connect a calendar, about 5 minutes of your time, and we take it from there. You are live in 24 hours.',
   },
 ];
 
@@ -183,7 +183,7 @@ export default function GoLivePage() {
           <h1 className="mt-5 text-balance text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
             {firm ? `${firm}, your demo is ready to go live.` : 'Your demo is ready to go live.'}
           </h1>
-          <p className="mt-4 text-lg font-semibold text-blue-700">Setup is free. Live in 48 hours.</p>
+          <p className="mt-4 text-lg font-semibold text-blue-700">Setup is free. Live in 24 hours.</p>
           <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-gray-600 md:text-lg">
             We built this demo for your firm. Try it, see how it answers a new inquiry, then go live below. No meeting needed.
           </p>
@@ -326,7 +326,7 @@ export default function GoLivePage() {
       <section className="bg-gray-950 px-4 py-14 text-center text-white sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <h2 className="text-balance text-3xl font-bold tracking-tight">Your demo is waiting. So is the next inquiry.</h2>
-          <p className="mt-3 text-gray-300">Free setup, live in 48 hours, 30-day money-back guarantee.</p>
+          <p className="mt-3 text-gray-300">Free setup, live in 24 hours, 30-day money-back guarantee.</p>
           <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             {PLANS.map((p) => (
               <Link
